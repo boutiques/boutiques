@@ -1,0 +1,126 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "http://github.com/boutiques/boutiques-schema",
+    "type": "object",
+    "properties": {
+	"name": {
+	    "id": "http://github.com/boutiques/boutiques-schema/name",
+	    "type": "string"
+	},
+	"description": {
+	    "id": "http://github.com/boutiques/boutiques-schema/description",
+	    "type": "string"
+	},
+	"command-line": {
+	    "id": "http://github.com/boutiques/boutiques-schema/command-line",
+	    "type": "string"
+	},
+	"docker-image": {
+	    "id": "http://github.com/boutiques/boutiques-schema/docker-image",
+	    "type": "string"
+	},
+	"docker-index": {
+	    "id": "http://github.com/boutiques/boutiques-schema/docker-index",
+	    "type": "string"
+	},
+	"schema-version": {
+	    "id": "http://github.com/boutiques/boutiques-schema/schema-version",
+	    "type": "string"
+	},
+	"inputs": {
+	    "id": "http://github.com/boutiques/boutiques-schema/inputs",
+	    "type": "array",
+	    "items": {
+		"id": "http://github.com/boutiques/boutiques-schema/input",
+		"type": "object",
+		"properties": {
+		    "name": {
+			"id": "http://github.com/boutiques/boutiques-schema/input/name",
+			"type": "string"
+		    },
+		    "type": {
+			"id": "http://github.com/boutiques/boutiques-schema/input/type",
+			"type": "string",
+			"enum": ["String", "File" ]
+		    },
+		    "description": {
+			"id": "http://github.com/boutiques/boutiques-schema/input/description",
+			"type": "string"
+		    },
+		    "command-line-key": {
+			"id": "http://github.com/boutiques/boutiques-schema/input/command-line-key",
+			"type": "string"
+		    },
+		    "cardinality": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/cardinality",
+			"type": "string",
+			"enum": ["Single", "Multiple" ]
+		    }
+		    
+		},
+		"required": [
+		    "name",
+		    "description",
+		    "type",
+		    "cardinality"
+		],
+		"additionalProperties" : false  
+	    }
+	},
+	"outputs": {
+	    "id": "http://github.com/boutiques/boutiques-schema/outputs",
+	    "type": "array",
+	    "items": {
+		"id": "http://github.com/boutiques/boutiques-schema/output",
+		"type": "object",
+		"properties": {
+		    "name": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/name",
+			"type": "string"
+		    },
+		    "type": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/type",
+			"type": "string",
+			"enum": ["String", "File" ]
+		    },
+		    "description": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/description",
+			"type": "string"
+		    },
+		    "command-line-key": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/command-line-key",
+			"type": "string"
+		    },
+		    "value-template": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/value-template",
+			"type": "string"
+		    },
+		    "cardinality": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/cardinality",
+			"type": "string",
+			"enum": ["Single", "Multiple" ]
+		    }
+		},
+		"required": [
+		    "name",
+		    "description",
+		    "type",
+		    "value-template",
+		    "cardinality"
+		],
+		"additionalProperties" : false  
+	    }
+	}
+    },
+    "required": [
+	"name",
+	"description",
+	"command-line",
+	"docker-image",
+	"docker-index",
+	"schema-version",
+	"inputs",
+	"outputs"
+    ],
+    "additionalProperties" : false  
+}
