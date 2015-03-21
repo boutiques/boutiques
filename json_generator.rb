@@ -86,7 +86,7 @@ end
 
 # Fixed parameters
 default_docker_index = "http://index.docker.io"
-schema_version      = "0.1-snapshot"
+schema_version      = "0.1"
 
 # get parameters
 name                 = get_param "> Tool name:"

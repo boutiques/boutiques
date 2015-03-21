@@ -4,7 +4,7 @@
     "command-line" : "bet -i [input_1] -g [g_value] -o [output_file]",
     "docker-image" : "glatard/ubuntu-with-fsl",
     "docker-index" : "http://index.docker.io",
-    "schema-version" : "0.1-snapshot",
+    "schema-version" : "0.1",
     "inputs" : [ 
     { 
       "name" : "input_file_1",
