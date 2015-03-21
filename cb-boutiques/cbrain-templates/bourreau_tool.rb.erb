@@ -1,0 +1,177 @@
+#
+# Copyright (C) 2015
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#    and
+# Centre National de la Recherche Scientifique 
+# CNRS
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+#
+#
+
+# A subclass of ClusterTask to run <%= @name.capitalize %>.
+class CbrainTask::<%=@name.capitalize %> < ClusterTask
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  include RestartableTask
+  include RecoverableTask
+
+  def setup #:nodoc:
+    params = self.params
+
+    params[:interface_userfile_ids].each do |id|
+      input_file   = Userfile.find(id)
+    		 
+      unless input_file
+        self.addlog("Could not find active record entry for file #{id}")
+        return false
+      end
+
+      input_file.sync_to_cache
+      cache_path = input_file.cache_full_path
+      safe_symlink(cache_path, "#{input_file.name}")
+      self.results_data_provider_id ||= input_file.data_provider_id
+    end
+    true
+  end
+
+  def job_walltime_estimate #:nodoc:
+     # update this with your tool duration estimate
+     1
+  end
+
+  def cluster_commands #:nodoc:
+    params    = self.params
+
+    cmds      = []
+    cmds      << "echo Starting <%= @name %>"
+
+<%# Creates command %>
+command = "<%= @syntax -%>"
+
+<%# Resolves output templates. %>
+<%-@outputs.each do |output|-%>
+  <%# In output template, substitutes %>
+  <%# input command-line keys with input values. %>
+  <%-@inputs.each do |input|-%>
+   <%# Removes file extension from input value. %>
+   <% if input.get_type == "File" %>		   
+    <% token = "\#\{File.basename(params[:#{input.get_name}],
+                   File.extname(params[:#{input.get_name}]))\}" %>
+   <% else %>
+    <% token = "\#\{params[:#{input.get_name}]\}" %>
+   <% end %>
+   <%# Performs the substitution.%>
+   <%- output.set_resolved_template output.get_resolved_template.
+    gsub(input.get_syntax_key,token)-%>
+  <% end %>
+<%end %>
+
+<%# Writes output values to the command line.%>
+<%@outputs.each do |output|-%>
+ # Writes value of output <%= output.get_name %> 
+ # to the command line.
+ <% if output.get_syntax_key and output.get_syntax_key != "" %>
+  command = command.gsub("<%= output.get_syntax_key -%>", 
+                "<%= output.get_resolved_template -%>")
+ <% end %>
+<%end-%>
+  
+<%# Writes input values to the command line. %>
+<%@inputs.each do |input|-%>
+ # Writes value of input <%= input.get_name %>
+ # to the command line.
+ <% if input.get_syntax_key and input.get_syntax_key != "" %>
+  <% if input.get_cardinality == "Single" %>
+     command = command.gsub("<%= input.get_syntax_key -%>",
+                params[:<%= input.get_name -%>])
+  <% else %>
+   <%# Handles input with cardinality "Multiple".%>
+   value=""
+   params[:<%= input.get_name -%>_file_names].each do |file_name|
+	  value += file_name+" "
+   end
+   command = command.gsub("<%= input.get_syntax_key -%>", value)
+  <% end %>
+ <% end %>
+<%end%>
+
+    cmds    << "echo running #{command}"
+    cmds    << command
+
+    <%@outputs.each do |output|-%>
+    # Add value of output <%= output.get_name %> to task parameters
+    params[:<%=output.get_name-%>] = "<%= output.get_resolved_template -%>"
+    <%end-%>
+
+    cmds
+  end
+
+  def save_results #:nodoc:
+    params  = self.params
+    user_id = self.user_id
+
+    # Here you may want to check if the tool exited properly
+
+    <%@outputs.each do |output|-%>
+
+    produced_files = []
+
+    # Checks that output was produced
+    output_name = params[:<%=output.get_name-%>]
+    <% if output.get_cardinality == "Single" %>
+    if not File.exists?(output_name)
+      self.addlog("Job did not produce file #{output_name}")
+      return false
+    else
+      produced_files <<  output_name
+    end
+    <% else %>
+    # Output has to produce at least one file matching output_name
+    if Dir["#{output_name}"].empty?
+      self.addlog("Job did not produce file any file matching #{output_name}")
+      return false
+    else
+      Dir["#{output_name}"].each do |f|
+        produced_files << f
+      end
+    end
+    <%end %>
+    
+    produced_files.each_with_index do |output_file_name,index|
+      # Transfers output file
+      self.addlog("Saving result file #{output_file_name}")
+      output_file = safe_userfile_find_or_new(SingleFile, :name => "#{output_file_name}")
+      output_file.save!
+      output_file.cache_copy_from_local_file("#{output_file_name}")
+      params["#{output_name}_#{index}_id".to_sym] = output_file.id
+      params["#{output_name}_#{index}".to_sym] = output_file_name
+      self.addlog("Saved result file #{output_file_name}")
+
+      # Attaches output to parent if appropriate
+      <%if (@inputs.reject{|x| x.get_type != "File" || x.get_cardinality == "Multiple" }).length == 1-%>
+        <% input = @inputs.reject{|x| x.get_type != "File" || x.get_cardinality == "Multiple" }[0] -%>
+      parent_file_id = params[:<%=input.get_name-%>_file_id].to_i
+      parent_file    = Userfile.find(parent_file_id)
+      self.addlog_to_userfiles_these_created_these( [ parent_file ], [ output_file ] )
+      output_file.move_to_child_of(parent_file)
+        <%end-%>
+      <%end-%>
+    end
+    true
+  end
+end
+

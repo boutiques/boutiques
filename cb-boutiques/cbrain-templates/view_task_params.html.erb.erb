@@ -1,0 +1,18 @@
+<STRONG>Input files selected:</STRONG>
+<UL>
+  <%% params[:interface_userfile_ids].each do |id| %>
+  <LI><%%= link_to_userfile_if_accessible(id) %></LI>
+  <%% end %>
+</UL>
+
+<P>
+<% @inputs.each do |input| %>
+<% if input.get_type != "File" %>
+<p>
+<STRONG><%= input.get_name %>:</STRONG>
+<%%= form.params_text_field :<%= input.get_name%> %></br>
+<%= input.get_documentation %>
+</p>
+<% end %>
+<% end %>
+</P>

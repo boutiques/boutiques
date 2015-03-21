@@ -1,0 +1,107 @@
+#
+# Copyright (C) 2015
+# The Royal Institution for the Advancement of Learning
+# McGill University
+#    and
+# Centre National de la Recherche Scientifique 
+# CNRS
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+#
+class CbrainTask::<%= @name.capitalize %> < PortalTask
+
+  Revision_info=CbrainFileRevision[__FILE__] #:nodoc:
+
+  def self.properties #:nodoc:
+    { :use_parallelizer => true }
+  end
+
+  def self.default_launch_args #:nodoc:
+    {
+    # add default parameter values here. 
+    }
+  end
+
+ def before_form #:nodoc:
+    params   = self.params
+
+    ids    = params[:interface_userfile_ids]
+    ids.each do |id|
+      u = Userfile.find(id) rescue nil
+      cb_error "Error: the input file for this task doesn't exist anymore." unless u
+      cb_error "Error: '#{u.name}' does not seem to be a single file." unless u.is_a?(SingleFile)
+    end
+    ""
+  end
+
+  def after_form #:nodoc:
+    params = self.params
+
+    # add parameter checks here
+    ""    
+  end
+
+  def final_task_list #:nodoc:
+
+    # This works only for tasks with a single input parameter of type "File"
+    #   If input is of cardinality "Single":
+    #     create one task for each input value. 
+    #   If input is of cardinality "Multiple":
+    #	  create a single tasks containing all the input values. 
+
+    ids    = params[:interface_userfile_ids] || []
+
+    mytasklist = []
+    count_file_inputs = 0
+
+<% @inputs.each do |input| -%>
+  <% if input.get_type == "File" -%>
+      count_file_inputs += 1
+      raise "Tasks with more than 1 input file are not supported	
+by the CBRAIN tool generator. Go edit the task code in the portal!" if count_file_inputs > 1
+    <% if input.get_cardinality == "Single" %>
+      ids.each do |id|
+        task=self.dup # not .clone, as of Rails 3.1.10
+        task.params[:interface_userfile_ids] = [ id ]
+  
+        #update the following lines in case your task has more than 1 input file
+        task.params[:<%="#{input.get_name}_file_id"%>] = id
+        task.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
+	task.description                               = Userfile.find(id).name if task.description.blank?
+        mytasklist << task
+      end
+    <% else %>
+        task=self.dup # not .clone, as of Rails 3.1.10
+  
+        #update the following lines in case your task has more than 1 input file
+        task.params[:<%="#{input.get_name}_file_ids"%>]    = ids
+        task.params[:<%="#{input.get_name}_file_names"%>]  = []
+	task_description = "" 
+	ids.each do |id|
+	   file_name = Userfile.find(id).name
+	   task.params[:<%="#{input.get_name}_file_names"%>] << file_name
+	   task.description += "#{file_name} "
+	end
+        mytasklist << task
+    <% end -%>
+  <% end -%>
+<% end %>
+      mytasklist
+  end
+
+  def untouchable_params_attributes #:nodoc:
+    { :inputfile_id => true, :final_output_name => true, :outfile_id => true}
+  end
+
+end

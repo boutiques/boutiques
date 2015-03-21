@@ -1,0 +1,27 @@
+<STRONG>Input files:</STRONG>
+
+<P>
+<UL>
+<%% params[:interface_userfile_ids].each do |id| %>
+  <LI><%%= link_to_userfile_if_accessible(id) %></LI>
+<%% end %>
+</UL>
+</P>
+
+<% @inputs.each do |input| %>
+<% if input.get_type != "File" %>
+<p>
+<STRONG><%= input.get_name %>:</STRONG>
+<%%= params[:<%= input.get_name%>].to_s %>
+</p>
+<% end %>
+<% end %>
+
+<% @outputs.each do |output| %>
+<p>
+<STRONG><%=output.get_name %>:</STRONG>
+<UL>
+  <li><%%= link_to_userfile_if_accessible(params[:<%=output.get_name%>]) %></li>
+</UL>
+</p>
+<% end %>
