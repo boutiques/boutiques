@@ -1,2 +1,2 @@
-# cb-boutiques
-A tool to generate CBRAIN applications from Boutiques descriptors.
+# boutiques-tools
+Tools to create and use boutiques descriptors.
