@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 #
 # Copyright (C) 2015
 # The Royal Institution for the Advancement of Learning
