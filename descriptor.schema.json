@@ -55,6 +55,14 @@
 			"id": "http://github.com/boutiques/boutiques-schema/output/cardinality",
 			"type": "string",
 			"enum": ["Single", "Multiple" ]
+		    },
+		    "optional":{
+			"id": "http://github.com/boutiques/boutiques-schema/output/optional",
+			"type": "boolean"
+		    },
+		    "command-line-flag":{
+			"id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
+			"type": "string"
 		    }
 		    
 		},
