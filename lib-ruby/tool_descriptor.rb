@@ -50,11 +50,11 @@ class ToolDescriptor
     @schema_version = hash["schema-version"]
     @inputs = Array.new
     hash["inputs"].each do |input_hash|
-      @inputs << ToolInput.new(input_hash["name"],input_hash["type"],input_hash["command-line-key"],input_hash["description"],input_hash["cardinality"])
+      @inputs << ToolInput.new(input_hash["name"],input_hash["type"],input_hash["command-line-key"],input_hash["description"],input_hash["cardinality"],input_hash["optional"],input_hash["command-line-flag"],input_hash["supported-file-extensions"])
     end
     @outputs = Array.new
     hash["outputs"].each do |output_hash|
-      @outputs << ToolOutput.new(output_hash["name"],output_hash["type"],output_hash["command-line-key"],output_hash["value-template"],output_hash["description"],output_hash["cardinality"])
+      @outputs << ToolOutput.new(output_hash["name"],output_hash["type"],output_hash["command-line-key"],output_hash["value-template"],output_hash["description"],output_hash["cardinality"],output_hash["optional"],output_hash["command-line-flag"])
     end   
   end
   
