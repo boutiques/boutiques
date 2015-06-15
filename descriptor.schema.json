@@ -41,7 +41,7 @@
 		    "type": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/type",
 			"type": "string",
-			"enum": ["String", "File" ]
+			"enum": ["String", "File", "Flag" ]
 		    },
 		    "description": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/description",
