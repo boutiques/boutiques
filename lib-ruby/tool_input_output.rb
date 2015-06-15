@@ -63,9 +63,21 @@ class ToolInputOutput
       \"description\" : \"#{@documentation}\",
       \"command-line-key\" : \"#{@syntax_key}\",
       \"cardinality\" : \"#{@cardinality}\",
-      \"optional\" : \"#{@optional}\",
-      \"command-line-flag\" : \"#{@command_line_flag}\"
-    }"
+      \"command-line-flag\" : \"#{@command_line_flag}\""
+    output += ",\n      \"optional\" : "
+    output += @optional == "True" ? "true" : "false"
+    output += ",\n      \"value-template\" : \"#{@template}\"\n" if not @template.nil? and not @template == ""
+    if not @file_extensions.nil?
+      output += ",\n      \"supported-file-extensions\": ["
+      first = true
+      @file_extensions.each do |fe|
+        output += "," unless first
+        output += "\"#{fe}\""
+        first = false
+      end
+      output += "]\n"
+    end
+    output+="}"
     return output
   end
 end

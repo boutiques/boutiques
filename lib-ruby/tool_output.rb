@@ -37,15 +37,4 @@ class ToolOutput < ToolInputOutput
   def set_resolved_template value
     @resolved_template = value
   end
-  def to_json
-    json_string = "{ 
-      \"name\" : \"#{@name}\",
-      \"type\" : \"#{@type}\",
-      \"description\" : \"#{@documentation}\",
-      \"command-line-key\" : \"#{@syntax_key}\",
-      \"value-template\" : \"#{@template}\",
-      \"cardinality\" : \"#{@cardinality}\"
-    }"
-    return json_string
-  end
 end

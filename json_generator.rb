@@ -30,6 +30,18 @@ require 'tool_templates'
 require 'tool_descriptor'
 require 'tool_creator'
 
+#######################
+# Interactive methods #
+#######################
+
+# Gets a file extension
+def get_file_extension i
+  puts "> File extension ##{i}".green
+  extension = get_param " >> File extension:"
+  return extension
+end
+
+# Gets a tool input
 def get_input i
   puts "> Input ##{i}".green
   name = get_param " >> Input name:"
@@ -38,10 +50,18 @@ def get_input i
   key = get_param " >> Input command-line key",true
   cardinality = type == "Flag" ? "Single" : get_param(" >> Input cardinality",false,"Single",["Single","Multiple"])
   optional = type == "Flag" ? "True" : get_param(" >> Is input optional?",false,"False",["True","False"])
+  
+  file_extensions = Array.new
+  continue = get_param "> Add list of supported file extensions?",false,"Y"
+  while continue.downcase.strip.start_with? "y" do
+    file_extensions << get_file_extension(file_extensions.length)
+    continue = get_param "> Add another file extension?",false,"Y"
+end
   command_line_flag = get_param " >> Command-line flag:",true
-  return ToolInput.new name,type,key,description,cardinality,optional,command_line_flag
+  return ToolInput.new name,type,key,description,cardinality,optional,command_line_flag,file_extensions
 end
 
+# Gets a tool output
 def get_output i
   puts "> Output ##{i}".green
   name = get_param " >> Output name:"
