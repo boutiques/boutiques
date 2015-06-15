@@ -24,7 +24,7 @@
 class ToolInputOutput
   def initialize name,type,syntax_key,documentation,cardinality,optional,command_line_flag 
     @name = name               # the name of the input/output. Should be usable as a Ruby variable name
-    raise "Unknown input/output type: #{type}" unless type == "String" or type == "File"
+    raise "Unknown input/output type: #{type}" unless type == "String" or type == "File" or type == "Flag"
     raise "Unsupported cardinality" if cardinality != "Single" and cardinality != "Multiple"
     @cardinality = cardinality
     @type = type               # might be "String" of "File"

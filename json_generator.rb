@@ -34,10 +34,10 @@ def get_input i
   puts "> Input ##{i}".green
   name = get_param " >> Input name:"
   description = get_param " >> Input description:",true
-  type = get_param " >> Input type:",false,"File",["String","File"]
+  type = get_param " >> Input type:",false,"File",["String","File","Flag"]
   key = get_param " >> Input command-line key",true
-  cardinality = get_param " >> Input cardinality",false,"Single",["Single","Multiple"]
-  optional = get_param " >> Is input optional?",false,"False",["True","False"]
+  cardinality = type == "Flag" ? "Single" : get_param(" >> Input cardinality",false,"Single",["Single","Multiple"])
+  optional = type == "Flag" ? "True" : get_param(" >> Is input optional?",false,"False",["True","False"])
   command_line_flag = get_param " >> Command-line flag:",true
   return ToolInput.new name,type,key,description,cardinality,optional,command_line_flag
 end
