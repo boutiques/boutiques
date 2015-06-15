@@ -37,7 +37,9 @@ def get_input i
   type = get_param " >> Input type:",false,"File",["String","File"]
   key = get_param " >> Input command-line key",true
   cardinality = get_param " >> Input cardinality",false,"Single",["Single","Multiple"]
-  return ToolInput.new name,type,key,description,cardinality
+  optional = get_param " >> Is input optional?",false,"False",["True","False"]
+  command_line_flag = get_param " >> Command-line flag:",true
+  return ToolInput.new name,type,key,description,cardinality,optional,command_line_flag
 end
 
 def get_output i
@@ -47,9 +49,11 @@ def get_output i
   type = get_param " >> Output type:",false,"File",["File"]
   key = get_param " >> Output command-line key",true
   cardinality = get_param " >> Output cardinality",false,"Single",["Single","Multiple"]
+  optional = get_param " >> Is output optional?",false,"False",["True","False"]
+  command_line_flag = get_param " >> Command-line flag:",true
   must_be_contained = cardinality == "Multiple" ? "*" : nil
   template = get_param " >> Output value template",false,nil,nil,must_be_contained
-  return ToolOutput.new name,type,key,template,description,cardinality
+  return ToolOutput.new name,type,key,template,description,cardinality,optional,command_line_flag
 end
 
 def get_param message,can_be_empty=false,default_value=nil,accepted_values=nil,must_be_contained=nil
@@ -87,7 +91,7 @@ end
 
 # Fixed parameters
 default_docker_index = "http://index.docker.io"
-schema_version      = "0.1"
+schema_version      = "0.2-snapshot"
 
 # get parameters
 name                 = get_param "> Tool name:"
@@ -123,8 +127,6 @@ while not output_file_name do
     output_file_name = overwrite.downcase == "y" ? output_file_name : nil 
   end
 end
-
-#syntax = "GENOME_BIN=/opt/genome /opt/genome/wrap_maq_fastq2bfq.pl [[[INPUT_FILE]]] [[[OUTPUT_FILE]]]"
 
 tool_descriptor = ToolDescriptor.new
 tool_descriptor.create_from_params name,description,syntax,inputs,outputs,docker_image,docker_index,schema_version

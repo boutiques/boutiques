@@ -22,7 +22,7 @@
 #
 # Meta-class for tool Inputs and Outputs
 class ToolInputOutput
-  def initialize name,type,syntax_key,documentation,cardinality 
+  def initialize name,type,syntax_key,documentation,cardinality,optional,command_line_flag 
     @name = name               # the name of the input/output. Should be usable as a Ruby variable name
     raise "Unknown input/output type: #{type}" unless type == "String" or type == "File"
     raise "Unsupported cardinality" if cardinality != "Single" and cardinality != "Multiple"
@@ -32,6 +32,8 @@ class ToolInputOutput
                                # value of this input or output
                                # will be replaced on the command line.
     @documentation = documentation
+    @optional = optional
+    @command_line_flag = command_line_flag
   end
   def get_name
     return @name
@@ -48,13 +50,21 @@ class ToolInputOutput
   def get_cardinality
     return @cardinality
   end
+  def get_optional
+    return @optional
+  end
+  def get_command_line_flag
+    return @command_line_flag
+  end
   def to_json
     output = "{ 
       \"name\" : \"#{@name}\",
       \"type\" : \"#{@type}\",
       \"description\" : \"#{@documentation}\",
       \"command-line-key\" : \"#{@syntax_key}\",
-      \"cardinality\" : \"#{@cardinality}\"
+      \"cardinality\" : \"#{@cardinality}\",
+      \"optional\" : \"#{@optional}\",
+      \"command-line-flag\" : \"#{@command_line_flag}\"
     }"
     return output
   end

@@ -22,9 +22,9 @@
 #
 # Class describing the output of a Tool
 class ToolOutput < ToolInputOutput
-  def initialize name,type,syntax_key,template,documentation,cardinality
+  def initialize name,type,syntax_key,template,documentation,cardinality,optional,command_line_flag
     raise "Output type has to be \"File\" or \"Directory\"" unless type == "File" or type == "Directory" 
-    super name,type,syntax_key,documentation,cardinality 
+    super name,type,syntax_key,documentation,cardinality,optional,command_line_flag
     @template = template # the template used to generate output file names
     @resolved_template = @template.dup
   end
