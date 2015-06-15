@@ -1,27 +1,26 @@
-<STRONG>Input files:</STRONG>
-
-<P>
-<UL>
-<%% params[:interface_userfile_ids].each do |id| %>
-  <LI><%%= link_to_userfile_if_accessible(id) %></LI>
-<%% end %>
-</UL>
-</P>
-
-<% @inputs.each do |input| %>
-<% if input.get_type != "File" %>
+<strong>Input files:</strong>
 <p>
-<STRONG><%= input.get_name %>:</STRONG>
-<%%= params[:<%= input.get_name%>].to_s %>
+<ul>
+<%%-params[:interface_userfile_ids].each do |id|-%>
+  <li><%%= link_to_userfile_if_accessible(id)-%></li>
+<%%-end-%>
+</ul>
 </p>
-<% end %>
-<% end %>
-
-<% @outputs.each do |output| %>
+<%-@inputs.each do |input|-%>
+<%-if input.get_type != "File"-%>
 <p>
-<STRONG><%=output.get_name %>:</STRONG>
-<UL>
-  <li><%%= link_to_userfile_if_accessible(params[:<%=output.get_name%>]) %></li>
-</UL>
+<strong><%= input.get_name-%>:</strong>
+<%%= params[:<%= input.get_name%>].to_s-%>
 </p>
-<% end %>
+<%-end-%>
+<%-end-%>
+
+<strong>Output files:</strong>
+<%-@outputs.each do |output|-%>
+<p>
+<strong><%=output.get_name-%>:</strong>
+<ul>
+  <li><%%= link_to_userfile_if_accessible(params[:<%=output.get_name%>])-%></li>
+</ul>
+</p>
+<%-end-%>

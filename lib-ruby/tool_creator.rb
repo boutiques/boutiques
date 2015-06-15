@@ -42,7 +42,7 @@ module ToolCreator
   
   private
   def ToolCreator.create_file_from_template template,file_name,binding_object
-    renderer = ERB.new template,nil, '-'
+    renderer = ERB.new template,nil,'-'
     output = renderer.result(binding_object.get_binding)
     File.open(file_name, 'w') { |file| file.write(output) }
   end

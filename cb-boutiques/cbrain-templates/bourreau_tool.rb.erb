@@ -30,6 +30,7 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
   include RecoverableTask
 
   def setup #:nodoc:
+
     params = self.params
 
     params[:interface_userfile_ids].each do |id|
@@ -59,60 +60,52 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
     cmds      = []
     cmds      << "echo Starting <%= @name %>"
 
-<%# Creates command %>
-command = "<%= @syntax -%>"
-
-<%# Resolves output templates. %>
+<%# Creates command %>    command = "<%= @syntax -%>"
+<%-# Resolves output templates.-%>
 <%-@outputs.each do |output|-%>
-  <%# In output template, substitutes %>
-  <%# input command-line keys with input values. %>
+  <%-# In output template, substitutes-%>
+  <%-# input command-line keys with input values.-%>
   <%-@inputs.each do |input|-%>
-   <%# Removes file extension from input value. %>
-   <% if input.get_type == "File" %>		   
-    <% token = "\#\{File.basename(params[:#{input.get_name}],
-                   File.extname(params[:#{input.get_name}]))\}" %>
-   <% else %>
-    <% token = "\#\{params[:#{input.get_name}]\}" %>
-   <% end %>
-   <%# Performs the substitution.%>
-   <%- output.set_resolved_template output.get_resolved_template.
+   <%-# Removes file extension from input value.-%>
+   <%-if input.get_type == "File"-%>		   
+    <%-token = "\#\{File.basename(params[:#{input.get_name}],
+                   File.extname(params[:#{input.get_name}]))\}"-%>
+   <%-else-%>
+    <%-token = "\#\{params[:#{input.get_name}]\}"-%>
+   <%-end-%>
+   <%-# Performs the substitution.-%>
+   <%-output.set_resolved_template output.get_resolved_template.
     gsub(input.get_syntax_key,token)-%>
-  <% end %>
-<%end %>
-
-<%# Writes output values to the command line.%>
-<%@outputs.each do |output|-%>
- # Writes value of output <%= output.get_name %> 
- # to the command line.
- <% if output.get_syntax_key and output.get_syntax_key != "" %>
-  command = command.gsub("<%= output.get_syntax_key -%>", 
+  <%-end-%>
+<%-end-%>
+<%-# Writes output values to the command line.-%>
+<%-@outputs.each do |output|-%>
+ <%-if output.get_syntax_key and output.get_syntax_key != ""-%>
+    # Writes value of output <%= output.get_name %> to the command line.
+    command = command.gsub("<%= output.get_syntax_key -%>", 
                 "<%= output.get_resolved_template -%>")
- <% end %>
-<%end-%>
-  
-<%# Writes input values to the command line. %>
-<%@inputs.each do |input|-%>
- # Writes value of input <%= input.get_name %>
- # to the command line.
- <% if input.get_syntax_key and input.get_syntax_key != "" %>
-  <% if input.get_cardinality == "Single" %>
-     command = command.gsub("<%= input.get_syntax_key -%>",
-                params[:<%= input.get_name -%>])
-  <% else %>
-   <%# Handles input with cardinality "Multiple".%>
+ <%-end-%>
+<%-end-%> 
+<%-# Writes input values to the command line.-%>
+<%-@inputs.each do |input|-%>
+    # Writes value of input <%= input.get_name %> to the command line.
+ <%-if input.get_syntax_key and input.get_syntax_key != ""-%>
+  <%-if input.get_cardinality == "Single"-%>
+    command = command.gsub("<%= input.get_syntax_key -%>", params[:<%= input.get_name -%>])
+  <%-else-%>
+   <%-# Handles input with cardinality "Multiple".-%>
    value=""
    params[:<%= input.get_name -%>_file_names].each do |file_name|
 	  value += file_name+" "
    end
    command = command.gsub("<%= input.get_syntax_key -%>", value)
-  <% end %>
- <% end %>
-<%end%>
-
+  <%-end-%>
+ <%-end-%>
+<%-end-%>
     cmds    << "echo running #{command}"
     cmds    << command
-
     <%@outputs.each do |output|-%>
+
     # Add value of output <%= output.get_name %> to task parameters
     params[:<%=output.get_name-%>] = "<%= output.get_resolved_template -%>"
     <%end-%>
@@ -121,13 +114,13 @@ command = "<%= @syntax -%>"
   end
 
   def save_results #:nodoc:
+  
     params  = self.params
     user_id = self.user_id
 
     # Here you may want to check if the tool exited properly
-
-    <%@outputs.each do |output|-%>
-
+    
+    <%-@outputs.each do |output|-%>
     produced_files = []
 
     # Checks that output was produced
@@ -149,9 +142,10 @@ command = "<%= @syntax -%>"
         produced_files << f
       end
     end
-    <%end %>
-    
+    <%-end-%>
+  
     produced_files.each_with_index do |output_file_name,index|
+    
       # Transfers output file
       self.addlog("Saving result file #{output_file_name}")
       output_file = safe_userfile_find_or_new(SingleFile, :name => "#{output_file_name}")
@@ -168,8 +162,9 @@ command = "<%= @syntax -%>"
       parent_file    = Userfile.find(parent_file_id)
       self.addlog_to_userfiles_these_created_these( [ parent_file ], [ output_file ] )
       output_file.move_to_child_of(parent_file)
-        <%end-%>
-      <%end-%>
+        <%-end-%>
+      <%-end-%>
+
     end
     true
   end

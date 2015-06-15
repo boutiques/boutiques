@@ -64,40 +64,43 @@ class CbrainTask::<%= @name.capitalize %> < PortalTask
 
     mytasklist = []
     count_file_inputs = 0
-
-<% @inputs.each do |input| -%>
-  <% if input.get_type == "File" -%>
-      count_file_inputs += 1
-      raise "Tasks with more than 1 input file are not supported	
-by the CBRAIN tool generator. Go edit the task code in the portal!" if count_file_inputs > 1
+    
+<%-@inputs.each do |input| -%>
+  <%-if input.get_type == "File" -%>
+    count_file_inputs += 1
+    raise "Tasks with more than 1 input file are not supported by the CBRAIN tool generator. Go edit the task code in the portal!" if count_file_inputs > 1
     <% if input.get_cardinality == "Single" %>
-      ids.each do |id|
-        task=self.dup # not .clone, as of Rails 3.1.10
-        task.params[:interface_userfile_ids] = [ id ]
+    ids.each do |id|
+
+      task=self.dup # not .clone, as of Rails 3.1.10
+      task.params[:interface_userfile_ids] = [ id ]
   
-        #update the following lines in case your task has more than 1 input file
-        task.params[:<%="#{input.get_name}_file_id"%>] = id
-        task.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
-	task.description                               = Userfile.find(id).name if task.description.blank?
-        mytasklist << task
-      end
+      #update the following lines in case your task has more than 1 input file
+      task.params[:<%="#{input.get_name}_file_id"%>] = id
+      task.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
+      task.description                               = Userfile.find(id).name if task.description.blank?
+      mytasklist << task
+    end
     <% else %>
-        task=self.dup # not .clone, as of Rails 3.1.10
+      task=self.dup # not .clone, as of Rails 3.1.10
   
-        #update the following lines in case your task has more than 1 input file
-        task.params[:<%="#{input.get_name}_file_ids"%>]    = ids
-        task.params[:<%="#{input.get_name}_file_names"%>]  = []
-	task_description = "" 
-	ids.each do |id|
-	   file_name = Userfile.find(id).name
-	   task.params[:<%="#{input.get_name}_file_names"%>] << file_name
-	   task.description += "#{file_name} "
-	end
-        mytasklist << task
-    <% end -%>
-  <% end -%>
-<% end %>
-      mytasklist
+      #update the following lines in case your task has more than 1 input file
+      task.params[:<%="#{input.get_name}_file_ids"%>]    = ids
+      task.params[:<%="#{input.get_name}_file_names"%>]  = []
+      task_description = "" 
+      ids.each do |id|
+        file_name = Userfile.find(id).name
+        task.params[:<%="#{input.get_name}_file_names"%>] << file_name
+        task.description += "#{file_name} "
+      end
+      mytasklist << task
+      
+    <%-end-%>
+  <%-end-%>
+<%-end-%>
+
+  mytasklist
+
   end
 
   def untouchable_params_attributes #:nodoc:
