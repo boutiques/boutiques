@@ -135,22 +135,24 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
 
     # Checks that output was produced
     output_name = params[:<%=output.get_name-%>]
-    <% if output.get_cardinality == "Single" %>
-    if not File.exists?(output_name)
-      self.addlog("Job did not produce file #{output_name}")
+    <%-if output.get_cardinality == "Single"-%>
+    <%-if output.get_optional == "false"-%>
+    if not File.exists?(output_name) 
+      self.addlog("Job did not produce mandatory output file #{output_name}")
       return false
-    else
-      produced_files <<  output_name
     end
-    <% else %>
+    <%-end-%>
+    produced_files <<  output_name
+    <%-else-%>
+    <%-if output.get_optional == "false"-%>	
     # Output has to produce at least one file matching output_name
     if Dir["#{output_name}"].empty?
       self.addlog("Job did not produce file any file matching #{output_name}")
       return false
-    else
-      Dir["#{output_name}"].each do |f|
-        produced_files << f
-      end
+    end
+    <%-end-%>
+    Dir["#{output_name}"].each do |f|
+      produced_files << f
     end
     <%-end-%>
   
