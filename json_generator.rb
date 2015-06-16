@@ -52,11 +52,13 @@ def get_input i
   optional = type == "Flag" ? "True" : get_param(" >> Is input optional?",false,"False",["True","False"])
   
   file_extensions = Array.new
-  continue = get_param "> Add list of supported file extensions?",false,"Y"
-  while continue.downcase.strip.start_with? "y" do
-    file_extensions << get_file_extension(file_extensions.length)
-    continue = get_param "> Add another file extension?",false,"Y"
-end
+  if type == "File"
+    continue = get_param "> Add list of supported file extensions?",false,"Y"
+    while continue.downcase.strip.start_with? "y" do
+      file_extensions << get_file_extension(file_extensions.length)
+      continue = get_param "> Add another file extension?",false,"Y"
+    end
+  end
   command_line_flag = get_param " >> Command-line flag:",true
   return ToolInput.new name,type,key,description,cardinality,optional,command_line_flag,file_extensions
 end
@@ -66,7 +68,7 @@ def get_output i
   puts "> Output ##{i}".green
   name = get_param " >> Output name:"
   description = get_param " >> Output description:",true
-  type = get_param " >> Output type:",false,"File",["File"]
+  type = "File" #get_param " >> Output type:",false,"File",["File"]
   key = get_param " >> Output command-line key",true
   cardinality = get_param " >> Output cardinality",false,"Single",["Single","Multiple"]
   optional = get_param " >> Is output optional?",false,"False",["True","False"]
