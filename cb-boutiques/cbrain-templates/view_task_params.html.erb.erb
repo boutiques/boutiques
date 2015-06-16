@@ -5,10 +5,17 @@
   <%% end %>
 </ul>
 <%-@inputs.each do |input|-%>
-<%-if input.get_type != "File"-%>
+<%-if input.get_type == "String"-%>
 <p>
 <strong><%= input.get_name %>:</strong>
 <%%= form.params_text_field :<%= input.get_name%> %></br>
+<%= input.get_documentation %>
+</p>
+<%-end-%>
+<%-if input.get_type == "Flag"-%>
+<p>
+<strong><%= input.get_name %>:</strong>
+<%%= form.params_check_box :<%= input.get_name%> %></br>
 <%= input.get_documentation %>
 </p>
 <%-end-%>

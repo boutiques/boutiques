@@ -1,26 +1,41 @@
-<strong>Input files:</strong>
-<p>
+<strong>Inputs:</strong>
+<ul>
+<li>Files:
 <ul>
 <%%-params[:interface_userfile_ids].each do |id|-%>
   <li><%%= link_to_userfile_if_accessible(id)-%></li>
 <%%-end-%>
 </ul>
-</p>
+</li>
+<li>Parameters:
+<ul>
 <%-@inputs.each do |input|-%>
-<%-if input.get_type != "File"-%>
-<p>
-<strong><%= input.get_name-%>:</strong>
+<%-if input.get_type == "String"-%>
+<li><strong><%= input.get_name-%>:</strong>
 <%%= params[:<%= input.get_name%>].to_s-%>
-</p>
+</li>
 <%-end-%>
 <%-end-%>
+</ul>
+</li>
+<li>Flags:
+<%-@inputs.each do |input|-%>
+<%-if input.get_type == "Flag"-%>
+<%%-if params[:<%= input.get_name%>]!="0"-%>
+   <%=input.get_command_line_flag%> 
+<%%-end-%>		
+<%-end-%>
+<%-end-%>
+</li>
+</ul>
 
-<strong>Output files:</strong>
+<strong>Output:</strong>
+<ul>
 <%-@outputs.each do |output|-%>
-<p>
-<strong><%=output.get_name-%>:</strong>
+<li><%=output.get_name-%>:
 <ul>
   <li><%%= link_to_userfile_if_accessible(params[:<%=output.get_name%>])-%></li>
 </ul>
-</p>
+</li>
+</ul>
 <%-end-%>

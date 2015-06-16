@@ -91,7 +91,15 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
     # Writes value of input <%= input.get_name %> to the command line.
  <%-if input.get_syntax_key and input.get_syntax_key != ""-%>
   <%-if input.get_cardinality == "Single"-%>
-    command = command.gsub("<%= input.get_syntax_key -%>", params[:<%= input.get_name -%>])
+    input_command_line_string = ""
+    <%-if input.get_type != "Flag"-%>
+    input_command_line_string += "<%= input.get_command_line_flag -%> "+params[:<%= input.get_name -%>]
+    <%-else%>
+    if params[:<%= input.get_name -%>] == "1"
+      input_command_line_string += "<%= input.get_command_line_flag -%>"
+    end
+    <%-end-%>
+    command = command.gsub("<%= input.get_syntax_key -%>", input_command_line_string)
   <%-else-%>
    <%-# Handles input with cardinality "Multiple".-%>
    value=""
