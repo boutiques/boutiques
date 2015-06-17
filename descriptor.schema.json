@@ -41,7 +41,7 @@
 		    "type": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/type",
 			"type": "string",
-			"enum": ["String", "File" ]
+			"enum": ["String", "File", "Flag" ]
 		    },
 		    "description": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/description",
@@ -52,11 +52,26 @@
 			"type": "string"
 		    },
 		    "cardinality": {
-			"id": "http://github.com/boutiques/boutiques-schema/output/cardinality",
+			"id": "http://github.com/boutiques/boutiques-schema/input/cardinality",
 			"type": "string",
 			"enum": ["Single", "Multiple" ]
+		    },
+		    "optional":{
+			"id": "http://github.com/boutiques/boutiques-schema/input/optional",
+			"type": "boolean"
+		    },
+		    "command-line-flag":{
+			"id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
+			"type": "string"
+		    },
+		    "supported-file-extensions": {
+			"id": "http://github.com/boutiques/boutiques-schema/input/supported-file-extensions",
+			"type": "array",
+			"items": {
+			    "id": "http://github.com/boutiques/boutiques-schema/input/supported-file-extensions/extension",
+			    "type": "string"		    
+			}
 		    }
-		    
 		},
 		"required": [
 		    "name",
@@ -99,7 +114,16 @@
 			"id": "http://github.com/boutiques/boutiques-schema/output/cardinality",
 			"type": "string",
 			"enum": ["Single", "Multiple" ]
+		    },
+		    "optional":{
+			"id": "http://github.com/boutiques/boutiques-schema/output/optional",
+			"type": "boolean"
+		    },
+		    "command-line-flag":{
+			"id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
+			"type": "string"
 		    }
+		    
 		},
 		"required": [
 		    "name",
