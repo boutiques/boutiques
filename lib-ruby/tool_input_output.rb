@@ -22,40 +22,22 @@
 #
 # Meta-class for tool Inputs and Outputs
 class ToolInputOutput
-  def initialize name,type,syntax_key,documentation,cardinality,optional,command_line_flag 
-    @name = name               # the name of the input/output. Should be usable as a Ruby variable name
-    raise "Unknown input/output type: #{type}" unless type == "String" or type == "File" or type == "Flag"
-    raise "Unsupported cardinality" if cardinality != "Single" and cardinality != "Multiple"
-    @cardinality = cardinality
-    @type = type               # might be "String" of "File"
-    @syntax_key = syntax_key   # a placeholder where the
-                               # value of this input or output
-                               # will be replaced on the command line.
-    @documentation = documentation
-    @optional = optional
+
+  def initialize(name,type,syntax_key,documentation,cardinality,optional,command_line_flag)
+    raise "Unknown input/output type: #{type}" unless type == "String" || type == "File" || type == "Flag"
+    raise "Unsupported cardinality"            unless cardinality == "Single" || cardinality == "Multiple"
+
+    @name              = name        # the name of the input/output. Should be usable as a Ruby variable name
+    @cardinality       = cardinality
+    @type              = type        # might be "String" of "File"
+    @syntax_key        = syntax_key  # a placeholder where the
+                                     # value of this input or output
+                                     # will be replaced on the command line.
+    @documentation     = documentation
+    @optional          = optional
     @command_line_flag = command_line_flag
   end
-  def get_name
-    return @name
-  end
-  def get_type
-    return @type
-  end
-  def get_syntax_key
-    return @syntax_key
-  end
-  def get_documentation
-    return @documentation
-  end
-  def get_cardinality
-    return @cardinality
-  end
-  def get_optional
-    return @optional
-  end
-  def get_command_line_flag
-    return @command_line_flag
-  end
+  
   def to_json
     output = "{ 
       \"name\" : \"#{@name}\",
@@ -67,7 +49,8 @@ class ToolInputOutput
     output += ",\n      \"optional\" : "
     output += @optional == "True" ? "true" : "false"
     output += ",\n      \"value-template\" : \"#{@template}\"\n" if not @template.nil? and not @template == ""
-    if not @file_extensions.nil?
+    
+    if !@file_extensions.nil?
       output += ",\n      \"supported-file-extensions\": ["
       first = true
       @file_extensions.each do |fe|
@@ -77,7 +60,43 @@ class ToolInputOutput
       end
       output += "]\n"
     end
+    
     output+="}"
+
     return output
   end
+
+  #########################
+  # All the get_* methods #
+  #########################
+
+  def get_name
+    return @name
+  end
+  
+  def get_type
+    return @type
+  end
+  
+  def get_syntax_key
+    return @syntax_key
+  end
+  
+  def get_documentation
+    return @documentation
+  end
+  
+  def get_cardinality
+    return @cardinality
+  end
+  
+  def get_optional
+    return @optional
+  end
+  
+  def get_command_line_flag
+    return @command_line_flag
+  end
+
+
 end
