@@ -31,7 +31,7 @@ module ToolCreator
       Dir.mkdir(dir) unless Dir.exists?(dir)
     end
 
-    portal_name    = "#{cbrain_tool_name}/portal/#{brain_tool_name}.rb"
+    portal_name    = "#{cbrain_tool_name}/portal/#{cbrain_tool_name}.rb"
     bourreau_name  = "#{cbrain_tool_name}/bourreau/#{cbrain_tool_name}.rb"
     view_show_name = "#{cbrain_tool_name}/views/_show_params.html.erb"
     view_task_name = "#{cbrain_tool_name}/views/_task_params.html.erb"
