@@ -22,8 +22,10 @@
 #
 # Class describing the input of a Tool
 class ToolInput < ToolInputOutput
-  def initialize  name,type,syntax_key,documentation,cardinality,optional,command_line_flag,file_extensions
-    super name,type,syntax_key,documentation,cardinality,optional,command_line_flag
+
+  def initialize(name,type,syntax_key,documentation,cardinality,optional,command_line_flag,file_extensions)
+    super(name,type,syntax_key,documentation,cardinality,optional,command_line_flag)
     @file_extensions = file_extensions
   end
+
 end
