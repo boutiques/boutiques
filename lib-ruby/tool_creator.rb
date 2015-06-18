@@ -24,17 +24,17 @@
 module ToolCreator
 
   def ToolCreator.create_tool(tool_descriptor,tool_templates)
-    cbrain_tool_name = tool_descriptor.get_name.downcase # TODO remove special characters such as '_', ...
-    
+    cbrain_tool_name = tool_descriptor.get_name.downcase.gsub(/[^0-9A-Za-z]/, '')
+
     # defines the file names
-    [cbrain_tool_name, cbrain_tool_name+"/portal",cbrain_tool_name+"/bourreau", cbrain_tool_name+"/views"].each do |dir|
+    [cbrain_tool_name, "#{cbrain_tool_name}/portal", "#{cbrain_tool_name}/bourreau", "#{cbrain_tool_name}/views"].each do |dir|
       Dir.mkdir(dir) unless Dir.exists?(dir)
     end
 
-    portal_name    = cbrain_tool_name + "/portal/"+cbrain_tool_name+".rb"
-    bourreau_name  = cbrain_tool_name + "/bourreau/"+cbrain_tool_name+".rb"
-    view_show_name = cbrain_tool_name + "/views/_show_params.html.erb"
-    view_task_name = cbrain_tool_name + "/views/_task_params.html.erb"
+    portal_name    = "#{cbrain_tool_name}/portal/#{brain_tool_name}.rb"
+    bourreau_name  = "#{cbrain_tool_name}/bourreau/#{cbrain_tool_name}.rb"
+    view_show_name = "#{cbrain_tool_name}/views/_show_params.html.erb"
+    view_task_name = "#{cbrain_tool_name}/views/_task_params.html.erb"
 
     # creates the files
     create_file_from_template(tool_templates.get_portal_template,    portal_name,    tool_descriptor)
