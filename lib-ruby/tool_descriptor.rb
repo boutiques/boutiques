@@ -42,7 +42,7 @@ class ToolDescriptor
   def parse_from_json(json_object)
     # TODO json validation goes here
     hash            = JSON.parse(json_object)
-    @name           = hash["name"]
+    @name           = hash["name"].gsub(/[^0-9A-Za-z]/,'')
     @description    = hash["description"]
     @syntax         = hash["command-line"]
     @docker_image   = hash["docker-image"]

@@ -27,7 +27,7 @@ class ToolInputOutput
     raise "Unknown input/output type: #{type}" unless type == "String" || type == "File" || type == "Flag"
     raise "Unsupported cardinality"            unless cardinality == "Single" || cardinality == "Multiple"
 
-    @name              = name        # the name of the input/output. Should be usable as a Ruby variable name
+    @name              = name.gsub(/[^0-9A-Za-z]/, '')  # the name of the input/output. Should be usable as a Ruby variable name
     @cardinality       = cardinality
     @type              = type        # might be "String" of "File"
     @syntax_key        = syntax_key  # a placeholder where the
