@@ -98,5 +98,4 @@ class ToolInputOutput
     return @command_line_flag
   end
 
-
 end
