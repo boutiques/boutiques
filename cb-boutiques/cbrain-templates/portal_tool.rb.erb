@@ -42,6 +42,7 @@ class CbrainTask::<%= @name.capitalize %> < PortalTask
       cb_error "Error: the input file for this task doesn't exist anymore." unless u
       cb_error "Error: '#{u.name}' does not seem to be a single file." unless u.is_a?(SingleFile)
     end
+
     ""
   end
 
@@ -62,42 +63,46 @@ class CbrainTask::<%= @name.capitalize %> < PortalTask
 
     ids    = params[:interface_userfile_ids] || []
 
-    mytasklist = []
+    self.description  = ""
+    mytasklist        = [self]
     count_file_inputs = 0
-    
-<%-@inputs.each do |input| -%>
-  <%-if input.get_type == "File" -%>
-    count_file_inputs += 1
-    raise "Tasks with more than 1 input file are not supported by the CBRAIN tool generator. Go edit the task code in the portal!" if count_file_inputs > 1
-    <% if input.get_cardinality == "Single" %>
-    ids.each do |id|
 
-      task=self.dup # not .clone, as of Rails 3.1.10
-      task.params[:interface_userfile_ids] = [ id ]
-  
-      #update the following lines in case your task has more than 1 input file
-      task.params[:<%="#{input.get_name}_file_id"%>] = id
-      task.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
-      task.description                               = Userfile.find(id).name if task.description.blank?
-      mytasklist << task
-    end
-    <% else %>
-      task=self.dup # not .clone, as of Rails 3.1.10
-  
-      #update the following lines in case your task has more than 1 input file
-      task.params[:<%="#{input.get_name}_file_ids"%>]    = ids
-      task.params[:<%="#{input.get_name}_file_names"%>]  = []
-      task_description = "" 
-      ids.each do |id|
-        file_name = Userfile.find(id).name
-        task.params[:<%="#{input.get_name}_file_names"%>] << file_name
-        task.description += "#{file_name} "
+    # Remove empty ids
+<%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Single"}.each do |input| -%>
+    params[:<%="#{input.get_name}"%>].delete_if {|id| not id.present?}
+<%-end%>
+
+   # Single-cardinality File inputs
+<%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Single"}.each do |input| -%>
+    split_task_list = []
+      mytasklist.each do |t|
+         params[:<%="#{input.get_name}"%>].each do |id|
+           new_t = t.dup
+           new_t.params[:<%="#{input.get_name}_file_id"%>] = id
+           new_t.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
+	   new_description                                 = "<%=input.get_name%>: #{Userfile.find(id).name}"
+           new_t.description                               = t.description.present? ? "#{t.description} ; #{new_description}" : "#{new_description}"
+           split_task_list << new_t
+         end
       end
-      mytasklist << task
-      
-    <%-end-%>
-  <%-end-%>
-<%-end-%>
+    mytasklist = split_task_list.dup
+<%-end%>
+
+  # Multiple-cardinaly File inputs
+<%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Multiple"}.each do |input| -%>
+      mytasklist.each do |t|
+       ids                                             = params[:<%="#{input.get_name}"%>]
+       t.params[:<%="#{input.get_name}_file_ids"%>]    = ids
+       t.params[:<%="#{input.get_name}_file_names"%>]  = []
+       task_description = t.description.present? ? "#{t.description} ; <%=input.get_name%>: " : "<%=input.get_name%>:"
+       ids.each do |id|
+         file_name = Userfile.find(id).name
+         t.params[:<%="#{input.get_name}_file_names"%>] << file_name
+         task.description += "#{file_name} "
+       end
+      end
+    mytasklist = split_task_list.dup
+<%-end%>
 
   mytasklist
 

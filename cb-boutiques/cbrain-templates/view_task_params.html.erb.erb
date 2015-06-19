@@ -1,16 +1,18 @@
-<strong>Input files</strong>
-<ul>
-  <%% params[:interface_userfile_ids].each do |id| %>
-  <li><%%= link_to_userfile_if_accessible(id) %></li>
-  <%% end %>
-</ul>
-
-<strong>Mandatory inputs</strong>
+<fieldset>
+<legend>Mandatory inputs</legend>
 <ul>
 <%-@inputs.each do |input|-%>
-<%-if input.get_type == "String" and ( input.get_optional=="false" or input.get_optional=="" ) -%>
+<%-if input.get_optional=="false" or input.get_optional.nil? or input.get_optional == "" -%>
 <li><b><%= input.get_name %>:</b>
-<%%= form.params_text_field :<%= input.get_name%> %></br>
+<%-if input.get_type == "String"-%>
+<%%= form.params_text_field :<%= input.get_name%> %>
+<%-end-%>
+<%-if input.get_type == "File"-%>
+<br/>
+<%%-file_list  = Userfile.where(:id =>  params[:interface_userfile_ids]).all.map {|u| [u.name,u.id.to_s] }-%>
+<%%= form.params_select '<%= input.get_name%>[]', file_list, {}, {:multiple => true, :class => "form-control"} %>
+<%-end-%>
+<br/>
 <%= input.get_documentation %>
 </li>
 <%-end-%>
@@ -22,9 +24,10 @@
 <%-end-%>
 <%-end-%>
 </ul>
+</fieldset>
 
-<strong>Optional inputs</strong>
-
+<fieldset>
+<legend>Optional inputs</legend>
 <ul>
 <%-@inputs.each do |input|-%>
 <%-if input.get_type == "String" and ( input.get_optional=="true" ) -%>
@@ -41,4 +44,4 @@
 </ul>
 <%-end-%>
 <%-end-%>
-
+<fieldset>
