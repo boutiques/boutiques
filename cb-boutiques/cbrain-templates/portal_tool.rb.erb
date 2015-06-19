@@ -68,28 +68,32 @@ class CbrainTask::<%= @name.capitalize %> < PortalTask
     count_file_inputs = 0
 
     # Remove empty ids
-<%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Single"}.each do |input| -%>
-    params[:<%="#{input.get_name}"%>].delete_if {|id| not id.present?}
+<%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Single" }.each do |input| -%>
+    if params[:<%="#{input.get_name}"%>].present?
+      params[:<%="#{input.get_name}"%>].delete_if {|id| not id.present?}
+    end					  
 <%-end%>
 
    # Single-cardinality File inputs
 <%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Single"}.each do |input| -%>
+    if params[:<%="#{input.get_name}"%>].present? 
     split_task_list = []
       mytasklist.each do |t|
-         params[:<%="#{input.get_name}"%>].each do |id|
-           new_t = t.dup
-           new_t.params[:<%="#{input.get_name}_file_id"%>] = id
-           new_t.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
-	   new_description                                 = "<%=input.get_name%>: #{Userfile.find(id).name}"
-           new_t.description                               = t.description.present? ? "#{t.description} ; #{new_description}" : "#{new_description}"
-           split_task_list << new_t
-         end
+          params[:<%="#{input.get_name}"%>].each do |id|
+             new_t = t.dup
+             new_t.params[:<%="#{input.get_name}_file_id"%>] = id
+             new_t.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
+	     new_description                                 = "<%=input.get_name%>: #{Userfile.find(id).name}"
+             new_t.description                               = t.description.present? ? "#{t.description} ; #{new_description}" : "#{new_description}"
+             split_task_list << new_t
+           end
       end
     mytasklist = split_task_list.dup
+    end
 <%-end%>
 
   # Multiple-cardinaly File inputs
-<%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Multiple"}.each do |input| -%>
+<%-@inputs.select{|input| input.get_type == "File" and input.get_cardinality == "Multiple" }.each do |input| -%>
       mytasklist.each do |t|
        ids                                             = params[:<%="#{input.get_name}"%>]
        t.params[:<%="#{input.get_name}_file_ids"%>]    = ids

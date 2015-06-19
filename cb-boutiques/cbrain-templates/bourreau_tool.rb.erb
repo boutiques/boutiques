@@ -93,7 +93,7 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
   <%-if input.get_cardinality == "Single"-%>
     input_command_line_string = ""
     <%-if input.get_type != "Flag"-%>
-    if params[:<%= input.get_name -%>] != ""
+    if params[:<%= input.get_name -%>] and params[:<%= input.get_name -%>] != ""
       input_command_line_string += "<%= input.get_command_line_flag -%> "+params[:<%= input.get_name -%>]
     end
     <%-else%>
@@ -181,4 +181,5 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
     true
   end
 end
-
+end
+end
