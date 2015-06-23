@@ -21,9 +21,7 @@
 <li>Flags:
 <%-@inputs.each do |input|-%>
 <%-if input.get_type == "Flag"-%>
-<%%-if params[:<%= input.get_name%>]!="0"-%>
-   <%=input.get_command_line_flag%> 
-<%%-end-%>		
+<%=input.get_command_line_flag%> 
 <%-end-%>
 <%-end-%>
 </li>
