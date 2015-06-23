@@ -1,24 +1,30 @@
 <fieldset>
 <legend>Mandatory inputs</legend>
+
 <ul>
+
 <%-@inputs.each do |input|-%>
+
 <%-if input.get_optional=="false" or input.get_optional.nil? or input.get_optional == "" -%>
+
 <li><b><%= input.get_name %>:</b>
+
 <%-if input.get_type == "String"-%>
+<br/>
 <%%= form.params_text_field :<%= input.get_name%> %>
 <%-end-%>
+
 <%-if input.get_type == "File"-%>
 <br/>
 <%%-file_list  = Userfile.where(:id =>  params[:interface_userfile_ids]).all.map {|u| [u.name,u.id.to_s] }-%>
 <%%= form.params_select '<%= input.get_name%>[]', file_list, {}, {:multiple => true, :class => "form-control"} %>
 <%-end-%>
-<br/>
-<%= input.get_documentation %>
-</li>
-<%-end-%>
+
 <%-if input.get_type == "Flag"-%>
-<li><b><%= input.get_name %>:</b>
+<br/>
 <%%= form.params_check_box :<%= input.get_name%> %></br>
+<%-end-%>
+
 <%= input.get_documentation %>
 </li>
 <%-end-%>
@@ -27,21 +33,30 @@
 </fieldset>
 
 <fieldset>
+
 <legend>Optional inputs</legend>
+
 <ul>
+
 <%-@inputs.each do |input|-%>
-<%-if input.get_type == "String" and ( input.get_optional=="true" ) -%>
+
+<%-if input.get_optional=="true" -%>
+
 <li><b><%= input.get_name %>:</b>
+
+<%-if input.get_type == "String" -%>
+<br/>
 <%%= form.params_text_field :<%= input.get_name%> %></br>
-<%= input.get_documentation %>
-</li>
 <%-end-%>
+
 <%-if input.get_type == "Flag"-%>
-<li><b><%= input.get_name %>:</b>
+<br/>
 <%%= form.params_check_box :<%= input.get_name%> %></br>
+<%-end-%>
+
 <%= input.get_documentation %>
 </li>
+<%-end-%>
+<%-end-%>
 </ul>
-<%-end-%>
-<%-end-%>
-<fieldset>
+</fieldset>
