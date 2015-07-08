@@ -41,7 +41,7 @@
 		    "type": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/type",
 			"type": "string",
-			"enum": ["String", "File", "Flag" ]
+			"enum": ["String", "File", "Flag" , "Numeric" ]
 		    },
 		    "description": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/description",
@@ -94,7 +94,7 @@
 		    "type": {
 			"id": "http://github.com/boutiques/boutiques-schema/output/type",
 			"type": "string",
-			"enum": ["String", "File" ]
+			"enum": [ "File" ]
 		    },
 		    "description": {
 			"id": "http://github.com/boutiques/boutiques-schema/output/description",
