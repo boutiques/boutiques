@@ -76,8 +76,7 @@
 		"required": [
 		    "name",
 		    "description",
-		    "type",
-		    "cardinality"
+		    "type"
 		],
 		"additionalProperties" : false  
 	    }
@@ -129,8 +128,7 @@
 		    "name",
 		    "description",
 		    "type",
-		    "value-template",
-		    "cardinality"
+		    "value-template"
 		],
 		"additionalProperties" : false  
 	    }
