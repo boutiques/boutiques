@@ -77,8 +77,7 @@
 		    "name",
 		    "description",
 		    "type"
-		],
-		"additionalProperties" : false  
+		]
 	    }
 	},
 	"outputs": {
@@ -129,8 +128,7 @@
 		    "description",
 		    "type",
 		    "value-template"
-		],
-		"additionalProperties" : false  
+		]
 	    }
 	}
     },
@@ -143,6 +141,5 @@
 	"schema-version",
 	"inputs",
 	"outputs"
-    ],
-    "additionalProperties" : false  
+    ]
 }
