@@ -13,7 +13,7 @@ my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]
   * **`name`:** name of the input.
   * **`type`:** type of the input.
   * **`description`:** description of the input.
-  * `command-line-key:` a string included in `command-line`, that will be substituted with the input `command-line-flag` and value at runtime. 
+  * `command-line-key:` a string included in `command-line`, that will be substituted with the input `command-line-flag` and value at runtime. Inputs may have no `command-line-key`, for instance when the tool assumes that a file not mentioned on the command line is present.
   * `cardinality`
   * `optional`
   * `command-line-flag`
