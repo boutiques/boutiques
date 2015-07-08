@@ -136,8 +136,6 @@
 	"name",
 	"description",
 	"command-line",
-	"docker-image",
-	"docker-index",
 	"schema-version",
 	"inputs",
 	"outputs"
