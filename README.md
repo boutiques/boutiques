@@ -5,13 +5,15 @@ JSON schema for Boutiques application descriptors.
 * **`name`:** name of the tool described.
 * **`description`:** description of the tool described.
 * **`command-line`:** string representing the command line. May contain command line "keys" that will be substituted by the input/output values and flags. Example: 
-`"my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]"`
+```
+my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]
+```
 * **`schema-version`:** version of the Boutiques schema used.
 * **`inputs`:** an array of objects with the following properties:
-  * **`name`**
-  * **`type`**
-  * **`description`**
-  * `command-line-key`
+  * **`name`:** name of the input.
+  * **`type`:** type of the input.
+  * **`description`:** description of the input.
+  * `command-line-key:` a string included in `command-line`, that will be substituted with the input `command-line-flag` and value at runtime. 
   * `cardinality`
   * `optional`
   * `command-line-flag`
