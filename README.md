@@ -1,7 +1,9 @@
 # Boutiques schema
 JSON schema for Boutiques application descriptors.
 
-Mandatory properties are in bold face. 
+## Properties 
+
+Mandatory properties are in bold. 
 
 * **`name`:** name of the tool described.
 * **`description`:** description of the tool described.
