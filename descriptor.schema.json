@@ -67,14 +67,6 @@
 		    "command-line-flag":{
 			"id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
 			"type": "string"
-		    },
-		    "supported-file-extensions": {
-			"id": "http://github.com/boutiques/boutiques-schema/input/supported-file-extensions",
-			"type": "array",
-			"items": {
-			    "id": "http://github.com/boutiques/boutiques-schema/input/supported-file-extensions/extension",
-			    "type": "string"		    
-			}
 		    }
 		},
 		"required": [
