@@ -7,6 +7,10 @@
 	    "id": "http://github.com/boutiques/boutiques-schema/name",
 	    "type": "string"
 	},
+	"tool-version": {
+	    "id": "http://github.com/boutiques/boutiques-schema/description",
+	    "type": "string"
+	},
 	"description": {
 	    "id": "http://github.com/boutiques/boutiques-schema/description",
 	    "type": "string"
