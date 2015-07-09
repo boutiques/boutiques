@@ -18,19 +18,19 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`name`:** name of the input.
   * **`type`:** type of the input, i.e. File, String, Flag, or Numeric.  
   * **`description`:** description of the input.
-  * `command-line-key`: a string, contained in `command-line`, substituted in the `command-line` at runtime. 
+  * `command-line-key`: a string, contained in `command-line`, substituted at runtime in the `command-line`. 
   * `cardinality`: "Multiple" if multiple values may be involved in a single invocation of the tool. Defaults to Single.
   * `optional`: a boolean, true if input is optional.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. 
-
-prepended, with a space, to the input value at runtime.
 * `outputs`: an array of objects with the following properties:
-  * **`name`**, **`type`**, **`description`**: see description of input properties.
-  * **`value-template`**
+  * **`name`**, **`description`**: see description in input properties.
+  * **`value-template`**: 
   * `command-line-key`, `cardinality`, `optional`, `command-line-flag`: see description of input properties.
-* `tool-version`:
-* `docker-image`:
-* `docker-index`:
+* `tool-version`: the version of the tool described.
+* `docker-image`: the name of a Docker image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
+* `docker-index`: the Docker index where the Docker image is available. Example: ```http://index.docker.io```.
 
 ## Substitution
+
+## 
 
