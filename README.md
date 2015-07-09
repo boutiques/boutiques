@@ -19,7 +19,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`type`:** input file. "File", "String", "Flag", or "Numeric". 
   * **`description`:** input description.
   * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
-  * `list`: a boolean, true if input is a list of value. Defaults to false.
+  * `list`: a boolean, true if input is a list of value. Defaults to false. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional. Defaults to false.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. Defaults to the empty string.
 * **`outputs`**: an array of objects that represent outputs with the following properties:
@@ -36,13 +36,37 @@ The format of command line keys is not specified. However, it is recommended to 
 
 ## Command-line substitution
 
-At runtime, inputs contain _values_:
-* Inputs of type "String" may contain any string (encoding is not specified).
-* Inputs of type "Numeric" must contain a string representing a number. 
-* Inputs of type "File" must contain a string representing a file path (absolute or relative to the execution directory).
-* Inputs of type "Flag" must contain a boolean.
+At runtime, a __value__ is assigned to each input in ```inputs```.
+
+* Inputs of type "String" may contain any string (encoding is not specified). When input is a list, __value__ contains the concatenation of all strings in the list, separated by spaces. Spaces included in list elements must be escaped by '\', or the elements must be single-quoted (Linux conventions). 
+* Inputs of type "Numeric" must contain a string representing a number. When input is a list, __value___ contains the concatenation of all the strings in the list, separated by spaces. 
+* Inputs of type "File" must contain a string representing a file path (absolute or relative to the execution directory). When input is a list, __value__ contains the concatenation of all strings in the list, separated by spaces. Spaces included in list elements must be escaped by '\', or the elements must be single-quoted (Linux conventions).
+* Inputs of type "Flag" must contain a boolean. An input of type "Flag" may not be a list. 
 
 The tool command line is generated as follows:
 
-## 
+1. For each input in ```inputs``` where input has a ```command-line-key```:
 
+  a. In ```command-line```, replace input ```command-line-key``` by:
+
+   * ```command-line-flag``` if input is of type "Flag".
+   * ```command-line-flag``` __value__ (space-separated) otherwise.  
+
+  b. For each output in ```outputs```
+
+   * If ```path-template``` contains input ```command-line-key```, replace ```command-line-key``` by __value__, having previously removed the last occurrence of character '.' and subsequent characters from __value__ when input is of type "File".
+
+2. For each output in ```outputs``` where output has a ```command-line-key```:
+
+  a. In ```command-line```, replace output ```command-line-key``` by:
+
+   * ```command-line-flag``` ```path-template``` (space-separated).
+
+## Notes
+
+* Inputs without command-line key.
+* Outputs without command-line key.
+* List outputs with a command-line key.
+* List outputs without a command-line key. 
+
+## Examples
