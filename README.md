@@ -1,10 +1,10 @@
 # Boutiques schema
 
-The JSON schema for Boutiques tool descriptors.
+The JSON schema for Boutiques descriptors.
 
 ## Properties
 
-Mandatory properties are in bold.
+Mandatory properties are in bold. Note that Boutiques descriptors may contain additional, unspecified properties providing extra information about the tool. It is strongly recommended that implementations do not critically depend on unspecified properties.
 
 * **`name`:** name of the tool.
 * **`description`:** description of the tool.
