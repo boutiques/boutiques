@@ -57,18 +57,8 @@ class ToolTemplates
   # to avoid reading several times the same file
   def get_template_from_file(class_variable,file_name)
     return class_variable unless class_variable == nil
-    class_variable = read_text_file_in_string file_name
+    class_variable = File.read(file_name)
     return class_variable
-  end
-  
-  def read_text_file_in_string(file_name)
-    file     = File.open(file_name)
-    contents = ""
-    file.each do |line|
-      contents << line
-    end
-  
-    return contents 
-  end
+  end  
 
 end

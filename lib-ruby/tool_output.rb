@@ -23,19 +23,18 @@
 # Class describing the output of a Tool
 class ToolOutput < ToolInputOutput
 
-  def initialize(name,type,syntax_key,template,documentation,cardinality,optional,command_line_flag)
-    raise "Output type has to be \"File\" or \"Directory\"" unless type == "File" || type == "Directory" 
-    super(name,type,syntax_key,documentation,cardinality,optional,command_line_flag)
-    @template          = template # the template used to generate output file names
-    @resolved_template = @template.dup
+  def initialize(name,description,command_line_key,path_template,list,optional,command_line_flag)
+    super(name,description,command_line_key,list,optional,command_line_flag)
+    @path_template     = path_template # the template used to generate output file names
+    @resolved_template = @path_template.dup
   end
 
-  ###################################
-  # All the get_* and set_* methods #
-  ###################################
+  #######################
+  # Getters and Setters #
+  #######################
 
-  def get_template
-    return @template 
+  def get_path_template
+    return @path_template 
   end
 
   def get_resolved_template

@@ -28,85 +28,74 @@ class ToolDescriptor
   def initialize
   end
   
-  def create_from_params(name,description,syntax,inputs,outputs,docker_image,docker_index,schema_version)
-    @name           = name               # the  name of the Tool
-    @description    = description        # the description of the Tool
-    @syntax         = syntax             # the syntax of the command line, containing placeholders for inputs and outputs
-    @inputs         = inputs             # an array of ToolInput objects
-    @outputs        = outputs            # an array of ToolOutput objects
-    @docker_image   = docker_image       # a string describing the Docker image associated to this tool in DockerHub
-    @docker_index   = docker_index       # ??
-    @schema_version = schema_version     # the schema version associated with the tool
-  end
-
   def parse_from_json(json_object)
     # TODO json validation goes here
     hash            = JSON.parse(json_object)
     @name           = hash["name"].gsub(/[^0-9A-Za-z]/,'')
+    @tool_version   = hash["tool-version"]
     @description    = hash["description"]
-    @syntax         = hash["command-line"]
+    @command_line   = hash["command-line"]
     @docker_image   = hash["docker-image"]
     @docker_index   = hash["docker-index"]
     @schema_version = hash["schema-version"]
   
     @inputs = Array.new
     hash["inputs"].each do |input_hash|
-      @inputs << ToolInput.new(input_hash["name"],input_hash["type"],input_hash["command-line-key"],input_hash["description"],input_hash["cardinality"],input_hash["optional"],input_hash["command-line-flag"],input_hash["supported-file-extensions"])
+      @inputs << ToolInput.new(
+        input_hash["name"],
+        input_hash["type"],
+        input_hash["description"],
+        input_hash["command-line-key"],
+        input_hash["list"],
+        input_hash["optional"],
+        input_hash["command-line-flag"]
+      )
     end
   
     @outputs = Array.new
-    hash["outputs"].each do |output_hash|
-      @outputs << ToolOutput.new(output_hash["name"],output_hash["type"],output_hash["command-line-key"],output_hash["value-template"],output_hash["description"],output_hash["cardinality"],output_hash["optional"],output_hash["command-line-flag"])
+    hash["output-files"].each do |output_hash|
+      @outputs << ToolOutput.new(
+        output_hash["name"],
+        output_hash["description"],
+        output_hash["command-line-key"],
+        output_hash["path-template"],
+        output_hash["list"],
+        output_hash["optional"],
+        output_hash["command-line-flag"]
+      )
     end   
   end
 
-  def to_json
-    json_string = "{ 
-    \"name\" : \"#{@name}\",
-    \"description\" : \"#{@description}\",
-    \"command-line\" : \"#{@syntax}\",
-    \"docker-image\" : \"#{@docker_image}\",
-    \"docker-index\" : \"#{@docker_index}\",
-    \"schema-version\" : \"#{@schema_version}\",
-    \"inputs\" : [ 
-    "  
-    
-    @inputs.each_with_index do |input,index|
-      json_string += ",\n    " unless index == 0 
-      json_string += input.to_json
-    end
-    
-    json_string += "
-    ],
-    \"outputs\" : [
-    "
-    
-    @outputs.each_with_index do |out,index|
-      json_string += ",\n    " unless index ==0
-      json_string += out.to_json
-    end
-    
-    json_string += "
-    ]  
-}"
-    
-    return json_string
-  end
-
   #########################
-  # All the get_* methods #
+  #       Getters         #
   #########################
 
   def get_name
     return @name
   end
 
+  def get_tool_version
+    return @tool_version
+  end
+  
   def get_description
     return @description
   end
-  
-  def get_syntax
-    return @syntax
+
+  def get_command_line
+    return @command_line
+  end
+
+  def get_docker_image
+    return @docker_image
+  end
+
+  def get_docker_index
+    return @docker_index
+  end
+
+  def get_schema_version
+    return @schema_version
   end
   
   def get_inputs
@@ -115,10 +104,6 @@ class ToolDescriptor
   
   def get_outputs
     return @outputs
-  end
-  
-  def get_docker_image
-    return @docker_image
   end
   
   def get_binding

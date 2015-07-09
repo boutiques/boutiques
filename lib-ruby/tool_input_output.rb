@@ -20,77 +20,40 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 #
 #
-# Meta-class for tool Inputs and Outputs
+# Super class for tool Inputs and Outputs
+
 class ToolInputOutput
 
-  def initialize(name,type,syntax_key,documentation,cardinality,optional,command_line_flag)
-    raise "Unknown input/output type: #{type}" unless type == "String" || type == "File" || type == "Flag"
-    raise "Unsupported cardinality"            unless cardinality == "Single" || cardinality == "Multiple"
-
-    @name              = name.gsub(/[^0-9A-Za-z]/, '')  # the name of the input/output. Should be usable as a Ruby variable name
-    @cardinality       = cardinality
-    @type              = type        # might be "String" of "File"
-    @syntax_key        = syntax_key  # a placeholder where the
-                                     # value of this input or output
-                                     # will be replaced on the command line.
-    @documentation     = documentation
+  def initialize(name,description,command_line_key,list,optional,command_line_flag)
+    @name              = name.gsub(/[^0-9A-Za-z]/, '')  # Should be usable as a Ruby variable name.
+    @description       = description
+    @command_line_key  = command_line_key
+    @list              = list
     @optional          = optional
     @command_line_flag = command_line_flag
   end
   
-  def to_json
-    output = "{ 
-      \"name\" : \"#{@name}\",
-      \"type\" : \"#{@type}\",
-      \"description\" : \"#{@documentation}\",
-      \"command-line-key\" : \"#{@syntax_key}\",
-      \"cardinality\" : \"#{@cardinality}\",
-      \"command-line-flag\" : \"#{@command_line_flag}\""
-    output += ",\n      \"optional\" : "
-    output += @optional == "True" ? "true" : "false"
-    output += ",\n      \"value-template\" : \"#{@template}\"\n" if not @template.nil? and not @template == ""
-    
-    if !@file_extensions.nil?
-      output += ",\n      \"supported-file-extensions\": ["
-      first = true
-      @file_extensions.each do |fe|
-        output += "," unless first
-        output += "\"#{fe}\""
-        first = false
-      end
-      output += "]\n"
-    end
-    
-    output+="}"
-
-    return output
-  end
-
-  #########################
-  # All the get_* methods #
-  #########################
+  ###########
+  # Getters #
+  ###########
 
   def get_name
     return @name
   end
   
-  def get_type
-    return @type
+  def get_description
+    return @description
   end
   
-  def get_syntax_key
-    return @syntax_key
+  def get_command_line_key
+    return @command_line_key
   end
   
-  def get_documentation
-    return @documentation
+  def is_list?
+    return @list
   end
   
-  def get_cardinality
-    return @cardinality
-  end
-  
-  def get_optional
+  def is_optional?
     return @optional
   end
   
@@ -98,4 +61,6 @@ class ToolInputOutput
     return @command_line_flag
   end
 
+  private
+   
 end

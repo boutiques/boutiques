@@ -22,10 +22,16 @@
 #
 # Class describing the input of a Tool
 class ToolInput < ToolInputOutput
-
-  def initialize(name,type,syntax_key,documentation,cardinality,optional,command_line_flag,file_extensions)
-    super(name,type,syntax_key,documentation,cardinality,optional,command_line_flag)
-    @file_extensions = file_extensions
+  
+  def initialize(name,type,description,command_line_key,list,optional,command_line_flag)
+    super(name,description,command_line_key,list,optional,command_line_flag)
+    unless type == "String" || type == "File" || type == "Flag" || type == "Numeric"
+      raise "Unknown input type: #{type}"
+    end
+    @type = type
   end
 
+  def get_type
+    return @type
+  end
 end

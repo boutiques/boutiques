@@ -34,6 +34,13 @@ def usage
   exit 
 end
 
+# Therefore method empty? can be used to test if a string is nil or empty.
+class NilClass
+  def empty?
+    true
+  end
+end
+
 ################
 # Main program #
 ################
