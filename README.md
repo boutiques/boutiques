@@ -49,8 +49,8 @@ The tool command line is generated as follows:
 
 1. For each input in ```inputs```, where input has a ```command-line-key``` and input has __value__:
   * In ```command-line```, replace input ```command-line-key``` by:
-    * ```command-line-flag``` if input is of type "Flag".
-    * ```command-line-flag``` __value__ (space-separated) otherwise.  
+         * ```command-line-flag``` if input is of type "Flag".
+         * ```command-line-flag``` __value__ (space-separated) otherwise.  
   * For each output in ```outputs```
     * If ```path-template``` contains input ```command-line-key```, replace ```command-line-key``` by __value__, having previously removed the last occurrence of character '.' and subsequent characters from __value__ when input is of type "File".
 2. For each output in ```outputs``` where output has a ```command-line-key```:
