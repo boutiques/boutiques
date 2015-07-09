@@ -18,19 +18,24 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`name`:** name of the input.
   * **`type`:** type of the input, i.e. File, String, Flag, or Numeric.  
   * **`description`:** description of the input.
-  * `command-line-key`: a string, contained in `command-line`, substituted at runtime in the `command-line`. 
-  * `cardinality`: "Multiple" if multiple values may be involved in a single invocation of the tool. Defaults to Single.
+  * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
+  * `list`: a boolean, true if the input is a list of value. Defaults to false.
   * `optional`: a boolean, true if input is optional.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. 
 * `outputs`: an array of objects with the following properties:
   * **`name`**, **`description`**: see description in input properties.
-  * **`value-template`**: 
-  * `command-line-key`, `cardinality`, `optional`, `command-line-flag`: see description of input properties.
+  * **`path-template`**: A string specifying the output file path relatively to the execution directory. May contain input `command-line-keys` that will be substituted at runtime. Example: ```[INPUT1]_brain.mnc```.
+  * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
+  * `list`: a boolean, true if the output is a list of value. In this case, `path-template` must contain a '*' standing for "any string of characters" (as the Linux wildcard).
+  * `optional`: a boolean, true if output may not be produced by the tool.
+  * `command-line-flag`: same description as in input properties.
 * `tool-version`: the version of the tool described.
 * `docker-image`: the name of a Docker image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
 * `docker-index`: the Docker index where the Docker image is available. Example: ```http://index.docker.io```.
 
 ## Substitution
+
+
 
 ## 
 
