@@ -22,7 +22,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `list`: a boolean, true if input is a list of value. Defaults to false.
   * `optional`: a boolean, true if input is optional. Defaults to false.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. 
-* `outputs`: an array of objects that represent outputs with the following properties:
+* **`outputs`**: an array of objects that represent outputs with the following properties:
   * **`name`**: output name.
   * **`description`**: output description.
   * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys` substituted at runtime. Example: ```results/[INPUT1]_brain.mnc```.
