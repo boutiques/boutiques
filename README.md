@@ -8,7 +8,7 @@ Mandatory properties are in bold.
 
 * **`name`:** name of the tool.
 * **`description`:** description of the tool.
-* **`schema-version`:** version of the Boutiques schema used.
+* **`schema-version`:** version of the schema used.
 * **`command-line`:** a string, specifying a command line template where input/output values are replaced by "keys". Example:
 ```
 my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]
