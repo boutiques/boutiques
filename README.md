@@ -6,8 +6,8 @@ The JSON schema for Boutiques descriptors.
 
 Mandatory properties are in bold. Note that Boutiques descriptors may contain additional, unspecified properties providing extra information about the tool. It is strongly recommended that implementations do not critically depend on unspecified properties.
 
-* **`name`:** name of the tool.
-* **`description`:** description of the tool.
+* **`name`:** tool name.
+* **`description`:** tool description.
 * **`schema-version`:** version of the schema used.
 * **`command-line`:** a string that describes the tool command line, where input and output values are identified by "keys". At runtime, command-line keys are substituted with flags and values (see details in next Section). Example:
 ```
@@ -29,7 +29,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard). Defaults to false.
   * `optional`: a boolean, true if output may not be produced by the tool. Defaults to false.
-  * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```. Defaults to the empty string.
+  * `command-line-flag`: option flag of the input, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```. Defaults to the empty string.
 * `tool-version`: tool version.
 * `docker-image`: name of a Docker image where tool is installed and configured. Example: ```docker.io/neurodebian```.
 * `docker-index`: Docker index where Docker image is available. Example: ```http://index.docker.io```.
