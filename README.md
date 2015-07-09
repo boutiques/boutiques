@@ -38,10 +38,12 @@ The format of command line keys is not specified. However, it is recommended to 
 
 At runtime, a __value__ is assigned to each input in ```inputs```.
 
-* Inputs of type "String" may contain any string (encoding is not specified). When input is a list, __value__ contains the concatenation of all strings in the list, separated by spaces. Spaces included in list elements must be escaped by '\', or the elements must be single-quoted (Linux conventions). 
-* Inputs of type "Numeric" must contain a string representing a number. When input is a list, __value___ contains the concatenation of all the strings in the list, separated by spaces. 
-* Inputs of type "File" must contain a string representing a file path (absolute or relative to the execution directory). When input is a list, __value__ contains the concatenation of all strings in the list, separated by spaces. Spaces included in list elements must be escaped by '\', or the elements must be single-quoted (Linux conventions).
-* Inputs of type "Flag" must contain a boolean. An input of type "Flag" may not be a list. 
+* Inputs of type "String" may contain any string (encoding is not specified).
+* Inputs of type "Numeric" must contain a string representing a number.
+* Inputs of type "File" must contain a string representing a file path (absolute or relative to the execution directory). 
+* Inputs of type "Flag" must contain a boolean.
+
+When input is a list, __value__ contains the concatenation of all strings in the list, separated by spaces. Spaces included in list elements must be escaped by '\', or the elements must be single-quoted (Linux conventions).  An input of type "Flag" may not be a list. 
 
 The tool command line is generated as follows:
 
