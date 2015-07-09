@@ -9,7 +9,7 @@ Mandatory properties are in bold.
 * **`name`:** name of the tool.
 * **`description`:** description of the tool.
 * **`schema-version`:** version of the schema used.
-* **`command-line`:** a string, specifying a command line template where input/output values are replaced by "keys". Example:
+* **`command-line`:** a string, specifying a command line template where input/output values are identified by "keys". At runtime, command-line keys are substituted with flags and values (see details in next Section). Example:
 ```
 my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]
 ```
