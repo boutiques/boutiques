@@ -15,24 +15,24 @@ my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]
 ```
 The format of command line keys is not specified. However, it is recommended to use easily-identifiable strings.
 * **`inputs`:** an array of objects that represent inputs with the following properties:
-  * **`name`:** name of the input.
-  * **`type`:** type of the input. May be File, String, Flag, or Numeric.  
-  * **`description`:** description of the input.
+  * **`name`:** input name
+  * **`type`:** input file. "File", "String", "Flag", or "Numeric".  
+  * **`description`:** input description.
   * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
-  * `list`: a boolean, true if the input is a list of value. Defaults to false.
+  * `list`: a boolean, true if input is a list of value. Defaults to false.
   * `optional`: a boolean, true if input is optional. Defaults to false.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. 
 * `outputs`: an array of objects that represent outputs with the following properties:
-  * **`name`**: name of the output.
-  * **`description`**: description of the output.
-  * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys` substituted at runtime. Example: ```[INPUT1]_brain.mnc```.
+  * **`name`**: output name.
+  * **`description`**: output description.
+  * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys` substituted at runtime. Example: ```results/[INPUT1]_brain.mnc```.
   * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
-  * `list`: a boolean, true if the output is a list of value. In this case, `path-template` must contain a '*' standing for "any string of characters" (as the Linux wildcard). Defaults to false.
-  * `optional`: a boolean, true if output may not be produced by the tool.
-  * `command-line-flag`: same description as in input properties.
-* `tool-version`: the version of the tool described.
-* `docker-image`: the name of a Docker image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
-* `docker-index`: the Docker index where the Docker image is available. Example: ```http://index.docker.io```.
+  * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for "any string of characters" (as the Linux wildcard). Defaults to false.
+  * `optional`: a boolean, true if output may not be produced by the tool. Defaults to false.
+  * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```. 
+* `tool-version`: tool version.
+* `docker-image`: name of a Docker image where tool is installed and configured. Example: ```docker.io/neurodebian```.
+* `docker-index`: Docker index where Docker image is available. Example: ```http://index.docker.io```.
 
 ## Substitution
 
