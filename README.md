@@ -20,7 +20,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`description`:** description of the input.
   * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
   * `list`: a boolean, true if the input is a list of value. Defaults to false.
-  * `optional`: a boolean, true if input is optional.
+  * `optional`: a boolean, true if input is optional. Defaults to false.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. 
 * `outputs`: an array of objects with the following properties:
   * **`name`**, **`description`**: see description in input properties.
