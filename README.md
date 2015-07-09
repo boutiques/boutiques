@@ -27,7 +27,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`description`**: description of the output.
   * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys` substituted at runtime. Example: ```[INPUT1]_brain.mnc```.
   * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
-  * `list`: a boolean, true if the output is a list of value. In this case, `path-template` must contain a '*' standing for "any string of characters" (as the Linux wildcard).
+  * `list`: a boolean, true if the output is a list of value. In this case, `path-template` must contain a '*' standing for "any string of characters" (as the Linux wildcard). Defaults to false.
   * `optional`: a boolean, true if output may not be produced by the tool.
   * `command-line-flag`: same description as in input properties.
 * `tool-version`: the version of the tool described.
