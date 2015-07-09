@@ -29,7 +29,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `command-line-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime. 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard). 
   * `optional`: a boolean, true if output may not be produced by the tool.
-  * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
+  * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-o```, ```--output```.
 * `tool-version`: tool version.
 * `docker-image`: name of a Docker image where tool is installed and configured. Example: ```docker.io/neurodebian```.
 * `docker-index`: Docker index where Docker image is available. Example: ```http://index.docker.io```.

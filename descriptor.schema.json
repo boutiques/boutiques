@@ -91,7 +91,7 @@
 		    "command-line-flag":{
 			"id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
 			"minLength": 1,
-			"description": "Option flag of the input, involved in the command-line-key substitution. Examples: -v, --force.",
+			"description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
 			"type": "string"
 		    }
 		},
