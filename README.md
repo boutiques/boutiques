@@ -18,7 +18,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`name`:** input name
   * **`type`:** input file. "File", "String", "Flag", or "Numeric". 
   * **`description`:** input description.
-  * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
+  * `command-line-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime. 
   * `list`: a boolean, true if input is a list of value. Defaults to false. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional. Defaults to false.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. Defaults to the empty string.
@@ -26,7 +26,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`name`**: output name.
   * **`description`**: output description.
   * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys` substituted at runtime. Example: ```results/[INPUT1]_brain.mnc```.
-  * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
+  * `command-line-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime. 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard). Defaults to false.
   * `optional`: a boolean, true if output may not be produced by the tool. Defaults to false.
   * `command-line-flag`: option flag of the input, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```. Defaults to the empty string.
