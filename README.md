@@ -14,7 +14,7 @@ Mandatory properties are in bold.
 my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]
 ```
 The format of command line keys is not specified. However, it is recommended to use easily-identifiable strings.
-* **`inputs`:** an array of objects representing inputs with the following properties:
+* **`inputs`:** an array of objects that represent inputs with the following properties:
   * **`name`:** name of the input.
   * **`type`:** type of the input. May be File, String, Flag, or Numeric.  
   * **`description`:** description of the input.
@@ -22,10 +22,10 @@ The format of command line keys is not specified. However, it is recommended to 
   * `list`: a boolean, true if the input is a list of value. Defaults to false.
   * `optional`: a boolean, true if input is optional. Defaults to false.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. 
-* `outputs`: an array of objects representing outputs with the following properties:
+* `outputs`: an array of objects that represent outputs with the following properties:
   * **`name`**: name of the output.
   * **`description`**: description of the output.
-  * **`path-template`**: A string specifying the output file path relatively to the execution directory. May contain input `command-line-keys` that will be substituted at runtime. Example: ```[INPUT1]_brain.mnc```.
+  * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys` that will be substituted at runtime. Example: ```[INPUT1]_brain.mnc```.
   * `command-line-key`: a string, contained in `command-line`, substituted at runtime. 
   * `list`: a boolean, true if the output is a list of value. In this case, `path-template` must contain a '*' standing for "any string of characters" (as the Linux wildcard).
   * `optional`: a boolean, true if output may not be produced by the tool.
