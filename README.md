@@ -14,7 +14,7 @@ Mandatory properties are in bold.
 my_tool [PARAM1] [IN_FILE] [PARAM2] [OUT_FILE]
 ```
 The format of command line keys is not specified. However, it is recommended to use easily-identifiable strings.
-* **`inputs`:** an array of objects with the following properties:
+* **`inputs`:** an array of objects representing inputs with the following properties:
   * **`name`:** name of the input.
   * **`type`:** type of the input, i.e. File, String, Flag, or Numeric.  
   * **`description`:** description of the input.
