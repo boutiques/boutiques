@@ -22,7 +22,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `list`: a boolean, true if input is a list of value. Defaults to false. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional. Defaults to false.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```. Defaults to the empty string.
-* **`outputs`**: an array of objects that represent outputs with the following properties:
+* **`output-files`**: an array of objects that represent output files with the following properties:
   * **`name`**: output name.
   * **`description`**: output description.
   * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys` substituted at runtime. Example: ```results/[INPUT1]_brain.mnc```.
@@ -51,9 +51,9 @@ The tool command line is generated as follows:
   * In ```command-line```, replace input ```command-line-key``` by:
          * ```command-line-flag``` if input is of type "Flag".
          * ```command-line-flag``` __value__ (space-separated) otherwise.  
-  * For each output in ```outputs```
+  * For each output in ```output-files```
          * If ```path-template``` contains input ```command-line-key```, replace ```command-line-key``` by __value__, having previously removed the last occurrence of character '.' and subsequent characters from __value__ when input is of type "File".
-2. For each output in ```outputs```, where output has a ```command-line-key```:
+2. For each output in ```output-files```, where output has a ```command-line-key```:
   * In ```command-line```, replace output ```command-line-key``` by:
          * ```command-line-flag``` ```path-template``` (space-separated). At this step, input ```command-line-key```s contained in ```path-template``` are already substituted.
 

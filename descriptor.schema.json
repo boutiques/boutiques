@@ -55,10 +55,9 @@
 			"id": "http://github.com/boutiques/boutiques-schema/input/command-line-key",
 			"type": "string"
 		    },
-		    "cardinality": {
-			"id": "http://github.com/boutiques/boutiques-schema/input/cardinality",
-			"type": "string",
-			"enum": ["Single", "Multiple" ]
+		    "list": {
+			"id": "http://github.com/boutiques/boutiques-schema/input/list",
+			"type": "boolean"
 		    },
 		    "optional":{
 			"id": "http://github.com/boutiques/boutiques-schema/input/optional",
@@ -76,8 +75,8 @@
 		]
 	    }
 	},
-	"outputs": {
-	    "id": "http://github.com/boutiques/boutiques-schema/outputs",
+	"output-files": {
+	    "id": "http://github.com/boutiques/boutiques-schema/output-files",
 	    "type": "array",
 	    "items": {
 		"id": "http://github.com/boutiques/boutiques-schema/output",
@@ -87,11 +86,6 @@
 			"id": "http://github.com/boutiques/boutiques-schema/output/name",
 			"type": "string"
 		    },
-		    "type": {
-			"id": "http://github.com/boutiques/boutiques-schema/output/type",
-			"type": "string",
-			"enum": [ "File" ]
-		    },
 		    "description": {
 			"id": "http://github.com/boutiques/boutiques-schema/output/description",
 			"type": "string"
@@ -100,14 +94,13 @@
 			"id": "http://github.com/boutiques/boutiques-schema/output/command-line-key",
 			"type": "string"
 		    },
-		    "value-template": {
-			"id": "http://github.com/boutiques/boutiques-schema/output/value-template",
+		    "path-template": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/path-template",
 			"type": "string"
 		    },
-		    "cardinality": {
-			"id": "http://github.com/boutiques/boutiques-schema/output/cardinality",
-			"type": "string",
-			"enum": ["Single", "Multiple" ]
+		    "list": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/list",
+			"type": "boolean"
 		    },
 		    "optional":{
 			"id": "http://github.com/boutiques/boutiques-schema/output/optional",
@@ -122,8 +115,7 @@
 		"required": [
 		    "name",
 		    "description",
-		    "type",
-		    "value-template"
+		    "path-template"
 		]
 	    }
 	}
@@ -134,6 +126,6 @@
 	"command-line",
 	"schema-version",
 	"inputs",
-	"outputs"
+	"output-files"
     ]
 }
