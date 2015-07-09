@@ -57,11 +57,9 @@ The tool command line is generated as follows:
   * In ```command-line```, replace output ```command-line-key``` by:
          * ```command-line-flag``` ```path-template``` (space-separated). At this step, input ```command-line-key```s contained in ```path-template``` are already substituted.
 
-## Notes
+## Examples (TODO)
 
 * Inputs without command-line key.
 * Outputs without command-line key.
 * List outputs with a command-line key. Command-line will contain a '*'.
 * List outputs without a command-line key. 
-
-## Examples
