@@ -47,7 +47,7 @@ When input is a list, __value__ contains the concatenation of all strings in the
 
 The tool command line is generated as follows:
 
-1. For each input in ```inputs``` where input has a ```command-line-key```:
+1. For each input in ```inputs```, where input has a ```command-line-key``` and input has __value__:
 
   * In ```command-line```, replace input ```command-line-key``` by:
 
