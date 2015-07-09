@@ -48,20 +48,13 @@ When input is a list, __value__ contains the concatenation of all strings in the
 The tool command line is generated as follows:
 
 1. For each input in ```inputs```, where input has a ```command-line-key``` and input has __value__:
-
   * In ```command-line```, replace input ```command-line-key``` by:
-
-     * ```command-line-flag``` if input is of type "Flag".
-     * ```command-line-flag``` __value__ (space-separated) otherwise.  
-
+    * ```command-line-flag``` if input is of type "Flag".
+    * ```command-line-flag``` __value__ (space-separated) otherwise.  
   * For each output in ```outputs```
-
     * If ```path-template``` contains input ```command-line-key```, replace ```command-line-key``` by __value__, having previously removed the last occurrence of character '.' and subsequent characters from __value__ when input is of type "File".
-
 2. For each output in ```outputs``` where output has a ```command-line-key```:
-
   * In ```command-line```, replace output ```command-line-key``` by:
-
     * ```command-line-flag``` ```path-template``` (space-separated). At this step, input ```command-line-key```s contained in ```path-template``` are already substituted.
 
 ## Notes
