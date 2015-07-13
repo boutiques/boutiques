@@ -22,6 +22,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `list`: a boolean, true if input is a list of value. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional.
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```.
+  * `default-value`: default value used by the tool when the input is not specified.
 * **`output-files`**: an array of objects that represent output files with the following properties:
   * **`name`**: output name.
   * **`description`**: output description.
