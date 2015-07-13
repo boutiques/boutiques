@@ -93,6 +93,12 @@
 			"minLength": 1,
 			"description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
 			"type": "string"
+		    },
+		    "default-value":{
+			"id": "http://github.com/boutiques/boutiques-schema/input/default-value",
+			"minLength": 1,
+			"description": "Default value of the input, used by the tool when no option is specified.",
+			"type": "string"
 		    }
 		},
 		"required": [
