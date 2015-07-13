@@ -62,22 +62,22 @@ class CbrainTask::<%= @name.capitalize %> < PortalTask
     count_file_inputs = 0
 
     # Remove empty ids
-    <%-@inputs.select{|input| input.get_type == "File" && !input.is_list? }.each do |input| -%>
-    if params[:<%="#{input.get_name}"%>].present?
-      params[:<%="#{input.get_name}"%>].delete_if {|id| not id.present?}
+    <%-@inputs.select{|input| input.type == "File" && !input.list }.each do |input| -%>
+    if params[:<%="#{input.name}"%>].present?
+      params[:<%="#{input.name}"%>].delete_if {|id| not id.present?}
     end					  
     <%-end%>
 
     # File inputs that are not lists
-    <%-@inputs.select{|input| input.get_type == "File" && !input.is_list?}.each do |input| -%>
-    if params[:<%="#{input.get_name}"%>].present? 
+    <%-@inputs.select{|input| input.type == "File" && !input.list}.each do |input| -%>
+    if params[:<%="#{input.name}"%>].present? 
       split_task_list = []
       mytasklist.each do |t|
-          params[:<%="#{input.get_name}"%>].each do |id|
+          params[:<%="#{input.name}"%>].each do |id|
              new_t = t.dup
-             new_t.params[:<%="#{input.get_name}_file_id"%>] = id
-             new_t.params[:<%="#{input.get_name}"%>]         = Userfile.find(id).name
-	     new_description                                 = "<%=input.get_name%>: #{Userfile.find(id).name}"
+             new_t.params[:<%="#{input.name}_file_id"%>] = id
+             new_t.params[:<%="#{input.name}"%>]         = Userfile.find(id).name
+	     new_description                                 = "<%=input.name%>: #{Userfile.find(id).name}"
              new_t.description                               = t.description.present? ? "#{t.description} ; #{new_description}" : "#{new_description}"
              split_task_list << new_t
            end
@@ -87,15 +87,15 @@ class CbrainTask::<%= @name.capitalize %> < PortalTask
     <%-end%>
 
     # File inputs that are lists
-    <%-@inputs.select{|input| input.get_type == "File" && input.is_list? }.each do |input| -%>
+    <%-@inputs.select{|input| input.type == "File" && input.list }.each do |input| -%>
     mytasklist.each do |t|
-      ids                                             = params[:<%="#{input.get_name}"%>]
-      t.params[:<%="#{input.get_name}_file_ids"%>]    = ids
-      t.params[:<%="#{input.get_name}_file_names"%>]  = []
-      task_description = t.description.present? ? "#{t.description} ; <%=input.get_name%>: " : "<%=input.get_name%>:"
+      ids                                             = params[:<%="#{input.name}"%>]
+      t.params[:<%="#{input.name}_file_ids"%>]    = ids
+      t.params[:<%="#{input.name}_file_names"%>]  = []
+      task_description = t.description.present? ? "#{t.description} ; <%=input.name%>: " : "<%=input.name%>:"
       ids.each do |id|
         file_name = Userfile.find(id).name
-        t.params[:<%="#{input.get_name}_file_names"%>] << file_name
+        t.params[:<%="#{input.name}_file_names"%>] << file_name
         task.description += "#{file_name} "
       end
     end

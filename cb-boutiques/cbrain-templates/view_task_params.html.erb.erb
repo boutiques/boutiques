@@ -4,22 +4,22 @@
 <legend>Mandatory input(s)</legend>
 <ul>
 <%-@inputs.each do |input|-%>
-  <%- if !input.is_optional?-%>
-    <li><b><%= input.get_name %>:</b>
-    <%-if input.get_type == "String"-%>
+  <%- if !input.optional-%>
+    <li><b><%= input.name %>:</b>
+    <%-if input.type == "String"-%>
       <br/>
-      <%%= form.params_text_field :<%= input.get_name%> %><br/>
+      <%%= form.params_text_field :<%= input.name%> %><br/>
     <%-end-%>
-    <%-if input.get_type == "File"-%>
+    <%-if input.type == "File"-%>
       <br/>
       <%%-file_list  = Userfile.where(:id =>  params[:interface_userfile_ids]).all.map {|u| [u.name,u.id.to_s] }-%>
-      <%%= form.params_select '<%= input.get_name%>[]', file_list, {selected: file_list.map{|x| x[1]} }, {:multiple => true, :class => "form-control"} %><br/>
+      <%%= form.params_select '<%= input.name%>[]', file_list, {selected: file_list.map{|x| x[1]} }, {:multiple => true, :class => "form-control"} %><br/>
     <%-end-%>
-    <%-if input.get_type == "Flag"-%>
+    <%-if input.type == "Flag"-%>
       <br/>
-      <%%= form.params_check_box :<%= input.get_name%> %></br>
+      <%%= form.params_check_box :<%= input.name%> %></br>
     <%-end-%>
-    <%= input.get_description %>
+    <%= input.description %>
     </li>
   <%-end-%>
 <%-end-%>
@@ -30,22 +30,22 @@
 <legend>Optional input(s)</legend>
 <ul>
   <%-@inputs.each do |input|-%>
-    <%-if input.is_optional?-%>
-        <li><b><%= input.get_name %>:</b>
-    <%-if input.get_type == "String"-%>
+    <%-if input.optional-%>
+        <li><b><%= input.name %>:</b>
+    <%-if input.type == "String"-%>
       <br/>
-      <%%= form.params_text_field :<%= input.get_name%> %><br/>
+      <%%= form.params_text_field :<%= input.name%> %><br/>
     <%-end-%>
-    <%-if input.get_type == "File"-%>
+    <%-if input.type == "File"-%>
       <br/>
       <%%-file_list  = Userfile.where(:id =>  params[:interface_userfile_ids]).all.map {|u| [u.name,u.id.to_s] }-%>
-      <%%= form.params_select '<%= input.get_name%>[]', file_list, {selected: file_list.map{|x| x[1]} }, {:multiple => true, :class => "form-control"} %><br/>
+      <%%= form.params_select '<%= input.name%>[]', file_list, {selected: file_list.map{|x| x[1]} }, {:multiple => true, :class => "form-control"} %><br/>
     <%-end-%>
-    <%-if input.get_type == "Flag"-%>
+    <%-if input.type == "Flag"-%>
       <br/>
-      <%%= form.params_check_box :<%= input.get_name%> %></br>
+      <%%= form.params_check_box :<%= input.name%> %></br>
     <%-end-%>
-    <%= input.get_description %>
+    <%= input.description %>
     </li>
     <%-end-%>
   <%-end-%>

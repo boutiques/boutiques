@@ -23,26 +23,12 @@
 # Class describing the output of a Tool
 class ToolOutput < ToolInputOutput
 
+  attr_accessor :path_template, :resolved_template
+  
   def initialize(name,description,command_line_key,path_template,list,optional,command_line_flag)
     super(name,description,command_line_key,list,optional,command_line_flag)
     @path_template     = path_template # the template used to generate output file names
     @resolved_template = @path_template.dup
-  end
-
-  #######################
-  # Getters and Setters #
-  #######################
-
-  def get_path_template
-    return @path_template 
-  end
-
-  def get_resolved_template
-    return @resolved_template
-  end
-  
-  def set_resolved_template value
-    @resolved_template = value
   end
 
 end

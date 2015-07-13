@@ -24,7 +24,7 @@
 module ToolCreator
 
   def ToolCreator.create_tool(tool_descriptor,tool_templates)
-    cbrain_tool_name = tool_descriptor.get_name.downcase.gsub(/[^0-9A-Za-z]/, '')
+    cbrain_tool_name = tool_descriptor.name.downcase.gsub(/[^0-9A-Za-z]/, '')
 
     # defines the file names
     [cbrain_tool_name, "#{cbrain_tool_name}/portal", "#{cbrain_tool_name}/bourreau", "#{cbrain_tool_name}/views"].each do |dir|

@@ -24,6 +24,8 @@
 
 class ToolInputOutput
 
+  attr_accessor :name, :description, :command_line_key, :list, :optional, :command_line_flag
+  
   def initialize(name,description,command_line_key,list,optional,command_line_flag)
     @name              = name.gsub(/[^0-9A-Za-z]/, '')  # Should be usable as a Ruby variable name.
     @description       = description
@@ -32,35 +34,5 @@ class ToolInputOutput
     @optional          = optional
     @command_line_flag = command_line_flag
   end
-  
-  ###########
-  # Getters #
-  ###########
-
-  def get_name
-    return @name
-  end
-  
-  def get_description
-    return @description
-  end
-  
-  def get_command_line_key
-    return @command_line_key
-  end
-  
-  def is_list?
-    return @list
-  end
-  
-  def is_optional?
-    return @optional
-  end
-  
-  def get_command_line_flag
-    return @command_line_flag
-  end
-
-  private
-   
+     
 end

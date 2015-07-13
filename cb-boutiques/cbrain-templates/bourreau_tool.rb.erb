@@ -67,7 +67,7 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
     cmds      << "echo Starting <%= @name %>"
 
     <%-# Creates command-%>
-    command = "<%= self.get_command_line -%>"
+    command = "<%= self.command_line -%>"
     
     <%-# Resolves output templates.-%>
     <%-@outputs.each do |output|-%>
@@ -75,41 +75,41 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
       <%-# input command-line keys with input values.-%>
       <%-@inputs.each do |input|-%>
         <%-# Removes file extension from input value.-%>
-          <%-if input.get_type == "File"-%>		   
-            <%-token = "\#\{File.basename(params[:#{input.get_name}],
-                            File.extname(params[:#{input.get_name}]))\}"-%>
+          <%-if input.type == "File"-%>		   
+            <%-token = "\#\{File.basename(params[:#{input.name}],
+                            File.extname(params[:#{input.name}]))\}"-%>
           <%-else-%>
-            <%-token = "\#\{params[:#{input.get_name}]\}"-%>
+            <%-token = "\#\{params[:#{input.name}]\}"-%>
           <%-end-%>
         <%-# Performs the substitution.-%>
-        <%-output.set_resolved_template(output.get_resolved_template.gsub(input.get_command_line_key,token))-%>
+        <%-output.resolved_template = output.resolved_template.gsub(input.command_line_key,token)-%>
       <%-end-%>
     <%-end-%>
     <%-# Writes output values to the command line.-%>
     <%-@outputs.each do |output|-%>
-      <%-if !output.get_command_line_key.empty?-%>
-        # Writes value of output <%= output.get_name %> to the command line.
-        command = command.gsub("<%= output.get_command_line_key -%>","<%= output.get_resolved_template -%>")
+      <%-if !output.command_line_key.empty?-%>
+        # Writes value of output <%= output.name %> to the command line.
+        command = command.gsub("<%= output.command_line_key -%>","<%= output.resolved_template -%>")
       <%-end-%>
     <%-end-%> 
     <%-# Writes input values to the command line.-%>
     <%-@inputs.each do |input|-%>
-      # Writes value of input <%= input.get_name %> to the command line.
-      <%-if !input.get_command_line_key.empty?-%>
-        <%-if !input.is_list?-%>
-          <%-if input.get_type != "Flag"-%>
-            input_command_line_string = (params[:<%= input.get_name -%>].present?) ? ("<%= input.get_command_line_flag -%> "+params[:<%= input.get_name -%>]) : ""
+      # Writes value of input <%= input.name %> to the command line.
+      <%-if !input.command_line_key.empty?-%>
+        <%-if !input.list-%>
+          <%-if input.type != "Flag"-%>
+            input_command_line_string = (params[:<%= input.name -%>].present?) ? ("<%= input.command_line_flag -%> "+params[:<%= input.name -%>]) : ""
           <%-else-%>
-            input_command_line_string = (params[:<%= input.get_name -%>] == "1") ? "<%= input.get_command_line_flag -%>" : ""
+            input_command_line_string = (params[:<%= input.name -%>] == "1") ? "<%= input.command_line_flag -%>" : ""
           <%-end-%>
-          command = command.gsub("<%= input.get_command_line_key -%>", input_command_line_string)
+          command = command.gsub("<%= input.command_line_key -%>", input_command_line_string)
         <%-else-%>
           <%-# Handles list inputs.-%>
           values=[]
-          params[:<%= input.get_name -%>_file_names].each do |file_name|
+          params[:<%= input.name -%>_file_names].each do |file_name|
 	    values << file_name+" "
           end
-          command = command.gsub("<%= input.get_command_line_key -%>", values.join)
+          command = command.gsub("<%= input.command_line_key -%>", values.join)
         <%-end-%>
       <%-end-%>
     <%-end-%>
@@ -117,8 +117,8 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
     cmds    << command
     <%@outputs.each do |output|-%>
 
-    # Add value of output <%= output.get_name %> to task parameters
-    params[:<%=output.get_name-%>] = "<%= output.get_resolved_template -%>"
+    # Add value of output <%= output.name %> to task parameters
+    params[:<%=output.name-%>] = "<%= output.resolved_template -%>"
     <%end-%>
 
     cmds
@@ -135,9 +135,9 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
     produced_files = []
 
     # Checks that output was produced
-    output_name = params[:<%=output.get_name-%>]
-    <%-if !output.is_list?-%>
-      <%-if !output.is_optional?-%>
+    output_name = params[:<%=output.name-%>]
+    <%-if !output.list-%>
+      <%-if !output.optional-%>
       if ! File.exists?(output_name) 
         self.addlog("Job did not produce mandatory output file #{output_name}")
         return false
@@ -145,7 +145,7 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
       <%-end-%>
       produced_files <<  output_name
     <%-else-%>
-    <%-if !output.is_optional?-%>	
+    <%-if !output.optional-%>	
       # Output has to produce at least one file matching output_name
       if Dir["#{output_name}"].empty?
         self.addlog("Job did not produce file any file matching #{output_name}")
@@ -169,9 +169,9 @@ class CbrainTask::<%=@name.capitalize %> < ClusterTask
       self.addlog("Saved result file #{output_file_name}")
 
       # Attaches output to parent if appropriate
-      <%-if (@inputs.reject{|x| x.get_type != "File" || x.is_list? }).length == 1-%>
-        <%-input = @inputs.reject{|x| x.get_type != "File" || x.is_list? }[0] -%>
-          parent_file_id = params[:<%=input.get_name-%>_file_id].to_i
+      <%-if (@inputs.reject{|x| x.type != "File" || x.list }).length == 1-%>
+        <%-input = @inputs.reject{|x| x.type != "File" || x.list }[0] -%>
+          parent_file_id = params[:<%=input.name-%>_file_id].to_i
           parent_file    = Userfile.find(parent_file_id)
           self.addlog_to_userfiles_these_created_these( [ parent_file ], [ output_file ] )
           output_file.move_to_child_of(parent_file)

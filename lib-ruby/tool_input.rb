@@ -22,6 +22,8 @@
 #
 # Class describing the input of a Tool
 class ToolInput < ToolInputOutput
+
+  attr_accessor :type
   
   def initialize(name,type,description,command_line_key,list,optional,command_line_flag)
     super(name,description,command_line_key,list,optional,command_line_flag)
@@ -31,7 +33,4 @@ class ToolInput < ToolInputOutput
     @type = type
   end
 
-  def get_type
-    return @type
-  end
 end

@@ -25,6 +25,9 @@ require 'json'
 # Class describing a Tool
 class ToolDescriptor
 
+  attr_accessor :name, :tool_version, :description, :command_line, :docker_image,
+               :docker_index, :schema_version, :inputs, :outputs
+  
   def initialize
   end
   
@@ -64,46 +67,6 @@ class ToolDescriptor
         output_hash["command-line-flag"]
       )
     end   
-  end
-
-  #########################
-  #       Getters         #
-  #########################
-
-  def get_name
-    return @name
-  end
-
-  def get_tool_version
-    return @tool_version
-  end
-  
-  def get_description
-    return @description
-  end
-
-  def get_command_line
-    return @command_line
-  end
-
-  def get_docker_image
-    return @docker_image
-  end
-
-  def get_docker_index
-    return @docker_index
-  end
-
-  def get_schema_version
-    return @schema_version
-  end
-  
-  def get_inputs
-    return @inputs
-  end
-  
-  def get_outputs
-    return @outputs
   end
   
   def get_binding

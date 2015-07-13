@@ -12,10 +12,10 @@
   <li>Parameter(s):
   <ul>
   <%-@inputs.each do |input|-%>
-    <%-if input.get_type == "String" -%>
-      <%% if params[:<%= input.get_name%>].to_s.present? -%>
-        <li><strong><%= input.get_name-%>:</strong>
-        <%%= params[:<%= input.get_name%>].to_s-%>
+    <%-if input.type == "String" -%>
+      <%% if params[:<%= input.name%>].to_s.present? -%>
+        <li><strong><%= input.name-%>:</strong>
+        <%%= params[:<%= input.name%>].to_s-%>
         </li>
       <%%-end-%>
     <%-end-%>
@@ -24,9 +24,9 @@
   </li>
   <li>Flag(s):
   <%-@inputs.each do |input|-%>
-    <%-if input.get_type == "Flag"-%>
-    <%% if params[:<%= input.get_name%>].to_s == "1" -%>	
-      <%=input.get_command_line_flag%>
+    <%-if input.type == "Flag"-%>
+    <%% if params[:<%= input.name%>].to_s == "1" -%>	
+      <%=input.command_line_flag%>
     <%% end-%>
     <%-end-%>
   <%-end-%>
@@ -36,9 +36,9 @@
 <strong>Output(s):</strong>
 <ul>
 <%-@outputs.each do |output|-%>
-  <li><%=output.get_name-%>:
+  <li><%=output.name-%>:
   <ul>
-    <li><%%= link_to_userfile_if_accessible(params[:<%=output.get_name%>])-%></li>
+    <li><%%= link_to_userfile_if_accessible(params[:<%=output.name%>])-%></li>
   </ul>
   </li>
 </ul>
