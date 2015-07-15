@@ -57,10 +57,9 @@
 		    "id": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/id",
 			"minLength": 1,
-			"description": "A short, unique, informative identifier containing only alphanumeric
-characters and underscores. Typically used to generate variable
-names. Example: 'data_file'",
-			"type": "string"
+			"description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"data_file\".",
+			"type": "string",
+			"pattern": "^[0-9,_,a-z,A-Z]*$"
 		    },
 		    "name": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/name",
@@ -126,9 +125,8 @@ names. Example: 'data_file'",
 		    "id": {
 			"id": "http://github.com/boutiques/boutiques-schema/output/id",
 			"minLength": 1,
-			"description": "A short, unique, informative identifier containing only alphanumeric
-characters and underscores. Typically used to generate variable
-names. Example: 'data_file'",
+			"description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"data_file\"",
+			"pattern": "^[0-9,_,a-z,A-Z]*$",
 			"type": "string"
 		    },
 		    "name": {
@@ -190,3 +188,4 @@ names. Example: 'data_file'",
 	"output-files"
     ]
 }
+
