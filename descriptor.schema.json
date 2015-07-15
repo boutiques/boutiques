@@ -54,10 +54,18 @@
 		"id": "http://github.com/boutiques/boutiques-schema/input",
 		"type": "object",
 		"properties": {
+		    "id": {
+			"id": "http://github.com/boutiques/boutiques-schema/input/id",
+			"minLength": 1,
+			"description": "A short, unique, informative identifier containing only alphanumeric
+characters and underscores. Typically used to generate variable
+names. Example: 'data_file'",
+			"type": "string"
+		    },
 		    "name": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/name",
 			"minLength": 1,
-			"description": "Input name.",
+			"description": "A human-readable input name. Example: 'Data file'.",
 			"type": "string"
 		    },
 		    "type": {
@@ -103,7 +111,7 @@
 		},
 		"required": [
 		    "name",
-		    "description",
+		    "id",
 		    "type"
 		]
 	    }
