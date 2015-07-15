@@ -25,6 +25,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```.
   * `default-value`: default value used by the tool when the input is not specified.
 * **`output-files`**: an array of objects that represent output files with the following properties:
+  * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`**: output name.
   * **`description`**: output description.
   * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys`. Example: ```results/[INPUT1]_brain.mnc```.
