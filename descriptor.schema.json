@@ -123,9 +123,17 @@ names. Example: 'data_file'",
 		"id": "http://github.com/boutiques/boutiques-schema/output",
 		"type": "object",
 		"properties": {
+		    "id": {
+			"id": "http://github.com/boutiques/boutiques-schema/output/id",
+			"minLength": 1,
+			"description": "A short, unique, informative identifier containing only alphanumeric
+characters and underscores. Typically used to generate variable
+names. Example: 'data_file'",
+			"type": "string"
+		    },
 		    "name": {
 			"id": "http://github.com/boutiques/boutiques-schema/output/name",
-			"description": "Output name",
+			"description": "A human-readable output name. Example: 'Data file'",
 			"minLength": 1,
 			"type": "string"
 		    },
@@ -166,8 +174,8 @@ names. Example: 'data_file'",
 		    
 		},
 		"required": [
+		    "id",
 		    "name",
-		    "description",
 		    "path-template"
 		]
 	    }
