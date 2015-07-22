@@ -71,7 +71,7 @@
 			"id": "http://github.com/boutiques/boutiques-schema/input/type",
 			"type": "string",
 			"description": "Input type.",
-			"enum": ["String", "File", "Flag" , "Numeric" ]
+			"enum": ["String", "File", "Flag" , "Number" ]
 		    },
 		    "description": {
 			"id": "http://github.com/boutiques/boutiques-schema/input/description",
