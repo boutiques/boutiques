@@ -104,8 +104,7 @@
 		    "default-value":{
 			"id": "http://github.com/boutiques/boutiques-schema/input/default-value",
 			"minLength": 1,
-			"description": "Default value of the input, used by the tool when no option is specified.",
-			"type": "string"
+			"description": "Default value of the input, used by the tool when no option is specified."
 		    }
 		},
 		"required": [
