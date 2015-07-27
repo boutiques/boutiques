@@ -75,13 +75,11 @@
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/description",
-                        "minLength": 1,
                         "description": "Input description.",
                         "type": "string"
                     },
                     "command-line-key": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/command-line-key",
-                        "minLength": 1,
                         "description": "A string contained in command-line, substituted by the input value and/or flag at runtime.",
                         "type": "string"
                     },
@@ -97,13 +95,11 @@
                     },
                     "command-line-flag":{
                         "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
-                        "minLength": 1,
                         "description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
                         "type": "string"
                     },
                     "default-value":{
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
-                        "minLength": 1,
                         "description": "Default value of the input, used by the tool when no option is specified."
                     }
                 },
@@ -137,13 +133,11 @@
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/description",
                         "description": "Output description.",
-                        "minLength": 1,
                         "type": "string"
                     },
                     "command-line-key": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-key",
                         "description": "A string contained in command-line, substituted by the output value and/or flag at runtime.",
-                        "minLength": 1,
                         "type": "string"
                     },
                     "path-template": {
@@ -164,7 +158,6 @@
                     },
                     "command-line-flag":{
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
-                        "minLength": 1,
                         "description": "Option flag of the output, involved in the command-line-key substitution. Examples: -o, --output",
                         "type": "string"
                     }
