@@ -101,10 +101,27 @@
                         "minLength": 1,
                         "type": "string"
                     },
+                    "required-inputs": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
+                        "description": "Ids of the inputs which must be present for this input to be available.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "disabled-by-inputs": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/disabled-by-inputs",
+                        "description": "Ids of the inputs that disable this input when they are present.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
                     "default-value":{
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
                         "description": "Default value of the input, used by the tool when no option is specified."
                     }
+                    
                 },
                 "required": [
                     "name",
@@ -150,6 +167,14 @@
                         "description": "Describes the output file path relatively to the execution directory. May contain input command-line-keys. Example: \"results/[INPUT1]_brain.mnc\".",
                         "minLength": 1,
                         "type": "string"
+                    },
+                    "path-template-stripped-extensions": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/path-template-stripped-extensions",
+                        "description": "List of file extensions that will be stripped from the input values before being substituted in the path template. Example: [\".nii\",\".nii.gz\"].",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     },
                     "list": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/list",
