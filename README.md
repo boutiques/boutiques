@@ -29,7 +29,7 @@ The format of command line keys is not specified. However, it is recommended to 
 * **`output-files`**: an array of objects that represent output files with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`**: output name.
-  * **`description`**: output description.
+  * `description`: output description.
   * **`path-template`**: a string that describes the output file path relatively to the execution directory. May contain input `command-line-keys`. Example: ```results/[INPUT1]_brain.mnc```.
   * `path-template-stripped-extensions`: list of file extensions that will be stripped from the input values before being substituted in the path template. Example: ```[".nii",".nii.gz"]```.
   * `command-line-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime. 
