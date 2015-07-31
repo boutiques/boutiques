@@ -22,7 +22,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `command-line-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime. 
   * `list`: a boolean, true if input is a list of value. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional.
-  * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```.
+  * `command-line-flag`: a string involved in the `command-line-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-v```, ```--force```.
   * `default-value`: default value used by the tool when the input is not specified.
   * `required-inputs`: ids of the inputs which must be present for this input to be available.
   * `disabled-by-inputs`: ids of the inputs that disable this input when they are present.
@@ -35,7 +35,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `command-line-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime. 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard). 
   * `optional`: a boolean, true if output may not be produced by the tool.
-  * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-o```, ```--output```.
+  * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
 * `tool-version`: tool version.
 * `docker-image`: name of a Docker image where tool is installed and configured. Example: ```docker.io/neurodebian```.
 * `docker-index`: Docker index where Docker image is available. Example: ```http://index.docker.io```.
