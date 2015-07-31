@@ -17,22 +17,25 @@ The format of command line keys is not specified. However, it is recommended to 
 * **`inputs`:** an array of objects that represent inputs with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`:** a human-readable input name. Example: "Data File".
-  * **`type`:** input file. "File", "String", "Flag", or "Number". 
+  * **`type`:** input type. "File", "String", "Flag", or "Number". 
   * `description`: input description.
   * `command-line-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime. 
   * `list`: a boolean, true if input is a list of value. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional.
-  * `command-line-flag`: a string involved in the `command-line-key` substitution. Examples: ```-v```, ```--force```.
+  * `command-line-flag`: a string involved in the `command-line-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-v```, ```--force```.
   * `default-value`: default value used by the tool when the input is not specified.
+  * `required-inputs`: ids of the inputs which must be present for this input to be available.
+  * `disabled-by-inputs`: ids of the inputs that disable this input when they are present.
 * **`output-files`**: an array of objects that represent output files with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`**: output name.
   * **`description`**: output description.
-  * **`path-template`**: A string that describes the output file path relatively to the execution directory. May contain input `command-line-keys`. Example: ```results/[INPUT1]_brain.mnc```.
+  * **`path-template`**: a string that describes the output file path relatively to the execution directory. May contain input `command-line-keys`. Example: ```results/[INPUT1]_brain.mnc```.
+  * `path-template-stripped-extensions`: list of file extensions that will be stripped from the input values before being substituted in the path template. Example: ```[".nii",".nii.gz"]```.
   * `command-line-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime. 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard). 
   * `optional`: a boolean, true if output may not be produced by the tool.
-  * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-o```, ```--output```.
+  * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
 * `tool-version`: tool version.
 * `docker-image`: name of a Docker image where tool is installed and configured. Example: ```docker.io/neurodebian```.
 * `docker-index`: Docker index where Docker image is available. Example: ```http://index.docker.io```.
