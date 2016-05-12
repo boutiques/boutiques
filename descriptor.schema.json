@@ -202,7 +202,8 @@
         "command-line",
         "schema-version",
         "inputs",
-        "output-files"
+        "output-files",
+        "tool-version"
     ]
 }
 
