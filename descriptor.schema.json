@@ -114,6 +114,11 @@
                             "type": "string"
                         }
                     },
+                    "command-line-flag-separator": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-separator",
+                        "description": "Separator used between flags and their arguments. Defaults to a single space.",
+                        "type": "string"
+                    },
                     "default-value":{
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
                         "description": "Default value of the input, used by the tool when no option is specified."
