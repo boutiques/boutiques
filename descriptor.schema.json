@@ -51,7 +51,7 @@
             "id": "http://github.com/boutiques/boutiques-schema/walltime-estimate",
             "type": "number",
             "description": "Estimated wall time of a task in seconds.",
-						"minLength": 1
+            "minLength": 1
         },
         "inputs": {
             "id": "http://github.com/boutiques/boutiques-schema/inputs",
