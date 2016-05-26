@@ -47,6 +47,12 @@
             "description": "Version of the schema used.",
             "enum": ["0.2"]
         },
+        "walltime-estimate": {
+            "id": "http://github.com/boutiques/boutiques-schema/walltime-estimate",
+            "type": "number",
+            "description": "Estimated wall time of a task in seconds.",
+            "minLength": 1
+        },
         "inputs": {
             "id": "http://github.com/boutiques/boutiques-schema/inputs",
             "type": "array",
