@@ -64,7 +64,7 @@
                     "id": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/id",
                         "minLength": 1,
-                        "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"data_file\".",
+                        "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"outfile_group\".",
                         "type": "string",
                         "pattern": "^[0-9,_,a-z,A-Z]*$"
                     },
@@ -76,12 +76,12 @@
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/description",
-                        "description": "Description of the grouping",
+                        "description": "Description of the parameter grouping.",
                         "type": "string"
                     },
                     "members": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/members",
-                        "description": "Ids of the inputs belonging to this group",
+                        "description": "IDs of the inputs belonging to this group.",
                         "type": "array",
                         "items": {
                             "type": "string",
@@ -91,12 +91,12 @@
                     },
                     "mutually-exclusive": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/mutually-exclusive",
-                        "description": "True if only one input is permitted to be specified within the group.",
+                        "description": "True if only one input is permitted to be specified or activated within the group.",
                         "type": "boolean"
                     },
                     "one-is-required": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
-                        "description": "True if all of the group's inputs must be optional, but at least one must be specified at runtime.",
+                        "description": "True if at least one of the parameters in the group must be specified at runtime.",
                         "type": "boolean"
                     }
                 },
