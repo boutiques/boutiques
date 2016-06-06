@@ -53,6 +53,60 @@
             "description": "Estimated wall time of a task in seconds.",
             "minLength": 1
         },
+        "groups": {
+            "id": "http://github.com/boutiques/boutiques-schema/groups",
+            "description": "Sets of identifiers of inputs, each specifying a parameter group.",
+            "type": "array",
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/group",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/id",
+                        "minLength": 1,
+                        "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"outfile_group\".",
+                        "type": "string",
+                        "pattern": "^[0-9,_,a-z,A-Z]*$"
+                    },
+                    "name": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/name",
+                        "minLength": 1,
+                        "description": "A human-readable name for the parameter group.",
+                        "type": "string"
+                    },
+                    "description": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/description",
+                        "description": "Description of the parameter grouping.",
+                        "type": "string"
+                    },
+                    "members": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/members",
+                        "description": "IDs of the inputs belonging to this group.",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "pattern": "^[0-9,_,a-z,A-Z]*$"
+                        }
+                    },
+                    "mutually-exclusive": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/mutually-exclusive",
+                        "description": "True if only one input is permitted to be specified or activated within the group.",
+                        "type": "boolean"
+                    },
+                    "one-is-required": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
+                        "description": "True if at least one of the parameters in the group must be specified at runtime.",
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "id",
+                    "members"
+                ]
+            }
+        },
         "inputs": {
             "id": "http://github.com/boutiques/boutiques-schema/inputs",
             "type": "array",
@@ -104,7 +158,7 @@
                         "description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
                         "type": "string"
                     },
-                    "required-inputs": {
+                    "requires-inputs": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
                         "description": "Ids of the inputs which must be present for this input to be available.",
                         "type": "array",
@@ -112,7 +166,7 @@
                             "type": "string"
                         }
                     },
-                    "disabled-by-inputs": {
+                    "disables-inputs": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/disabled-by-inputs",
                         "description": "Ids of the inputs that disable this input when they are present.",
                         "type": "array",
