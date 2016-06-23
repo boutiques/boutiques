@@ -131,7 +131,7 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/type",
                         "type": "string",
                         "description": "Input type.",
-                        "enum": ["String", "File", "Flag" , "Number" ]
+                        "enum": ["String", "File", "Flag", "Number", "Enum"]
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/description",
@@ -145,15 +145,15 @@
                     },
                     "list": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/list",
-                        "description":"True if input is a list of value. An input of type \"Flag\" cannot be a list.",
+                        "description":"True if input is a list of value. An input of type \"Flag\" or \"Enum\" cannot be a list.",
                         "type": "boolean"
                     },
-                    "optional":{
+                    "optional": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/optional",
                         "description": "True if input is optional.",
                         "type": "boolean"
                     },
-                    "command-line-flag":{
+                    "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
                         "description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
                         "type": "string"
@@ -175,21 +175,90 @@
                         }
                     },
                     "command-line-flag-separator": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-separator",
+                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag-separator",
                         "description": "Separator used between flags and their arguments. Defaults to a single space.",
                         "type": "string"
                     },
-                    "default-value":{
+                    "default-value": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
                         "description": "Default value of the input, used by the tool when no option is specified."
+                    },
+                    "enum-value-choices": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/enum-value-choices",
+                        "description": "Permitted choices for input value. May only be used in conjunction with the enum type.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "integer": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/integer",
+                        "description": "Specify whether the input should be an integer. May only be used with Number type inputs.",
+                        "type": "boolean"
+                    },
+                    "minimum": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/minimum",
+                        "description": "Specify the minimum value of the input (inclusive). May only be used with Number type inputs.",
+                        "type": "number"
+                    },
+                    "maximum": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/maximum",
+                        "description": "Specify the maximum value of the input (inclusive). May only be used with Number type inputs.",
+                        "type": "number"
+                    },
+                    "exclusive-minimum": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/exclusive-minimum",
+                        "description": "Specify whether the minimum is exclusive or not. May only be used with Number type inputs.",
+                        "type": "boolean"
+                    },
+                    "exclusive-maximum": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/exclusive-maximum",
+                        "description": "Specify whether the maximum is exclusive or not. May only be used with Number type inputs.",
+                        "type": "boolean"
                     }
-                    
                 },
                 "required": [
                     "name",
                     "id",
                     "type"
-                ]
+                ],
+                "additionalProperties":false, 
+                "dependencies": {
+                    "command-line-flag-separator": ["command-line-flag"],
+                    "enum-value-choices": {
+                        "properties": {
+                            "type": {"enum": ["Enum"]}
+                        }
+                    },
+                    "integer": {
+                        "properties": {
+                            "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "minimum": {
+                        "properties": {
+                            "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "maximum": {
+                        "properties": {
+                            "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "exclusive-minimum": {
+                        "properties": {
+                            "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "exclusive-maximum": {
+                        "properties": {
+                            "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "exclusive-minimum": ["minimum"],
+                    "exclusive-maximum": ["maximum"]
+                }
+
             }
         },
         "output-files": {
