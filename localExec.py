@@ -94,15 +94,15 @@ class LocalExecutor(object):
         # Note whether it could be found or not
         isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
         s1 = 'Optional' if isOptional else 'Required'
-        s2 = '' if exists else 'not'
-        print("\t"+s1+" output file \'"+outfile['name']+"\' was "+s2+" found at "+template)
+        s2 = '' if exists else 'not '
+        print("\t"+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+template)
 
   # Generates a random input parameter set that follows the given constraints
   def _randomFillInDict(self):
     # Helpers for generating random numbers, strings, etc...
-    nd, nl   = 3, 5 # Number of random chars to add to things, or max list items to have
+    nd, nl   = 2, 5 # Number of random chars to add to things, or max list items to have
     randDigs = lambda: ''.join(rnd.choice(string.digits) for _ in range(nd))
-    randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.mnc','.cpp','.m','.mnc','.nii.gz'])
+    randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.j','.cpp','.m','.mnc','.nii.gz'])
     randStr  = lambda: 'str_' + ''.join(rnd.choice(string.digits+string.ascii_letters) for _ in range(nd))
     def randNum(p): # generate random number that satisfies the param constraints
       i, defaultMin, defaultMax = p['id'], -50, 50
@@ -136,8 +136,8 @@ class LocalExecutor(object):
              filter(lambda t: tid['id'] in t[1], # t[1] is the disables list
              map(lambda p: (p['id'], self.safeGet(p['id'],'disables-inputs') or []), self.inputs) ))
     def mutReqs( targ ): # Returns the list of mutually requiring parameters of the target
-      return map(lambda x: self.byId(x[0]),
-             filter(lambda a: targ['id'] in a[1],
+      return map(lambda x: self.byId(x[0]), # Get object corresponding to id
+             filter(lambda a: targ['id'] in a[1], # Keep required ids that also require the target id
              map(lambda r: (r,self.reqsOf(r)), self.reqsOf(targ['id']) ) ) )
     def isOrCanBeFilled( targ ): # Returns whether targ has a value or is allowed to have one
       # If it is already filled in
@@ -155,9 +155,9 @@ class LocalExecutor(object):
       if (not g is None) and self.safeGrpGet(g['id'],'mutually-exclusive'):
         if len(filter(lambda x: x in self.in_dict.keys(), g['members'])) > 0: return False
       return True
-    # Handle the mutual requirement case by BFS in the (implicitly defined) requirement graph
+    # Handle the mutual requirement case by breadth first search in the graph of mutual requirements
     # Returns False if at least one of the mutual requirements cannot be met
-    # Returns a list of params to fill in if all of them can be met (or [targ.id] if it has no mutReqs)
+    # Returns a list of params to fill if all of them can be met (or [targ.id] if it has no mutReqs)
     def checkMutualRequirements(targ):
       checked, toCheck = [], [targ]
       while len(toCheck) > 0:
@@ -203,16 +203,16 @@ class LocalExecutor(object):
     for i in range(0,n):
       # Set in_dict with random values
       self._randomFillInDict()
-      # Add the new command line
+      # Look at generated input, if debugging
       if self.debug: print( "Input: " + str( self.in_dict ) )
       # Check results (as much as possible)
-      try:
-        self._validateDict()
+      try: self._validateDict()
       # If an error occurs, print out the problems already encountered before blowing up
       except Exception: # Avoid catching BaseExceptions like SystemExit
         sys.stderr.write("An error occurred in validation\nPreviously saved issues\n")
         for err in self.errs: sys.stderr.write("\t" + str(err) + "\n")
         raise
+      # Add new command line
       self.cmdLine.append( self._generateCmdLineFromInDict() )
 
   # Read in parameter input file
@@ -222,15 +222,20 @@ class LocalExecutor(object):
     with open(infile, 'r') as inparams:
       if infile.endswith('.csv'): # csv case
         lines = [ line.strip().split(",") for line in inparams.readlines() ]
-        self.in_dict = { k.strip() : v.strip() for (k,v) in lines }
+        self.in_dict = { line[0].strip() : line[1].strip() for line in lines if len(line)==2}
       else: # json case
         ins = json.loads( inparams.read() )['inputs']
         self.in_dict = { d.keys()[0] : d.values()[0] for d in ins }
     # Input dictionary
     if self.debug: print( "Input: " + str( self.in_dict ) )
+    # Fix special flag case: flags given the false value are treated as non-existent
+    toRm = []
+    for inprm in self.in_dict:
+      if self.in_dict[inprm].lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
+        toRm.append( inprm )
+    for r in toRm: del self.in_dict[r]
     # Check results (as much as possible)
-    try:
-      self._validateDict()
+    try: self._validateDict()
     except Exception: # Avoid catching BaseExceptions like SystemExit
       sys.stderr.write("An error occurred in validation\nPreviously saved issues\n")
       for err in self.errs: sys.stderr.write("\t" + str(err) + "\n")
@@ -316,11 +321,11 @@ class LocalExecutor(object):
         self.errs.append('Required input ' + str(reqId) + ' is not present')
     # Disables/requires is satisfied
     for givenVal in [v for v in self.inputs if v['id'] in self.in_dict.keys()]:
-      for r in self.reqsOf(givenVal['id']):
+      for r in self.reqsOf(givenVal['id']): # Check that requirements are present
         if not r in self.in_dict.keys():
           self.errs.append('Input '+str(givenVal['id'])+' is missing requirement '+str(r))
       for d in (givenVal['disables-inputs'] if 'disables-inputs' in givenVal.keys() else []):
-        if d in self.in_dict.keys():
+        if d in self.in_dict.keys(): # Check if a disabler is present
           self.errs.append('Input '+str(d)+' should be disabled by '+str(givenVal['id']))
     # Group one-is-required/mutex is ok
     for group,mbs in map(lambda x: (x,x["members"]),self.groups):
@@ -392,7 +397,7 @@ if  __name__ == "__main__":
     executor.generateRandomParams(args.num)
     # Print the resulting command line
     executor.printCmdLine()
-  # Print input case
+  # Print input case (default: no execution)
   else:
     # Read in given input
     executor.readInput(args.input)
