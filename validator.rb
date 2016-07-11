@@ -38,6 +38,7 @@ end
 begin
   descriptor = JSON.parse( File.read(json_file) )
 rescue StandardError => e
+  puts "An error occurred during parsing!"
   puts e
   exit 1 # if the json itself is invalid, no need to check it
 end
@@ -115,6 +116,12 @@ descriptor["inputs"].each do |v|
   # An input cannot both require and disable another input
   for did in (v["requires-inputs"] || [])
     errors.push( "Id #{v['id']} requires and disables #{did}" ) if (v["disables-inputs"] || []).include?(did)
+  end
+
+  # Required inputs cannot require or disable other parameters
+  if v['optional']==false
+     errors.push("Required param #{v['id']} cannot require other inputs") if v['requires-inputs']
+     errors.push("Required param #{v['id']} cannot disable other inputs") if v['disables-inputs']
   end
 
 end
