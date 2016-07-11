@@ -2,6 +2,8 @@
 
 '''
 A local tool executor to help test JSON descriptors for use in the Boutiques framework.
+Should be used after successfully running validator.rb.
+
 Program flow:
   - Requires a JSON descriptor of the tool, following the Boutiques schema.
   - Requires an input set of parameters. Can either:
@@ -34,16 +36,16 @@ Notes: pass lists by space-separated values
 
 '''
 
-import argparse, os, sys, json, random as rnd, string
+import argparse, os, sys, json, random as rnd, string, math, subprocess, time
 
 # Executor class
 class LocalExecutor(object):
 
   # Constructor
   def __init__(self,desc):
-    self.desc_path = desc # Save descriptor path
-    self.errs      = [] # Empty errors holder
-    self.debug     = True # debug mode
+    self.desc_path = desc  # Save descriptor path
+    self.errs      = []    # Empty errors holder
+    self.debug     = False # debug mode (also use python -u for unbuffered printing)
     # Parse JSON descriptor
     with open(desc, 'r') as descriptor:
       self.desc_dict = json.loads( descriptor.read() )
@@ -52,58 +54,101 @@ class LocalExecutor(object):
     self.groups     = self.desc_dict['groups'] if 'groups' in self.desc_dict.keys() else []
     self.byId       = lambda n: [ v for v in self.inputs if v['id']==n][0]
     self.byGid      = lambda g: [ v for v in self.groups if v['id']==g][0]
-    self.safeGet    = lambda i,k: None if not k in self.byId( i ).keys() else self.byId(i)[k]
-    self.safeGrpGet = lambda g,k: None if not k in self.byGid( g ).keys() else self.byGid(g)[k]
+    self.safeGet    = lambda i,k: None if not k in self.byId(i).keys() else self.byId(i)[k]
+    self.safeGrpGet = lambda g,k: None if not k in self.byGid(g).keys() else self.byGid(g)[k]
     self.assocGrp   = lambda i: (filter( lambda g: i in g["members"], self.groups ) or [None])[0]
+    self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
 
-  # Attempt execution # TODO
+  # Attempt execution
   def execute(self):
-    pass
-    # Check for output files
-    # Note that path-template can contain command-line-keys
+    command = self.cmdLine[0]
+    print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
+    # Run command
+    try:
+      # Note: invokes the command through the shell (potential injection dangers)
+      process = subprocess.Popen( command , shell=True )
+    except OSError as e:
+      sys.stderr.write( 'OS Error during attempted execution!' )
+      raise e
+    except ValueError as e:
+      sys.stderr.write( 'Input Value Error during attempted execution!' )
+      raise e
+    else:
+      exit_code = process.wait()
+      # Report exit status
+      print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
+      time.sleep(0.5) # Give the OS a (half) second to finish writing
+      # Check for output files (note: the path-template can contain command-line-keys
+      print('Looking for output files:')
+      for outfile in self.desc_dict['output-files']:
+        # Generate correct path template based on input arguments
+        template = outfile['path-template']
+        for (kid,key) in [(q['id'],q['command-line-key']) for q in self.inputs]:
+          # Blanks are entered if template key is not present
+          # Note: may wish to detect output files whose paths depend on particular inputs
+          # and not search for them if the key is not present
+          val = '' if not (kid in self.in_dict.keys()) else self.in_dict[kid]
+          template = template.replace(key,val)
+        # Look for the target file
+        exists = os.path.exists( template )
+        # Note whether it could be found or not
+        isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
+        s1 = 'Optional' if isOptional else 'Required'
+        s2 = '' if exists else 'not'
+        print("\t"+s1+" output file \'"+outfile['name']+"\' was "+s2+" found at "+template)
 
-  #
+  # Generates a random input parameter set that follows the given constraints
   def _randomFillInDict(self):
-    # Helpers
-    nd, nl = 3, 3 # Number of random chars to add to things, or max list items to have
+    # Helpers for generating random numbers, strings, etc...
+    nd, nl   = 3, 5 # Number of random chars to add to things, or max list items to have
     randDigs = lambda: ''.join(rnd.choice(string.digits) for _ in range(nd))
-    randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.mnc','.cpp','.m'])
+    randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.mnc','.cpp','.m','.mnc','.nii.gz'])
     randStr  = lambda: 'str_' + ''.join(rnd.choice(string.digits+string.ascii_letters) for _ in range(nd))
     def randNum(p): # generate random number that satisfies the param constraints
-      i = p['id']; isInt = self.safeGet( i , 'integer' )
-      minv, maxv = self.safeGet( i , 'minimum' ) or -20, self.safeGet( i , 'maximum' ) or 20
+      i, defaultMin, defaultMax = p['id'], -50, 50
+      isInt = self.safeGet( i , 'integer' )
+      roundTowardsZero = lambda x: int(math.copysign(1,x)*int(abs(x)))
+      # Assign random values to min and max, unless they have been specified
+      minv, maxv = self.safeGet( i , 'minimum' ), self.safeGet( i , 'maximum' )
+      if minv is None and maxv is None: minv, maxv = defaultMin, defaultMax
+      elif minv is None and not (maxv is None): minv = maxv + defaultMin
+      elif not (minv is None) and maxv is None: maxv = minv + defaultMax
+      # Coerce the min/max to the proper number type
+      if isInt: minv, maxv = roundTowardsZero(minv), roundTowardsZero(maxv)
+      else: minv, maxv = float(minv), float(maxv)
+      # Apply exclusive boundaries if any
       if self.safeGet( i , 'exclusive-minimum' ): minv += (1 if isInt else 0.0001)
       if self.safeGet( i , 'exclusive-maximum' ): maxv -= (1 if isInt else 0.0001)
       return (rnd.randint(minv,maxv) if isInt else round(rnd.uniform(minv,maxv),nd) )
     def paramSingle(prm): # generate a random parameter value based on the input type
-      if prm['type']=='Enum':   return rnd.choice( prm['enum-value-choices'] )
+      if prm['type']=='Enum':   return rnd.choice( self.safeGet(prm['id'],'enum-value-choices') )
       if prm['type']=='File':   return randFile()
       if prm['type']=='String': return randStr()
       if prm['type']=='Number': return randNum(prm)
       if prm['type']=='Flag':   return rnd.choice(['true','false'])
     def makeParam(prm): # generate random single or list params based on inputs
-      return ' '.join(str(paramSingle(prm)) for _ in range(rnd.randint(1,nl))) if self.safeGet(prm['id'],'list') else paramSingle(prm)
+      mn = self.safeGet(prm['id'], 'min-list-entries') or 2
+      mx = self.safeGet(prm['id'], 'max-list-entries') or nl
+      isList = self.safeGet(prm['id'], 'list') or False
+      return ' '.join(str(paramSingle(prm)) for _ in range(rnd.randint(mn,mx))) if isList else paramSingle(prm)
     def disablersOf(tid): # Returns a list of the ids of parameters that disable the input parameter
       return map(lambda p: p[0], # p[0] is the id
              filter(lambda t: tid['id'] in t[1], # t[1] is the disables list
              map(lambda p: (p['id'], self.safeGet(p['id'],'disables-inputs') or []), self.inputs) ))
-    def mutReqs( targ ): # TODO replace with map, filter
-      mr = []
-      for r in (self.safeGet(targ['id'],'requires-inputs') or []):
-        othReqs = self.safeGet(r,'requires-inputs') or []
-        if targ['id'] in othReqs: mr.append( self.byId( r ) )
-      return mr
-    def isOrCanBeFilled( targ ):
+    def mutReqs( targ ): # Returns the list of mutually requiring parameters of the target
+      return map(lambda x: self.byId(x[0]),
+             filter(lambda a: targ['id'] in a[1],
+             map(lambda r: (r,self.reqsOf(r)), self.reqsOf(targ['id']) ) ) )
+    def isOrCanBeFilled( targ ): # Returns whether targ has a value or is allowed to have one
       # If it is already filled in
       if targ['id'] in self.in_dict.keys(): return True
       # If a disabler or a disabled target is already active
       for d in disablersOf( targ ) + (self.safeGet( targ['id'], 'disables-inputs' ) or []):
         if d in self.in_dict.keys(): return False
       # If at least one non-mutual requirement has not been met
-      for r in (self.safeGet(targ['id'],'requires-inputs') or []):
-        if not r in self.in_dict: # If it is not present
-          oreqs = self.safeGet(r,'requires-inputs') or []
-          if not targ['id'] in oreqs: # If it is not mutually required
+      for r in self.reqsOf(targ['id']):
+        if not r in self.in_dict: # If a requirement is not present
+          if not targ['id'] in self.reqsOf(r): # and it is not mutually required
             return False
       # If it is in a mutex group with one target already chosen
       g = self.assocGrp( targ['id'] )
@@ -112,7 +157,7 @@ class LocalExecutor(object):
       return True
     # Handle the mutual requirement case by BFS in the (implicitly defined) requirement graph
     # Returns False if at least one of the mutual requirements cannot be met
-    # Returns a list of params to fill in if all of them can be met (just targ's id alone if it has no mutReqs)
+    # Returns a list of params to fill in if all of them can be met (or [targ.id] if it has no mutReqs)
     def checkMutualRequirements(targ):
       checked, toCheck = [], [targ]
       while len(toCheck) > 0:
@@ -120,7 +165,7 @@ class LocalExecutor(object):
         checked.append( current )
         if not isOrCanBeFilled( current ): return False
         for mutreq in mutReqs( current ):
-          if not mutreq in checked: toCheck.append(mutreq)
+          if not mutreq['id'] in [c['id'] for c in checked]: toCheck.append(mutreq)
       return checked
     # Clear the dictionary
     self.in_dict = {}
@@ -129,22 +174,24 @@ class LocalExecutor(object):
       self.in_dict[reqp['id']] = makeParam(reqp)
     # Fill in a random choice for each one-is-required group
     for grp in [g for g in self.groups if self.safeGrpGet(g['id'],'one-is-required')]:
-      choice = self.byId( rnd.choice( grp['members'] ) )
-      self.in_dict[choice['id']] = makeParam(choice)
+      while True: # Loop to choose an allowed value, in case a previous choice disabled that one
+        choice = self.byId( rnd.choice( grp['members'] ) )
+        res = checkMutualRequirements( choice )
+        if res==False: continue # Try again if the chosen group member is not permissable
+        for r in res: self.in_dict[r['id']] = makeParam(r)
+        break
     # Choose a random number of times to try to fill optional inputs
     opts = [p for p in self.inputs if self.safeGet(p['id'],'') in [None,True]]
-    for _ in range(rnd.randint( len(opts) , len(opts) * 2)):
+    for _ in range(rnd.randint( len(opts) / 2 + 1, len(opts) * 2)):
       targ = rnd.choice( opts ) # Choose an optional output
       # If it is already filled in, continue
       if targ['id'] in self.in_dict.keys(): continue
-      # If it is a prohibited option, continue
-      print("IsOrCanBeFilled = "+str( isOrCanBeFilled(targ) )+' '+str(targ['id']))
+      # If it is a prohibited option, continue (isFilled case handled above)
       if not isOrCanBeFilled(targ): continue
       # Now we handle the mutual requirements case. This is a little more complex because a mutual requirement
       # of targ can have its own mutual requirements, ad nauseam. We need to look at all of them recursively and either
-      # fill all of them in or none of them (e.g. if one of them is disabled by some other param).
+      # fill all of them in (i.e. at once) or none of them (e.g. if one of them is disabled by some other param).
       result = checkMutualRequirements( targ )
-      print("mutreqs = "+str(result))
       # Leave if the mutreqs cannot be satisfied
       if result == False: continue
       # Fill in the target(s) otherwise
@@ -161,6 +208,7 @@ class LocalExecutor(object):
       # Check results (as much as possible)
       try:
         self._validateDict()
+      # If an error occurs, print out the problems already encountered before blowing up
       except Exception: # Avoid catching BaseExceptions like SystemExit
         sys.stderr.write("An error occurred in validation\nPreviously saved issues\n")
         for err in self.errs: sys.stderr.write("\t" + str(err) + "\n")
@@ -226,44 +274,49 @@ class LocalExecutor(object):
     self.errs = []
     # Check individual inputs
     for key in self.in_dict:
+      isList = self.safeGet(key,"list")
       # Get current value and schema descriptor properties
       val, targ = self.in_dict[key], self.byId( key )
       # Helper functions
       def isNumber(s,intCheck = False):
         try: int(s) if intCheck else float(s); return True
         except ValueError: return False
-      def check(keyname, isGood, msg):
+      def check(keyname, isGood, msg, value): # Checks input values
+        # No need to check constraints if they were not specified
         dontCheck = ((not keyname in targ.keys()) or (targ[keyname]==False))
+        # Keyname = None is a flag to check the type
         if (not keyname is None) and dontCheck: return
-        if not isGood(val, keyname):
-          self.errs.append(key + '(' + val + ') ' + msg)
+        # The input function is used to check whether the input parameter is acceptable
+        if not isGood(value, keyname):
+          self.errs.append(key + ' (' + str(value) + ') ' + msg)
       # The id exists as an input and is not duplicate
-      if len([ k for k in self.inputs if k['id']==key ]) != 1: self.errs.append(str(key)+' is not a valid id')
+      if len([ k for k in self.inputs if k['id']==key ]) != 1: self.errs.append(key+' is an invalid id')
       # Types are correct
       if targ["type"] == "Number":
-        # Number type and constraints are not violated
-        check('minimum', lambda x,y: x >= targ[y], "violates minimum value")
-        check('exclusive-minimum', lambda x,y: x > targ[y], "violates exclusive min value")
-        check('maximum', lambda x,y: x <= targ[y], "violates maximum value")
-        check('exclusive-maximum', lambda x,y:x < targ[y], "violates exclusive max value")
-        check('integer', lambda x,y: isNumber(x,True), "violates integer requirement")
-        check(None, lambda x,y: isNumber(x), "is not a number")
+        # Number type and constraints are not violated (note the lambda safety checks)
+        for v in (str(val).split() if isList else [val]):
+          check('minimum', lambda x,y: float(x) >= targ[y], "violates minimum value",v)
+          check('exclusive-minimum', lambda x,y: float(x) > targ['minimum'], "violates exclusive min value",v)
+          check('maximum', lambda x,y: float(x) <= targ[y], "violates maximum value",v)
+          check('exclusive-maximum', lambda x,y: float(x) < targ['maximum'], "violates exclusive max value",v)
+          check('integer', lambda x,y: isNumber(x,True), "violates integer requirement",v)
+          check(None, lambda x,y: isNumber(x), "is not a number",v)
       elif targ["type"] == "Enum":
         # Enum value is in the list of allowed values
-        check('enum-value-choices', lambda x,y: x in targ[y], "is not a valid enum choice")
+        check('enum-value-choices', lambda x,y: x in targ[y], "is not a valid enum choice",val)
       elif targ["type"] == "Flag":
         # Should be 'true' or 'false' when lower-cased
-        check(None, lambda x,y: x.lower() in ["true","false"], "is not a valid flag value")
+        check(None, lambda x,y: x.lower() in ["true","false"], "is not a valid flag value",val)
       # List length constraints are satisfied
-      if self.safeGet(key,"list"): check('min-list-entries', lambda x,y: len(x.split()) >= targ[y], "violates min size")
-      if self.safeGet(key,"list"): check('max-list-entries', lambda x,y: len(x.split()) <= targ[y], "violates max size")
+      if isList: check('min-list-entries', lambda x,y: len(x.split()) >= targ[y], "violates min size",val)
+      if isList: check('max-list-entries', lambda x,y: len(x.split()) <= targ[y], "violates max size",val)
     # Required inputs are present
     for reqId in [v['id'] for v in self.inputs if v['optional']==False]:
       if not reqId in self.in_dict.keys():
         self.errs.append('Required input ' + str(reqId) + ' is not present')
     # Disables/requires is satisfied
     for givenVal in [v for v in self.inputs if v['id'] in self.in_dict.keys()]:
-      for r in (givenVal['requires-inputs'] if 'requires-inputs' in givenVal.keys() else []):
+      for r in self.reqsOf(givenVal['id']):
         if not r in self.in_dict.keys():
           self.errs.append('Input '+str(givenVal['id'])+' is missing requirement '+str(r))
       for d in (givenVal['disables-inputs'] if 'disables-inputs' in givenVal.keys() else []):
@@ -283,16 +336,15 @@ class LocalExecutor(object):
       for err in self.errs: sys.stderr.write("\t" + err + "\n")
       sys.exit(1)
 
-
 # Execute program
 if  __name__ == "__main__":
 
   # Parse arguments
   parser = argparse.ArgumentParser(description = 'Local tool executor to test JSON descriptors for the Boutiques framework')
   parser.add_argument('desc', metavar='descriptor', nargs = 1, help = 'The input JSON tool descriptor to test.')
-  parser.add_argument('-i', '--input', help = 'Input parameter values with which to test the program or command line generation. Can be .json or .csv.')
-  parser.add_argument('-e', '--execute', action = 'store_true', help = 'Flag to execute the program with the given inputs; otherwise, the command line is simply printed. Requires -i.')
-  parser.add_argument('-r', '--random', action = 'store_true', help = 'Whether to generate a random set of input parameter values. Used for checking, not executing.')
+  parser.add_argument('-i', '--input', help = 'Input parameter values with which to test the generation (.json or .csv).')
+  parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.  Requires -i.')
+  parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine')
   args = parser.parse_args()
 
@@ -322,7 +374,7 @@ if  __name__ == "__main__":
   elif not args.random and not given(args.input):
     errExit('The default mode requires an input (-i)')
   elif not given(args.num):
-    arg.num = 1
+    args.num = 1
 
   # Generate object that will perform the commands
   executor = LocalExecutor(desc)
