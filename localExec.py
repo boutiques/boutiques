@@ -31,7 +31,10 @@ input_id_1,val1
 input_id_2,val2
 ...
 
-Notes: pass lists by space-separated values
+A string input should look like:
+python localExec.py desc.json -s 'in_id_1,val_1;in_id_2,val_2;...'
+
+Notes: pass lists by space-separated values [cannot be passed by --string]
        pass flags with 'true' or 'false' (false is the same as not including it)
 
 '''
@@ -216,16 +219,23 @@ class LocalExecutor(object):
       self.cmdLine.append( self._generateCmdLineFromInDict() )
 
   # Read in parameter input file
-  def readInput(self,infile):
+  def readInput(self,infile,stringInput):
+    # Quick check that the descriptor has already been read in
     assert self.desc_dict != None
-    # Read in input file (in_dict : id -> given value)
-    with open(infile, 'r') as inparams:
-      if infile.endswith('.csv'): # csv case
-        lines = [ line.strip().split(",") for line in inparams.readlines() ]
-        self.in_dict = { line[0].strip() : line[1].strip() for line in lines if len(line)==2}
-      else: # json case
-        ins = json.loads( inparams.read() )['inputs']
-        self.in_dict = { d.keys()[0] : d.values()[0] for d in ins }
+    # String case
+    if stringInput:
+      instrings = [s.strip().split(",") for s in infile.split(";") if not s=='']
+      self.in_dict = {v[0].strip() : v[1].strip() for v in instrings if len(v)==2}
+    # File case
+    else:
+      # Read in input file (in_dict : id -> given value)
+      with open(infile, 'r') as inparams:
+        if infile.endswith('.csv'): # csv case
+          lines = [ line.strip().split(",") for line in inparams.readlines() ]
+          self.in_dict = { line[0].strip() : line[1].strip() for line in lines if len(line)==2}
+        else: # json case
+          ins = json.loads( inparams.read() )['inputs']
+          self.in_dict = { d.keys()[0] : d.values()[0] for d in ins }
     # Input dictionary
     if self.debug: print( "Input: " + str( self.in_dict ) )
     # Fix special flag case: flags given the false value are treated as non-existent
@@ -351,6 +361,7 @@ if  __name__ == "__main__":
   parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.  Requires -i.')
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine')
+  parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line")
   args = parser.parse_args()
 
   # Check arguments
@@ -372,14 +383,21 @@ if  __name__ == "__main__":
     errExit('The input file ' + str(args.input) + ' does not seem to exist', False)
   elif given(args.input) and not (args.input.endswith(".json") or args.input.endswith(".csv")):
     errExit('Input file ' + str(args.input) + ' must end in .json or .csv')
-  elif args.execute and not given(args.input):
+  elif args.execute and (not given(args.input) and not given(args.string)):
     errExit('--exec requires --input be specified')
   elif not os.path.isfile( desc ):
     errExit('The input JSON descriptor does not seem to exist', False)
-  elif not args.random and not given(args.input):
+  elif not args.random and (not given(args.input) and not given(args.string)):
     errExit('The default mode requires an input (-i)')
+  elif args.random and given(args.string):
+    errExit('--random and --string cannot be used together')
+  elif given(args.num) and given(args.string):
+    errExit('--num and --string cannot be used together')
   elif not given(args.num):
     args.num = 1
+
+  # Prepare inputs
+  inData = args.input if given(args.input) else ( args.string if given(args.string) else None )
 
   # Generate object that will perform the commands
   executor = LocalExecutor(desc)
@@ -388,7 +406,7 @@ if  __name__ == "__main__":
   # Execution case
   if args.execute:
     # Read in given input
-    executor.readInput(args.input)
+    executor.readInput(inData, given(args.string))
     # Execute it
     executor.execute()
   # Print random case
@@ -400,7 +418,7 @@ if  __name__ == "__main__":
   # Print input case (default: no execution)
   else:
     # Read in given input
-    executor.readInput(args.input)
+    executor.readInput(inData, given(args.string))
     # Print the resulting command line
     executor.printCmdLine()
 

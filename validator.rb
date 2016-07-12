@@ -76,6 +76,19 @@ allIds.each_with_index do |s1,i|
   end
 end
 
+## Checking outputs ##
+descriptor['output-files'].each_with_index do |a,i|
+
+  # Output files should have a unique path-template
+  descriptor['output-files'].each_with_index do |b,j|
+    next if j <= i
+    if a['path-template'] == b['path-template']
+      errors.push( "Output files #{a['id']} and #{b['id']} have the same path-template" )
+    end
+  end
+
+end
+
 ## Checking inputs ##
 descriptor["inputs"].each do |v|
 
