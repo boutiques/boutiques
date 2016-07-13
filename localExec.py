@@ -17,32 +17,48 @@ Note: validating the schema with a validator is recommended first. This script d
       Only in the -e case are output files checked for, at the end
 
 Formats:
-A .json input file should look like:
+A .json input file should have an "inputs" array with one value per id, which should look like:
 {
   "inputs" : [
     { "input_id_1" : "val1" },
     { "input_id_2" : "val2" },
+    { "input_list" : "a b c" },
     ...
   ]
 }
 
-A .csv input file should look like:
+A .csv input file should look like the following:
 input_id_1,val1
 input_id_2,val2
+input_list,a b c
 ...
 
 A string input should look like:
-python localExec.py desc.json -s 'in_id_1,val_1;in_id_2,val_2;...'
+python localExec.py desc.json -s 'in_id_1,val_1;in_list,a b c;in_id_2,val_2;...'
 
-Notes: pass lists by space-separated values [cannot be passed by --string]
+Notes: pass lists by space-separated values
        pass flags with 'true' or 'false' (false is the same as not including it)
-
+       note the quotes in the -s input option
 '''
 
 import argparse, os, sys, json, random as rnd, string, math, subprocess, time
 
 # Executor class
 class LocalExecutor(object):
+  """
+  This class represents a json descriptor of a tool, and can execute various tasks related to it.
+  It is constructed first via an input json descriptor file, which is held in the desc_dict field.
+
+  An input can be added to it via the in_dict field, a dictionary from param ids to values.
+  The in_dict field should only be modified via the public readInput method, which can either take
+  a file (json or csv) or a string written in the command line. The field is always validated by checking
+  the input parameters with respect to the descriptor.
+
+  Other public methods include:
+    execute - attempts to execute the tool described by the descriptor based on the current input (in in_dict)
+    printCmdLine - simply prints the generated command line based on the current input values
+    generateRandomParams - fills in_dict with random values (following the constraints of the descriptor schema)
+  """
 
   # Constructor
   def __init__(self,desc):
@@ -86,42 +102,50 @@ class LocalExecutor(object):
       for outfile in self.desc_dict['output-files']:
         # Generate correct path template based on input arguments
         template = outfile['path-template']
-        for (kid,key) in [(q['id'],q['command-line-key']) for q in self.inputs]:
+        for (input_id,input_key) in [(input['id'],input['command-line-key']) for input in self.inputs]:
           # Blanks are entered if template key is not present
           # Note: may wish to detect output files whose paths depend on particular inputs
           # and not search for them if the key is not present
-          val = '' if not (kid in self.in_dict.keys()) else self.in_dict[kid]
-          template = template.replace(key,val)
+          val = '' if not (input_id in self.in_dict.keys()) else self.in_dict[input_id]
+          template = template.replace(input_key,val)
         # Look for the target file
         exists = os.path.exists( template )
         # Note whether it could be found or not
         isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
         s1 = 'Optional' if isOptional else 'Required'
         s2 = '' if exists else 'not '
-        print("\t"+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+template)
+        err = "Error! " if (not isOptional and not exists) else ''
+        print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+template)
 
-  # Generates a random input parameter set that follows the given constraints
+  # Generates a random input parameter set that follows the constraints from the json descriptor
+  # This method fills in the in_dict field of the object with constrained random values
   def _randomFillInDict(self):
+    ## Private helper functions for filling the dictionary ##
     # Helpers for generating random numbers, strings, etc...
-    nd, nl   = 2, 5 # Number of random chars to add to things, or max list items to have
-    randDigs = lambda: ''.join(rnd.choice(string.digits) for _ in range(nd))
+    nd, nl   = 2, 5 # nd = number of random characters to use in generating strings, nl = max number of random list items
+    randDigs = lambda: ''.join(rnd.choice(string.digits) for _ in range(nd)) # Generate random string of digits
     randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.j','.cpp','.m','.mnc','.nii.gz'])
     randStr  = lambda: 'str_' + ''.join(rnd.choice(string.digits+string.ascii_letters) for _ in range(nd))
-    def randNum(p): # generate random number that satisfies the param constraints
-      i, defaultMin, defaultMax = p['id'], -50, 50
-      isInt = self.safeGet( i , 'integer' )
-      roundTowardsZero = lambda x: int(math.copysign(1,x)*int(abs(x)))
+    # A function for generating a number type parameter input
+    # p is a dictionary object corresponding to a parameter description in the json descriptor
+    # E.g. if p had no constraints from the json descriptor, the output would be a float in [defaultMin,defaultMax]
+    #      if p had "integer": true, "minimum": 7, "maximum": 9, the output would be an int in [7,9]
+    def randNum(p):
+      param_id, defaultMin, defaultMax = p['id'], -50, 50
+      isInt = self.safeGet( param_id , 'integer' ) # Check if the input parameter should be an int
+      roundTowardsZero = lambda x: int(math.copysign(1,x) * int(abs(x)))
       # Assign random values to min and max, unless they have been specified
-      minv, maxv = self.safeGet( i , 'minimum' ), self.safeGet( i , 'maximum' )
+      minv, maxv = self.safeGet( param_id , 'minimum' ), self.safeGet( param_id , 'maximum' )
       if minv is None and maxv is None: minv, maxv = defaultMin, defaultMax
       elif minv is None and not (maxv is None): minv = maxv + defaultMin
       elif not (minv is None) and maxv is None: maxv = minv + defaultMax
       # Coerce the min/max to the proper number type
       if isInt: minv, maxv = roundTowardsZero(minv), roundTowardsZero(maxv)
       else: minv, maxv = float(minv), float(maxv)
-      # Apply exclusive boundaries if any
+      # Apply exclusive boundary constraints, if any
       if self.safeGet( i , 'exclusive-minimum' ): minv += (1 if isInt else 0.0001)
       if self.safeGet( i , 'exclusive-maximum' ): maxv -= (1 if isInt else 0.0001)
+      # Returns a random int or a random float, depending on the desired type
       return (rnd.randint(minv,maxv) if isInt else round(rnd.uniform(minv,maxv),nd) )
     def paramSingle(prm): # generate a random parameter value based on the input type
       if prm['type']=='Enum':   return rnd.choice( self.safeGet(prm['id'],'enum-value-choices') )
@@ -129,32 +153,34 @@ class LocalExecutor(object):
       if prm['type']=='String': return randStr()
       if prm['type']=='Number': return randNum(prm)
       if prm['type']=='Flag':   return rnd.choice(['true','false'])
-    def makeParam(prm): # generate random single or list params based on inputs
+    # Given prm (a parameter description), a parameter value is generated
+    # If prm is a list, a sequence of outputs is generated; otherwise, a single value is returned
+    def makeParam(prm):
       mn = self.safeGet(prm['id'], 'min-list-entries') or 2
       mx = self.safeGet(prm['id'], 'max-list-entries') or nl
       isList = self.safeGet(prm['id'], 'list') or False
       return ' '.join(str(paramSingle(prm)) for _ in range(rnd.randint(mn,mx))) if isList else paramSingle(prm)
-    def disablersOf(tid): # Returns a list of the ids of parameters that disable the input parameter
-      return map(lambda p: p[0], # p[0] is the id
-             filter(lambda t: tid['id'] in t[1], # t[1] is the disables list
+    def disablersOf( inParam ): # Returns a list of the ids of parameters that disable the input parameter
+      return map(lambda disabler: disabler[0], # p[0] is the id of the disabling parameter
+             filter(lambda disabler: inParam['id'] in disabler[1], # disabler[1] is the disables list
              map(lambda p: (p['id'], self.safeGet(p['id'],'disables-inputs') or []), self.inputs) ))
-    def mutReqs( targ ): # Returns the list of mutually requiring parameters of the target
-      return map(lambda x: self.byId(x[0]), # Get object corresponding to id
-             filter(lambda a: targ['id'] in a[1], # Keep required ids that also require the target id
-             map(lambda r: (r,self.reqsOf(r)), self.reqsOf(targ['id']) ) ) )
+    def mutReqs( targetParam ): # Returns the list of mutually requiring parameters of the target
+      return map(lambda mutualReq: self.byId( mutualReq[0] ), # Get object corresponding to id
+             filter(lambda possibleMutReq: targetParam['id'] in possibleMutReq[1], # Keep requirements that require the target
+             map(lambda reqOfTarg: (reqOfTarg, self.reqsOf(reqOfTarg)), self.reqsOf(targetParam['id']) ) ) )
     def isOrCanBeFilled( targ ): # Returns whether targ has a value or is allowed to have one
-      # If it is already filled in
+      # If it is already filled in, report so
       if targ['id'] in self.in_dict.keys(): return True
-      # If a disabler or a disabled target is already active
+      # If a disabler or a disabled target is already active, it cannot be filled
       for d in disablersOf( targ ) + (self.safeGet( targ['id'], 'disables-inputs' ) or []):
         if d in self.in_dict.keys(): return False
-      # If at least one non-mutual requirement has not been met
+      # If at least one non-mutual requirement has not been met, it cannot be filled
       for r in self.reqsOf(targ['id']):
         if not r in self.in_dict: # If a requirement is not present
           if not targ['id'] in self.reqsOf(r): # and it is not mutually required
             return False
-      # If it is in a mutex group with one target already chosen
-      g = self.assocGrp( targ['id'] )
+      # If it is in a mutex group with one target already chosen, it cannot be filled
+      g = self.assocGrp( targ['id'] ) # Get the group that the target belongs to, if any
       if (not g is None) and self.safeGrpGet(g['id'],'mutually-exclusive'):
         if len(filter(lambda x: x in self.in_dict.keys(), g['members'])) > 0: return False
       return True
@@ -170,6 +196,7 @@ class LocalExecutor(object):
         for mutreq in mutReqs( current ):
           if not mutreq['id'] in [c['id'] for c in checked]: toCheck.append(mutreq)
       return checked
+    ## Start actual dictionary filling part ##
     # Clear the dictionary
     self.in_dict = {}
     # Fill in the required parameters
@@ -358,7 +385,7 @@ if  __name__ == "__main__":
   parser = argparse.ArgumentParser(description = 'Local tool executor to test JSON descriptors for the Boutiques framework')
   parser.add_argument('desc', metavar='descriptor', nargs = 1, help = 'The input JSON tool descriptor to test.')
   parser.add_argument('-i', '--input', help = 'Input parameter values with which to test the generation (.json or .csv).')
-  parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.  Requires -i.')
+  parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.')
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine')
   parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line")
@@ -388,7 +415,7 @@ if  __name__ == "__main__":
   elif not os.path.isfile( desc ):
     errExit('The input JSON descriptor does not seem to exist', False)
   elif not args.random and (not given(args.input) and not given(args.string)):
-    errExit('The default mode requires an input (-i)')
+    errExit('The default mode requires an input (-i or -s)')
   elif args.random and given(args.string):
     errExit('--random and --string cannot be used together')
   elif given(args.num) and given(args.string):
