@@ -14,7 +14,7 @@ Program flow:
     o Attempt to execute the command line output by the tool, for the given parameters (not for the random case) [--exec/-e flag]
 
 Note: validating the schema with a validator is recommended first. This script does not check the descriptor with respect to the schema.
-      Only in the -e case are output files checked for, at the end
+      Only in the -e case are output files checked for, at the end. If docker is specified with -e, it will attempt to execute via docker.
 
 Formats:
 A .json input file should have an "inputs" array with one value per id, which should look like:
@@ -23,6 +23,7 @@ A .json input file should have an "inputs" array with one value per id, which sh
     { "input_id_1" : "val1" },
     { "input_id_2" : "val2" },
     { "input_list" : "a b c" },
+    { "input_flag" : "true" },
     ...
   ]
 }
@@ -31,10 +32,11 @@ A .csv input file should look like the following:
 input_id_1,val1
 input_id_2,val2
 input_list,a b c
+input_flag,true
 ...
 
 A string input should look like:
-python localExec.py desc.json -s 'in_id_1,val_1;in_list,a b c;in_id_2,val_2;...'
+python localExec.py descriptor.json -s 'in_id_1,val_1;in_list,a b c;in_flag,true;in_id_2,val_2;...'
 
 Notes: pass lists by space-separated values
        pass flags with 'true' or 'false' (false is the same as not including it)
@@ -62,26 +64,50 @@ class LocalExecutor(object):
 
   # Constructor
   def __init__(self,desc):
+    ## Initial parameters ##
     self.desc_path = desc  # Save descriptor path
     self.errs      = []    # Empty errors holder
     self.debug     = False # debug mode (also use python -u for unbuffered printing)
-    # Parse JSON descriptor
+    ## Parse JSON descriptor ##
     with open(desc, 'r') as descriptor:
       self.desc_dict = json.loads( descriptor.read() )
-    # Helpers
+    ## Helpers Functions ##
+    # The set of input parameters from the json descriptor
     self.inputs     = self.desc_dict['inputs'] # Structure: [ {id:...},...,{id:...} ]
+    # The set of parameter groups, according to the json descriptor
     self.groups     = self.desc_dict['groups'] if 'groups' in self.desc_dict.keys() else []
+    # Retrieves the parameter corresponding to the given id
     self.byId       = lambda n: [ v for v in self.inputs if v['id']==n][0]
+    # Retrieves the group corresponding to the given id
     self.byGid      = lambda g: [ v for v in self.groups if v['id']==g][0]
+    # Retrieves the value of a field of an input from the descriptor. Returns None if not present.
     self.safeGet    = lambda i,k: None if not k in self.byId(i).keys() else self.byId(i)[k]
+    # Retrieves the value of a field of a group from the descriptor. Returns None if not present.
     self.safeGrpGet = lambda g,k: None if not k in self.byGid(g).keys() else self.byGid(g)[k]
+    # Retrieves the group a given parameter id belongs to; otherwise, returns None
     self.assocGrp   = lambda i: (filter( lambda g: i in g["members"], self.groups ) or [None])[0]
+    # Returns the required inputs of a given input id, or the empty string
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
 
-  # Attempt execution
+
+  # Attempt local execution of the command line generated from the input values
   def execute(self):
+
+    '''
+    The execute method runs the generated command line (from either generateRandomParams or readInput).
+    If docker is specified, it will attempt to use it, instead of local execution.
+    After execution, it checks for output file existence.
+    '''
+
     command = self.cmdLine[0]
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
+    # Check for docker
+    dockerImage = self.desc_dict['docker-image'] if 'docker-image' in self.desc_dict.keys() else None
+    dockerIndex = self.desc_dict['docker-index'] if 'docker-index' in self.desc_dict.keys() else None
+    dockerIsPresent = (not dockerImage is None) and (not dockerIndex is None)
+    # If docker is present, alter the command template accordingly
+    if dockerIsPresent:
+      pass # TODO
     # Run command
     try:
       # Note: invokes the command through the shell (potential injection dangers)
@@ -114,10 +140,11 @@ class LocalExecutor(object):
         isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
         s1 = 'Optional' if isOptional else 'Required'
         s2 = '' if exists else 'not '
-        err = "Error! " if (not isOptional and not exists) else ''
+        err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
         print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+template)
 
-  # Generates a random input parameter set that follows the constraints from the json descriptor
+
+  # Private method to generate a random input parameter set that follows the constraints from the json descriptor
   # This method fills in the in_dict field of the object with constrained random values
   def _randomFillInDict(self):
     ## Private helper functions for filling the dictionary ##
@@ -126,6 +153,7 @@ class LocalExecutor(object):
     randDigs = lambda: ''.join(rnd.choice(string.digits) for _ in range(nd)) # Generate random string of digits
     randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.j','.cpp','.m','.mnc','.nii.gz'])
     randStr  = lambda: 'str_' + ''.join(rnd.choice(string.digits+string.ascii_letters) for _ in range(nd))
+
     # A function for generating a number type parameter input
     # p is a dictionary object corresponding to a parameter description in the json descriptor
     # E.g. if p had no constraints from the json descriptor, the output would be a float in [defaultMin,defaultMax]
@@ -143,32 +171,45 @@ class LocalExecutor(object):
       if isInt: minv, maxv = roundTowardsZero(minv), roundTowardsZero(maxv)
       else: minv, maxv = float(minv), float(maxv)
       # Apply exclusive boundary constraints, if any
-      if self.safeGet( i , 'exclusive-minimum' ): minv += (1 if isInt else 0.0001)
-      if self.safeGet( i , 'exclusive-maximum' ): maxv -= (1 if isInt else 0.0001)
-      # Returns a random int or a random float, depending on the desired type
+      if self.safeGet( param_id , 'exclusive-minimum' ): minv += (1 if isInt else 0.0001)
+      if self.safeGet( param_id , 'exclusive-maximum' ): maxv -= (1 if isInt else 0.0001)
+      # Returns a random int or a random float, depending on the type of p
       return (rnd.randint(minv,maxv) if isInt else round(rnd.uniform(minv,maxv),nd) )
-    def paramSingle(prm): # generate a random parameter value based on the input type
+
+    # Generate a random parameter value based on the input type (where prm \in self.inputs)
+    def paramSingle(prm):
       if prm['type']=='Enum':   return rnd.choice( self.safeGet(prm['id'],'enum-value-choices') )
       if prm['type']=='File':   return randFile()
       if prm['type']=='String': return randStr()
       if prm['type']=='Number': return randNum(prm)
       if prm['type']=='Flag':   return rnd.choice(['true','false'])
-    # Given prm (a parameter description), a parameter value is generated
+
+    # For this function, given prm (a parameter description), a parameter value is generated
     # If prm is a list, a sequence of outputs is generated; otherwise, a single value is returned
     def makeParam(prm):
       mn = self.safeGet(prm['id'], 'min-list-entries') or 2
       mx = self.safeGet(prm['id'], 'max-list-entries') or nl
       isList = self.safeGet(prm['id'], 'list') or False
       return ' '.join(str(paramSingle(prm)) for _ in range(rnd.randint(mn,mx))) if isList else paramSingle(prm)
-    def disablersOf( inParam ): # Returns a list of the ids of parameters that disable the input parameter
+
+    # Returns a list of the ids of parameters that disable the input parameter
+    def disablersOf( inParam ):
       return map(lambda disabler: disabler[0], # p[0] is the id of the disabling parameter
-             filter(lambda disabler: inParam['id'] in disabler[1], # disabler[1] is the disables list
-             map(lambda p: (p['id'], self.safeGet(p['id'],'disables-inputs') or []), self.inputs) ))
-    def mutReqs( targetParam ): # Returns the list of mutually requiring parameters of the target
+               filter(lambda disabler: inParam['id'] in disabler[1], # disabler[1] is the disables list
+                 map(lambda prm: (prm['id'], self.safeGet(prm['id'],'disables-inputs') or []), self.inputs)
+               )
+             )
+
+    # Returns the list of mutually requiring parameters of the target
+    def mutReqs( targetParam ):
       return map(lambda mutualReq: self.byId( mutualReq[0] ), # Get object corresponding to id
-             filter(lambda possibleMutReq: targetParam['id'] in possibleMutReq[1], # Keep requirements that require the target
-             map(lambda reqOfTarg: (reqOfTarg, self.reqsOf(reqOfTarg)), self.reqsOf(targetParam['id']) ) ) )
-    def isOrCanBeFilled( targ ): # Returns whether targ has a value or is allowed to have one
+               filter(lambda possibleMutReq: targetParam['id'] in possibleMutReq[1], # Keep requirements that require the target
+                 map(lambda reqOfTarg: (reqOfTarg, self.reqsOf(reqOfTarg)), self.reqsOf(targetParam['id']))
+               )
+             )
+
+    # Returns whether targ (an input parameter) has a value or is allowed to have one
+    def isOrCanBeFilled( targ ):
       # If it is already filled in, report so
       if targ['id'] in self.in_dict.keys(): return True
       # If a disabler or a disabled target is already active, it cannot be filled
@@ -184,9 +225,18 @@ class LocalExecutor(object):
       if (not g is None) and self.safeGrpGet(g['id'],'mutually-exclusive'):
         if len(filter(lambda x: x in self.in_dict.keys(), g['members'])) > 0: return False
       return True
-    # Handle the mutual requirement case by breadth first search in the graph of mutual requirements
-    # Returns False if at least one of the mutual requirements cannot be met
-    # Returns a list of params to fill if all of them can be met (or [targ.id] if it has no mutReqs)
+
+    # Handle the mutual requirement case by breadth first search in the graph of mutual requirements.
+    # Essentially a graph is built, starting from targ (the target input parameter), where nodes are
+    # input parameters and edges are a mutual requirement relation between nodes. BFS is used to check
+    # every node, to see if can be (or has been) given a value. If all the nodes are permitted to be
+    # given values, then they are all added at once; if even one of them cannot be given a value (e.g.
+    # it has an active disabler) then none of the graph members can be added and so we just return false.
+    #
+    # Input: an input parameter from which to start building the graph
+    # Output:
+    #   Returns False if at least one of the mutual requirements cannot be met
+    #   Returns a list of params to fill if all of them can be met (or [targ.id] if it has no mutReqs)
     def checkMutualRequirements(targ):
       checked, toCheck = [], [targ]
       while len(toCheck) > 0:
@@ -196,6 +246,7 @@ class LocalExecutor(object):
         for mutreq in mutReqs( current ):
           if not mutreq['id'] in [c['id'] for c in checked]: toCheck.append(mutreq)
       return checked
+
     ## Start actual dictionary filling part ##
     # Clear the dictionary
     self.in_dict = {}
@@ -205,13 +256,14 @@ class LocalExecutor(object):
     # Fill in a random choice for each one-is-required group
     for grp in [g for g in self.groups if self.safeGrpGet(g['id'],'one-is-required')]:
       while True: # Loop to choose an allowed value, in case a previous choice disabled that one
-        choice = self.byId( rnd.choice( grp['members'] ) )
-        res = checkMutualRequirements( choice )
+        choice = self.byId( rnd.choice( grp['members'] ) ) # Pick a random parameter
+        res = checkMutualRequirements( choice ) # see if it and its mutual requirements can be filled
         if res==False: continue # Try again if the chosen group member is not permissable
         for r in res: self.in_dict[r['id']] = makeParam(r)
-        break
+        break # If we were allowed to add a parameter, we can stop
     # Choose a random number of times to try to fill optional inputs
     opts = [p for p in self.inputs if self.safeGet(p['id'],'') in [None,True]]
+    # Loop a random number of times, each time attempting to fill a random parameter
     for _ in range(rnd.randint( len(opts) / 2 + 1, len(opts) * 2)):
       targ = rnd.choice( opts ) # Choose an optional output
       # If it is already filled in, continue
@@ -227,8 +279,15 @@ class LocalExecutor(object):
       # Fill in the target(s) otherwise
       for r in result: self.in_dict[r['id']] = makeParam(r)
 
-  # Generate random parameter values
+  # Function to generate random parameter values
+  # This fills the in_dict with random values, validates the input, and generates the appropriate command line
   def generateRandomParams(self,n):
+
+    '''
+    The generateRandomParams method fills the in_dict field with randomly generated values following the schema.
+    It then generates command line strings based on these values (more than 1 if -n was given).
+    '''
+
     self.cmdLine = []
     for i in range(0,n):
       # Set in_dict with random values
@@ -241,12 +300,21 @@ class LocalExecutor(object):
       except Exception: # Avoid catching BaseExceptions like SystemExit
         sys.stderr.write("An error occurred in validation\nPreviously saved issues\n")
         for err in self.errs: sys.stderr.write("\t" + str(err) + "\n")
-        raise
+        raise # Pass on (throw) the caught exception
       # Add new command line
       self.cmdLine.append( self._generateCmdLineFromInDict() )
 
-  # Read in parameter input file
+  # Read in parameter input file or string
   def readInput(self,infile,stringInput):
+
+    '''
+    The readInput method sets the in_dict field of the executor object, based on a fixed input.
+    It then generates a command line based on the input.
+
+    infile: either the inputs in a file or the command-line string (from -s).
+    stringInput: a boolean as to whether the method has been given a string or a file.
+    '''
+
     # Quick check that the descriptor has already been read in
     assert self.desc_dict != None
     # String case
@@ -280,22 +348,22 @@ class LocalExecutor(object):
     # Build and save output command line (as a single-entry list)
     self.cmdLine = [ self._generateCmdLineFromInDict() ]
 
-  # Build the actual command line by substitution, using the input data
+  # Private method to build the actual command line by substitution, using the input data
   def _generateCmdLineFromInDict(self):
     # Get the command line template
     template = self.desc_dict['command-line']
     # Substitute every given value into the template (incl. flags, flag-seps, ...)
-    for i in map(lambda x: x['id'], self.inputs):
-      clk = self.safeGet(i,'command-line-key')
-      assert not clk is None, str(i) + ' does not appear to have a command-line-key'
+    for paramId in map(lambda x: x['id'], self.inputs):
+      clk = self.safeGet(paramId,'command-line-key')
+      assert not clk is None, str(paramId) + ' does not appear to have a command-line-key'
       # Substitute into the template if a value was given
-      if i in self.in_dict.keys():
+      if paramId in self.in_dict.keys():
         # Generate value to put in template
-        flag   = self.safeGet(i,'command-line-flag') or ''
-        sep    = self.safeGet(i,'command-line-flag-separator') or ' '
-        inval  = self.in_dict[i]
+        flag   = self.safeGet(paramId,'command-line-flag') or ''
+        sep    = self.safeGet(paramId,'command-line-flag-separator') or ' '
+        inval  = self.in_dict[paramId]
         outval = flag + sep + str(inval)
-        if self.safeGet(i,'type')=='Flag': # special case for flag-type inputs
+        if self.safeGet(paramId,'type')=='Flag': # special case for flag-type inputs
           outval =  '' if inval.lower()=='false' else flag
         # Perform template substitution
         template = template.replace(clk, outval)
@@ -310,19 +378,22 @@ class LocalExecutor(object):
     print("Generated Command"+('s' if len(self.cmdLine)>1 else '')+':')
     for cmd in self.cmdLine: print(cmd)
 
-  # Validate input params
+  # Private method for validating input parameters
   def _validateDict(self):
     # Holder for errors
     self.errs = []
+    # Return whether s is a proper number; if intCheck is true, also check if it is an int
+    def isNumber(s,intCheck = False):
+      try: int(s) if intCheck else float(s); return True
+      except ValueError: return False
     # Check individual inputs
     for key in self.in_dict:
       isList = self.safeGet(key,"list")
       # Get current value and schema descriptor properties
       val, targ = self.in_dict[key], self.byId( key )
-      # Helper functions
-      def isNumber(s,intCheck = False):
-        try: int(s) if intCheck else float(s); return True
-        except ValueError: return False
+      # A little closure helper to check if input values satisy the json descriptor's constraints
+      # Checks whether 'value' is appropriate for parameter 'input' by running 'isGood' on it
+      # If the input parameter is bad, it adds 'msg' to the list of errors
       def check(keyname, isGood, msg, value): # Checks input values
         # No need to check constraints if they were not specified
         dontCheck = ((not keyname in targ.keys()) or (targ[keyname]==False))
@@ -366,13 +437,15 @@ class LocalExecutor(object):
           self.errs.append('Input '+str(d)+' should be disabled by '+str(givenVal['id']))
     # Group one-is-required/mutex is ok
     for group,mbs in map(lambda x: (x,x["members"]),self.groups):
+      # Check that the set of parameters in mutually exclusive groups have at most one member present
       if ("mutually-exclusive" in group.keys()) and group["mutually-exclusive"]:
         if len(set.intersection( set(mbs) , set(self.in_dict.keys()) )) > 1:
           self.errs.append('Group ' + str(group["id"]) + ' is supposed to be mutex')
+      # Check that the set of parameters in one-is-required groups have at least one member present
       if ("one-is-required" in group.keys()) and group["one-is-required"]:
         if len(set.intersection( set(mbs) , set(self.in_dict.keys()) )) < 1:
           self.errs.append('Group ' + str(group["id"]) + ' requires one member to be present')
-    # Fast-fail if there was a problem
+    # Fast-fail if there was a problem with the input parameters
     if len(self.errs) != 0:
       sys.stderr.write("Problems found with prospective input:\n")
       for err in self.errs: sys.stderr.write("\t" + err + "\n")
