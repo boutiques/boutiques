@@ -49,8 +49,8 @@ errors = JSON::Validator.fully_validate(schema_file, descriptor)
 ### Validation of descriptor arguments ###
 
 ## Helper functions ##
-inputGet  = lambda { |s| descriptor['inputs'].map {       |v| v[s] } }
-outputGet = lambda { |s| descriptor['output-files'].map { |v| v[s] } }
+inputGet  = lambda { |s| descriptor['inputs'].map {       |v| v[s] } rescue [] }
+outputGet = lambda { |s| descriptor['output-files'].map { |v| v[s] } rescue [] }
 groupGet  = lambda { |s| descriptor['groups'].map {       |v| v[s] } rescue [] }
 inById    = lambda { |i| descriptor['inputs'].find{       |v| v['id']==i } || {} }
 

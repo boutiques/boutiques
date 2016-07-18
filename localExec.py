@@ -99,18 +99,58 @@ class LocalExecutor(object):
     After execution, it checks for output file existence.
     '''
 
-    command = self.cmdLine[0]
+    command, exit_code, destroyDockerScript = self.cmdLine[0], None, False
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for docker
     dockerImage = self.desc_dict['docker-image'] if 'docker-image' in self.desc_dict.keys() else None
     dockerIndex = self.desc_dict['docker-index'] if 'docker-index' in self.desc_dict.keys() else None
     dockerIsPresent = (not dockerImage is None) and (not dockerIndex is None)
+    # Docker script constant name
+    dsname = '.temp.localExec.dockerjob.sh'
     # If docker is present, alter the command template accordingly
     if dockerIsPresent:
-      pass # TODO
-    # Run command
-    try:
-      # Note: invokes the command through the shell (potential injection dangers)
+      # Pull the docker image
+      self._localExecute( "docker pull " + str(dockerImage) )
+      # Generate command script
+      cmdString = "#!/bin/bash -l\n" + str( command )
+      with open(dsname,"w") as scrFile: scrFile.write( cmdString )
+      # Ensure the script is executable
+      self._localExecute( "chmod 755 " + dsname )
+      # Run it in docker
+      dcmd = 'docker run --rm -v ${PWD}:${PWD} -w ${PWD} ' + str(dockerImage) + ' ${PWD}/' + dsname
+      exit_code = self._localExecute( dcmd )
+    # Otherwise, just run command locally
+    else:
+      exit_code = self._localExecute( command )
+    # Report exit status
+    print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
+    time.sleep(0.5) # Give the OS a (half) second to finish writing
+    # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
+    if dockerIsPresent and destroyDockerScript:
+      if os.path.isfile( dsname ): os.remove( dsname )
+    # Check for output files (note: the path-template can contain command-line-keys
+    print('Looking for output files:')
+    for outfile in self.desc_dict['output-files']:
+      # Generate correct path template based on input arguments
+      template = outfile['path-template']
+      for (input_id,input_key) in [(input['id'],input['command-line-key']) for input in self.inputs]:
+        # Blanks are entered if template key is not present
+        # Note: may wish to detect output files whose paths depend on particular inputs
+        # and not search for them if the key is not present
+        val = '' if not (input_id in self.in_dict.keys()) else self.in_dict[input_id]
+        template = template.replace(input_key,val)
+      # Look for the target file
+      exists = os.path.exists( template )
+      # Note whether it could be found or not
+      isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
+      s1 = 'Optional' if isOptional else 'Required'
+      s2 = '' if exists else 'not '
+      err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
+      print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+template)
+
+  # Private method that attempts to locally execute the given command. Returns the exit code.
+  def _localExecute(self,command):
+    try: # Note: invokes the command through the shell (potential injection dangers)
       process = subprocess.Popen( command , shell=True )
     except OSError as e:
       sys.stderr.write( 'OS Error during attempted execution!' )
@@ -119,30 +159,7 @@ class LocalExecutor(object):
       sys.stderr.write( 'Input Value Error during attempted execution!' )
       raise e
     else:
-      exit_code = process.wait()
-      # Report exit status
-      print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
-      time.sleep(0.5) # Give the OS a (half) second to finish writing
-      # Check for output files (note: the path-template can contain command-line-keys
-      print('Looking for output files:')
-      for outfile in self.desc_dict['output-files']:
-        # Generate correct path template based on input arguments
-        template = outfile['path-template']
-        for (input_id,input_key) in [(input['id'],input['command-line-key']) for input in self.inputs]:
-          # Blanks are entered if template key is not present
-          # Note: may wish to detect output files whose paths depend on particular inputs
-          # and not search for them if the key is not present
-          val = '' if not (input_id in self.in_dict.keys()) else self.in_dict[input_id]
-          template = template.replace(input_key,val)
-        # Look for the target file
-        exists = os.path.exists( template )
-        # Note whether it could be found or not
-        isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
-        s1 = 'Optional' if isOptional else 'Required'
-        s2 = '' if exists else 'not '
-        err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
-        print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+template)
-
+      return process.wait()
 
   # Private method to generate a random input parameter set that follows the constraints from the json descriptor
   # This method fills in the in_dict field of the object with constrained random values
@@ -484,7 +501,7 @@ if  __name__ == "__main__":
   elif given(args.input) and not (args.input.endswith(".json") or args.input.endswith(".csv")):
     errExit('Input file ' + str(args.input) + ' must end in .json or .csv')
   elif args.execute and (not given(args.input) and not given(args.string)):
-    errExit('--exec requires --input be specified')
+    errExit('--exec requires --input or --string be specified')
   elif not os.path.isfile( desc ):
     errExit('The input JSON descriptor does not seem to exist', False)
   elif not args.random and (not given(args.input) and not given(args.string)):
