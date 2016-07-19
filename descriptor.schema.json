@@ -232,6 +232,19 @@
                     "id",
                     "type"
                 ],
+                "anyOf": [
+                  {
+                    "properties": {
+                      "type": { "enum": ["Flag"] },
+                      "list": { "enum": [false] }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "type": { "enum": ["String", "File", "Number", "Enum"] }
+                    }
+                  }
+                ],
                 "additionalProperties": true,
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
