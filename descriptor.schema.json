@@ -55,7 +55,7 @@
         },
         "groups": {
             "id": "http://github.com/boutiques/boutiques-schema/groups",
-            "description": "Sets of identifiers of inputs, each specifying a parameter group.",
+            "description": "Sets of identifiers of inputs, each specifying an input group.",
             "type": "array",
             "items": {
                 "id": "http://github.com/boutiques/boutiques-schema/group",
@@ -71,12 +71,12 @@
                     "name": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/name",
                         "minLength": 1,
-                        "description": "A human-readable name for the parameter group.",
+                        "description": "A human-readable name for the input group.",
                         "type": "string"
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/description",
-                        "description": "Description of the parameter grouping.",
+                        "description": "Description of the input group.",
                         "type": "string"
                     },
                     "members": {
@@ -91,12 +91,12 @@
                     },
                     "mutually-exclusive": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/mutually-exclusive",
-                        "description": "True if only one input is permitted to be specified or activated within the group.",
+                        "description": "True if only one input in the group may be active at runtime.",
                         "type": "boolean"
                     },
                     "one-is-required": {
                         "id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
-                        "description": "True if at least one of the parameters in the group must be specified at runtime.",
+                        "description": "True if at least one of the inputs in the group must be active at runtime.",
                         "type": "boolean"
                     }
                 },
@@ -160,7 +160,7 @@
                     },
                     "requires-inputs": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
-                        "description": "Ids of the inputs which must be present for this input to be available.",
+                        "description": "Ids of the inputs which must be active for this input to be available.",
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -168,7 +168,7 @@
                     },
                     "disables-inputs": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/disabled-by-inputs",
-                        "description": "Ids of the inputs that disable this input when they are present.",
+                        "description": "Ids of the inputs that are disabled when this input is active.",
                         "type": "array",
                         "items": {
                             "type": "string"
