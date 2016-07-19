@@ -26,12 +26,12 @@ The format of command line keys is not specified. However, it is recommended to 
   * `default-value`: default value used by the tool when the input is not specified.
   * `required-inputs`: ids of the inputs which must be present for this input to be available.
   * `disabled-by-inputs`: ids of the inputs that disable this input when they are present.
-  * `enum-value-choices`: Permitted choices for input value. May only be used in conjunction with the enum type.
+  * `enum-value-choices`: Permitted choices for input value. May only be used in conjunction with the Enum type.
   * `integer`: A boolean specifying whether the input should be an integer. May only be used with Number type inputs.
   * `minimum`: Specify the minimum value of the input (inclusive). May only be used with Number type inputs.
   * `maximum`: Specify the maximum value of the input (inclusive). May only be used with Number type inputs.
   * `exclusive-minimum`: A boolean specifying whether an input's minimum value should be exclusive. May only be used with Number type inputs with a minimum.
-  * `exclusive-maximum`: A boolean specifying whether an input's minimum value should be exclusive. May only be used with Number type inputs with a maximum.
+  * `exclusive-maximum`: A boolean specifying whether an input's maximum value should be exclusive. May only be used with Number type inputs with a maximum.
   * `min-list-entries`: Specify the minimum number of entries in the list. May only be used with List type inputs.
   * `max-list-entries`: Specify the maximum number of entries in the list. May only be used with List type inputs.
 * **`output-files`**: an array of objects that represent output files with the following properties:
