@@ -1,10 +1,7 @@
+![Boutiques logo](http://boutiques.github.io/images/logo.png)
 # Boutiques
 
-![Boutiques logo](http://boutiques.github.io/images/logo.png)
-
-A cross-platform application repository framework.
-
-See http://boutiques.github.io for more information.
+Boutiques is a cross-platform application repository framework. See http://boutiques.github.io for more information.
 
 Contents:
 * `schema`: the Boutiques specification.
