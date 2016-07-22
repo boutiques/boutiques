@@ -17,5 +17,5 @@ Note: there is a Docker image ([boutiques/boutiques](https://hub.docker.com/r/bo
     * Generates 4 random command lines: `docker run --rm -v $PWD:/work -w /work boutiques/boutiques localExec.py -n 4 -r ./tool.json`
   * Check the help page (`-h` option) for more options and documentation.
 
-3. pegasus-boutiques: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
+3. `pegasus-boutiques`: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
 
