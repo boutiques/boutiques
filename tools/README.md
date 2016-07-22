@@ -13,9 +13,9 @@ Note: there is a Docker image ([boutiques/boutiques](https://hub.docker.com/r/bo
     * `docker run --rm -v $PWD:/work -w /work boutiques/boutiques validator.rb /usr/local/boutiques/schema/descriptor.schema.json ./tool.json`
 
 2. `localExec.py`: a Python script to test inputs on Boutiques JSON descriptors.
-  * Usage examples:
+  * Usage example:
     * Generates 4 random command lines: `docker run --rm -v $PWD:/work -w /work boutiques/boutiques localExec.py -n 4 -r ./tool.json`
   * Check the help page (`-h` option) for more options and documentation.
 
-* pegasus-boutiques: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
+3. pegasus-boutiques: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
 
