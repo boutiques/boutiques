@@ -45,7 +45,7 @@
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.2"]
+            "enum": ["0.2", "0.3"]
         },
         "walltime-estimate": {
             "id": "http://github.com/boutiques/boutiques-schema/walltime-estimate",
