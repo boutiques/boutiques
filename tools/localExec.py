@@ -486,7 +486,7 @@ Notes: pass lists by space-separated values
     if print_usage: parser.print_usage()
     sys.stderr.write('Error: ' + msg + '\n')
     sys.exit(1)
-    given = lambda x: not (x is None)
+  given = lambda x: not (x is None)
   if given(args.num) and args.num < 1:
     errExit('--num was not given an appropriate value')
   elif given(args.num) and not args.random:
@@ -525,13 +525,13 @@ Notes: pass lists by space-separated values
     executor.readInput(inData, given(args.string))
     # Execute it
     executor.execute()
-    # Print random case
+  # Print random case
   elif args.random:
     # Generate random input
     executor.generateRandomParams(args.num)
     # Print the resulting command line
     executor.printCmdLine()
-    # Print input case (default: no execution)
+  # Print input case (default: no execution)
   else:
     # Read in given input
     executor.readInput(inData, given(args.string))
