@@ -1,48 +1,5 @@
 #!/usr/bin/env python
 
-'''
-A local tool executor to help test JSON descriptors for use in the Boutiques framework.
-Should be used after successfully running validator.rb.
-
-Program flow:
-  - Requires a JSON descriptor of the tool, following the Boutiques schema.
-  - Requires an input set of parameters. Can either:
-    o Come from a .json file or .csv file [Specfied by --input/-i]
-    o Be randomly generated based on the input json descriptor [Specified by --random/-r]
-  - The tool can then either:
-    o Print the resulting command-line based on the input (to help check correctness of the permitted command lines) [Default behaviour]
-    o Attempt to execute the command line output by the tool, for the given parameters (not for the random case) [--exec/-e flag]
-
-Note: validating the schema with a validator is recommended first. This script does not check the descriptor with respect to the schema.
-      Only in the -e case are output files checked for, at the end. If docker is specified with -e, it will attempt to execute via docker.
-
-Formats:
-A .json input file should have an "inputs" array with one value per id, which should look like:
-{
-  "inputs" : [
-    { "input_id_1" : "val1" },
-    { "input_id_2" : "val2" },
-    { "input_list" : "a b c" },
-    { "input_flag" : "true" },
-    ...
-  ]
-}
-
-A .csv input file should look like the following:
-input_id_1,val1
-input_id_2,val2
-input_list,a b c
-input_flag,true
-...
-
-A string input should look like:
-python localExec.py descriptor.json -s 'in_id_1,val_1;in_list,a b c;in_flag,true;in_id_2,val_2;...'
-
-Notes: pass lists by space-separated values
-       pass flags with 'true' or 'false' (false is the same as not including it)
-       note the quotes in the -s input option
-'''
-
 import argparse, os, sys, json, random as rnd, string, math, subprocess, time
 
 # Executor class
@@ -472,7 +429,49 @@ class LocalExecutor(object):
 if  __name__ == "__main__":
 
   # Parse arguments
-  parser = argparse.ArgumentParser(description = 'Local tool executor to test JSON descriptors for the Boutiques framework')
+  description = '''
+A local tool executor to help test JSON descriptors for use in the Boutiques framework.
+Should be used after successfully running validator.rb.
+
+Program flow:
+  - Requires a JSON descriptor of the tool, following the Boutiques schema.
+  - Requires an input set of parameters. Can either:
+    o Come from a .json file or .csv file [Specfied by --input/-i]
+    o Be randomly generated based on the input json descriptor [Specified by --random/-r]
+  - The tool can then either:
+    o Print the resulting command-line based on the input (to help check correctness of the permitted command lines) [Default behaviour]
+    o Attempt to execute the command line output by the tool, for the given parameters (not for the random case) [--exec/-e flag]
+
+Note: validating the schema with a validator is recommended first. This script does not check the descriptor with respect to the schema.
+      Only in the -e case are output files checked for, at the end. If docker is specified with -e, it will attempt to execute via docker.
+
+Formats:
+A .json input file should have an "inputs" array with one value per id, which should look like:
+{
+  "inputs" : [
+    { "input_id_1" : "val1" },
+    { "input_id_2" : "val2" },
+    { "input_list" : "a b c" },
+    { "input_flag" : "true" },
+    ...
+  ]
+}
+
+A .csv input file should look like the following:
+input_id_1,val1
+input_id_2,val2
+input_list,a b c
+input_flag,true
+...
+
+A string input should look like:
+python localExec.py descriptor.json -s 'in_id_1,val_1;in_list,a b c;in_flag,true;in_id_2,val_2;...'
+
+Notes: pass lists by space-separated values
+       pass flags with 'true' or 'false' (false is the same as not including it)
+       note the quotes in the -s input option
+'''
+  parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument('desc', metavar='descriptor', nargs = 1, help = 'The input JSON tool descriptor to test.')
   parser.add_argument('-i', '--input', help = 'Input parameter values with which to test the generation (.json or .csv).')
   parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.')
