@@ -4,7 +4,7 @@
 import json, jsonschema as jsa, argparse, os, sys
 
 # Generate an invocation schema from a Boutiques application descriptor
-def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=False):
+def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
   # Subclass dictionary to act more like a ruby hash map
   class RMap(dict):
     def __getitem__(self, key): return dict.get(self, key)
@@ -44,7 +44,8 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=False):
     return h
   schema["properties"] = reduce(addTypeConstraints, inputs, {})
   # Required inputs
-  schema["required"] = map(lambda x: x['id'], filter(lambda x: not x.get('optional'), inputs))
+  reqInputs = map(lambda x: x['id'], filter(lambda x: not x.get('optional'), inputs))
+  if len(reqInputs) > 0: schema["required"] = reqInputs
   # Helper functions (assumes properly formed descriptor)
   byInd  = lambda id: [i for i in inputs if id==i['id']][0]
   isFlag = lambda id: (byInd(id)['type'] == 'Flag')
@@ -63,14 +64,15 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=False):
       for m in [m for m in g['members'] if not m==id]: disbs.append( m )
     # Handle requires-inputs (flags have to be true to satisfy it)
     if reqs:
-      h[id] = { "required" : reqs }
       reqMap = { r : { "enum" : [ True ] } for r in reqs if isFlag(r) }
       if isFlag( id ):
+        h[id] = {}
         h[id]['anyOf'] = [
-          { "properties" : reqMap },
+          { "properties" : reqMap, "required" : reqs },
           { "properties" : { id : { "enum" : [ False ] } } }
         ]
       else:
+        h[id] = { "required" : reqs }
         h[id]['properties'] = reqMap
     # Handle disables-inputs (false flags do not violate the disabled criteria)
     if len(disbs) > 0:
@@ -108,9 +110,9 @@ def validateSchema(s, d=None):
   # Check data instance against schema
   if not d is None:
     errs  = list(jsa.Draft4Validator(s).iter_errors(d))
-    nerrs = sum( 1 for _ in errs )
+    nerrs = len( errs )
     if nerrs > 0:
-      print("Encountered " + str(nerrs) + " errors!")
+      print("Encountered " + str(nerrs) + " error" + ('s!' if nerrs > 1 else '!') )
       for e in sorted(errs, key=str): print("\t" + str(e.message))
       sys.exit(1)
     else:
