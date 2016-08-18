@@ -100,8 +100,8 @@ An annotated example of a Boutiques application descriptor:
   "schema-version" : 0.3, // The version of the Boutiques schema this descriptor follows
   "inputs" : [{
     // A string parameter
-    "id" : "str_input", // A unique id for this input param, so platforms can identify it
-    "name" : "A string input",
+    "id" : "str_input", // A unique id for this input (e.g. for platforms to differentiate inputs)
+    "name" : "A string input", // A human readable name for the input parameter (e.g. for UI display)
     "type" : "String",
     "description" : "Describe the use and meaning of the parameter",
     "optional" : false, // Means the parameter is required for the tool
@@ -132,7 +132,7 @@ An annotated example of a Boutiques application descriptor:
     "integer" : false // Make 'true' to require the number is an integer
   }, {
     // File input parameters are specified like strings
-    // Implementation details, like validation or file existence, are left to platforms.
+    // Implementation details, like validation of file existence, are left to platforms
     "id" : "file_input",
     "name" : "A file input",
     "type" : "File",
@@ -171,7 +171,7 @@ An annotated example of a Boutiques application descriptor:
     "command-line-key" : "[LOG]",
     // Any input keys (e.g. here str_input) will have any of the following extensions removed
     // from their value before substitution (e.g. if 'in.csv' was given to str_input, 'in' would
-    // would be the resulting substituted value in [STRING_INPUT]).
+    // would be the resulting substituted value in [STRING_INPUT])
     "path-template-stripped-extensions" : [".txt", ".csv"],
     // As above, optional : false requires that the output file exists
     "optional" : false
@@ -179,14 +179,14 @@ An annotated example of a Boutiques application descriptor:
     // We can also represent sets of output files using a wildcard
     "id" : "output_files",
     "name" : "outfiles",
-    // When capturing multiple files, list must be true (and that '*' is used)
+    // When capturing multiple files, list should be true
     "list" : true,
-    // A regular expression style wildcard is used to capture multiple files
+    // A regular expression style wildcard (*) is used to capture multiple files
     "path-template" : "output/*_exampleOutputTag.resultType",
     "optional" : true, // I.e. this output may not necessarily be created
   }],
   // Parameter groups represent semantically related sets of input parameters. They can be used
-  // to specify inter-parameter disabling/requirement, and to help automatic UI generation on platforms
+  // to specify inter-parameter disabling/requirement, and to help automatic UI generation on platforms.
   "groups" : [{
     "id" : "an_example_group",
     "name" : "Example group 1",
@@ -201,7 +201,7 @@ An annotated example of a Boutiques application descriptor:
 }
 ```
 
-See the [cbrain-plugins-neuro](https://github.com/aces/cbrain-plugins-neuro/tree/master/cbrain_task_descriptors "Boutiques example descriptors at cbrain-plugins-neuro") for some example descriptors currently in use.
+See the [cbrain-plugins-neuro repo](https://github.com/aces/cbrain-plugins-neuro/tree/master/cbrain_task_descriptors "Boutiques example descriptors at cbrain-plugins-neuro") for some example descriptors currently in use.
 
 More examples (TODO)
 * Inputs without command-line key.
