@@ -71,13 +71,13 @@
                     "value": {
                         "id": "http://github.com/boutiques/boutiques-schema/environment-variable/value",
                         "description": "The value of the environment variable.",
-                        "type": "string",
+                        "type": "string"
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/environment-variable/description",
                         "description": "Description of the environment variable.",
                         "type": "string"
-                    },
+                    }
                 },
                 "required": [
                     "name",

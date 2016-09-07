@@ -81,7 +81,7 @@ class LocalExecutor(object):
       # Prepare extra environment variables
       envString = " "
       if envVars:
-        for (key,val) in envVars.items(): envString += key + "=" + val + ' '
+        for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
       # Run it in docker
       dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} -w ${PWD} ' + str(dockerImage) + ' ${PWD}/' + dsname
       exit_code = self._localExecute( dcmd )
