@@ -62,6 +62,11 @@ class LocalExecutor(object):
     dockerImage = self.desc_dict['docker-image'] if 'docker-image' in self.desc_dict.keys() else None
     dockerIndex = self.desc_dict['docker-index'] if 'docker-index' in self.desc_dict.keys() else None
     dockerIsPresent = (not dockerImage is None) and (not dockerIndex is None)
+    # Export environment variables, if they are specified in the descriptor
+    envVars = {}
+    if 'environment-variables' in self.desc_dict.keys():
+      for (envVarName,envVarValue) in [ (p['name'],p['value']) for p in self.desc_dict['environment-variables'] ]:
+        os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue
     # Docker script constant name
     dsname = '.temp.localExec.dockerjob.sh'
     # If docker is present, alter the command template accordingly
@@ -73,8 +78,12 @@ class LocalExecutor(object):
       with open(dsname,"w") as scrFile: scrFile.write( cmdString )
       # Ensure the script is executable
       self._localExecute( "chmod 755 " + dsname )
+      # Prepare extra environment variables
+      envString = " "
+      if envVars:
+        for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
       # Run it in docker
-      dcmd = 'docker run --rm -v ${PWD}:${PWD} -w ${PWD} ' + str(dockerImage) + ' ${PWD}/' + dsname
+      dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} -w ${PWD} ' + str(dockerImage) + ' ${PWD}/' + dsname
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
@@ -438,12 +447,13 @@ Program flow:
   - Requires an input set of parameters. Can either:
     o Come from a .json file or .csv file [Specfied by --input/-i]
     o Be randomly generated based on the input json descriptor [Specified by --random/-r]
+    o Be specifed on the command line itself [Specified by --string/-s]
   - The tool can then either:
     o Print the resulting command-line based on the input (to help check correctness of the permitted command lines) [Default behaviour]
     o Attempt to execute the command line output by the tool, for the given parameters (not for the random case) [--exec/-e flag]
 
-Note: validating the schema with a validator is recommended first. This script does not check the descriptor with respect to the schema.
-      Only in the -e case are output files checked for, at the end. If docker is specified with -e, it will attempt to execute via docker.
+Notes: validating the schema with a validator is recommended first. This script does not check the descriptor with respect to the schema.
+       Only in the -e case are output files checked for, at the end. If docker is specified with -e, it will attempt to execute via docker.
 
 Formats:
 A .json input file should have an "inputs" array with one value per id, which should look like:
