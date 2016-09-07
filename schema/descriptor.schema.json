@@ -53,6 +53,38 @@
             "description": "Estimated wall time of a task in seconds.",
             "minLength": 1
         },
+        "environment-variables": {
+            "id": "http://github.com/boutiques/boutiques-schema/environment-variables",
+            "type": "array",
+            "description": "An array of key-value pairs specifying environment variable names and their values to be used in the execution environment.",
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/environment-variable",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/name",
+                        "minLength": 1,
+                        "description": "The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: \"PROGRAM_PATH\".",
+                        "type": "string",
+                        "pattern": "^[a-z,A-Z][0-9,_,a-z,A-Z]*$"
+                    },
+                    "value": {
+                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/value",
+                        "description": "The value of the environment variable.",
+                        "type": "string",
+                    },
+                    "description": {
+                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/description",
+                        "description": "Description of the environment variable.",
+                        "type": "string"
+                    },
+                },
+                "required": [
+                    "name",
+                    "value"
+                ]
+            }
+        },
         "groups": {
             "id": "http://github.com/boutiques/boutiques-schema/groups",
             "description": "Sets of identifiers of inputs, each specifying an input group.",
