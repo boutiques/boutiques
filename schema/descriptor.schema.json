@@ -28,18 +28,57 @@
             "description": "A string that describes the tool command line, where input and output values are identified by \"keys\". At runtime, command-line keys are substituted with flags and values.",
             "type": "string"
         },
-        "docker-image": {
-            "id": "http://github.com/boutiques/boutiques-schema/docker-image",
-            "minLength": 1,
-            "description": "Name of a Docker image where tool is installed and configured. Example: docker.io/neurodebian.",
-            "type": "string"
-        },
-        "docker-index": {
-            "id": "http://github.com/boutiques/boutiques-schema/docker-index",
-            "minLength": 1,
-            "description": "Docker index where Docker image is available.",
-            "default": "http://index.docker.io",
-            "type": "string"
+        "container": {
+            "id": "http://github.com/boutiques/boutiques-schema/container",
+            "type": "object",
+            "description": "Object representing a container for the tool.",
+            "allOf": [{
+                "properties": {
+                    "launch-directory": {
+                        "id": "http://github.com/boutiques/boutiques-schema/container/launch-directory",
+                        "minLength": 1,
+                        "description": "Location from which this task must be launched within the container.",
+                        "type": "string"
+                    },
+                    "container-hash": {
+                        "id": "http://github.com/boutiques/boutiques-schema/container/launch-directory",
+                        "minLength": 1,
+                        "description": "Hash for the given container.",
+                        "type": "string"
+                    }
+                }
+            },{
+                "oneOf": [{
+                    "properties": {
+                        "type": { "enum": ["docker"] },
+                        "image": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/image",
+                            "minLength": 1,
+                            "description": "Name of an image where the tool is installed and configured. Example: docker.io/neurodebian.",
+                            "type": "string"
+                        },
+                        "index": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/index",
+                            "minLength": 1,
+                            "description": "Index where the image is available.",
+                            "default": "http://index.docker.io",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["type", "image", "index"]
+                }, {
+                    "properties": {
+                        "type": { "enum": ["rootfs", "singularity"] },
+                        "url": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/url",
+                            "minLength": 1,
+                            "description": "URL where the image is available.",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["type", "url"]
+                }]
+            }]
         },
         "schema-version": {
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
@@ -257,6 +296,16 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/max-list-entries",
                         "description": "Specify the maximum number of entries in the list. May only be used with List type inputs.",
                         "type": "number"
+                    },
+                    "absolute-path": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/absolute-path",
+                        "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs. Cannot be true if relative-path is true.",
+                        "type": "boolean"
+                    },
+                    "relative-path": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/relative-path",
+                        "description": "Specifies that this input must be given as a relative path, with respect to the working directory. Only specifiable for File type inputs. Cannot be true if absolute-path is true.",
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -264,18 +313,33 @@
                     "id",
                     "type"
                 ],
-                "anyOf": [
-                  {
-                    "properties": {
-                      "type": { "enum": ["Flag"] },
-                      "list": { "enum": [false] }
+                "allOf": [
+                    {
+                        "anyOf": [{
+                            "properties": {
+                              "type": { "enum": ["Flag"] },
+                              "list": { "enum": [false] }
+                            }
+                        }, {
+                            "properties": {
+                              "type": { "enum": ["String", "File", "Number", "Enum"] }
+                            }
+                          }
+                        ]
+                    },
+                    {
+                        "anyOf": [{
+                            "properties": {
+                                "absolute-path": { "enum": [true] },
+                                "relative-path": { "not": { "enum": [true] } }
+                            }
+                        }, {
+                            "properties": {
+                                "relative-path": { "enum": [true] },
+                                "absolute-path": { "not": { "enum": [true] } }
+                            }
+                        }]
                     }
-                  },
-                  {
-                    "properties": {
-                      "type": { "enum": ["String", "File", "Number", "Enum"] }
-                    }
-                  }
                 ],
                 "additionalProperties": true,
                 "dependencies": {
@@ -310,6 +374,16 @@
                     "exclusive-maximum": {
                         "properties": {
                             "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "absolute-path": {
+                        "properties": {
+                            "type": {"enum": ["File"]}
+                        }
+                    },
+                    "relative-path": {
+                        "properties": {
+                            "type": {"enum": ["File"]}
                         }
                     },
                     "exclusive-minimum": ["minimum"],
