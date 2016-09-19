@@ -34,14 +34,14 @@
             "description": "Object representing a container for the tool.",
             "allOf": [{
                 "properties": {
-                    "launch-directory": {
-                        "id": "http://github.com/boutiques/boutiques-schema/container/launch-directory",
+                    "working-directory": {
+                        "id": "http://github.com/boutiques/boutiques-schema/container/working-directory",
                         "minLength": 1,
                         "description": "Location from which this task must be launched within the container.",
                         "type": "string"
                     },
                     "container-hash": {
-                        "id": "http://github.com/boutiques/boutiques-schema/container/launch-directory",
+                        "id": "http://github.com/boutiques/boutiques-schema/container/container-hash",
                         "minLength": 1,
                         "description": "Hash for the given container.",
                         "type": "string"
@@ -65,7 +65,7 @@
                             "type": "string"
                         }
                     },
-                    "required": ["type", "image", "index"]
+                    "required": ["type", "image"]
                 }, {
                     "properties": {
                         "type": { "enum": ["rootfs", "singularity"] },
