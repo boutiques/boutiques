@@ -28,10 +28,9 @@
             "description": "A string that describes the tool command line, where input and output values are identified by \"keys\". At runtime, command-line keys are substituted with flags and values.",
             "type": "string"
         },
-        "container": {
-            "id": "http://github.com/boutiques/boutiques-schema/container",
+        "container-image": {
+            "id": "http://github.com/boutiques/boutiques-schema/container-image",
             "type": "object",
-            "description": "Object representing a container for the tool.",
             "allOf": [{
                 "properties": {
                     "working-directory": {
@@ -65,7 +64,8 @@
                             "type": "string"
                         }
                     },
-                    "required": ["type", "image"]
+                    "required": ["type", "image"],
+                    "description": "Object representing a docker container for the tool."
                 }, {
                     "properties": {
                         "type": { "enum": ["rootfs", "singularity"] },
@@ -76,7 +76,8 @@
                             "type": "string"
                         }
                     },
-                    "required": ["type", "url"]
+                    "required": ["type", "url"],
+                    "description": "Object representing a rootfs or singularity container for the tool."
                 }]
             }]
         },
@@ -297,14 +298,9 @@
                         "description": "Specify the maximum number of entries in the list. May only be used with List type inputs.",
                         "type": "number"
                     },
-                    "absolute-path": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/absolute-path",
-                        "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs. Cannot be true if relative-path is true.",
-                        "type": "boolean"
-                    },
-                    "relative-path": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/relative-path",
-                        "description": "Specifies that this input must be given as a relative path, with respect to the working directory. Only specifiable for File type inputs. Cannot be true if absolute-path is true.",
+                    "uses-absolute-path": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/uses-absolute-path",
+                        "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs.",
                         "type": "boolean"
                     }
                 },
@@ -313,34 +309,16 @@
                     "id",
                     "type"
                 ],
-                "allOf": [
-                    {
-                        "anyOf": [{
-                            "properties": {
-                              "type": { "enum": ["Flag"] },
-                              "list": { "enum": [false] }
-                            }
-                        }, {
-                            "properties": {
-                              "type": { "enum": ["String", "File", "Number", "Enum"] }
-                            }
-                          }
-                        ]
-                    },
-                    {
-                        "anyOf": [{
-                            "properties": {
-                                "absolute-path": { "enum": [true] },
-                                "relative-path": { "not": { "enum": [true] } }
-                            }
-                        }, {
-                            "properties": {
-                                "relative-path": { "enum": [true] },
-                                "absolute-path": { "not": { "enum": [true] } }
-                            }
-                        }]
+                "anyOf": [{
+                    "properties": {
+                      "type": { "enum": ["Flag"] },
+                      "list": { "enum": [false] }
                     }
-                ],
+                }, {
+                    "properties": {
+                      "type": { "enum": ["String", "File", "Number", "Enum"] }
+                    }
+                }],
                 "additionalProperties": true,
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
@@ -376,12 +354,7 @@
                             "type": {"enum": ["Number"]}
                         }
                     },
-                    "absolute-path": {
-                        "properties": {
-                            "type": {"enum": ["File"]}
-                        }
-                    },
-                    "relative-path": {
+                    "uses-absolute-path": {
                         "properties": {
                             "type": {"enum": ["File"]}
                         }
