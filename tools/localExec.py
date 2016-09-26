@@ -45,10 +45,12 @@ class LocalExecutor(object):
     self.assocGrp   = lambda i: (filter( lambda g: i in g["members"], self.groups ) or [None])[0]
     # Returns the required inputs of a given input id, or the empty string
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
-    ## Extra Options ##
-    self.forcePathType = False if (options.get('forcePathType') is None) else options['forcePathType']
+    ## Container-image Options ##
     self.container = self.desc_dict.get('container-image')
     self.launchDir = None if self.container is None else self.container.get('working-directory')
+    ## Extra Options ##
+    # Include: forcePathType, ignoreContainer, and destroyTempScripts
+    for option in options.keys(): setattr(self, option, options.get(option))
     # Container Implementation check
     if (not self.container is None) and self.container['type'] != 'docker':
       raise ValueError('Other container types than docker (e.g. ' + self.container['type'] + ') are not yet supported')
@@ -62,7 +64,7 @@ class LocalExecutor(object):
     After execution, it checks for output file existence.
     '''
 
-    command, exit_code, destroyDockerScript = self.cmdLine[0], None, False
+    command, exit_code = self.cmdLine[0], None
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for docker
     dockerImage = self.container['image'] if 'image' in self.container.keys() else None
@@ -77,7 +79,7 @@ class LocalExecutor(object):
     # Note that docker cannot do a local volume mount of files starting with a '.', hence this one does not
     dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.dockerjob.sh' # time tag to avoid overwrites
     # If docker is present, alter the command template accordingly
-    if dockerIsPresent:
+    if dockerIsPresent and not self.ignoreContainer:
       # Pull the docker image
       self._localExecute( "docker pull " + str(dockerImage) )
       # Generate command script
@@ -91,9 +93,11 @@ class LocalExecutor(object):
         for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
-      mntScript = '' if launchDir is None else '-v ' + os.path.join(os.getcwd(),dsname) + ":" + os.path.join(launchDir,dsname)
+      # Change root to user, so that ownership of the output files is not messed up (i.e. owned by root)
+      uchange = '-u ' + str( os.getuid() )
+      # mntScript = '' if launchDir is None else '-v ' + os.path.join(os.getcwd(),dsname) + ":" + os.path.join(launchDir,dsname)
       # Run it in docker
-      dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} ' + mntScript + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./'  + dsname
+      dcmd = 'docker run --rm' + envString + uchange  + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./' + dsname
       print('Executing in Docker via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
@@ -103,7 +107,7 @@ class LocalExecutor(object):
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
-    if dockerIsPresent and destroyDockerScript:
+    if dockerIsPresent and self.destroyTempScripts:
       if os.path.isfile( dsname ): os.remove( dsname )
     # Check for output files (note: the path-template can contain command-line-keys
     print('Looking for output files:')
@@ -514,6 +518,8 @@ Notes: pass lists by space-separated values
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
   parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
   parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
+  parser.add_argument('--ignoreContainer', action = 'store_true', help = 'Attempt execution locally, even if a container is specified.')
+  parser.add_argument('-d', '--destroyTempScripts', action = 'store_true', help = 'Destroys any temporary scripts used to execute commands in containers.')
   args = parser.parse_args()
 
   # Check arguments
@@ -552,7 +558,9 @@ Notes: pass lists by space-separated values
   inData = args.input if given(args.input) else ( args.string if given(args.string) else None )
 
   # Generate object that will perform the commands
-  executor = LocalExecutor(desc,{'forcePathType' : not args.dontForcePathType})
+  executor = LocalExecutor(desc, { 'forcePathType'      : not args.dontForcePathType,
+                                   'destroyTempScripts' : args.destroyTempScripts,
+                                   'ignoreContainer'    : args.ignoreContainer        })
 
   ### Run the executor with the given parameters ###
   # Execution case
