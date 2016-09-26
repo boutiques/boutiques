@@ -20,7 +20,7 @@ class LocalExecutor(object):
   """
 
   # Constructor
-  def __init__(self,desc):
+  def __init__(self,desc,options={}):
     ## Initial parameters ##
     self.desc_path = desc  # Save descriptor path
     self.errs      = []    # Empty errors holder
@@ -45,7 +45,13 @@ class LocalExecutor(object):
     self.assocGrp   = lambda i: (filter( lambda g: i in g["members"], self.groups ) or [None])[0]
     # Returns the required inputs of a given input id, or the empty string
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
-
+    ## Extra Options ##
+    self.forcePathType = False if (options.get('forcePathType') is None) else options['forcePathType']
+    self.container = self.desc_dict.get('container')
+    self.launchDir = None if self.container is None else self.container.get('working-directory')
+    # Container Implementation check
+    if (not self.container is None) and self.container['type'] != 'docker':
+      raise ValueError('Other container types (e.g. ' + self.container['type'] + ') are not yet supported')
 
   # Attempt local execution of the command line generated from the input values
   def execute(self):
@@ -59,8 +65,8 @@ class LocalExecutor(object):
     command, exit_code, destroyDockerScript = self.cmdLine[0], None, False
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for docker
-    dockerImage = self.desc_dict['docker-image'] if 'docker-image' in self.desc_dict.keys() else None
-    dockerIndex = self.desc_dict['docker-index'] if 'docker-index' in self.desc_dict.keys() else None
+    dockerImage = self.container['image'] if 'image' in self.container.keys() else None
+    dockerIndex = self.container['index'] if 'index' in self.container.keys() else None
     dockerIsPresent = (not dockerImage is None) and (not dockerIndex is None)
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
@@ -82,8 +88,12 @@ class LocalExecutor(object):
       envString = " "
       if envVars:
         for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
+      # Change launch (working) directory if desired
+      launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
+      mntScript = '' if launchDir is None else '-v ' + dsname + ":" + os.path.join(launchDir,dsname)
       # Run it in docker
-      dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} -w ${PWD} ' + str(dockerImage) + ' ${PWD}/' + dsname
+      dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} ' + mntScript + ' -w ' + launchDir + ' ' + str(dockerImage) + ' '  + dsname
+      print('Executing in Docker via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
@@ -326,8 +336,8 @@ class LocalExecutor(object):
     try: self._validateDict()
     except Exception: # Avoid catching BaseExceptions like SystemExit
       sys.stderr.write("An error occurred in validation\nPreviously saved issues\n")
-      for err in self.errs: sys.stderr.write("\t" + str(err) + "\n")
-      raise
+      for err in self.errs: sys.stderr.write("\t" + str(err) + "\n") # Write any errors we found
+      raise # Raise the exception that caused failure
     # Build and save output command line (as a single-entry list)
     self.cmdLine = [ self._generateCmdLineFromInDict() ]
 
@@ -401,8 +411,23 @@ class LocalExecutor(object):
         # Enum value is in the list of allowed values
         check('enum-value-choices', lambda x,y: x in targ[y], "is not a valid enum choice",val)
       elif targ["type"] == "Flag":
-        # Should be 'true' or 'false' when lower-cased
+        # Should be 'true' or 'false' when lower-cased (based on our transformations of the input)
         check(None, lambda x,y: x.lower() in ["true","false"], "is not a valid flag value",val)
+      elif targ["type"] == "File":
+        # Check path-type (absolute vs relative)
+        if not self.forcePathType:
+          for ftarg in (str(val).split() if isList else [val]):
+            check('absolute-path', lambda x,y: os.path.isabs(x), "is not an absolute path",ftarg)
+            check('relative-path', lambda x,y: not os.path.isabs(x), "is not a relative path",ftarg)
+        else:
+          # Replace incorrectly specified paths if desired
+          replacementFiles = []
+          launchDir = self.launchDir if (not self.launch is None) else os.getcwd()
+          for ftarg in (str(val).split() if isList else [val]):
+            if targ.get('absolute-path') == True: replacementFiles.append( os.path.abspath(ftarg) )
+            elif targ.get('relative-path') == True: replacementFiles.append( os.path.relpath(ftarg, launchDir) )
+          # Replace old val with the new one
+          self.in_dict[ key ] = " ".join( replacementFiles )
       # List length constraints are satisfied
       if isList: check('min-list-entries', lambda x,y: len(x.split()) >= targ[y], "violates min size",val)
       if isList: check('max-list-entries', lambda x,y: len(x.split()) <= targ[y], "violates max size",val)
@@ -486,8 +511,9 @@ Notes: pass lists by space-separated values
   parser.add_argument('-i', '--input', help = 'Input parameter values with which to test the generation (.json or .csv).')
   parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.')
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
-  parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine')
-  parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line")
+  parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
+  parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
+  parser.add_argument('--forcePathType', action = 'store_true', help = 'Transform absolute/relative paths to the type specified by the input descriptor, rather than failing, if the input does not conform.')
   args = parser.parse_args()
 
   # Check arguments
@@ -526,7 +552,7 @@ Notes: pass lists by space-separated values
   inData = args.input if given(args.input) else ( args.string if given(args.string) else None )
 
   # Generate object that will perform the commands
-  executor = LocalExecutor(desc)
+  executor = LocalExecutor(desc,{'forcePathType' : args.forcePathType})
 
   ### Run the executor with the given parameters ###
   # Execution case
