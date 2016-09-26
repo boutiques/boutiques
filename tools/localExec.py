@@ -47,11 +47,11 @@ class LocalExecutor(object):
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
     ## Extra Options ##
     self.forcePathType = False if (options.get('forcePathType') is None) else options['forcePathType']
-    self.container = self.desc_dict.get('container')
+    self.container = self.desc_dict.get('container-image')
     self.launchDir = None if self.container is None else self.container.get('working-directory')
     # Container Implementation check
     if (not self.container is None) and self.container['type'] != 'docker':
-      raise ValueError('Other container types (e.g. ' + self.container['type'] + ') are not yet supported')
+      raise ValueError('Other container types than docker (e.g. ' + self.container['type'] + ') are not yet supported')
 
   # Attempt local execution of the command line generated from the input values
   def execute(self):
@@ -74,7 +74,8 @@ class LocalExecutor(object):
       for (envVarName,envVarValue) in [ (p['name'],p['value']) for p in self.desc_dict['environment-variables'] ]:
         os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue
     # Docker script constant name
-    dsname = '.temp.localExec.dockerjob.sh'
+    # Note that docker cannot do a local volume mount of files starting with a '.', hence this one does not
+    dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.dockerjob.sh' # time tag to avoid overwrites
     # If docker is present, alter the command template accordingly
     if dockerIsPresent:
       # Pull the docker image
@@ -90,9 +91,9 @@ class LocalExecutor(object):
         for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
-      mntScript = '' if launchDir is None else '-v ' + dsname + ":" + os.path.join(launchDir,dsname)
+      mntScript = '' if launchDir is None else '-v ' + os.path.join(os.getcwd(),dsname) + ":" + os.path.join(launchDir,dsname)
       # Run it in docker
-      dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} ' + mntScript + ' -w ' + launchDir + ' ' + str(dockerImage) + ' '  + dsname
+      dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} ' + mntScript + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./'  + dsname
       print('Executing in Docker via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
@@ -417,15 +418,14 @@ class LocalExecutor(object):
         # Check path-type (absolute vs relative)
         if not self.forcePathType:
           for ftarg in (str(val).split() if isList else [val]):
-            check('absolute-path', lambda x,y: os.path.isabs(x), "is not an absolute path",ftarg)
-            check('relative-path', lambda x,y: not os.path.isabs(x), "is not a relative path",ftarg)
+            check('uses-absolute-path', lambda x,y: os.path.isabs(x), "is not an absolute path",ftarg)
         else:
           # Replace incorrectly specified paths if desired
           replacementFiles = []
           launchDir = self.launchDir if (not self.launch is None) else os.getcwd()
           for ftarg in (str(val).split() if isList else [val]):
-            if targ.get('absolute-path') == True: replacementFiles.append( os.path.abspath(ftarg) )
-            elif targ.get('relative-path') == True: replacementFiles.append( os.path.relpath(ftarg, launchDir) )
+            # If the input uses-absolute-path, replace the path with its absolute version
+            if targ.get('uses-absolute-path') == True: replacementFiles.append( os.path.abspath(ftarg) )
           # Replace old val with the new one
           self.in_dict[ key ] = " ".join( replacementFiles )
       # List length constraints are satisfied
@@ -513,7 +513,7 @@ Notes: pass lists by space-separated values
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
   parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
-  parser.add_argument('--forcePathType', action = 'store_true', help = 'Transform absolute/relative paths to the type specified by the input descriptor, rather than failing, if the input does not conform.')
+  parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
   args = parser.parse_args()
 
   # Check arguments
@@ -552,7 +552,7 @@ Notes: pass lists by space-separated values
   inData = args.input if given(args.input) else ( args.string if given(args.string) else None )
 
   # Generate object that will perform the commands
-  executor = LocalExecutor(desc,{'forcePathType' : args.forcePathType})
+  executor = LocalExecutor(desc,{'forcePathType' : not args.dontForcePathType})
 
   ### Run the executor with the given parameters ###
   # Execution case
