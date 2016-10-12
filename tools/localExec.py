@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse, os, sys, json, random as rnd, string, math, subprocess, time
+import argparse, os, sys, json, random as rnd, string, math, subprocess, time, pwd
 
 # Executor class
 class LocalExecutor(object):
@@ -64,17 +64,16 @@ class LocalExecutor(object):
     After execution, it checks for output file existence.
     '''
 
-    command, exit_code = self.cmdLine[0], None
+    command, exit_code, container = self.cmdLine[0], None, self.container or {}
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for docker
-    dockerImage = self.container['image'] if 'image' in self.container.keys() else None
-    dockerIndex = self.container['index'] if 'index' in self.container.keys() else None
+    dockerImage, dockerIndex = container.get( 'image' ), container.get( 'index' )
     dockerIsPresent = (not dockerImage is None) and (not dockerIndex is None)
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
     if 'environment-variables' in self.desc_dict.keys():
       for (envVarName,envVarValue) in [ (p['name'],p['value']) for p in self.desc_dict['environment-variables'] ]:
-        os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue
+        os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue # for non-container and docker resp.
     # Docker script constant name
     # Note that docker cannot do a local volume mount of files starting with a '.', hence this one does not
     dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.dockerjob.sh' # time tag to avoid overwrites
@@ -83,7 +82,12 @@ class LocalExecutor(object):
       # Pull the docker image
       self._localExecute( "docker pull " + str(dockerImage) )
       # Generate command script
-      cmdString = "#!/bin/bash -l\n" + str( command )
+      uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
+      # Adds the user to the container before executing the templated command line
+      userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
+      # If --changeUser was desired, run with su so that any output files are owned by the user instead of root
+      if self.changeUser: command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
+      cmdString = "#!/bin/bash -l\n" + userchange + str( command )
       with open(dsname,"w") as scrFile: scrFile.write( cmdString )
       # Ensure the script is executable
       self._localExecute( "chmod 755 " + dsname )
@@ -93,11 +97,8 @@ class LocalExecutor(object):
         for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
-      # Change root to user, so that ownership of the output files is not messed up (i.e. owned by root)
-      uchange = '-u ' + str( os.getuid() )
-      # mntScript = '' if launchDir is None else '-v ' + os.path.join(os.getcwd(),dsname) + ":" + os.path.join(launchDir,dsname)
       # Run it in docker
-      dcmd = 'docker run --rm' + envString + uchange  + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./' + dsname
+      dcmd = 'docker run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./' + dsname
       print('Executing in Docker via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
@@ -147,6 +148,7 @@ class LocalExecutor(object):
   def _randomFillInDict(self):
     ## Private helper functions for filling the dictionary ##
     # Helpers for generating random numbers, strings, etc...
+    # Note: uses-absolute-path is satisfied for files by the automatic replacement in the _validateDict
     nd, nl   = 2, 5 # nd = number of random characters to use in generating strings, nl = max number of random list items
     randDigs = lambda: ''.join(rnd.choice(string.digits) for _ in range(nd)) # Generate random string of digits
     randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.j','.cpp','.m','.mnc','.nii.gz'])
@@ -426,7 +428,7 @@ class LocalExecutor(object):
         else:
           # Replace incorrectly specified paths if desired
           replacementFiles = []
-          launchDir = self.launchDir if (not self.launch is None) else os.getcwd()
+          launchDir = self.launchDir if (not self.launchDir is None) else os.getcwd()
           for ftarg in (str(val).split() if isList else [val]):
             # If the input uses-absolute-path, replace the path with its absolute version
             if targ.get('uses-absolute-path') == True: replacementFiles.append( os.path.abspath(ftarg) )
@@ -518,6 +520,7 @@ Notes: pass lists by space-separated values
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
   parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
   parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
+  parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root)')
   parser.add_argument('--ignoreContainer', action = 'store_true', help = 'Attempt execution locally, even if a container is specified.')
   parser.add_argument('-d', '--destroyTempScripts', action = 'store_true', help = 'Destroys any temporary scripts used to execute commands in containers.')
   args = parser.parse_args()
@@ -560,7 +563,8 @@ Notes: pass lists by space-separated values
   # Generate object that will perform the commands
   executor = LocalExecutor(desc, { 'forcePathType'      : not args.dontForcePathType,
                                    'destroyTempScripts' : args.destroyTempScripts,
-                                   'ignoreContainer'    : args.ignoreContainer        })
+                                   'ignoreContainer'    : args.ignoreContainer,
+                                   'changeUser'         : args.changeUser              })
 
   ### Run the executor with the given parameters ###
   # Execution case
