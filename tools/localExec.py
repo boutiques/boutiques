@@ -430,8 +430,16 @@ class LocalExecutor(object):
           replacementFiles = []
           launchDir = self.launchDir if (not self.launchDir is None) else os.getcwd()
           for ftarg in (str(val).split() if isList else [val]):
+            # Special case 1: launchdir is specified and we want to use absolute path
+            # This is ignored when --ignoreContainer has been activated
+            # Note: in this case, the pwd is mounted as the launchdir; we do not attempt to move files if they will not be mounted, currently
+            # That is, specified files that are not in the pwd or a subfolder will not be mounted to the container
+            if targ.get('uses-absolute-path') == True and (not self.launchDir is None) and (not self.ignoreContainer):
+              relpath = os.path.relpath(ftarg, os.getcwd()) # relative path to target, from the pwd
+              mountedAbsPath = os.path.join(launchDir,relpath) # absolute path in the container
+              replacementFiles.append( os.path.abspath(mountedAbsPath) )
             # If the input uses-absolute-path, replace the path with its absolute version
-            if targ.get('uses-absolute-path') == True: replacementFiles.append( os.path.abspath(ftarg) )
+            elif targ.get('uses-absolute-path') == True: replacementFiles.append( os.path.abspath(ftarg) )
           # Replace old val with the new one
           self.in_dict[ key ] = " ".join( replacementFiles )
       # List length constraints are satisfied
