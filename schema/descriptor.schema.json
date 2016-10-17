@@ -28,18 +28,58 @@
             "description": "A string that describes the tool command line, where input and output values are identified by \"keys\". At runtime, command-line keys are substituted with flags and values.",
             "type": "string"
         },
-        "docker-image": {
-            "id": "http://github.com/boutiques/boutiques-schema/docker-image",
-            "minLength": 1,
-            "description": "Name of a Docker image where tool is installed and configured. Example: docker.io/neurodebian.",
-            "type": "string"
-        },
-        "docker-index": {
-            "id": "http://github.com/boutiques/boutiques-schema/docker-index",
-            "minLength": 1,
-            "description": "Docker index where Docker image is available.",
-            "default": "http://index.docker.io",
-            "type": "string"
+        "container-image": {
+            "id": "http://github.com/boutiques/boutiques-schema/container-image",
+            "type": "object",
+            "allOf": [{
+                "properties": {
+                    "working-directory": {
+                        "id": "http://github.com/boutiques/boutiques-schema/container/working-directory",
+                        "minLength": 1,
+                        "description": "Location from which this task must be launched within the container.",
+                        "type": "string"
+                    },
+                    "container-hash": {
+                        "id": "http://github.com/boutiques/boutiques-schema/container/container-hash",
+                        "minLength": 1,
+                        "description": "Hash for the given container.",
+                        "type": "string"
+                    }
+                }
+            },{
+                "oneOf": [{
+                    "properties": {
+                        "type": { "enum": ["docker"] },
+                        "image": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/image",
+                            "minLength": 1,
+                            "description": "Name of an image where the tool is installed and configured. Example: docker.io/neurodebian.",
+                            "type": "string"
+                        },
+                        "index": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/index",
+                            "minLength": 1,
+                            "description": "Index where the image is available.",
+                            "default": "http://index.docker.io",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["type", "image"],
+                    "description": "Object representing a docker container for the tool."
+                }, {
+                    "properties": {
+                        "type": { "enum": ["rootfs", "singularity"] },
+                        "url": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/url",
+                            "minLength": 1,
+                            "description": "URL where the image is available.",
+                            "type": "string"
+                        }
+                    },
+                    "required": ["type", "url"],
+                    "description": "Object representing a rootfs or singularity container for the tool."
+                }]
+            }]
         },
         "schema-version": {
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
@@ -257,6 +297,11 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/max-list-entries",
                         "description": "Specify the maximum number of entries in the list. May only be used with List type inputs.",
                         "type": "number"
+                    },
+                    "uses-absolute-path": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/uses-absolute-path",
+                        "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs.",
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -264,19 +309,16 @@
                     "id",
                     "type"
                 ],
-                "anyOf": [
-                  {
+                "anyOf": [{
                     "properties": {
                       "type": { "enum": ["Flag"] },
                       "list": { "enum": [false] }
                     }
-                  },
-                  {
+                }, {
                     "properties": {
                       "type": { "enum": ["String", "File", "Number", "Enum"] }
                     }
-                  }
-                ],
+                }],
                 "additionalProperties": true,
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
@@ -310,6 +352,11 @@
                     "exclusive-maximum": {
                         "properties": {
                             "type": {"enum": ["Number"]}
+                        }
+                    },
+                    "uses-absolute-path": {
+                        "properties": {
+                            "type": {"enum": ["File"]}
                         }
                     },
                     "exclusive-minimum": ["minimum"],

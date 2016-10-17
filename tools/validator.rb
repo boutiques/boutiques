@@ -49,10 +49,11 @@ errors = JSON::Validator.fully_validate(schema_file, descriptor)
 ### Validation of descriptor arguments ###
 
 ## Helper functions ##
-inputGet  = lambda { |s| descriptor['inputs'].map {       |v| v[s] } rescue [] }
-outputGet = lambda { |s| descriptor['output-files'].map { |v| v[s] } rescue [] }
-groupGet  = lambda { |s| descriptor['groups'].map {       |v| v[s] } rescue [] }
-inById    = lambda { |i| descriptor['inputs'].find{       |v| v['id']==i } || {} }
+safeGet   = lambda { |sec,targ| descriptor[sec].map { |v| v[targ] }.compact rescue [] }
+inputGet  = lambda { |s| safeGet.('inputs',       s) }
+outputGet = lambda { |s| safeGet.('output-files', s) }
+groupGet  = lambda { |s| safeGet.('groups',       s) }
+inById    = lambda { |i| descriptor['inputs'].find{ |v| v['id']==i } || {} }
 
 ## Checking command-line-keys and IDs ##
 
