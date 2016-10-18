@@ -48,14 +48,14 @@ The format of command line keys is not specified. However, it is recommended to 
   * `optional`: a boolean, true if output may not be produced by the tool.
   * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
 * `container-image`: an object describing the container where the tool is installed and configured. Has the following properties:
-  * `working-directort`: Directory where the tool must be launched within the container.
-  * `container-hash`: Hash for the given container.
   * **`type`**: "docker", "singularity" or "rootfs".
-  * **`image`** (Docker only): Name of an image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
-  * **`index`** (Docker only): Docker index where the image is available. Default: ```http://index.docker.io```.
-  * **`url`** (Singularity and rootfs only): URL where the container image is available.
+  * **`image`** (docker only): name of an image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
+  * **`index`** (docker only): docker index where the image is available. Default: ```http://index.docker.io```.
+  * **`url`** (singularity and rootfs only): URL where the container image is available.
+  * `working-directory`: directory where the tool must be launched within the container.
+  * `container-hash`: hash of the container.
 * `environment-variables`: an array of items defining environment variable assignment from the following properties:
-  * **`name`**: The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: \"PROGRAM_PATH\".
+  * **`name`**: The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: "PROGRAM_PATH".
   * **`value`**: The value of the environment variable.
   * `description`: Description of the environment variable.
 * `walltime-estimate`: Estimated wall time of a task, in seconds.
