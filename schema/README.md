@@ -36,6 +36,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `max-list-entries`: Specify the maximum number of entries in the list. May only be used with List type inputs.
   * `requires-inputs`: ids of the inputs which must be active for this input to be available.
   * `disables-inputs`: ids of the inputs that are disabled when this input is active.
+  * `uses-absolute-path`: true if file inputs need to be passed as absolute paths. If false, any of absolute or relative path may be used.
 * **`output-files`**: an array of objects that represent output files with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`**: output name.
@@ -46,8 +47,17 @@ The format of command line keys is not specified. However, it is recommended to 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard).
   * `optional`: a boolean, true if output may not be produced by the tool.
   * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
-* `docker-image`: name of a Docker image where tool is installed and configured. Example: ```docker.io/neurodebian```.
-* `docker-index`: Docker index where Docker image is available. Example: ```http://index.docker.io```.
+* `container-image`: an object describing the container where the tool is installed and configured. Has the following properties:
+  * `working-directort`: Directory where the tool must be launched within the container.
+  * `container-hash`: Hash for the given container.
+  * **`type`**: "docker", "singularity" or "rootfs".
+  * **`image`** (Docker only): Name of an image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
+  * **`index`** (Docker only): Docker index where the image is available. Default: ```http://index.docker.io```.
+  * **`url`** (Singularity and rootfs only): URL where the container image is available.
+* `environment-variables`: an array of items defining environment variable assignment from the following properties:
+  * **`name`**: The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: \"PROGRAM_PATH\".
+  * **`value`**: The value of the environment variable.
+  * `description`: Description of the environment variable.
 * `walltime-estimate`: Estimated wall time of a task, in seconds.
 * `groups`: an array of objects that represent input groups with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores.
