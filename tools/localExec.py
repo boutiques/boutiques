@@ -336,8 +336,10 @@ class LocalExecutor(object):
     # Fix special flag case: flags given the false value are treated as non-existent
     toRm = []
     for inprm in self.in_dict:
-      if self.in_dict[inprm].lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
+      if str(self.in_dict[inprm]).lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
         toRm.append( inprm )
+      elif self.byId(inprm)['type'] == 'Flag' and self.in_dict[inprm] == True:
+        self.in_dict[inprm] = "true" # Fix json inputs using bools instead of strings
     for r in toRm: del self.in_dict[r]
     # Check results (as much as possible)
     try: self._validateDict()
