@@ -18,7 +18,7 @@ The format of command line keys is not specified. However, it is recommended to 
 * **`inputs`:** an array of objects that represent inputs with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`:** a human-readable input name. Example: "Data File".
-  * **`type`:** input type. "File", "String", "Flag", "Enum", or "Number".
+  * **`type`:** input type. "File", "String", "Flag", "Enum", or "Number". Type "File" also includes directories.
   * `description`: input description.
   * `command-line-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime.
   * `list`: a boolean, true if input is a list of value. An input of type "Flag" may not be a list.
@@ -36,6 +36,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `max-list-entries`: Specify the maximum number of entries in the list. May only be used with List type inputs.
   * `requires-inputs`: ids of the inputs which must be active for this input to be available.
   * `disables-inputs`: ids of the inputs that are disabled when this input is active.
+  * `uses-absolute-path`: true if file inputs need to be passed as absolute paths. If false, any of absolute or relative path may be used.
 * **`output-files`**: an array of objects that represent output files with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`**: output name.
@@ -46,8 +47,17 @@ The format of command line keys is not specified. However, it is recommended to 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard).
   * `optional`: a boolean, true if output may not be produced by the tool.
   * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
-* `docker-image`: name of a Docker image where tool is installed and configured. Example: ```docker.io/neurodebian```.
-* `docker-index`: Docker index where Docker image is available. Example: ```http://index.docker.io```.
+* `container-image`: an object describing the container where the tool is installed and configured. Has the following properties:
+  * **`type`**: "docker", "singularity" or "rootfs".
+  * **`image`** (docker only): name of an image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
+  * **`index`** (docker only): docker index where the image is available. Default: ```http://index.docker.io```.
+  * **`url`** (singularity and rootfs only): URL where the container image is available.
+  * `working-directory`: directory where the tool must be launched within the container.
+  * `container-hash`: a string containing the sha384 hash of the container. Example: "sha384:83e4403e0f5f37164be88ef05e8f2ee24664b45f685dbf05b7dc61b1a8a429656d0ddee4c7f967150990dbdf17c36d45". 
+* `environment-variables`: an array of items defining environment variable assignment from the following properties:
+  * **`name`**: The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: "PROGRAM_PATH".
+  * **`value`**: The value of the environment variable.
+  * `description`: Description of the environment variable.
 * `walltime-estimate`: Estimated wall time of a task, in seconds.
 * `groups`: an array of objects that represent input groups with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores.
@@ -56,6 +66,16 @@ The format of command line keys is not specified. However, it is recommended to 
   * `description`: a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: ```outfile_group```.
   * `mutually-exclusive`: a boolean, true if only one input in the group may be active at runtime.
   * `one-is-required`: a boolean, true if at least one of the inputs in the group must be active at runtime.
+
+## Custom properties
+
+Custom properties may be added to the schema without restriction, to
+enable platform-specific features. They should, however, be defined
+carefully to avoid making tools dependent on the features of a
+particular platform. The following custom properties were defined:
+* `cbrain:can-submit-new-tasks`: a boolean, true if the tool may submit new tasks to the platform. This is an embryonic support for workflows. Specific to the CBRAIN platform for now but may be added to the specificiation in the future.
+* `cbrain:inherits-from-class`: a string that defines the Ruby class that should be used as parent class for the tool in CBRAIN. Used to define a progress bar for PSOM tools in CBRAIN.
+* `vip:miccai-challenger-email` and `vip:miccai-challenge-team-name`: strings helping VIP categorize tools for the 2016 MICCAI challenges [MSSEG](https://portal.fli-iam.irisa.fr/msseg-challenge/overview) and [PETSEG](https://portal.fli-iam.irisa.fr/petseg-challenge/overview).
 
 ## Command-line substitution
 
