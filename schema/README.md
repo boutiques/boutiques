@@ -75,7 +75,7 @@ carefully to avoid making tools dependent on the features of a
 particular platform. The following custom properties were defined:
 * `cbrain:can-submit-new-tasks`: a boolean, true if the tool may submit new tasks to the platform. This is an embryonic support for workflows. Specific to the CBRAIN platform for now but may be added to the specificiation in the future.
 * `cbrain:inherits-from-class`: a string that defines the Ruby class that should be used as parent class for the tool in CBRAIN. Used to define a progress bar for PSOM tools in CBRAIN.
-* `vip:miccai-challenger-email` and `vip:miccai-challenge-team-name`: strings helping VIP categorize tools for the 2016 MICCAI challenges (https://portal.fli-iam.irisa.fr/msseg-challenge/overview "MSSEG") and (https://portal.fli-iam.irisa.fr/petseg-challenge/overview "PETSEG").
+* `vip:miccai-challenger-email` and `vip:miccai-challenge-team-name`: strings helping VIP categorize tools for the 2016 MICCAI challenges [MSSEG](https://portal.fli-iam.irisa.fr/msseg-challenge/overview) and [PETSEG](https://portal.fli-iam.irisa.fr/petseg-challenge/overview).
 
 ## Command-line substitution
 
