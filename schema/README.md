@@ -18,7 +18,7 @@ The format of command line keys is not specified. However, it is recommended to 
 * **`inputs`:** an array of objects that represent inputs with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`:** a human-readable input name. Example: "Data File".
-  * **`type`:** input type. "File", "String", "Flag", "Enum", or "Number".
+  * **`type`:** input type. "File", "String", "Flag", "Enum", or "Number". Type "File" also includes directories.
   * `description`: input description.
   * `command-line-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime.
   * `list`: a boolean, true if input is a list of value. An input of type "Flag" may not be a list.
