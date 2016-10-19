@@ -53,7 +53,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`index`** (docker only): docker index where the image is available. Default: ```http://index.docker.io```.
   * **`url`** (singularity and rootfs only): URL where the container image is available.
   * `working-directory`: directory where the tool must be launched within the container.
-  * `container-hash`: hash of the container.
+  * `container-hash`: sha384 hash of the container.
 * `environment-variables`: an array of items defining environment variable assignment from the following properties:
   * **`name`**: The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: "PROGRAM_PATH".
   * **`value`**: The value of the environment variable.
