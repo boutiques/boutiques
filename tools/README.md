@@ -23,7 +23,7 @@ Note: there is a Docker image ([boutiques/boutiques](https://hub.docker.com/r/bo
      descriptor and validating input data examples with respect to these invocation schemas.
   * Usage examples:
     * Generates an invocation schema: `python invocationSchemaHandler.py -i toolDescriptor.json`
-    * Validate input data (i.e. tool parameter arguments) with implicit invocation schema generation: `python invocationSchemaHandler.py -i toolDescriptor.json -d tool.exampleInputs.json`
+    * Validate input data (i.e. specific tool parameter arguments): `python invocationSchemaHandler.py -i toolDescriptor.json -d tool.exampleInputs.json`
   * Check the help page (`-h` option) for more options and documentation.
 
 4. `pegasus-boutiques`: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
