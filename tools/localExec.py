@@ -345,6 +345,11 @@ class LocalExecutor(object):
       elif self.byId(inprm)['type'] == 'Flag' and self.in_dict[inprm] == True:
         self.in_dict[inprm] = "true" # Fix json inputs using bools instead of strings
     for r in toRm: del self.in_dict[r]
+    # Add default values for required parameters, if no value has been given
+    for input in [s for s in self.inputs if not s.get("default-value") is None and not s.get("optional")]:
+      if self.in_dict.get( input['id'] ) is None:
+        df = input.get("default-value")
+        self.in_dict[ input['id'] ] = df if not input['type'] == 'Flag' else str(df)
     # Check results (as much as possible)
     try: self._validateDict()
     except Exception: # Avoid catching BaseExceptions like SystemExit
