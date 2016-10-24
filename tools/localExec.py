@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse, os, sys, json, random as rnd, string, math, subprocess, time
+import argparse, os, sys, json, random as rnd, string, math, subprocess, time, pwd
 
 # Executor class
 class LocalExecutor(object):
@@ -20,7 +20,7 @@ class LocalExecutor(object):
   """
 
   # Constructor
-  def __init__(self,desc):
+  def __init__(self,desc,options={}):
     ## Initial parameters ##
     self.desc_path = desc  # Save descriptor path
     self.errs      = []    # Empty errors holder
@@ -45,7 +45,15 @@ class LocalExecutor(object):
     self.assocGrp   = lambda i: (filter( lambda g: i in g["members"], self.groups ) or [None])[0]
     # Returns the required inputs of a given input id, or the empty string
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
-
+    ## Container-image Options ##
+    self.container = self.desc_dict.get('container-image')
+    self.launchDir = None if self.container is None else self.container.get('working-directory')
+    ## Extra Options ##
+    # Include: forcePathType, ignoreContainer, and destroyTempScripts
+    for option in options.keys(): setattr(self, option, options.get(option))
+    # Container Implementation check
+    if (not self.container is None) and self.container['type'] != 'docker':
+      raise ValueError('Other container types than docker (e.g. ' + self.container['type'] + ') are not yet supported')
 
   # Attempt local execution of the command line generated from the input values
   def execute(self):
@@ -56,25 +64,30 @@ class LocalExecutor(object):
     After execution, it checks for output file existence.
     '''
 
-    command, exit_code, destroyDockerScript = self.cmdLine[0], None, False
+    command, exit_code, container = self.cmdLine[0], None, self.container or {}
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for docker
-    dockerImage = self.desc_dict['docker-image'] if 'docker-image' in self.desc_dict.keys() else None
-    dockerIndex = self.desc_dict['docker-index'] if 'docker-index' in self.desc_dict.keys() else None
+    dockerImage, dockerIndex = container.get( 'image' ), container.get( 'index' )
     dockerIsPresent = (not dockerImage is None) and (not dockerIndex is None)
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
     if 'environment-variables' in self.desc_dict.keys():
       for (envVarName,envVarValue) in [ (p['name'],p['value']) for p in self.desc_dict['environment-variables'] ]:
-        os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue
+        os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue # for non-container and docker resp.
     # Docker script constant name
-    dsname = '.temp.localExec.dockerjob.sh'
+    # Note that docker cannot do a local volume mount of files starting with a '.', hence this one does not
+    dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.dockerjob.sh' # time tag to avoid overwrites
     # If docker is present, alter the command template accordingly
-    if dockerIsPresent:
+    if dockerIsPresent and not self.ignoreContainer:
       # Pull the docker image
       self._localExecute( "docker pull " + str(dockerImage) )
       # Generate command script
-      cmdString = "#!/bin/bash -l\n" + str( command )
+      uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
+      # Adds the user to the container before executing the templated command line
+      userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
+      # If --changeUser was desired, run with su so that any output files are owned by the user instead of root
+      if self.changeUser: command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
+      cmdString = "#!/bin/bash -l\n" + userchange + str( command )
       with open(dsname,"w") as scrFile: scrFile.write( cmdString )
       # Ensure the script is executable
       self._localExecute( "chmod 755 " + dsname )
@@ -82,8 +95,11 @@ class LocalExecutor(object):
       envString = " "
       if envVars:
         for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
+      # Change launch (working) directory if desired
+      launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
-      dcmd = 'docker run --rm' + envString + '-v ${PWD}:${PWD} -w ${PWD} ' + str(dockerImage) + ' ${PWD}/' + dsname
+      dcmd = 'docker run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./' + dsname
+      print('Executing in Docker via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
@@ -92,7 +108,7 @@ class LocalExecutor(object):
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
-    if dockerIsPresent and destroyDockerScript:
+    if dockerIsPresent and self.destroyTempScripts:
       if os.path.isfile( dsname ): os.remove( dsname )
     # Check for output files (note: the path-template can contain command-line-keys
     print('Looking for output files:')
@@ -132,6 +148,7 @@ class LocalExecutor(object):
   def _randomFillInDict(self):
     ## Private helper functions for filling the dictionary ##
     # Helpers for generating random numbers, strings, etc...
+    # Note: uses-absolute-path is satisfied for files by the automatic replacement in the _validateDict
     nd, nl   = 2, 5 # nd = number of random characters to use in generating strings, nl = max number of random list items
     randDigs = lambda: ''.join(rnd.choice(string.digits) for _ in range(nd)) # Generate random string of digits
     randFile = lambda: 'f_' + randDigs() + rnd.choice(['.csv','.tex','.j','.cpp','.m','.mnc','.nii.gz'])
@@ -319,15 +336,17 @@ class LocalExecutor(object):
     # Fix special flag case: flags given the false value are treated as non-existent
     toRm = []
     for inprm in self.in_dict:
-      if self.in_dict[inprm].lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
+      if str(self.in_dict[inprm]).lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
         toRm.append( inprm )
+      elif self.byId(inprm)['type'] == 'Flag' and self.in_dict[inprm] == True:
+        self.in_dict[inprm] = "true" # Fix json inputs using bools instead of strings
     for r in toRm: del self.in_dict[r]
     # Check results (as much as possible)
     try: self._validateDict()
     except Exception: # Avoid catching BaseExceptions like SystemExit
       sys.stderr.write("An error occurred in validation\nPreviously saved issues\n")
-      for err in self.errs: sys.stderr.write("\t" + str(err) + "\n")
-      raise
+      for err in self.errs: sys.stderr.write("\t" + str(err) + "\n") # Write any errors we found
+      raise # Raise the exception that caused failure
     # Build and save output command line (as a single-entry list)
     self.cmdLine = [ self._generateCmdLineFromInDict() ]
 
@@ -401,8 +420,30 @@ class LocalExecutor(object):
         # Enum value is in the list of allowed values
         check('enum-value-choices', lambda x,y: x in targ[y], "is not a valid enum choice",val)
       elif targ["type"] == "Flag":
-        # Should be 'true' or 'false' when lower-cased
+        # Should be 'true' or 'false' when lower-cased (based on our transformations of the input)
         check(None, lambda x,y: x.lower() in ["true","false"], "is not a valid flag value",val)
+      elif targ["type"] == "File":
+        # Check path-type (absolute vs relative)
+        if not self.forcePathType:
+          for ftarg in (str(val).split() if isList else [val]):
+            check('uses-absolute-path', lambda x,y: os.path.isabs(x), "is not an absolute path",ftarg)
+        else:
+          # Replace incorrectly specified paths if desired
+          replacementFiles = []
+          launchDir = self.launchDir if (not self.launchDir is None) else os.getcwd()
+          for ftarg in (str(val).split() if isList else [val]):
+            # Special case 1: launchdir is specified and we want to use absolute path
+            # This is ignored when --ignoreContainer has been activated
+            # Note: in this case, the pwd is mounted as the launchdir; we do not attempt to move files if they will not be mounted, currently
+            # That is, specified files that are not in the pwd or a subfolder will not be mounted to the container
+            if targ.get('uses-absolute-path') == True and (not self.launchDir is None) and (not self.ignoreContainer):
+              relpath = os.path.relpath(ftarg, os.getcwd()) # relative path to target, from the pwd
+              mountedAbsPath = os.path.join(launchDir,relpath) # absolute path in the container
+              replacementFiles.append( os.path.abspath(mountedAbsPath) )
+            # If the input uses-absolute-path, replace the path with its absolute version
+            elif targ.get('uses-absolute-path') == True: replacementFiles.append( os.path.abspath(ftarg) )
+          # Replace old val with the new one
+          self.in_dict[ key ] = " ".join( replacementFiles )
       # List length constraints are satisfied
       if isList: check('min-list-entries', lambda x,y: len(x.split()) >= targ[y], "violates min size",val)
       if isList: check('max-list-entries', lambda x,y: len(x.split()) <= targ[y], "violates max size",val)
@@ -486,8 +527,12 @@ Notes: pass lists by space-separated values
   parser.add_argument('-i', '--input', help = 'Input parameter values with which to test the generation (.json or .csv).')
   parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.')
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
-  parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine')
-  parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line")
+  parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
+  parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
+  parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
+  parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root)')
+  parser.add_argument('--ignoreContainer', action = 'store_true', help = 'Attempt execution locally, even if a container is specified.')
+  parser.add_argument('-d', '--destroyTempScripts', action = 'store_true', help = 'Destroys any temporary scripts used to execute commands in containers.')
   args = parser.parse_args()
 
   # Check arguments
@@ -526,7 +571,10 @@ Notes: pass lists by space-separated values
   inData = args.input if given(args.input) else ( args.string if given(args.string) else None )
 
   # Generate object that will perform the commands
-  executor = LocalExecutor(desc)
+  executor = LocalExecutor(desc, { 'forcePathType'      : not args.dontForcePathType,
+                                   'destroyTempScripts' : args.destroyTempScripts,
+                                   'ignoreContainer'    : args.ignoreContainer,
+                                   'changeUser'         : args.changeUser              })
 
   ### Run the executor with the given parameters ###
   # Execution case
