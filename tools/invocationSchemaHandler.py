@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # A script for handling invocation schema generation and validation for Boutiques application descriptors
 # Requires jsonschema 2.5
 

@@ -22,8 +22,8 @@ Note: there is a Docker image ([boutiques/boutiques](https://hub.docker.com/r/bo
 3. `invocationSchemaHandler.py`: a Python script to generate and test invocation schemas (i.e. JSON schemas for input values) associated to a Boutiques application
      descriptor and validating input data examples with respect to these invocation schemas.
   * Usage examples:
-    * Generates an invocation schema: `python invocationSchemaHandler.py -i toolDescriptor.json`
-    * Validate input data (i.e. specific tool parameter arguments): `python invocationSchemaHandler.py -i toolDescriptor.json -d tool.exampleInputs.json`
+    * Generates an invocation schema: `docker run --rm -v $PWD:/work -w /work boutiques/boutiques  invocationSchemaHandler.py -i ./toolDescriptor.json`
+    * Validate input data (i.e. specific tool parameter arguments): `docker run --rm -v $PWD:/work -w /work boutiques/boutiques invocationSchemaHandler.py -i ./toolDescriptor.json -d ./tool.exampleInputs.json`
   * Check the help page (`-h` option) for more options and documentation.
 
 4. `pegasus-boutiques`: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
