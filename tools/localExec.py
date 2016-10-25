@@ -121,6 +121,10 @@ class LocalExecutor(object):
         # and not search for them if the key is not present
         val = '' if not (input_id in self.in_dict.keys()) else self.in_dict[input_id]
         template = template.replace(input_key,val)
+      # Alter the template if uses-absolute-path is specified
+      # If it is, and the path is not already absolute, make it so
+      if outfile.get('uses-absolute-path'):
+        template = os.path.abspath(template)
       # Look for the target file
       exists = os.path.exists( template )
       # Note whether it could be found or not
@@ -341,6 +345,11 @@ class LocalExecutor(object):
       elif self.byId(inprm)['type'] == 'Flag' and self.in_dict[inprm] == True:
         self.in_dict[inprm] = "true" # Fix json inputs using bools instead of strings
     for r in toRm: del self.in_dict[r]
+    # Add default values for required parameters, if no value has been given
+    for input in [s for s in self.inputs if not s.get("default-value") is None and not s.get("optional")]:
+      if self.in_dict.get( input['id'] ) is None:
+        df = input.get("default-value")
+        self.in_dict[ input['id'] ] = df if not input['type'] == 'Flag' else str(df)
     # Check results (as much as possible)
     try: self._validateDict()
     except Exception: # Avoid catching BaseExceptions like SystemExit
@@ -448,7 +457,7 @@ class LocalExecutor(object):
       if isList: check('min-list-entries', lambda x,y: len(x.split()) >= targ[y], "violates min size",val)
       if isList: check('max-list-entries', lambda x,y: len(x.split()) <= targ[y], "violates max size",val)
     # Required inputs are present
-    for reqId in [v['id'] for v in self.inputs if v['optional']==False]:
+    for reqId in [v['id'] for v in self.inputs if not v.get('optional')]:
       if not reqId in self.in_dict.keys():
         self.errs.append('Required input ' + str(reqId) + ' is not present')
     # Disables/requires is satisfied

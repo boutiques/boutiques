@@ -47,6 +47,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard).
   * `optional`: a boolean, true if output may not be produced by the tool.
   * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
+  * `uses-absolute-path`: true if an output filepath must use an absolute path
 * `container-image`: an object describing the container where the tool is installed and configured. Has the following properties:
   * **`type`**: "docker", "singularity" or "rootfs".
   * **`image`** (docker only): name of an image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
