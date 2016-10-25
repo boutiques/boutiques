@@ -1,4 +1,4 @@
-from centos:7   
+from centos:7
 ENV PATH=$PATH:/usr/local/boutiques/tools
 RUN yum update -y &&              \
     yum install -y  gcc           \
@@ -12,6 +12,9 @@ COPY schema /usr/local/boutiques/schema/
 RUN cd /usr/local/boutiques/tools && \
     gem install bundler && \
     bundle install
-    
 
-    
+# Install python json-schema
+yum -y install python-setuptools
+easy_install pip
+pip install jsonschema
+

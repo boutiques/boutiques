@@ -414,17 +414,21 @@
                         "description": "True if output is a list of value.",
                         "type": "boolean"
                     },
-                    "optional":{
+                    "optional": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/optional",
                         "description": "True if output may not be produced by the tool.",
                         "type": "boolean"
                     },
-                    "command-line-flag":{
+                    "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
                         "description": "Option flag of the output, involved in the command-line-key substitution. Examples: -o, --output",
                         "type": "string"
+                    },
+                    "uses-absolute-path": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
+                        "description": "Specifies that this output filepath will be given as an absolute path.",
+                        "type": "boolean"
                     }
-
                 },
                 "required": [
                     "id",
