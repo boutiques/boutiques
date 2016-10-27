@@ -48,6 +48,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * `optional`: a boolean, true if output may not be produced by the tool.
   * `command-line-flag`: option flag of the output, involved in the `value-key` substitution. Examples: ```-o```, ```--output```.
   * `uses-absolute-path`: true if an output filepath must use an absolute path
+  * `file-template`: an array of string that will be written in the file before the command is executed. Can be useful to write configuration files. `value-keys` that are contained in the `file-template` will be substituted by input or output values when they are defined (when they are not, e.g., in case of an optional input, the corresponding line in the `file-template` will be deleted).
 * `container-image`: an object describing the container where the tool is installed and configured. Has the following properties:
   * **`type`**: "docker", "singularity" or "rootfs".
   * **`image`** (docker only): name of an image where the tool is installed and configured. Example: ```docker.io/neurodebian```.
