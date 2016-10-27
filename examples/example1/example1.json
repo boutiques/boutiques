@@ -1,0 +1,82 @@
+{
+    "name" : "Example Boutiques Tool",
+    "tool-version" : "0.0.1",
+    "description" : "This property describes the tool or application",
+    "command-line" : "exampleTool1 [STRING_INPUT] [FILE_INPUT] [ENUM_INPUT] | exampleTool2 [FLAG_INPUT] [NUMBER_INPUT] >> [LOG]",
+    "container-image": {
+        "type": "docker",
+        "image": "boutiques/examples"
+    },
+    "schema-version" : "0.4",
+    "inputs" : [{
+        "id" : "str_input",
+        "name" : "A string input",
+        "type" : "String",
+        "description" : "Describe the use and meaning of the parameter",
+        "optional" : false,
+        "command-line-flag" : "-i",
+        "value-key" : "[STRING_INPUT]",
+        "list" : true, 
+        "min-list-entries" : 1,
+        "max-list-entries" : 3,
+        "default-value" : "aStringValue"
+    }, {
+        "id" : "num_input",
+        "name" : "A number input",
+        "type" : "Number",
+        "value-key" : "[NUMBER_INPUT]",
+        "optional" : true, 
+        "command-line-flag" : "-n",
+        "command-line-separator" : "=",
+        "minimum" : 0,
+        "maximum" : 1,
+        "exclusive-minimum" : true,
+        "exclusive-maximum" : false,
+        "integer" : false
+    }, {
+        "id" : "file_input",
+        "name" : "A file input",
+        "type" : "File",
+        "optional" : true,
+        "value-key" : "[FILE_INPUT]"
+    }, {
+        "id" : "enum_input",
+        "name" : "An enum input",
+        "type" : "Enum",
+        "enum-value-choices" : ["val1","val2","val3"],
+        "value-key" : "[ENUM_INPUT]",
+        "optional": true
+    }, {
+        "id" : "flag_input",
+        "name" : "A flag input",
+        "type" : "Flag",
+        "command-line-flag" : "-f",
+        "value-key" : "[FLAG_INPUT]",
+        "requires-inputs" : ["file_input"],
+        "disables-inputs" : ["num_input"],
+        "optional": true
+    }],
+    "output-files" : [{
+        "id" : "logfile",
+        "name" : "Log file",
+        "description" : "The output log file from the example tool",
+        "path-template" : "log-[STRING_INPUT].txt",
+        "value-key" : "[LOG]",
+        "path-template-stripped-extensions" : [".txt", ".csv"],
+        "optional" : false
+    }, {
+        "id" : "output_files",
+        "name" : "outfiles",
+        "list" : true,
+        "path-template" : "output/*_exampleOutputTag.resultType",
+        "optional" : true
+    }],
+    "groups" : [{
+        "id" : "an_example_group",
+        "name" : "Example group 1",
+        "description" : "This group forces us to choose exactly one of the file or the enum input to use.",
+        "members" : ["file_input", "enum_input"],
+        "mutually-exclusive" : true,
+        "one-is-required" : true
+    }]
+}

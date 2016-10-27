@@ -20,10 +20,10 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`name`:** a human-readable input name. Example: "Data File".
   * **`type`:** input type. "File", "String", "Flag", "Enum", or "Number". Type "File" also includes directories.
   * `description`: input description.
-  * `command-line-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime.
+  * `value-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime.
   * `list`: a boolean, true if input is a list of value. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional.
-  * `command-line-flag`: a string involved in the `command-line-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-v```, ```--force```.
+  * `command-line-flag`: a string involved in the `value-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-v```, ```--force```.
   * `command-line-flag-separator`: a string inserted between the flag and the value. Defaults to space.
   * `default-value`: default value used by the tool when the input is not specified.
   * `enum-value-choices`: Permitted choices for input value. May only be used in conjunction with the Enum type.
@@ -40,13 +40,13 @@ The format of command line keys is not specified. However, it is recommended to 
 * **`output-files`**: an array of objects that represent output files with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file".
   * **`name`**: output name.
-  * **`path-template`**: a string that describes the output file path relatively to the execution directory. May contain input `command-line-keys`. Example: ```results/[INPUT1]_brain.mnc```.
+  * **`path-template`**: a string that describes the output file path relatively to the execution directory. May contain input `value-keys`. Example: ```results/[INPUT1]_brain.mnc```.
   * `description`: output description.
   * `path-template-stripped-extensions`: list of file extensions that will be stripped from the input values before being substituted in the path template. Example: ```[".nii",".nii.gz"]```.
-  * `command-line-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime.
+  * `value-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime.
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard).
   * `optional`: a boolean, true if output may not be produced by the tool.
-  * `command-line-flag`: option flag of the output, involved in the `command-line-key` substitution. Examples: ```-o```, ```--output```.
+  * `command-line-flag`: option flag of the output, involved in the `value-key` substitution. Examples: ```-o```, ```--output```.
   * `uses-absolute-path`: true if an output filepath must use an absolute path
 * `container-image`: an object describing the container where the tool is installed and configured. Has the following properties:
   * **`type`**: "docker", "singularity" or "rootfs".
@@ -91,16 +91,16 @@ When input is a list, __value__ contains the concatenation of all strings in the
 
 The tool command line is generated as follows:
 
-1. For each input in ```inputs```, where input has a ```command-line-key``` and input has __value__:
-  * In ```command-line```, replace input ```command-line-key``` by:
+1. For each input in ```inputs```, where input has a ```value-key``` and input has __value__:
+  * In ```command-line```, replace input ```value-key``` by:
          * ```command-line-flag``` if input is of type "Flag".
          * ```command-line-flag``` ```command-line-flag-separator``` __value__ (i.e. separated only by ```command-line-flag-separator``` if it is present).
          * ```command-line-flag``` __value__ (space-separated) otherwise.
   * For each output in ```output-files```
-         * If ```path-template``` contains input ```command-line-key```, replace ```command-line-key``` by __value__, having previously removed the last occurrence of character '.' and subsequent characters from __value__ when input is of type "File".
-2. For each output in ```output-files```, where output has a ```command-line-key```:
-  * In ```command-line```, replace output ```command-line-key``` by:
-         * ```command-line-flag``` ```path-template``` (space-separated). At this step, input ```command-line-key```s contained in ```path-template``` are already substituted.
+         * If ```path-template``` contains input ```value-key```, replace ```value-key``` by __value__, having previously removed the last occurrence of character '.' and subsequent characters from __value__ when input is of type "File".
+2. For each output in ```output-files```, where output has a ```value-key```:
+  * In ```command-line```, replace output ```value-key``` by:
+         * ```command-line-flag``` ```path-template``` (space-separated). At this step, input ```value-key```s contained in ```path-template``` are already substituted.
 
 ## Examples
 
@@ -113,11 +113,13 @@ An annotated example of a Boutiques application descriptor:
   "tool-version" : "0.0.1",
   "description" : "This property describes the tool or application",
   // The actual command line run will be generated by substituting given input values into this string,
-  // using the "command-line-key" property of the input. Notice we can chain multiple commands easily.
-  "command-line" : "exampleTool_1 [STRING_INPUT] [FILE_INPUT] [ENUM_INPUT] | exampleTool_2 [FLAG_INPUT] [NUMBER_INPUT] >> [LOG].txt",
-  // Optionally specify a docker image that can be used to execute the tool
-  "docker-image" : "examples/dockerImgExample:latest",
-  "docker-index" : "http://index.docker.io",
+  // using the "value-key" property of the input. Notice we can chain multiple commands easily.
+  "command-line" : "exampleTool_1 [STRING_INPUT] [FILE_INPUT] [ENUM_INPUT] | exampleTool_2 [FLAG_INPUT] [NUMBER_INPUT] >> [LOG]",
+  // Optionally specify a container image that can be used to execute the tool
+  "container-image": {
+        "type": "docker",
+        "image": "boutiques/examples"
+  },
   "schema-version" : 0.3, // The version of the Boutiques schema this descriptor follows
   "inputs" : [{
     // A string parameter
@@ -128,7 +130,7 @@ An annotated example of a Boutiques application descriptor:
     "optional" : false, // Means the parameter is required for the tool
     // This will be prepended to the input value before substitution into the command line
     "command-line-flag" : "-i",
-    "command-line-key" : "[STRING_INPUT]", // Used for substitution into the command-line above
+    "value-key" : "[STRING_INPUT]", // Used for substitution into the command-line above
     "list" : true, // When true, allows multiple inputs to be given for this parameter
     // Restrict lists to have only a specific number of members
     "min-list-entries" : 1,
@@ -140,7 +142,7 @@ An annotated example of a Boutiques application descriptor:
     "id" : "num_input",
     "name" : "A number input",
     "type" : "Number",
-    "command-line-key" : "[NUMBER_INPUT]",
+    "value-key" : "[NUMBER_INPUT]",
     "optional" : true, // Means this parameter is not strictly required for the tool to be used
     // Can alter the prefix flag to use a different separator (e.g. here -n=<inputval>)
     "command-line-flag" : "-n",
@@ -158,14 +160,14 @@ An annotated example of a Boutiques application descriptor:
     "name" : "A file input",
     "type" : "File",
     "optional" : true,
-    "command-line-key" : "[FILE_INPUT]"
+    "value-key" : "[FILE_INPUT]"
   }, {
     // An enum-type input
     "id" : "enum_input",
     "name" : "An enum input",
     "type" : "Enum",
     "enum-value-choices" : ["val1","val2","val3"],
-    "command-line-key" : "[ENUM_INPUT]"
+    "value-key" : "[ENUM_INPUT]"
   }, {
     // A flag input: essentially a boolean describing the presence or absence of a command-line flag
     "id" : "flag_input",
@@ -173,7 +175,7 @@ An annotated example of a Boutiques application descriptor:
     "type" : "Flag",
     // Command line substitution can only be the flag or nothing (no extra values given)
     "command-line-flag" : "-f",
-    "command-line-key" : "[FLAG_INPUT]",
+    "value-key" : "[FLAG_INPUT]",
     // Can specify a list of ids of parameters that this input requires to be used
     "requires-inputs" : ["file_input"],
     // Can also specify a list of ids that are not permitted to be used (added to command-line)
@@ -187,9 +189,9 @@ An annotated example of a Boutiques application descriptor:
     "description" : "The output log file from the example tool",
     // Path-template specifies where the output file will be
     // Note that it can automatically depend on the input values
-    "path-template" : "log-[STRING_INPUT]",
+    "path-template" : "log-[STRING_INPUT].txt",
     // This specifies the substitution key of path-template into the command-line
-    "command-line-key" : "[LOG]",
+    "value-key" : "[LOG]",
     // Any input keys (e.g. here str_input) will have any of the following extensions removed
     // from their value before substitution (e.g. if 'in.csv' was given to str_input, 'in' would
     // would be the resulting substituted value in [STRING_INPUT])
@@ -204,7 +206,7 @@ An annotated example of a Boutiques application descriptor:
     "list" : true,
     // A regular expression style wildcard (*) is used to capture multiple files
     "path-template" : "output/*_exampleOutputTag.resultType",
-    "optional" : true, // I.e. this output may not necessarily be created
+    "optional" : true // I.e. this output may not necessarily be created
   }],
   // Parameter groups represent semantically related sets of input parameters. They can be used
   // to specify inter-parameter disabling/requirement, and to help automatic UI generation on platforms.
@@ -225,6 +227,6 @@ An annotated example of a Boutiques application descriptor:
 See the [cbrain-plugins-neuro repo](https://github.com/aces/cbrain-plugins-neuro/tree/master/cbrain_task_descriptors "Boutiques example descriptors at cbrain-plugins-neuro") for some example descriptors currently in use.
 
 More examples (TODO)
-* Inputs without command-line key.
-* List outputs without a command-line key.
+* Inputs without value-key.
+* List outputs without a value-key.
 
