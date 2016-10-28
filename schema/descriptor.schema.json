@@ -442,8 +442,22 @@
                     "id",
                     "name",
                     "path-template"
+                ],
+                "anyOf": [{
+                    "properties": {
+                        "file-template": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": { "type": "string" }
+                        },
+                        "list": { "enum": [false] }
+                    }
+                }, {
+                    "properties": {
+                        "file-template": { "enum": [false]} }
+                }
                 ]
-            }
+        }
         }
     },
     "required": [
