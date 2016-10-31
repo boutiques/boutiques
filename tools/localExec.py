@@ -31,10 +31,12 @@ class LocalExecutor(object):
     ## Helpers Functions ##
     # The set of input parameters from the json descriptor
     self.inputs     = self.desc_dict['inputs'] # Structure: [ {id:...},...,{id:...} ]
+    # The set of output parameters from the json descriptor
+    self.outputs     = self.desc_dict['output-files'] # Structure: [ {id:...},...,{id:...} ]
     # The set of parameter groups, according to the json descriptor
     self.groups     = self.desc_dict['groups'] if 'groups' in self.desc_dict.keys() else []
     # Retrieves the parameter corresponding to the given id
-    self.byId       = lambda n: [ v for v in self.inputs if v['id']==n][0]
+    self.byId       = lambda n: [ v for v in self.inputs+self.outputs if v['id']==n][0]
     # Retrieves the group corresponding to the given id
     self.byGid      = lambda g: [ v for v in self.groups if v['id']==g][0]
     # Retrieves the value of a field of an input from the descriptor. Returns None if not present.
@@ -68,7 +70,7 @@ class LocalExecutor(object):
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for docker
     dockerImage, dockerIndex = container.get( 'image' ), container.get( 'index' )
-    dockerIsPresent = (not dockerImage is None) and (not dockerIndex is None)
+    dockerIsPresent = (not dockerImage is None) 
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
     if 'environment-variables' in self.desc_dict.keys():
@@ -113,26 +115,15 @@ class LocalExecutor(object):
     # Check for output files (note: the path-template can contain command-line-keys
     print('Looking for output files:')
     for outfile in self.desc_dict['output-files']:
-      # Generate correct path template based on input arguments
-      template = outfile['path-template']
-      for (input_id,input_key) in [(input['id'],input['command-line-key']) for input in self.inputs]:
-        # Blanks are entered if template key is not present
-        # Note: may wish to detect output files whose paths depend on particular inputs
-        # and not search for them if the key is not present
-        val = '' if not (input_id in self.in_dict.keys()) else self.in_dict[input_id]
-        template = template.replace(input_key,val)
-      # Alter the template if uses-absolute-path is specified
-      # If it is, and the path is not already absolute, make it so
-      if outfile.get('uses-absolute-path'):
-        template = os.path.abspath(template)
+      outFileName = self.out_dict[outfile['id']]
       # Look for the target file
-      exists = os.path.exists( template )
+      exists = os.path.exists( outFileName )
       # Note whether it could be found or not
       isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
       s1 = 'Optional' if isOptional else 'Required'
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
-      print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+template)
+      print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -183,10 +174,10 @@ class LocalExecutor(object):
     # Generate a random parameter value based on the input type (where prm \in self.inputs)
     def paramSingle(prm):
       if prm['type']=='Enum':   return rnd.choice( self.safeGet(prm['id'],'enum-value-choices') )
-      if prm['type']=='File':   return randFile()
       if prm['type']=='String': return randStr()
       if prm['type']=='Number': return randNum(prm)
       if prm['type']=='Flag':   return rnd.choice(['true','false'])
+      if prm['type']=='File':   return randFile()
 
     # For this function, given prm (a parameter description), a parameter value is generated
     # If prm is a list, a sequence of outputs is generated; otherwise, a single value is returned
@@ -359,12 +350,36 @@ class LocalExecutor(object):
     # Build and save output command line (as a single-entry list)
     self.cmdLine = [ self._generateCmdLineFromInDict() ]
 
+  # Private method to generate output file names
+  def _generateOutputFileNames(self):
+    self.out_dict = {} # a dictionary that will contain the output file names
+    for outputId in map(lambda x: x['id'], self.outputs):
+      # Initialize file name with path template
+      outputFileName = self.safeGet(outputId, 'path-template')
+      strippedExtensions = self.safeGet(outputId, "path-template-stripped-extensions") or []
+      # Substitute input keys
+      for inputId in map(lambda x: x['id'], self.inputs):
+        clk = self.safeGet(inputId,'command-line-key')
+        if clk is None:
+          next
+        if inputId in self.in_dict.keys():
+          inval = self.in_dict[inputId]
+          # Remove file extensions from input value
+          for extension in strippedExtensions:
+            inval = inval.replace(extension,"")
+          outputFileName = outputFileName.replace(clk,inval)
+      if self.safeGet(outputId, 'uses-absolute-path'):
+        outputFileName = os.path.abspath(outputFileName)
+      self.out_dict[outputId] = outputFileName
+    
   # Private method to build the actual command line by substitution, using the input data
   def _generateCmdLineFromInDict(self):
+    # Genrate output file names
+    self._generateOutputFileNames()
     # Get the command line template
     template = self.desc_dict['command-line']
     # Substitute every given value into the template (incl. flags, flag-seps, ...)
-    for paramId in map(lambda x: x['id'], self.inputs):
+    for paramId in map(lambda x: x['id'], (self.inputs+self.outputs)):
       clk = self.safeGet(paramId,'command-line-key')
       assert not clk is None, str(paramId) + ' does not appear to have a command-line-key'
       # Substitute into the template if a value was given
@@ -380,7 +395,10 @@ class LocalExecutor(object):
         template = template.replace(clk, outval)
       # Wipe the cmd line key if the value was not given
       else:
-        template = template.replace(clk, '')
+        if paramId in self.out_dict.keys():
+          template = template.replace(clk, self.out_dict[paramId])
+        else:
+            template = template.replace(clk, '')
     # Return substituted command line
     return template
 
