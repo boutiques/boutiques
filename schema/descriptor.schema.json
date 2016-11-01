@@ -360,7 +360,7 @@
                         }
                     },
                     "exclusive-minimum": ["minimum"],
-                    "exclusive-maximum": ["maximum"]                   
+                    "exclusive-maximum": ["maximum"]
                 }
 
             }
@@ -431,7 +431,7 @@
                     },
                     "file-template": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/file-template",
-                        "description": "An array of strings that may contain command line keys. Each item will be a line in the configuration file.",
+                        "description": "An array of strings that may contain value keys. Each item will be a line in the configuration file.",
                         "type": "array",
                         "minItems": 1,
                         "items": { "type": "string" }

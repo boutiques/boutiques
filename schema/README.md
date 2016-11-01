@@ -20,7 +20,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`name`:** a human-readable input name. Example: "Data File".
   * **`type`:** input type. "File", "String", "Flag", "Enum", or "Number". Type "File" also includes directories.
   * `description`: input description.
-  * `value-key`: a string, contained in `command-line`, substituted by the input value and/or flag at runtime.
+  * `value-key`: a string, contained in `command-line` and/or `file-template` and/or `path-template`, substituted by the input value and/or flag at runtime.
   * `list`: a boolean, true if input is a list of value. An input of type "Flag" may not be a list.
   * `optional`: a boolean, true if input is optional.
   * `command-line-flag`: a string involved in the `value-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-v```, ```--force```.
@@ -43,7 +43,7 @@ The format of command line keys is not specified. However, it is recommended to 
   * **`path-template`**: a string that describes the output file path relatively to the execution directory. May contain input `value-keys`. Example: ```results/[INPUT1]_brain.mnc```.
   * `description`: output description.
   * `path-template-stripped-extensions`: list of file extensions that will be stripped from the input values before being substituted in the path template. Example: ```[".nii",".nii.gz"]```.
-  * `value-key`: a string, contained in `command-line`, substituted by the output value/flag at runtime.
+  * `value-key`: a string, contained in `command-line` and/or `file-template` and/or `path-template`, substituted by the output value/flag at runtime.
   * `list`: a boolean, true if output is a list of value. In this case, `path-template` must contain a '*' standing for any string of characters (as the Linux wildcard).
   * `optional`: a boolean, true if output may not be produced by the tool.
   * `command-line-flag`: option flag of the output, involved in the `value-key` substitution. Examples: ```-o```, ```--output```.
