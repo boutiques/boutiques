@@ -445,6 +445,10 @@
                 "additionalProperties": false
             }
         },
+        "invocation-schema": {
+            "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
+            "type": "object"
+        },
 	"custom": {
             "id": "http://github.com/boutiques/boutiques-schema/custom",
             "type": "object"
