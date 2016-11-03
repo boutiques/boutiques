@@ -26,14 +26,14 @@ The format of command line keys is not specified. However, it is recommended to 
   * `command-line-flag`: a string involved in the `command-line-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-v```, ```--force```.
   * `command-line-flag-separator`: a string inserted between the flag and the value. Defaults to space.
   * `default-value`: default value used by the tool when the input is not specified.
-  * `enum-value-choices`: Permitted choices for input value. May only be used in conjunction with the Enum type.
-  * `integer`: A boolean specifying whether the input should be an integer. May only be used with Number type inputs.
-  * `minimum`: Specify the minimum value of the input (inclusive). May only be used with Number type inputs.
-  * `maximum`: Specify the maximum value of the input (inclusive). May only be used with Number type inputs.
-  * `exclusive-minimum`: A boolean specifying whether an input's minimum value should be exclusive. May only be used with Number type inputs with a minimum.
-  * `exclusive-maximum`: A boolean specifying whether an input's maximum value should be exclusive. May only be used with Number type inputs with a maximum.
-  * `min-list-entries`: Specify the minimum number of entries in the list. May only be used with List type inputs.
-  * `max-list-entries`: Specify the maximum number of entries in the list. May only be used with List type inputs.
+  * `enum-value-choices`: permitted choices for input value. May only be used in conjunction with the Enum type.
+  * `integer`: a boolean specifying whether the input should be an integer. May only be used with Number type inputs.
+  * `minimum`: the minimum value of the input (inclusive). May only be used with Number type inputs.
+  * `maximum`: the maximum value of the input (inclusive). May only be used with Number type inputs.
+  * `exclusive-minimum`: a boolean specifying whether an input's minimum value should be exclusive. May only be used with Number type inputs with a minimum.
+  * `exclusive-maximum`: a boolean specifying whether an input's maximum value should be exclusive. May only be used with Number type inputs with a maximum.
+  * `min-list-entries`: the minimum number of entries in the list. May only be used with List type inputs.
+  * `max-list-entries`: the maximum number of entries in the list. May only be used with List type inputs.
   * `requires-inputs`: ids of the inputs which must be active for this input to be available.
   * `disables-inputs`: ids of the inputs that are disabled when this input is active.
   * `uses-absolute-path`: true if file inputs need to be passed as absolute paths. If false, any of absolute or relative path may be used.
@@ -56,10 +56,10 @@ The format of command line keys is not specified. However, it is recommended to 
   * `working-directory`: directory where the tool must be launched within the container.
   * `container-hash`: a string containing the sha384 hash of the container. Example: "sha384:83e4403e0f5f37164be88ef05e8f2ee24664b45f685dbf05b7dc61b1a8a429656d0ddee4c7f967150990dbdf17c36d45". 
 * `environment-variables`: an array of items defining environment variable assignment from the following properties:
-  * **`name`**: The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: "PROGRAM_PATH".
-  * **`value`**: The value of the environment variable.
-  * `description`: Description of the environment variable.
-* `walltime-estimate`: Estimated wall time of a task, in seconds.
+  * **`name`**: environment variable name (identifier) containing only alphanumeric characters and underscores. Example: "PROGRAM_PATH".
+  * **`value`**: value of the environment variable.
+  * `description`: description of the environment variable.
+* `walltime-estimate`: estimated wall time of a task, in seconds.
 * `groups`: an array of objects that represent input groups with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores.
   * **`name`:** a human-readable name for the input group.
