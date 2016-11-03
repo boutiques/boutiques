@@ -67,16 +67,11 @@ The format of command line keys is not specified. However, it is recommended to 
   * `description`: a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: ```outfile_group```.
   * `mutually-exclusive`: a boolean, true if only one input in the group may be active at runtime.
   * `one-is-required`: a boolean, true if at least one of the inputs in the group must be active at runtime.
-
-## Custom properties
-
-Custom properties may be added to the schema without restriction, to
-enable platform-specific features. They should, however, be defined
-carefully to avoid making tools dependent on the features of a
-particular platform. The following custom properties were defined:
-* `cbrain:can-submit-new-tasks`: a boolean, true if the tool may submit new tasks to the platform. This is an embryonic support for workflows. Specific to the CBRAIN platform for now but may be added to the specificiation in the future.
-* `cbrain:inherits-from-class`: a string that defines the Ruby class that should be used as parent class for the tool in CBRAIN. Used to define a progress bar for PSOM tools in CBRAIN.
-* `vip:miccai-challenger-email` and `vip:miccai-challenge-team-name`: strings helping VIP categorize tools for the 2016 MICCAI challenges [MSSEG](https://portal.fli-iam.irisa.fr/msseg-challenge/overview) and [PETSEG](https://portal.fli-iam.irisa.fr/petseg-challenge/overview).
+* `invocation-schema`: an JSON schema object that contains the invocation schema of the tool.
+* `custom`: an object containing custom properties for the tool. It is recommended to prefix the name of a custom property with the name of the target platform, e.g. "cbrain:". The following custom properties were defined so far:
+    * `cbrain:can-submit-new-tasks`: a boolean, true if the tool may submit new tasks to the platform. This is an embryonic support for workflows. Specific to the CBRAIN platform for now but may be added to the specificiation in the future.
+    * `cbrain:inherits-from-class`: a string that defines the Ruby class that should be used as parent class for the tool in CBRAIN. Used to define a progress bar for PSOM tools in CBRAIN.
+    * `vip:miccai-challenger-email` and `vip:miccai-challenge-team-name`: strings helping VIP categorize tools for the 2016 MICCAI challenges [MSSEG](https://portal.fli-iam.irisa.fr/msseg-challenge/overview) and [PETSEG](https://portal.fli-iam.irisa.fr/petseg-challenge/overview).
 
 ## Command-line substitution
 
