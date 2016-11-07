@@ -62,9 +62,12 @@
                             "description": "Index where the image is available.",
                             "default": "http://index.docker.io",
                             "type": "string"
-                        }
+                        },           
+                        "working-directory": {},
+                        "container-hash": {}
                     },
                     "required": ["type", "image"],
+                    "additionalProperties": false,
                     "description": "Object representing a docker container for the tool."
                 }, {
                     "properties": {
@@ -74,9 +77,12 @@
                             "minLength": 1,
                             "description": "URL where the image is available.",
                             "type": "string"
-                        }
+                        },
+                       "working-directory": {},
+                       "container-hash": {}
                     },
                     "required": ["type", "url"],
+                     "additionalProperties": false,
                     "description": "Object representing a rootfs or singularity container for the tool."
                 }]
             }]
@@ -85,7 +91,7 @@
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.2", "0.3"]
+            "enum": ["0.4"]
         },
         "walltime-estimate": {
             "id": "http://github.com/boutiques/boutiques-schema/walltime-estimate",
@@ -122,7 +128,8 @@
                 "required": [
                     "name",
                     "value"
-                ]
+                ],
+                "additionalProperties": false
             }
         },
         "groups": {
@@ -176,7 +183,8 @@
                     "name",
                     "id",
                     "members"
-                ]
+                ],
+                "additionalProperties": false
             }
         },
         "inputs": {
@@ -319,7 +327,6 @@
                       "type": { "enum": ["String", "File", "Number", "Enum"] }
                     }
                 }],
-                "additionalProperties": true,
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
                     "min-list-entries": ["list"],
@@ -361,8 +368,8 @@
                     },
                     "exclusive-minimum": ["minimum"],
                     "exclusive-maximum": ["maximum"]
-                }
-
+                },
+               "additionalProperties": false
             }
         },
         "output-files": {
@@ -434,9 +441,18 @@
                     "id",
                     "name",
                     "path-template"
-                ]
+                ],
+                "additionalProperties": false
             }
-        }
+        },
+        "invocation-schema": {
+            "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
+            "type": "object"
+        },
+	"custom": {
+            "id": "http://github.com/boutiques/boutiques-schema/custom",
+            "type": "object"
+	}
     },
     "required": [
         "name",
@@ -446,6 +462,7 @@
         "inputs",
         "output-files",
         "tool-version"
-    ]
+    ],
+    "additionalProperties": false
 }
 
