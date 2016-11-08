@@ -26,14 +26,14 @@ The format of command line keys is not specified. However, it is recommended to 
   * `command-line-flag`: a string involved in the `value-key` substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: ```-v```, ```--force```.
   * `command-line-flag-separator`: a string inserted between the flag and the value. Defaults to space.
   * `default-value`: default value used by the tool when the input is not specified.
-  * `enum-value-choices`: Permitted choices for input value. May only be used in conjunction with the Enum type.
-  * `integer`: A boolean specifying whether the input should be an integer. May only be used with Number type inputs.
-  * `minimum`: Specify the minimum value of the input (inclusive). May only be used with Number type inputs.
-  * `maximum`: Specify the maximum value of the input (inclusive). May only be used with Number type inputs.
-  * `exclusive-minimum`: A boolean specifying whether an input's minimum value should be exclusive. May only be used with Number type inputs with a minimum.
-  * `exclusive-maximum`: A boolean specifying whether an input's maximum value should be exclusive. May only be used with Number type inputs with a maximum.
-  * `min-list-entries`: Specify the minimum number of entries in the list. May only be used with List type inputs.
-  * `max-list-entries`: Specify the maximum number of entries in the list. May only be used with List type inputs.
+  * `enum-value-choices`: permitted choices for input value. May only be used in conjunction with the Enum type.
+  * `integer`: a boolean specifying whether the input should be an integer. May only be used with Number type inputs.
+  * `minimum`: the minimum value of the input (inclusive). May only be used with Number type inputs.
+  * `maximum`: the maximum value of the input (inclusive). May only be used with Number type inputs.
+  * `exclusive-minimum`: a boolean specifying whether an input's minimum value should be exclusive. May only be used with Number type inputs with a minimum.
+  * `exclusive-maximum`: a boolean specifying whether an input's maximum value should be exclusive. May only be used with Number type inputs with a maximum.
+  * `min-list-entries`: the minimum number of entries in the list. May only be used with List type inputs.
+  * `max-list-entries`: the maximum number of entries in the list. May only be used with List type inputs.
   * `requires-inputs`: ids of the inputs which must be active for this input to be available.
   * `disables-inputs`: ids of the inputs that are disabled when this input is active.
   * `uses-absolute-path`: true if file inputs need to be passed as absolute paths. If false, any of absolute or relative path may be used.
@@ -57,10 +57,10 @@ The format of command line keys is not specified. However, it is recommended to 
   * `working-directory`: directory where the tool must be launched within the container.
   * `container-hash`: a string containing the sha384 hash of the container. Example: "sha384:83e4403e0f5f37164be88ef05e8f2ee24664b45f685dbf05b7dc61b1a8a429656d0ddee4c7f967150990dbdf17c36d45". 
 * `environment-variables`: an array of items defining environment variable assignment from the following properties:
-  * **`name`**: The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: "PROGRAM_PATH".
-  * **`value`**: The value of the environment variable.
-  * `description`: Description of the environment variable.
-* `walltime-estimate`: Estimated wall time of a task, in seconds.
+  * **`name`**: environment variable name (identifier) containing only alphanumeric characters and underscores. Example: "PROGRAM_PATH".
+  * **`value`**: value of the environment variable.
+  * `description`: description of the environment variable.
+* `walltime-estimate`: estimated wall time of a task, in seconds.
 * `groups`: an array of objects that represent input groups with the following properties:
   * **`id`:** a short, unique, informative identifier containing only alphanumeric characters and underscores.
   * **`name`:** a human-readable name for the input group.
@@ -68,16 +68,11 @@ The format of command line keys is not specified. However, it is recommended to 
   * `description`: a short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: ```outfile_group```.
   * `mutually-exclusive`: a boolean, true if only one input in the group may be active at runtime.
   * `one-is-required`: a boolean, true if at least one of the inputs in the group must be active at runtime.
-
-## Custom properties
-
-Custom properties may be added to the schema without restriction, to
-enable platform-specific features. They should, however, be defined
-carefully to avoid making tools dependent on the features of a
-particular platform. The following custom properties were defined:
-* `cbrain:can-submit-new-tasks`: a boolean, true if the tool may submit new tasks to the platform. This is an embryonic support for workflows. Specific to the CBRAIN platform for now but may be added to the specificiation in the future.
-* `cbrain:inherits-from-class`: a string that defines the Ruby class that should be used as parent class for the tool in CBRAIN. Used to define a progress bar for PSOM tools in CBRAIN.
-* `vip:miccai-challenger-email` and `vip:miccai-challenge-team-name`: strings helping VIP categorize tools for the 2016 MICCAI challenges [MSSEG](https://portal.fli-iam.irisa.fr/msseg-challenge/overview) and [PETSEG](https://portal.fli-iam.irisa.fr/petseg-challenge/overview).
+* `invocation-schema`: an JSON schema object that contains the invocation schema of the tool.
+* `custom`: an object containing custom properties for the tool. It is recommended to prefix the name of a custom property with the name of the target platform, e.g. "cbrain:". The following custom properties were defined so far:
+    * `cbrain:can-submit-new-tasks`: a boolean, true if the tool may submit new tasks to the platform. This is an embryonic support for workflows. Specific to the CBRAIN platform for now but may be added to the specificiation in the future.
+    * `cbrain:inherits-from-class`: a string that defines the Ruby class that should be used as parent class for the tool in CBRAIN. Used to define a progress bar for PSOM tools in CBRAIN.
+    * `vip:miccai-challenger-email` and `vip:miccai-challenge-team-name`: strings helping VIP categorize tools for the 2016 MICCAI challenges [MSSEG](https://portal.fli-iam.irisa.fr/msseg-challenge/overview) and [PETSEG](https://portal.fli-iam.irisa.fr/petseg-challenge/overview).
 
 ## Command-line substitution
 
