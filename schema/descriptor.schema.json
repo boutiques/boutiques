@@ -78,11 +78,11 @@
                             "description": "URL where the image is available.",
                             "type": "string"
                         },
-                       "working-directory": {},
-                       "container-hash": {}
+			"working-directory": {},
+			"container-hash": {}
                     },
                     "required": ["type", "url"],
-                     "additionalProperties": false,
+                    "additionalProperties": false,
                     "description": "Object representing a rootfs or singularity container for the tool."
                 }]
             }]
@@ -218,8 +218,8 @@
                         "description": "Input description.",
                         "type": "string"
                     },
-                    "command-line-key": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-key",
+                    "value-key": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-key",
                         "description": "A string contained in command-line, substituted by the input value and/or flag at runtime.",
                         "type": "string"
                     },
@@ -235,7 +235,7 @@
                     },
                     "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
-                        "description": "Option flag of the input, involved in the command-line-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
+                        "description": "Option flag of the input, involved in the value-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
                         "type": "string"
                     },
                     "requires-inputs": {
@@ -319,12 +319,12 @@
                 ],
                 "anyOf": [{
                     "properties": {
-                      "type": { "enum": ["Flag"] },
-                      "list": { "enum": [false] }
+                        "type": { "enum": ["Flag"] },
+                        "list": { "enum": [false] }
                     }
                 }, {
                     "properties": {
-                      "type": { "enum": ["String", "File", "Number", "Enum"] }
+                        "type": { "enum": ["String", "File", "Number", "Enum" ] }
                     }
                 }],
                 "dependencies": {
@@ -369,7 +369,7 @@
                     "exclusive-minimum": ["minimum"],
                     "exclusive-maximum": ["maximum"]
                 },
-               "additionalProperties": false
+		"additionalProperties": false
             }
         },
         "output-files": {
@@ -397,14 +397,14 @@
                         "description": "Output description.",
                         "type": "string"
                     },
-                    "command-line-key": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-key",
+                    "value-key": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/value-key",
                         "description": "A string contained in command-line, substituted by the output value and/or flag at runtime.",
                         "type": "string"
                     },
                     "path-template": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
-                        "description": "Describes the output file path relatively to the execution directory. May contain input command-line-keys. Example: \"results/[INPUT1]_brain.mnc\".",
+                        "description": "Describes the output file path relatively to the execution directory. May contain input value keys. Example: \"results/[INPUT1]_brain.mnc\".",
                         "minLength": 1,
                         "type": "string"
                     },
@@ -428,21 +428,43 @@
                     },
                     "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
-                        "description": "Option flag of the output, involved in the command-line-key substitution. Examples: -o, --output",
+                        "description": "Option flag of the output, involved in the value-key substitution. Examples: -o, --output",
                         "type": "string"
                     },
                     "uses-absolute-path": {
                         "id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
                         "description": "Specifies that this output filepath will be given as an absolute path.",
                         "type": "boolean"
+                    },
+                    "file-template": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/file-template",
+                        "description": "An array of strings that may contain value keys. Each item will be a line in the configuration file.",
+                        "type": "array",
+                        "minItems": 1,
+                        "items": { "type": "string" }
                     }
+
                 },
                 "required": [
                     "id",
                     "name",
                     "path-template"
                 ],
-                "additionalProperties": false
+                "anyOf": [{
+                    "properties": {
+                        "file-template": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": { "type": "string" }
+                        },
+                        "list": { "enum": [false] }
+                    }
+                }, {
+                    "properties": {
+                        "file-template": { "enum": [false]} }
+                }
+			 ],
+		"additionalProperties": false
             }
         },
         "invocation-schema": {

@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 #
 # Copyright (C) 2015
 # The Royal Institution for the Advancement of Learning
@@ -22,6 +22,7 @@
 #
 #
 #
+require 'json'
 require 'json-schema'
 
 def usage
@@ -55,11 +56,13 @@ outputGet = lambda { |s| safeGet.('output-files', s) }
 groupGet  = lambda { |s| safeGet.('groups',       s) }
 inById    = lambda { |i| descriptor['inputs'].find{ |v| v['id']==i } || {} }
 
-## Checking command-line-keys and IDs ##
+## Checking value-keys and IDs ##
 
 # Every command-line key appears in the command line
-clkeys, cmdline = inputGet.( 'command-line-key' ), descriptor[ 'command-line' ]
-clkeys.each { |k| errors.push( k + ' not in cmd line' ) unless cmdline.include?(k) }
+clkeys  = inputGet.( 'value-key' ) + outputGet.( 'value-key' )
+configFileTemplates = outputGet.( 'file-template' )
+cmdline = descriptor[ 'command-line' ]
+clkeys.each { |k| errors.push( k + ' not in cmd line or file template' ) unless (cmdline.include?(k) || configFileTemplates.join(" ").include?(k))}
 
 # Command-line keys are not contained within each other
 clkeys.each_with_index do |key1,i|

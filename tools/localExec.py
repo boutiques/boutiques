@@ -112,7 +112,7 @@ class LocalExecutor(object):
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if dockerIsPresent and self.destroyTempScripts:
       if os.path.isfile( dsname ): os.remove( dsname )
-    # Check for output files (note: the path-template can contain command-line-keys
+    # Check for output files (note: the path-template can contain value-keys
     print('Looking for output files:')
     for outfile in self.desc_dict['output-files']:
       outFileName = self.out_dict[outfile['id']]
@@ -350,55 +350,85 @@ class LocalExecutor(object):
     # Build and save output command line (as a single-entry list)
     self.cmdLine = [ self._generateCmdLineFromInDict() ]
 
-  # Private method to generate output file names
-  def _generateOutputFileNames(self):
-    self.out_dict = {} # a dictionary that will contain the output file names
-    for outputId in map(lambda x: x['id'], self.outputs):
-      # Initialize file name with path template
-      outputFileName = self.safeGet(outputId, 'path-template')
-      strippedExtensions = self.safeGet(outputId, "path-template-stripped-extensions") or []
-      # Substitute input keys
-      for inputId in map(lambda x: x['id'], self.inputs):
-        clk = self.safeGet(inputId,'command-line-key')
-        if clk is None:
-          next
-        if inputId in self.in_dict.keys():
-          inval = self.in_dict[inputId]
+  # Private method to replace the keys in template by input and output
+  # values. Input and output values are looked up in self.in_dict and
+  # self.out_dict
+  # * if useFlags is true, keys will be replaced by flag+flag-separator+value
+  # * if unfoundKeys is "remove", unfound keys will be replaced by ""
+  # * if unfoundKeys is "clear" then the template is cleared if it has unfound keys (useful for configuration files)
+  # * before being substituted, the keys will be stripped from all the strings in strippedExtensions 
+  def _replaceKeysInTemplate(self,template,useFlags=False,unfoundKeys="remove",strippedExtensions=[]):
+      # Concatenate input and output dictionaries
+      in_out_dict = dict(self.in_dict)
+      in_out_dict.update(self.out_dict)
+      # Go through all the keys
+      for paramId in map(lambda x: x['id'], self.inputs+self.outputs):
+        clk = self.safeGet(paramId,'value-key')
+        if clk is None: continue          
+        if paramId in in_out_dict.keys(): # param has a value
+          val = str(in_out_dict[paramId])
+          # Add flags and separator if necessary
+          if useFlags:
+            flag   = self.safeGet(paramId,'command-line-flag') or ''
+            sep    = self.safeGet(paramId,'command-line-flag-separator') or ' '
+            val = flag + sep + val  
+            if self.safeGet(paramId,'type')=='Flag': # special case for flag-type inputs
+              val = '' if val.lower()=='false' else flag
           # Remove file extensions from input value
           for extension in strippedExtensions:
-            inval = inval.replace(extension,"")
-          outputFileName = outputFileName.replace(clk,inval)
+            val = val.replace(extension,"")
+          template = template.replace(clk,val)
+        else: # param has no value
+          if unfoundKeys == "remove":
+            template = template.replace(clk, '')
+          elif unfoundKeys == "clear":
+            if clk in template: return ""
+      return template
+     
+  # Private method to generate output file names.
+  # Output file names will be put in self.out_dict.
+  def _generateOutputFileNames(self):
+    if not hasattr(self,'out_dict'):
+      self.out_dict = {} # a dictionary that will contain the output file names
+    for outputId in map(lambda x: x['id'], self.outputs):
+      # Initialize file name with path template or existing value
+      outputFileName = self.out_dict[outputId] if outputId in self.out_dict.keys() else self.safeGet(outputId, 'path-template')
+      strippedExtensions = self.safeGet(outputId, "path-template-stripped-extensions") or []
+      # We keep the unfound keys because they will be substituted in a second call to the method in case they are output keys
+      outputFileName = self._replaceKeysInTemplate(outputFileName,False,"keep",strippedExtensions)
       if self.safeGet(outputId, 'uses-absolute-path'):
         outputFileName = os.path.abspath(outputFileName)
       self.out_dict[outputId] = outputFileName
-    
+
+  # Private method to write configuration files
+  # Configuration files are output files that have a file-template
+  def _writeConfigurationFiles(self):
+    for outputId in map(lambda x: x['id'], self.outputs):
+      fileTemplate = self.safeGet(outputId,'file-template')
+      if fileTemplate is None: continue # this is not a configuration file
+      strippedExtensions = self.safeGet(outputId, "path-template-stripped-extensions") or []
+      # We substitute the keys line by line so that we can clear the lines that have keys with no value (undefined optional params)
+      newTemplate = []
+      for line in fileTemplate:
+        newTemplate.append(self._replaceKeysInTemplate(line,False,"clear",strippedExtensions))
+      template="\n".join(newTemplate)
+      # Write the configuration file
+      fileName = self.out_dict[outputId]
+      file = open(fileName,'w')
+      file.write(template)
+      file.close()
+      
   # Private method to build the actual command line by substitution, using the input data
   def _generateCmdLineFromInDict(self):
     # Genrate output file names
     self._generateOutputFileNames()
+    self._generateOutputFileNames() # it is required to call the method twice in case path templates contain output keys
+    # Write configuration files
+    self._writeConfigurationFiles()
     # Get the command line template
     template = self.desc_dict['command-line']
     # Substitute every given value into the template (incl. flags, flag-seps, ...)
-    for paramId in map(lambda x: x['id'], (self.inputs+self.outputs)):
-      clk = self.safeGet(paramId,'command-line-key')
-      assert not clk is None, str(paramId) + ' does not appear to have a command-line-key'
-      # Substitute into the template if a value was given
-      if paramId in self.in_dict.keys():
-        # Generate value to put in template
-        flag   = self.safeGet(paramId,'command-line-flag') or ''
-        sep    = self.safeGet(paramId,'command-line-flag-separator') or ' '
-        inval  = self.in_dict[paramId]
-        outval = flag + sep + str(inval)
-        if self.safeGet(paramId,'type')=='Flag': # special case for flag-type inputs
-          outval =  '' if inval.lower()=='false' else flag
-        # Perform template substitution
-        template = template.replace(clk, outval)
-      # Wipe the cmd line key if the value was not given
-      else:
-        if paramId in self.out_dict.keys():
-          template = template.replace(clk, self.out_dict[paramId])
-        else:
-            template = template.replace(clk, '')
+    template = self._replaceKeysInTemplate(template,True,"remove")
     # Return substituted command line
     return template
 
@@ -574,7 +604,7 @@ Notes: pass lists by space-separated values
   elif given(args.num) and not args.random:
     errExit('--num requires random')
   elif args.random and args.execute:
-    errExit('--random and --exec canot be used together')
+    errExit('--random and --exec cannot be used together')
   elif args.random and given(args.input):
     errExit('--random and --input cannot be used together')
   elif given(args.input) and not os.path.isfile( args.input ):
