@@ -431,6 +431,11 @@
                         "description": "Option flag of the output, involved in the value-key substitution. Examples: -o, --output",
                         "type": "string"
                     },
+		    "command-line-flag-separator": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag-separator",
+                        "description": "Separator used between flags and their arguments. Defaults to a single space.",
+                        "type": "string"
+                    },
                     "uses-absolute-path": {
                         "id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
                         "description": "Specifies that this output filepath will be given as an absolute path.",
@@ -464,6 +469,9 @@
                         "file-template": { "enum": [false]} }
                 }
 			 ],
+		"dependencies": {
+                    "command-line-flag-separator": ["command-line-flag"]
+		},
 		"additionalProperties": false
             }
         },
