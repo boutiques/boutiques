@@ -6,3 +6,4 @@ ADD example1/exampleTool1 /bin
 ADD example1/exampleTool2 /bin
 ADD list/list.sh /bin
 ADD output-flag-separator/output-flag.sh /bin
+ADD enum/enum.sh /bin
