@@ -1,0 +1,26 @@
+{
+    "name": "enum",
+    "tool-version": "1.0",
+    "description": "A simple script to test enums",
+    "command-line": "output-flag.sh [PARAM] result.txt",
+    "schema-version": "0.4",
+    "container-image": {
+	"type": "docker",
+	"image": "boutiques/examples"
+    },
+    "inputs": [{
+	"id": "param",
+	"name": "Parameter",
+        "value-key": "[PARAM]",
+	"type": "String",
+        "value-choices": ["a", "b", "c"],
+        "default-value": "d",
+        "optional": false
+    }],
+    "output-files": [{
+	"id": "output_file",
+	"name": "Output file",
+	"path-template": "result.txt"
+    }]
+
+}
