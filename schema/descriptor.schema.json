@@ -78,8 +78,8 @@
                             "description": "URL where the image is available.",
                             "type": "string"
                         },
-			"working-directory": {},
-			"container-hash": {}
+                        "working-directory": {},
+                        "container-hash": {}
                     },
                     "required": ["type", "url"],
                     "additionalProperties": false,
@@ -211,7 +211,7 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/type",
                         "type": "string",
                         "description": "Input type.",
-                        "enum": ["String", "File", "Flag", "Number", "Enum"]
+                        "enum": ["String", "File", "Flag", "Number"]
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/description",
@@ -225,7 +225,7 @@
                     },
                     "list": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/list",
-                        "description":"True if input is a list of value. An input of type \"Flag\" or \"Enum\" cannot be a list.",
+                        "description":"True if input is a list of value. An input of type \"Flag\" cannot be a list.",
                         "type": "boolean"
                     },
                     "optional": {
@@ -263,12 +263,15 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
                         "description": "Default value of the input, used by the tool when no option is specified."
                     },
-                    "enum-value-choices": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/enum-value-choices",
-                        "description": "Permitted choices for input value. May only be used in conjunction with the enum type.",
+                    "value-choices": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-choices",
+                        "description": "Permitted choices for input value. May not be used with the Flag type.",
                         "type": "array",
                         "items": {
-                            "type": "string"
+                            "oneOf":  [
+                                { "type": "string" },
+                                { "type": "number" }
+                            ]
                         }
                     },
                     "integer": {
@@ -324,16 +327,16 @@
                     }
                 }, {
                     "properties": {
-                        "type": { "enum": ["String", "File", "Number", "Enum" ] }
+                        "type": { "enum": ["String", "File", "Number"] }
                     }
                 }],
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"],
                     "min-list-entries": ["list"],
                     "max-list-entries": ["list"],
-                    "enum-value-choices": {
+                    "value-choices": {
                         "properties": {
-                            "type": {"enum": ["Enum"]}
+                            "type": {"enum": ["String", "Number"]}
                         }
                     },
                     "integer": {
@@ -369,7 +372,7 @@
                     "exclusive-minimum": ["minimum"],
                     "exclusive-maximum": ["maximum"]
                 },
-		"additionalProperties": false
+                "additionalProperties": false
             }
         },
         "output-files": {
@@ -431,6 +434,11 @@
                         "description": "Option flag of the output, involved in the value-key substitution. Examples: -o, --output",
                         "type": "string"
                     },
+                    "command-line-flag-separator": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag-separator",
+                        "description": "Separator used between flags and their arguments. Defaults to a single space.",
+                        "type": "string"
+                    },
                     "uses-absolute-path": {
                         "id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
                         "description": "Specifies that this output filepath will be given as an absolute path.",
@@ -463,18 +471,21 @@
                     "properties": {
                         "file-template": { "enum": [false]} }
                 }
-			 ],
-		"additionalProperties": false
+                         ],
+                "dependencies": {
+                    "command-line-flag-separator": ["command-line-flag"]
+                },
+                "additionalProperties": false
             }
         },
         "invocation-schema": {
             "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
             "type": "object"
         },
-	"custom": {
+        "custom": {
             "id": "http://github.com/boutiques/boutiques-schema/custom",
             "type": "object"
-	}
+        }
     },
     "required": [
         "name",

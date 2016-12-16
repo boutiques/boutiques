@@ -173,7 +173,7 @@ class LocalExecutor(object):
 
     # Generate a random parameter value based on the input type (where prm \in self.inputs)
     def paramSingle(prm):
-      if prm['type']=='Enum':   return rnd.choice( self.safeGet(prm['id'],'enum-value-choices') )
+      if self.safeGet(prm['id'],'value-choices'):   return rnd.choice( self.safeGet(prm['id'],'value-choices') )
       if prm['type']=='String': return randStr()
       if prm['type']=='Number': return randNum(prm)
       if prm['type']=='Flag':   return rnd.choice(['true','false'])
@@ -473,9 +473,9 @@ class LocalExecutor(object):
           check('exclusive-maximum', lambda x,y: float(x) < targ['maximum'], "violates exclusive max value",v)
           check('integer', lambda x,y: isNumber(x,True), "violates integer requirement",v)
           check(None, lambda x,y: isNumber(x), "is not a number",v)
-      elif targ["type"] == "Enum":
-        # Enum value is in the list of allowed values
-        check('enum-value-choices', lambda x,y: x in targ[y], "is not a valid enum choice",val)
+      elif self.safeGet(targ['id'],'value-choices'):
+        # Value is in the list of allowed values
+        check('value-choices', lambda x,y: x in targ[y], "is not a valid enum choice",val)
       elif targ["type"] == "Flag":
         # Should be 'true' or 'false' when lower-cased (based on our transformations of the input)
         check(None, lambda x,y: x.lower() in ["true","false"], "is not a valid flag value",val)

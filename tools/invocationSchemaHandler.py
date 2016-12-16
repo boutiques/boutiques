@@ -27,7 +27,7 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
     id, type, target = i['id'], i['type'], None
     def undertype():
       if i['integer']: return { 'type' : 'integer' }
-      elif type == "Enum": return { 'enum' : i['enum-value-choices'] }
+      elif i['value-choices']: return { 'enum' : i['value-choices'] }
       elif type == "File": return { 'type' : 'string' }
       elif type == "Flag": return { 'type' : 'boolean' }
       else: return { 'type' : type.lower() }
