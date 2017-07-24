@@ -4,6 +4,7 @@
 # Requires jsonschema 2.5
 
 import json, jsonschema as jsa, argparse, os, sys
+from functools import reduce
 
 # Generate an invocation schema from a Boutiques application descriptor
 def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
@@ -47,7 +48,7 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
   schema["properties"] = reduce(addTypeConstraints, inputs, {})
   # Required inputs
   reqInputs = map(lambda x: x['id'], filter(lambda x: not x.get('optional'), inputs))
-  if len(reqInputs) > 0: schema["required"] = reqInputs
+  if len(list(reqInputs)) > 0: schema["required"] = reqInputs
   # Helper functions (assumes properly formed descriptor)
   byInd  = lambda id: [i for i in inputs if id==i['id']][0]
   isFlag = lambda id: (byInd(id)['type'] == 'Flag')

@@ -20,7 +20,7 @@ class LocalExecutor(object):
   """
 
   # Constructor
-  def __init__(self,desc,options={}):
+  def __init__(self,desc, options={}):
     ## Initial parameters ##
     self.desc_path = desc  # Save descriptor path
     self.errs      = []    # Empty errors holder
@@ -40,9 +40,9 @@ class LocalExecutor(object):
     # Retrieves the group corresponding to the given id
     self.byGid      = lambda g: [ v for v in self.groups if v['id']==g][0]
     # Retrieves the value of a field of an input from the descriptor. Returns None if not present.
-    self.safeGet    = lambda i,k: None if not k in self.byId(i).keys() else self.byId(i)[k]
+    self.safeGet    = lambda i, k: None if not k in self.byId(i).keys() else self.byId(i)[k]
     # Retrieves the value of a field of a group from the descriptor. Returns None if not present.
-    self.safeGrpGet = lambda g,k: None if not k in self.byGid(g).keys() else self.byGid(g)[k]
+    self.safeGrpGet = lambda g, k: None if not k in self.byGid(g).keys() else self.byGid(g)[k]
     # Retrieves the group a given parameter id belongs to; otherwise, returns None
     self.assocGrp   = lambda i: (filter( lambda g: i in g["members"], self.groups ) or [None])[0]
     # Returns the required inputs of a given input id, or the empty string
@@ -59,7 +59,6 @@ class LocalExecutor(object):
 
   # Attempt local execution of the command line generated from the input values
   def execute(self):
-
     '''
     The execute method runs the generated command line (from either generateRandomParams or readInput).
     If docker is specified, it will attempt to use it, instead of local execution.
