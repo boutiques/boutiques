@@ -16,47 +16,85 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 #
-import json
-import jsonschema
+import simplejson
+import os.path as op
+from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
+from boutiques import __file__
 
-if __name__ == "__main__":
-    main()
+# Defining helper functions/lambdas
+def safeGet(sec, targ):
+    values = []
+    for item in descriptor[sec]:
+        try:
+            values += [item[targ]]
+        except KeyError:
+            continue
+    return values
+
+inputGet  = lambda s: safeGet('inputs', s)
+outputGet = lambda s: safeGet('output-files', s)
+groupGet  = lambda s: safeGet('groups', s)
+inById    = lambda i: descriptor['inputs'][inputGet('id').index(i)] if i in inputGet('id') else {}
+
+# Main validation module
+def validate_json(json_file):
+    """
+    Validates the Boutiques descriptor against the schema.
+    """
+    path, fil = op.split(__file__)
+    schema_file = op.join(path, 'schema', 'descriptor.schema.json')
+
+    # Load schema
+    with open(schema_file) as fhandle:
+        schema = simplejson.load(fhandle)
+
+    # Load descriptor
+    with open(json_file) as fhandle:
+        descriptor = simplejson.load(fhandle)
+
+    # Validate basic JSON schema compliance for descriptor
+    # Note: if it fails basic schema compliance we don't do more checks
+    try:
+        validate(descriptor, schema)
+    except ValidationError as e:
+        print("Descriptor is not compliant with Boutiques schema.")
+        print("Error: {}".format(e.strerror))
+        return -1
+
+    # Begin looking at Boutiques-specific failures
+    errors = []
+    
+    # Verify that all command-line key appear in the command-line
+    clkeys = inputGet('value-key') + outputGet('value-key')
+    configFileTemplates = outputGet('file-template') + outputGet('path-template')
+    cmdline = descriptor['command-line']
+
+    msg_template = "{} not in command-line or file template"
+    errors += [msg_template.format(k) for k in clkeys
+               if (cmdline.count(k) + " ".join(configFileTemplates).count(k)) < 1 ]
+
+    """
+    # Command-line keys are not contained within each other
+    clkeys.each_with_index do |key1,i|
+      for j in 0...(clkeys.length)
+        errors.push( key1 + ' contains ' + clkeys[j] ) if key1.include?(clkeys[j]) && i!=j
+      end
+    end
+    """
 
 def main():
     parser = ArgumentParser("Boutiques Validator")
     parser.add_argument("json_file", action="store", nargs="1",
                         help="The Boutiques descriptor you wish to validate")
     json_file = parser.parse_args()['json_file']
+    validate_json(json_file)
 
-def validate_json():
-    pass
+
+if __name__ == "__main__":
+    main()
 
 thing = """
-# Unpack arguments and parse descriptor
-(schema_file,json_file) = ARGV
-begin
-  descriptor = JSON.parse( File.read(json_file) )
-rescue StandardError => e
-  puts "An error occurred during parsing!"
-  puts e
-  exit 1 # if the json itself is invalid, no need to check it
-end
-
-### Automatic descriptor validation with respect to schema structure ###
-errors = JSON::Validator.fully_validate(schema_file, descriptor)
-
-### Validation of descriptor arguments ###
-
-## Helper functions ##
-safeGet   = lambda { |sec,targ| descriptor[sec].map { |v| v[targ] }.compact rescue [] }
-inputGet  = lambda { |s| safeGet.('inputs',       s) }
-outputGet = lambda { |s| safeGet.('output-files', s) }
-groupGet  = lambda { |s| safeGet.('groups',       s) }
-inById    = lambda { |i| descriptor['inputs'].find{ |v| v['id']==i } || {} }
-
-## Checking value-keys and IDs ##
-
 # Every command-line key appears in the command line
 clkeys  = inputGet.( 'value-key' ) + outputGet.( 'value-key' )
 configFileTemplates = outputGet.( 'file-template' )
