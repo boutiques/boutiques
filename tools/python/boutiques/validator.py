@@ -18,29 +18,19 @@
 #
 import json
 import jsonschema
-from boutiques import __schemaversion__ as ver
 from argparse import ArgumentParser
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     main()
 
 def main():
     parser = ArgumentParser("Boutiques Validator")
     parser.add_argument("json_file", action="store", nargs="1",
                         help="The Boutiques descriptor you wish to validate")
-    parser.add_argument("--version", "-v", action="store", nargs="1",
-                        default=ver, help="The version of the
-                        Boutiques schema you wish to validate against")
-    json_file, version = parser.parse_args()
-    
-    if version is not ver:
-        msg = """
-        This validator only works for version {} - please checkout this package
-        on Github (https://github.com/boutiques/boutiques) for an older/newer
-        version of the validator.
-"""
-        print(msg.format(ver))
-        return(-1)
+    json_file = parser.parse_args()['json_file']
+
+def validate_json():
+    pass
 
 thing = """
 # Unpack arguments and parse descriptor

@@ -3,7 +3,11 @@
 # A script for handling invocation schema generation and validation for Boutiques application descriptors
 # Requires jsonschema 2.5
 
-import json, jsonschema as jsa, argparse, os, sys
+import json
+import jsonschema
+import os
+import sys
+import argparse
 from functools import reduce
 
 # Generate an invocation schema from a Boutiques application descriptor
