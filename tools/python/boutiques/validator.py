@@ -207,10 +207,10 @@ def validate_json(json_file):
 
 def main():
     parser = ArgumentParser("Boutiques Validator")
-    parser.add_argument("json_file", action="store", nargs="1",
+    parser.add_argument("jsonfile", action="store",
                         help="The Boutiques descriptor you wish to validate")
-    json_file = parser.parse_args()["json_file"]
-    validate_json(json_file)
+    results = parser.parse_args()
+    validate_json(results.jsonfile)
 
 
 if __name__ == "__main__":
