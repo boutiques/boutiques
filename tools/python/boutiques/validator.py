@@ -18,24 +18,11 @@
 #
 import simplejson
 import os.path as op
+import numpy as np
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__
 
-# Defining helper functions/lambdas
-def safeGet(sec, targ):
-    values = []
-    for item in descriptor[sec]:
-        try:
-            values += [item[targ]]
-        except KeyError:
-            continue
-    return values
-
-inputGet  = lambda s: safeGet('inputs', s)
-outputGet = lambda s: safeGet('output-files', s)
-groupGet  = lambda s: safeGet('groups', s)
-inById    = lambda i: descriptor['inputs'][inputGet('id').index(i)] if i in inputGet('id') else {}
 
 # Main validation module
 def validate_json(json_file):
@@ -58,30 +45,125 @@ def validate_json(json_file):
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        print("Descriptor is not compliant with Boutiques schema.")
-        print("Error: {}".format(e.strerror))
+        print("JSON Validation error (Boutiques validation not yet performed)")
+        print("Error: {}".format(e))
         return -1
+
+    # Helper get-function
+    safeGet   = lambda desc, sec, targ: [item[targ] for item in desc[sec]
+                                         if list(item.keys()).count(targ)]
+    inputGet  = lambda s: safeGet(descriptor, 'inputs', s)
+    outputGet = lambda s: safeGet(descriptor, 'output-files', s)
+    groupGet  = lambda s: safeGet(descriptor, 'groups', s)
+    inById    = lambda i: descriptor['inputs'][inputGet('id').index(i)] if i in inputGet('id') else {}
 
     # Begin looking at Boutiques-specific failures
     errors = []
     
-    # Verify that all command-line key appear in the command-line
     clkeys = inputGet('value-key') + outputGet('value-key')
     configFileTemplates = outputGet('file-template') + outputGet('path-template')
     cmdline = descriptor['command-line']
 
-    msg_template = "{} not in command-line or file template"
-    errors += [msg_template.format(k) for k in clkeys
+    # Verify that all command-line key appear in the command-line
+    msg_template = "   KeyError: \"{}\" not in command-line or file template"
+    errors += [msg_template.format(k.strip("[]"))
+               for k in clkeys
                if (cmdline.count(k) + " ".join(configFileTemplates).count(k)) < 1 ]
 
-    """
-    # Command-line keys are not contained within each other
-    clkeys.each_with_index do |key1,i|
-      for j in 0...(clkeys.length)
-        errors.push( key1 + ' contains ' + clkeys[j] ) if key1.include?(clkeys[j]) && i!=j
-      end
+    # Verify that no key contains another key
+    msg_template = "   KeyError: \"{}\" contains \"{}\""
+    errors += [msg_template.format(key.strip("[]"), clkeys[jdx].strip("[]"))
+               for idx, key in enumerate(clkeys)
+               for jdx in range(0, len(clkeys))
+               if clkeys[jdx].strip("[]") in key and key is not clkeys[jdx]]
+
+    # Verify that all Ids are unique
+    inIds, outIds, grpIds = inputGet('id'), outputGet('id'), groupGet('id')
+    allIds = inIds + outIds + grpIds
+    msg_template = "    IdError: \"{}\" is non-unique"
+    for idx, s1 in enumerate(allIds):
+        for jdx, s2 in enumerate(allIds):
+            errors += [msg_template.format(s1)] if s1 == s2 and idx < jdx else []
+
+    # Verify that output files have unique path-templates
+    msg_template = "OutputError: \"{}\" and \"{}\" have the same path-template"
+    for idx, out1 in enumerate(descriptor['output-files']):
+        for jdx, out2 in enumerate(descriptor['output-files']):
+            errors += [msg_template.format(out1['id'], out2['id'])] if out1['path-template'] == out2['path-template'] and jdx > idx else []
+
+    # Verify inputs
+    for inp in descriptor['inputs']:
+    
+        # Verify flag-type inputs (have flags, not required, cannot be lists)
+        if inp['type'] == 'Flag':
+            msg_template = " InputError: \"{}\" must have a command-line flag"
+            errors += [msg_template.format(inp['id'])] if 'command-line-flag' not in inp.keys() else []
+
+            msg_template = " InputError: \"{}\" should not be required"
+            errors += [msg_template.format(inp['id'])] if inp['optional'] == False  else []
+
+            # This one is redundant as basic JSON validation catches it
+            msg_template = " InputError: \"{}\" cannot be a list"
+            errors += [msg_template.format(inp['id'])] if 'list' in inp.keys() else []
+
+        # Verify number-type inputs min/max are sensible
+        elif inp['type'] == 'Number':
+            msg_template = " InputError: \"{}\" cannot have greater min ({}) than max ({})"
+            minn = inp['minimum'] if 'minimum' in inp.keys() else -np.inf 
+            maxx = inp['maximum'] if 'maximum' in inp.keys() else np.inf
+            errors += [msg_template.format(inp['id'], minn, maxx)] if minn > maxx else []
+
+        # Verify enum-type inputs (at least 1 option, default in set)
+        elif 'value-choices' in inp.keys():
+            msg_template = " InputError: \"{}\" must have at least one value choice"
+            errors += [msg_template.format(inp['id'])] if len(inp['value-choices']) < 1 else []
+
+            msg_template = " InputError: \"{}\" cannot have default value outside its choices"
+            errors += [msg_template.format(inp['id'])] if 'default-value' in inp.keys() and inp['default-value'] not in inp['value-choices'] else []
+
+        # Verify list-type inputs (min entries less than max, no negative entries (both on min and max)
+        if 'list' in inp.keys():
+            msg_template = " InputError: \"{}\" cannot have greater min entries ({}) than max entries ({})"
+            minn = inp['min-list-entries'] if 'min-list-entries' in inp.keys() else 0
+            maxx = inp['max-list-entries'] if 'max-list-entries' in inp.keys() else np.inf
+            errors += [msg_template.format(inp['id'], minn, maxx)] if minn > maxx else []
+
+            msg_template = " InputError: \"{}\" cannot have negative min entries ({})"
+            errors += [msg_template.format(inp['id'], minn)] if minn < 0 else []
+
+            msg_template = " InputError: \"{}\" cannot have non-positive max entries ({})"
+            errors += [msg_template.format(inp['id'], maxx)] if maxx <= 0 else []
+
+        # Verify non list-type inputs don't have list properties
+        # This one is redundant as basic JSON validation catches it
+        else:
+            msg_template = " InputError: \"{}\" cannot use min- or max-list-entries"
+            errors += [msg_template.format(inp['id'])] if 'min-list-entries' in inp.keys() or 'max-list-entries' in inp.keys() else []
+
+    errors = ["OK"] if errors == [] else errors
+    print("\n".join(errors))
+"""
+## Checking inputs ##
+  # IDs in requires-inputs and disables-inputs are present
+  for s in ['require','disable']
+    (v[s + "s-inputs"] || []).each do |r|
+      errors.push( s.capitalize + "d id #{r} for #{v['id']} was not found" ) unless inIds.include?(r)
     end
-    """
+  end
+
+  # An input cannot both require and disable another input
+  for did in (v["requires-inputs"] || [])
+    errors.push( "Id #{v['id']} requires and disables #{did}" ) if (v["disables-inputs"] || []).include?(did)
+  end
+
+  # Required inputs cannot require or disable other parameters
+  if v['optional']==false
+     errors.push("Required param #{v['id']} cannot require other inputs") if v['requires-inputs']
+     errors.push("Required param #{v['id']} cannot disable other inputs") if v['disables-inputs']
+  end
+
+end
+"""
 
 def main():
     parser = ArgumentParser("Boutiques Validator")
@@ -95,41 +177,6 @@ if __name__ == "__main__":
     main()
 
 thing = """
-# Every command-line key appears in the command line
-clkeys  = inputGet.( 'value-key' ) + outputGet.( 'value-key' )
-configFileTemplates = outputGet.( 'file-template' )
-cmdline = descriptor[ 'command-line' ]
-clkeys.each { |k| errors.push( k + ' not in cmd line or file template' ) unless (cmdline.include?(k) || configFileTemplates.join(" ").include?(k))}
-
-# Command-line keys are not contained within each other
-clkeys.each_with_index do |key1,i|
-  for j in 0...(clkeys.length)
-    errors.push( key1 + ' contains ' + clkeys[j] ) if key1.include?(clkeys[j]) && i!=j
-  end
-end
-
-# IDs are unique
-inIds, outIds, grpIds = inputGet.( 'id' ), outputGet.( 'id' ), groupGet.( 'id' )
-allIds = inIds + outIds + grpIds
-allIds.each_with_index do |s1,i|
-  allIds.each_with_index do |s2,j|
-    errors.push("Non-unique id " + s1) if (s1 == s2) && (i < j)
-  end
-end
-
-## Checking outputs ##
-descriptor['output-files'].each_with_index do |a,i|
-
-  # Output files should have a unique path-template
-  descriptor['output-files'].each_with_index do |b,j|
-    next if j <= i
-    if a['path-template'] == b['path-template']
-      errors.push( "Output files #{a['id']} and #{b['id']} have the same path-template" )
-    end
-  end
-
-end
-
 ## Checking inputs ##
 descriptor["inputs"].each do |v|
 
@@ -215,6 +262,5 @@ end
 end
 
 ### Print the final set of errors ###
-errors << "OK" if errors == []
 puts "#{errors}"
 """
