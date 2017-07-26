@@ -203,7 +203,7 @@ def validate_json(json_file):
 
     errors = None if errors == [] else errors
     if errors is None:
-        print("OK")
+        print("Boutiques validation OK")
         return 0
     else:
         raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
