@@ -201,8 +201,12 @@ def validate_json(json_file):
                        for member in set(grp["members"])
                        if member in inIds and not inById(member)["optional"]]
 
-    errors = ["OK"] if errors == [] else errors
-    print("\n".join(errors))
+    errors = None if errors == [] else errors
+    if errors is None:
+        print("OK")
+        return 0
+    else:
+        raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
 
 
 def main():
