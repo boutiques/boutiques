@@ -4,7 +4,7 @@
 # Requires jsonschema 2.5
 
 import json
-import jsonschema
+import jsonschema as jsa
 import os
 import sys
 import argparse
@@ -51,7 +51,7 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
     return h
   schema["properties"] = reduce(addTypeConstraints, inputs, {})
   # Required inputs
-  reqInputs = map(lambda x: x['id'], filter(lambda x: not x.get('optional'), inputs))
+  reqInputs = [x['id'] for x in [x for x in inputs if not x.get('optional')]]
   if len(list(reqInputs)) > 0: schema["required"] = reqInputs
   # Helper functions (assumes properly formed descriptor)
   byInd  = lambda id: [i for i in inputs if id==i['id']][0]
@@ -61,7 +61,7 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
   def reqMember(m): # Generate code for a one-is-required member
     if isFlag(m): return { "properties" : { m : { "enum" : [ True ] } }, "required" : [m] }
     else: return { "required" : [m] }
-  if len(g1r) > 0: schema["allOf"] = map(lambda g: {"anyOf" : map(reqMember, g['members'])}, g1r)
+  if len(g1r) > 0: schema["allOf"] = [{"anyOf" : list(map(reqMember, g['members']))} for g in g1r]
   # Handle requires and disables-inputs/mutex constraints
   def handleDisablesRequires(h,inval):
     i, h = RMap( inval ), RMap( h )
@@ -119,8 +119,8 @@ def validateSchema(s, d=None):
     errs  = list(jsa.Draft4Validator(s).iter_errors(d))
     nerrs = len( errs )
     if nerrs > 0:
-      print("Encountered " + str(nerrs) + " error" + ('s!' if nerrs > 1 else '!') )
-      for e in sorted(errs, key=str): print("\t" + str(e.message))
+      print(("Encountered " + str(nerrs) + " error" + ('s!' if nerrs > 1 else '!') ))
+      for e in sorted(errs, key=str): print(("\t" + str(e.message)))
       sys.exit(1)
     else:
       print("Valid data!")
@@ -143,7 +143,7 @@ def _prettySchema(s, indenter=3): return json.dumps( s, indent=indenter, separat
 if __name__ == "__main__":
 
   # Description
-  description = "\n".join(map(lambda x: x[3:],'''
+  description = "\n".join([x[3:] for x in '''
    Script for generating invocation schemas (i.e. JSON schemas for input values) associated to a Boutiques application
      descriptor and/or validating input data examples with respect to invocation schemas.
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
         "outputFile" : "output.gif",
         ...
      }
-  '''.split("\n")))
+  '''.split("\n")])
 
   # Parse inputs
   parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
@@ -211,5 +211,5 @@ if __name__ == "__main__":
   invSchema = generateInvocationSchema(desc) if given(args.input) else inSchema
   if given(args.output): writeSchema(invSchema, args.output, None if args.compact else 3)
   elif given(args.data): validateSchema(invSchema, data)
-  else: print(_prettySchema(invSchema, None if args.compact else 3))
+  else: print((_prettySchema(invSchema, None if args.compact else 3)))
 
