@@ -34,17 +34,17 @@ class LocalExecutor(object):
     # The set of output parameters from the json descriptor
     self.outputs     = self.desc_dict['output-files'] # Structure: [ {id:...},...,{id:...} ]
     # The set of parameter groups, according to the json descriptor
-    self.groups     = self.desc_dict['groups'] if 'groups' in self.desc_dict.keys() else []
+    self.groups     = self.desc_dict['groups'] if 'groups' in list(self.desc_dict.keys()) else []
     # Retrieves the parameter corresponding to the given id
     self.byId       = lambda n: [ v for v in self.inputs+self.outputs if v['id']==n][0]
     # Retrieves the group corresponding to the given id
     self.byGid      = lambda g: [ v for v in self.groups if v['id']==g][0]
     # Retrieves the value of a field of an input from the descriptor. Returns None if not present.
-    self.safeGet    = lambda i, k: None if not k in self.byId(i).keys() else self.byId(i)[k]
+    self.safeGet    = lambda i, k: None if not k in list(self.byId(i).keys()) else self.byId(i)[k]
     # Retrieves the value of a field of a group from the descriptor. Returns None if not present.
-    self.safeGrpGet = lambda g, k: None if not k in self.byGid(g).keys() else self.byGid(g)[k]
+    self.safeGrpGet = lambda g, k: None if not k in list(self.byGid(g).keys()) else self.byGid(g)[k]
     # Retrieves the group a given parameter id belongs to; otherwise, returns None
-    self.assocGrp   = lambda i: (filter( lambda g: i in g["members"], self.groups ) or [None])[0]
+    self.assocGrp   = lambda i: ([g for g in self.groups if i in g["members"]] or [None])[0]
     # Returns the required inputs of a given input id, or the empty string
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
     ## Container-image Options ##
@@ -52,7 +52,7 @@ class LocalExecutor(object):
     self.launchDir = None if self.container is None else self.container.get('working-directory')
     ## Extra Options ##
     # Include: forcePathType, ignoreContainer, and destroyTempScripts
-    for option in options.keys(): setattr(self, option, options.get(option))
+    for option in list(options.keys()): setattr(self, option, options.get(option))
     # Container Implementation check
     if (not self.container is None) and self.container['type'] != 'docker':
       raise ValueError('Other container types than docker (e.g. ' + self.container['type'] + ') are not yet supported')
@@ -66,13 +66,13 @@ class LocalExecutor(object):
     '''
 
     command, exit_code, container = self.cmdLine[0], None, self.container or {}
-    print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
+    print(('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---'))
     # Check for docker
     dockerImage, dockerIndex = container.get( 'image' ), container.get( 'index' )
     dockerIsPresent = (not dockerImage is None) 
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
-    if 'environment-variables' in self.desc_dict.keys():
+    if 'environment-variables' in list(self.desc_dict.keys()):
       for (envVarName,envVarValue) in [ (p['name'],p['value']) for p in self.desc_dict['environment-variables'] ]:
         os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue # for non-container and docker resp.
     # Docker script constant name
@@ -95,18 +95,18 @@ class LocalExecutor(object):
       # Prepare extra environment variables
       envString = " "
       if envVars:
-        for (key,val) in envVars.items(): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
+        for (key,val) in list(envVars.items()): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
       dcmd = 'docker run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./' + dsname
-      print('Executing in Docker via: ' + dcmd)
+      print(('Executing in Docker via: ' + dcmd))
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
       exit_code = self._localExecute( command )
     # Report exit status
-    print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
+    print(('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')'))
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if dockerIsPresent and self.destroyTempScripts:
@@ -118,11 +118,11 @@ class LocalExecutor(object):
       # Look for the target file
       exists = os.path.exists( outFileName )
       # Note whether it could be found or not
-      isOptional = outfile['optional'] if 'optional' in outfile.keys() else False
+      isOptional = outfile['optional'] if 'optional' in list(outfile.keys()) else False
       s1 = 'Optional' if isOptional else 'Required'
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
-      print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
+      print(("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName))
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -188,27 +188,19 @@ class LocalExecutor(object):
 
     # Returns a list of the ids of parameters that disable the input parameter
     def disablersOf( inParam ):
-      return map(lambda disabler: disabler[0], # p[0] is the id of the disabling parameter
-               filter(lambda disabler: inParam['id'] in disabler[1], # disabler[1] is the disables list
-                 map(lambda prm: (prm['id'], self.safeGet(prm['id'],'disables-inputs') or []), self.inputs)
-               )
-             )
+      return [disabler[0] for disabler in [disabler for disabler in [(prm['id'], self.safeGet(prm['id'],'disables-inputs') or []) for prm in self.inputs] if inParam['id'] in disabler[1]]]
 
     # Returns the list of mutually requiring parameters of the target
     def mutReqs( targetParam ):
-      return map(lambda mutualReq: self.byId( mutualReq[0] ), # Get object corresponding to id
-               filter(lambda possibleMutReq: targetParam['id'] in possibleMutReq[1], # Keep requirements that require the target
-                 map(lambda reqOfTarg: (reqOfTarg, self.reqsOf(reqOfTarg)), self.reqsOf(targetParam['id']))
-               )
-             )
+      return [self.byId( mutualReq[0] ) for mutualReq in [possibleMutReq for possibleMutReq in [(reqOfTarg, self.reqsOf(reqOfTarg)) for reqOfTarg in self.reqsOf(targetParam['id'])] if targetParam['id'] in possibleMutReq[1]]]
 
     # Returns whether targ (an input parameter) has a value or is allowed to have one
     def isOrCanBeFilled( targ ):
       # If it is already filled in, report so
-      if targ['id'] in self.in_dict.keys(): return True
+      if targ['id'] in list(self.in_dict.keys()): return True
       # If a disabler or a disabled target is already active, it cannot be filled
       for d in disablersOf( targ ) + (self.safeGet( targ['id'], 'disables-inputs' ) or []):
-        if d in self.in_dict.keys(): return False
+        if d in list(self.in_dict.keys()): return False
       # If at least one non-mutual requirement has not been met, it cannot be filled
       for r in self.reqsOf(targ['id']):
         if not r in self.in_dict: # If a requirement is not present
@@ -217,7 +209,7 @@ class LocalExecutor(object):
       # If it is in a mutex group with one target already chosen, it cannot be filled
       g = self.assocGrp( targ['id'] ) # Get the group that the target belongs to, if any
       if (not g is None) and self.safeGrpGet(g['id'],'mutually-exclusive'):
-        if len(filter(lambda x: x in self.in_dict.keys(), g['members'])) > 0: return False
+        if len([x for x in g['members'] if x in list(self.in_dict.keys())]) > 0: return False
       return True
 
     # Handle the mutual requirement case by breadth first search in the graph of mutual requirements.
@@ -261,7 +253,7 @@ class LocalExecutor(object):
     for _ in range(rnd.randint( len(opts) / 2 + 1, len(opts) * 2)):
       targ = rnd.choice( opts ) # Choose an optional output
       # If it is already filled in, continue
-      if targ['id'] in self.in_dict.keys(): continue
+      if targ['id'] in list(self.in_dict.keys()): continue
       # If it is a prohibited option, continue (isFilled case handled above)
       if not isOrCanBeFilled(targ): continue
       # Now we handle the mutual requirements case. This is a little more complex because a mutual requirement
@@ -287,7 +279,7 @@ class LocalExecutor(object):
       # Set in_dict with random values
       self._randomFillInDict()
       # Look at generated input, if debugging
-      if self.debug: print( "Input: " + str( self.in_dict ) )
+      if self.debug: print(( "Input: " + str( self.in_dict ) ))
       # Check results (as much as possible)
       try: self._validateDict()
       # If an error occurs, print out the problems already encountered before blowing up
@@ -324,9 +316,9 @@ class LocalExecutor(object):
           self.in_dict = { line[0].strip() : line[1].strip() for line in lines if len(line)==2}
         else: # json case
           ins = json.loads( inparams.read() )['inputs']
-          self.in_dict = { d.keys()[0] : d.values()[0] for d in ins }
+          self.in_dict = { list(d.keys())[0] : list(d.values())[0] for d in ins }
     # Input dictionary
-    if self.debug: print( "Input: " + str( self.in_dict ) )
+    if self.debug: print(( "Input: " + str( self.in_dict ) ))
     # Fix special flag case: flags given the false value are treated as non-existent
     toRm = []
     for inprm in self.in_dict:
@@ -361,10 +353,10 @@ class LocalExecutor(object):
       in_out_dict = dict(self.in_dict)
       in_out_dict.update(self.out_dict)
       # Go through all the keys
-      for paramId in map(lambda x: x['id'], self.inputs+self.outputs):
+      for paramId in [x['id'] for x in self.inputs+self.outputs]:
         clk = self.safeGet(paramId,'value-key')
         if clk is None: continue          
-        if paramId in in_out_dict.keys(): # param has a value
+        if paramId in list(in_out_dict.keys()): # param has a value
           val = str(in_out_dict[paramId])
           # Add flags and separator if necessary
           if useFlags:
@@ -389,9 +381,9 @@ class LocalExecutor(object):
   def _generateOutputFileNames(self):
     if not hasattr(self,'out_dict'):
       self.out_dict = {} # a dictionary that will contain the output file names
-    for outputId in map(lambda x: x['id'], self.outputs):
+    for outputId in [x['id'] for x in self.outputs]:
       # Initialize file name with path template or existing value
-      outputFileName = self.out_dict[outputId] if outputId in self.out_dict.keys() else self.safeGet(outputId, 'path-template')
+      outputFileName = self.out_dict[outputId] if outputId in list(self.out_dict.keys()) else self.safeGet(outputId, 'path-template')
       strippedExtensions = self.safeGet(outputId, "path-template-stripped-extensions") or []
       # We keep the unfound keys because they will be substituted in a second call to the method in case they are output keys
       outputFileName = self._replaceKeysInTemplate(outputFileName,False,"keep",strippedExtensions)
@@ -402,7 +394,7 @@ class LocalExecutor(object):
   # Private method to write configuration files
   # Configuration files are output files that have a file-template
   def _writeConfigurationFiles(self):
-    for outputId in map(lambda x: x['id'], self.outputs):
+    for outputId in [x['id'] for x in self.outputs]:
       fileTemplate = self.safeGet(outputId,'file-template')
       if fileTemplate is None: continue # this is not a configuration file
       strippedExtensions = self.safeGet(outputId, "path-template-stripped-extensions") or []
@@ -433,7 +425,7 @@ class LocalExecutor(object):
 
   # Print the command line result
   def printCmdLine(self):
-    print("Generated Command"+('s' if len(self.cmdLine)>1 else '')+':')
+    print(("Generated Command"+('s' if len(self.cmdLine)>1 else '')+':'))
     for cmd in self.cmdLine: print(cmd)
 
   # Private method for validating input parameters
@@ -454,7 +446,7 @@ class LocalExecutor(object):
       # If the input parameter is bad, it adds 'msg' to the list of errors
       def check(keyname, isGood, msg, value): # Checks input values
         # No need to check constraints if they were not specified
-        dontCheck = ((not keyname in targ.keys()) or (targ[keyname]==False))
+        dontCheck = ((not keyname in list(targ.keys())) or (targ[keyname]==False))
         # Keyname = None is a flag to check the type
         if (not keyname is None) and dontCheck: return
         # The input function is used to check whether the input parameter is acceptable
@@ -505,24 +497,24 @@ class LocalExecutor(object):
       if isList: check('max-list-entries', lambda x,y: len(x.split()) <= targ[y], "violates max size",val)
     # Required inputs are present
     for reqId in [v['id'] for v in self.inputs if not v.get('optional')]:
-      if not reqId in self.in_dict.keys():
+      if not reqId in list(self.in_dict.keys()):
         self.errs.append('Required input ' + str(reqId) + ' is not present')
     # Disables/requires is satisfied
-    for givenVal in [v for v in self.inputs if v['id'] in self.in_dict.keys()]:
+    for givenVal in [v for v in self.inputs if v['id'] in list(self.in_dict.keys())]:
       for r in self.reqsOf(givenVal['id']): # Check that requirements are present
-        if not r in self.in_dict.keys():
+        if not r in list(self.in_dict.keys()):
           self.errs.append('Input '+str(givenVal['id'])+' is missing requirement '+str(r))
-      for d in (givenVal['disables-inputs'] if 'disables-inputs' in givenVal.keys() else []):
-        if d in self.in_dict.keys(): # Check if a disabler is present
+      for d in (givenVal['disables-inputs'] if 'disables-inputs' in list(givenVal.keys()) else []):
+        if d in list(self.in_dict.keys()): # Check if a disabler is present
           self.errs.append('Input '+str(d)+' should be disabled by '+str(givenVal['id']))
     # Group one-is-required/mutex is ok
-    for group,mbs in map(lambda x: (x,x["members"]),self.groups):
+    for group,mbs in [(x,x["members"]) for x in self.groups]:
       # Check that the set of parameters in mutually exclusive groups have at most one member present
-      if ("mutually-exclusive" in group.keys()) and group["mutually-exclusive"]:
+      if ("mutually-exclusive" in list(group.keys())) and group["mutually-exclusive"]:
         if len(set.intersection( set(mbs) , set(self.in_dict.keys()) )) > 1:
           self.errs.append('Group ' + str(group["id"]) + ' is supposed to be mutex')
       # Check that the set of parameters in one-is-required groups have at least one member present
-      if ("one-is-required" in group.keys()) and group["one-is-required"]:
+      if ("one-is-required" in list(group.keys())) and group["one-is-required"]:
         if len(set.intersection( set(mbs) , set(self.in_dict.keys()) )) < 1:
           self.errs.append('Group ' + str(group["id"]) + ' requires one member to be present')
     # Fast-fail if there was a problem with the input parameters
