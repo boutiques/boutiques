@@ -3,7 +3,12 @@
 # A script for handling invocation schema generation and validation for Boutiques application descriptors
 # Requires jsonschema 2.5
 
-import json, jsonschema as jsa, argparse, os, sys
+import json
+import jsonschema as jsa
+import os
+import sys
+import argparse
+from functools import reduce
 
 # Generate an invocation schema from a Boutiques application descriptor
 def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
@@ -46,8 +51,8 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
     return h
   schema["properties"] = reduce(addTypeConstraints, inputs, {})
   # Required inputs
-  reqInputs = map(lambda x: x['id'], filter(lambda x: not x.get('optional'), inputs))
-  if len(reqInputs) > 0: schema["required"] = reqInputs
+  reqInputs = [x['id'] for x in [x for x in inputs if not x.get('optional')]]
+  if len(list(reqInputs)) > 0: schema["required"] = reqInputs
   # Helper functions (assumes properly formed descriptor)
   byInd  = lambda id: [i for i in inputs if id==i['id']][0]
   isFlag = lambda id: (byInd(id)['type'] == 'Flag')
@@ -56,7 +61,7 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
   def reqMember(m): # Generate code for a one-is-required member
     if isFlag(m): return { "properties" : { m : { "enum" : [ True ] } }, "required" : [m] }
     else: return { "required" : [m] }
-  if len(g1r) > 0: schema["allOf"] = map(lambda g: {"anyOf" : map(reqMember, g['members'])}, g1r)
+  if len(g1r) > 0: schema["allOf"] = [{"anyOf" : list(map(reqMember, g['members']))} for g in g1r]
   # Handle requires and disables-inputs/mutex constraints
   def handleDisablesRequires(h,inval):
     i, h = RMap( inval ), RMap( h )
@@ -138,7 +143,7 @@ def _prettySchema(s, indenter=3): return json.dumps( s, indent=indenter, separat
 if __name__ == "__main__":
 
   # Description
-  description = "\n".join(map(lambda x: x[3:],'''
+  description = "\n".join([x[3:] for x in '''
    Script for generating invocation schemas (i.e. JSON schemas for input values) associated to a Boutiques application
      descriptor and/or validating input data examples with respect to invocation schemas.
 
@@ -160,7 +165,7 @@ if __name__ == "__main__":
         "outputFile" : "output.gif",
         ...
      }
-  '''.split("\n")))
+  '''.split("\n")])
 
   # Parse inputs
   parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
