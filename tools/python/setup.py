@@ -5,7 +5,7 @@ VERSION = boutiques.version
 
 setup(name='boutiques',
       version=VERSION,
-      description='Schema for describing commandlines',
+      description='Schema for describing bash command-line tools',
       url='http://github.com/boutiques/boutiques',
       author='Tristan Glatard',
       author_email='tristan.glatard@gmail.com',
