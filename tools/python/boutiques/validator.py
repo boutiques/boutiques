@@ -78,7 +78,8 @@ def validate_json(json_file):
                if clkeys[jdx].strip("[]") in key and key is not clkeys[jdx]]
 
     # Verify that all Ids are unique
-    inIds, outIds, grpIds = inputGet("id"), outputGet("id"), groupGet("id")
+    inIds, outIds = inputGet("id"), outputGet("id")
+    grpIds = groupGet("id") if "groups" in descriptor.keys() else []
     allIds = inIds + outIds + grpIds
     msg_template = "    IdError: \"{}\" is non-unique"
     for idx, s1 in enumerate(allIds):
@@ -152,8 +153,8 @@ def validate_json(json_file):
                 errors += [msg_template.format(inp["id"])]
 
     # Verify groups
-    for idx, grp in enumerate(descriptor["groups"]):
-
+    for idx, grpid in enumerate(grpIds):
+        grp = descriptor['groups'][idx]
         # Verify group members must (exist in inputs, show up once, only belong to single group)
         msg_template = " GroupError: \"{}\" member \"{}\" does not exist"
         errors += [msg_template.format(grp["id"], member)
