@@ -119,8 +119,8 @@ def validateSchema(s, d=None):
     errs  = list(jsa.Draft4Validator(s).iter_errors(d))
     nerrs = len( errs )
     if nerrs > 0:
-      print(("Encountered " + str(nerrs) + " error" + ('s!' if nerrs > 1 else '!') ))
-      for e in sorted(errs, key=str): print(("\t" + str(e.message)))
+      print("Encountered " + str(nerrs) + " error" + ('s!' if nerrs > 1 else '!') )
+      for e in sorted(errs, key=str): print("\t" + str(e.message))
       sys.exit(1)
     else:
       print("Valid data!")
@@ -211,5 +211,5 @@ if __name__ == "__main__":
   invSchema = generateInvocationSchema(desc) if given(args.input) else inSchema
   if given(args.output): writeSchema(invSchema, args.output, None if args.compact else 3)
   elif given(args.data): validateSchema(invSchema, data)
-  else: print((_prettySchema(invSchema, None if args.compact else 3)))
+  else: print(_prettySchema(invSchema, None if args.compact else 3))
 

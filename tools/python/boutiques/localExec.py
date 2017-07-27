@@ -66,7 +66,7 @@ class LocalExecutor(object):
     '''
 
     command, exit_code, container = self.cmdLine[0], None, self.container or {}
-    print(('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---'))
+    print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for docker
     dockerImage, dockerIndex = container.get( 'image' ), container.get( 'index' )
     dockerIsPresent = (not dockerImage is None) 
@@ -100,13 +100,13 @@ class LocalExecutor(object):
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
       dcmd = 'docker run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./' + dsname
-      print(('Executing in Docker via: ' + dcmd))
+      print('Executing in Docker via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
       exit_code = self._localExecute( command )
     # Report exit status
-    print(('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')'))
+    print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if dockerIsPresent and self.destroyTempScripts:
@@ -122,7 +122,7 @@ class LocalExecutor(object):
       s1 = 'Optional' if isOptional else 'Required'
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
-      print(("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName))
+      print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -279,7 +279,7 @@ class LocalExecutor(object):
       # Set in_dict with random values
       self._randomFillInDict()
       # Look at generated input, if debugging
-      if self.debug: print(( "Input: " + str( self.in_dict ) ))
+      if self.debug: print( "Input: " + str( self.in_dict ) )
       # Check results (as much as possible)
       try: self._validateDict()
       # If an error occurs, print out the problems already encountered before blowing up
@@ -318,7 +318,7 @@ class LocalExecutor(object):
           ins = json.loads( inparams.read() )['inputs']
           self.in_dict = { list(d.keys())[0] : list(d.values())[0] for d in ins }
     # Input dictionary
-    if self.debug: print(( "Input: " + str( self.in_dict ) ))
+    if self.debug: print( "Input: " + str( self.in_dict ) )
     # Fix special flag case: flags given the false value are treated as non-existent
     toRm = []
     for inprm in self.in_dict:
@@ -425,7 +425,7 @@ class LocalExecutor(object):
 
   # Print the command line result
   def printCmdLine(self):
-    print(("Generated Command"+('s' if len(self.cmdLine)>1 else '')+':'))
+    print("Generated Command"+('s' if len(self.cmdLine)>1 else '')+':')
     for cmd in self.cmdLine: print(cmd)
 
   # Private method for validating input parameters
