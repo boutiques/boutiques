@@ -1,7 +1,10 @@
 from setuptools import setup
+import boutiques
+
+VERSION = boutiques.version
 
 setup(name='boutiques',
-      version='0.1',
+      version=VERSION,
       description='Schema for describing commandlines',
       url='http://github.com/boutiques/boutiques',
       author='Tristan Glatard',

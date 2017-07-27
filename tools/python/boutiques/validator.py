@@ -102,10 +102,6 @@ def validate_json(json_file):
             msg_template = " InputError: \"{}\" should not be required"
             errors += [msg_template.format(inp["id"])] if inp["optional"] is False else []
 
-            # This one is redundant as basic JSON validation catches it
-            msg_template = " InputError: \"{}\" cannot be a list"
-            errors += [msg_template.format(inp["id"])] if "list" in inp.keys() else []
-
         # Verify number-type inputs min/max are sensible
         elif inp["type"] == "Number":
             msg_template = " InputError: \"{}\" cannot have greater min ({}) than max ({})"
@@ -133,12 +129,6 @@ def validate_json(json_file):
 
             msg_template = " InputError: \"{}\" cannot have non-positive max entries ({})"
             errors += [msg_template.format(inp["id"], maxx)] if maxx <= 0 else []
-
-        # Verify non list-type inputs don"t have list properties
-        # This one is redundant as basic JSON validation catches it
-        else:
-            msg_template = " InputError: \"{}\" cannot use min- or max-list-entries"
-            errors += [msg_template.format(inp["id"])] if "min-list-entries" in inp.keys() or "max-list-entries" in inp.keys() else []
 
         # Verify requires- and disables-inputs (present ids, non-overlapping)
         msg_template = " InputError: \"{}\" {}d id \"{}\" not found"
