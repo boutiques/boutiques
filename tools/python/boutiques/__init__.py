@@ -6,5 +6,5 @@ from .validator import validate_json
 
 __all__ = ['localExec', 'invocationSchemaHandler', 'validator']
 
-version="0.4.1"
+version="0.4.2"
 schemaversion="0.4"
