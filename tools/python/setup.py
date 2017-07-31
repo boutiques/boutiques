@@ -16,5 +16,12 @@ setup(name='boutiques',
         'simplejson',
         'jsonschema',
       ],
+      entry_points = {
+        'console_scripts': [
+            'bosh-validate=boutiques.validator:main',
+            'bosh=boutiques.localExec:main',
+            'bosh-invocation=boutiques.invocationSchemaHandler:main'
+        ]
+      },
       data_files=[('schema', ['boutiques/schema/descriptor.schema.json'])],
       zip_safe=False)
