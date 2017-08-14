@@ -12,6 +12,8 @@ setup(name='boutiques',
       license='MIT',
       packages=['boutiques'],
       include_package_data=True,
+      test_suite='nose.collector',
+      tests_require=['nose'],
       install_requires=[
         'simplejson',
         'jsonschema',
@@ -23,5 +25,8 @@ setup(name='boutiques',
             'bosh-invocation=boutiques.invocationSchemaHandler:main'
         ]
       },
-      data_files=[('schema', ['boutiques/schema/descriptor.schema.json'])],
+      data_files=[('schema', ['boutiques/schema/descriptor.schema.json']),
+                  ('exgood', ['boutiques/schema/examples/good.json']),
+                  ('exinvalid', ['boutiques/schema/examples/invalid.json']),
+                  ('exbad', ['boutiques/schema/examples/bad.json'])],
       zip_safe=False)

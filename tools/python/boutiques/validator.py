@@ -46,8 +46,7 @@ def validate_json(json_file):
         validate(descriptor, schema)
     except ValidationError as e:
         print("JSON Validation error (Boutiques validation not yet performed)")
-        print("Error: {}".format(e))
-        return -1
+        raise ValidationError(e)
 
     # Helper get-function
     safeGet   = lambda desc, sec, targ: [item[targ] for item in desc[sec]
@@ -200,13 +199,13 @@ def validate_json(json_file):
         raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
 
 
-def main():
+def main(args):
     parser = ArgumentParser("Boutiques Validator")
     parser.add_argument("jsonfile", action="store",
                         help="The Boutiques descriptor you wish to validate")
-    results = parser.parse_args()
+    results = parser.parse_args(args)
     validate_json(results.jsonfile)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

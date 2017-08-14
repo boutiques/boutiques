@@ -53,7 +53,8 @@
       "name": "ile 2",
       "type": "File",
       "value-key": "[ey2]",
-      "optional": false
+      "optional": false,
+      "list": true
     },
     {
       "id": "key3",
