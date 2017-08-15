@@ -199,13 +199,13 @@ def validate_json(json_file):
         raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
 
 
-def main(args):
+def main(args=None):
     parser = ArgumentParser("Boutiques Validator")
     parser.add_argument("jsonfile", action="store",
                         help="The Boutiques descriptor you wish to validate")
-    results = parser.parse_args(args)
+    results = parser.parse_args() if args is None else parser.parse_args(args)
     validate_json(results.jsonfile)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

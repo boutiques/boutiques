@@ -17,7 +17,7 @@ class TestSchema(TestCase):
 
     def test_runtime(self):
         fil = op.join(op.split(__file__)[0], 'schema/examples/good.json')
-        self.assertFalse(main([fil]))
+        self.assertFalse(main(args=[fil]))
 
     def test_success(self):
         fil = op.join(op.split(__file__)[0], 'schema/examples/good.json')
