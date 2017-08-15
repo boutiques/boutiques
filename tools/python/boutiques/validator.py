@@ -18,7 +18,6 @@
 #
 import simplejson
 import os.path as op
-import numpy as np
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__
@@ -105,8 +104,8 @@ def validate_json(json_file):
         # Verify number-type inputs min/max are sensible
         elif inp["type"] == "Number":
             msg_template = " InputError: \"{}\" cannot have greater min ({}) than max ({})"
-            minn = inp["minimum"] if "minimum" in inp.keys() else -np.inf
-            maxx = inp["maximum"] if "maximum" in inp.keys() else np.inf
+            minn = inp["minimum"] if "minimum" in inp.keys() else -float("Inf")
+            maxx = inp["maximum"] if "maximum" in inp.keys() else float("Inf")
             errors += [msg_template.format(inp["id"], minn, maxx)] if minn > maxx else []
 
         # Verify enum-type inputs (at least 1 option, default in set)
@@ -121,7 +120,7 @@ def validate_json(json_file):
         if "list" in inp.keys():
             msg_template = " InputError: \"{}\" cannot have greater min entries ({}) than max entries ({})"
             minn = inp["min-list-entries"] if "min-list-entries" in inp.keys() else 0
-            maxx = inp["max-list-entries"] if "max-list-entries" in inp.keys() else np.inf
+            maxx = inp["max-list-entries"] if "max-list-entries" in inp.keys() else float("Inf")
             errors += [msg_template.format(inp["id"], minn, maxx)] if minn > maxx else []
 
             msg_template = " InputError: \"{}\" cannot have negative min entries ({})"
