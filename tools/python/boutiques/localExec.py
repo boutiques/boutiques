@@ -523,9 +523,8 @@ class LocalExecutor(object):
       for err in self.errs: sys.stderr.write("\t" + err + "\n")
       sys.exit(1)
 
-# Execute program
-if  __name__ == "__main__":
 
+def main():
   # Parse arguments
   description = '''
 A local tool executor to help test JSON descriptors for use in the Boutiques framework.
@@ -644,3 +643,6 @@ Notes: pass lists by space-separated values
     # Print the resulting command line
     executor.printCmdLine()
 
+# Execute program
+if  __name__ == "__main__":
+    main()
