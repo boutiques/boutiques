@@ -48,14 +48,16 @@ class LocalExecutor(object):
     # Returns the required inputs of a given input id, or the empty string
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
     ## Container-image Options ##
-    self.container = self.desc_dict.get('container-image')
-    self.launchDir = None if self.container is None else self.container.get('working-directory')
+    self.con = self.desc_dict['container-image']
+    self.launchDir = None if self.con is None else self.con.get('working-directory')
     ## Extra Options ##
     # Include: forcePathType, ignoreContainer, and destroyTempScripts
     for option in list(options.keys()): setattr(self, option, options.get(option))
     # Container Implementation check
-    if (not self.container is None) and self.container['type'] != 'docker':
-      raise ValueError('Other container types than docker (e.g. ' + self.container['type'] + ') are not yet supported')
+    conEngines = ['docker', 'singularity']
+    if (not self.con is None) and self.con['type'] not in conEngines:
+        msg = 'Other container types than {} (e.g. {}) are not yet supported'
+        raise ValueError(msg.format(", ".join(conEngines), self.con['type']))
 
   # Attempt local execution of the command line generated from the input values
   def execute(self):
@@ -65,23 +67,27 @@ class LocalExecutor(object):
     After execution, it checks for output file existence.
     '''
 
-    command, exit_code, container = self.cmdLine[0], None, self.container or {}
+    command, exit_code, con = self.cmdLine[0], None, self.con or {}
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
-    # Check for docker
-    dockerImage, dockerIndex = container.get( 'image' ), container.get( 'index' )
-    dockerIsPresent = (not dockerImage is None) 
+    # Check for Container image
+    conType, conImage, conIndex = con['type'], con['image'], con['index']
+    conIsPresent = (not conImage is None) 
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
     if 'environment-variables' in list(self.desc_dict.keys()):
       for (envVarName,envVarValue) in [ (p['name'],p['value']) for p in self.desc_dict['environment-variables'] ]:
         os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue # for non-container and docker resp.
-    # Docker script constant name
-    # Note that docker cannot do a local volume mount of files starting with a '.', hence this one does not
-    dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.dockerjob.sh' # time tag to avoid overwrites
-    # If docker is present, alter the command template accordingly
-    if dockerIsPresent and not self.ignoreContainer:
-      # Pull the docker image
-      self._localExecute( "docker pull " + str(dockerImage) )
+    # Container script constant name
+    # Note that docker/singularity cannot do a local volume mount of files starting with a '.', hence this one does not
+    dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.boshjob.sh' # time tag to avoid overwrites
+    # If container is present, alter the command template accordingly
+    if conIsPresent and not self.ignoreContainer:
+      if conType is 'docker':
+        # Pull the docker image
+        self._localExecute( "docker pull " + str(conImage) )
+      else:
+        # Pull the docker image
+        self._localExecute( "singularity pull shub://" + str(conImage) )
       # Generate command script
       uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
       # Adds the user to the container before executing the templated command line
@@ -99,8 +105,12 @@ class LocalExecutor(object):
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
-      dcmd = 'docker run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(dockerImage) + ' ./' + dsname
-      print('Executing in Docker via: ' + dcmd)
+      if conType is 'docker':
+        dcmd = 'docker run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+      else:
+        #TODO: Test singularity runtime on cluster
+        dcmd = 'singularity run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+      print('Executing via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
@@ -109,7 +119,7 @@ class LocalExecutor(object):
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
-    if dockerIsPresent and self.destroyTempScripts:
+    if conIsPresent and self.destroyTempScripts:
       if os.path.isfile( dsname ): os.remove( dsname )
     # Check for output files (note: the path-template can contain value-keys
     print('Looking for output files:')
