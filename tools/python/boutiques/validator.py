@@ -93,6 +93,10 @@ def validate_json(json_file):
     # Verify inputs
     for inp in descriptor["inputs"]:
 
+        # Add optional property in case it's not there (default to false as in JSON)
+        if "optional" not in inp.keys():
+            inp["optional"]=False
+        
         # Verify flag-type inputs (have flags, not required, cannot be lists)
         if inp["type"] == "Flag":
             msg_template = " InputError: \"{}\" must have a command-line flag"
