@@ -4,7 +4,7 @@ bosh (BOutiques SHell) suite of tools to create and use boutiques descriptors.
 
 ## Installation
 
-* pip install boutiques
+* `pip install boutiques`
 
 ## Usage
 
