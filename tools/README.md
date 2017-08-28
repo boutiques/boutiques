@@ -8,8 +8,6 @@ Tools to create and use boutiques descriptors.
 ## Usage
 
 1. `validator.py`: a validator of Boutiques descriptors.
-   * Usage:
-     * `validator.py ./tool.json`
      
 2. `localExec.py`: a Python script to test inputs on Boutiques JSON descriptors.
   * Usage examples:
