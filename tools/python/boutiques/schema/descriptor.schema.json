@@ -70,7 +70,7 @@
                         "working-directory": {},
                         "container-hash": {}
                     },
-                    "required": ["type", "image", "entrypoint"],
+                    "required": ["type", "image"],
                     "additionalProperties": false,
                     "description": "Object representing a docker or singularity container for the tool."
                 }, {
