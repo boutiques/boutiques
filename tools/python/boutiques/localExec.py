@@ -70,7 +70,7 @@ class LocalExecutor(object):
     command, exit_code, con = self.cmdLine[0], None, self.con or {}
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for Container image
-    conType, conImage, conIndex = con['type'], con['image'], con['index']
+    conType, conImage = con['type'], con['image']
     conIsPresent = (not conImage is None) 
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
@@ -82,12 +82,15 @@ class LocalExecutor(object):
     dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.boshjob.sh' # time tag to avoid overwrites
     # If container is present, alter the command template accordingly
     if conIsPresent and not self.ignoreContainer:
-      if conType is 'docker':
+      if conType == 'docker':
         # Pull the docker image
         self._localExecute( "docker pull " + str(conImage) )
-      else:
+      elif conType == 'singularity':
         # Pull the docker image
         self._localExecute( "singularity pull shub://" + str(conImage) )
+      else:
+        print('Unrecognized container type: \"%s\"'%conType)
+        sys.exit(1)
       # Generate command script
       uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
       # Adds the user to the container before executing the templated command line
@@ -105,11 +108,14 @@ class LocalExecutor(object):
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
-      if conType is 'docker':
-        dcmd = 'docker run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
-      else:
+      if conType == 'docker':
+        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+      elif conType == 'singularity':
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity run --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+      else:
+        print('Unrecognized container type: \"%s\"'%conType)
+        sys.exit(1)
       print('Executing via: ' + dcmd)
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
@@ -599,6 +605,7 @@ Notes: pass lists by space-separated values
     sys.stderr.write('Error: ' + msg + '\n')
     sys.exit(1)
   given = lambda x: not (x is None)
+
   if given(args.num) and args.num < 1:
     errExit('--num was not given an appropriate value')
   elif given(args.num) and not args.random:
@@ -626,7 +633,6 @@ Notes: pass lists by space-separated values
 
   # Prepare inputs
   inData = args.input if given(args.input) else ( args.string if given(args.string) else None )
-
   # Generate object that will perform the commands
   executor = LocalExecutor(desc, { 'forcePathType'      : not args.dontForcePathType,
                                    'destroyTempScripts' : args.destroyTempScripts,
