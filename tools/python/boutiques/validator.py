@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2015- 2017:
+# Copyright 2015 - 2017:
 #   The Royal Institution for the Advancement of Learning McGill University,
 #   Centre National de la Recherche Scientifique,
 #   University of Southern California,
