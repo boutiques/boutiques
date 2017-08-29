@@ -349,7 +349,7 @@ class LocalExecutor(object):
         df = input.get("default-value")
         self.in_dict[ input['id'] ] = df if not input['type'] == 'Flag' else str(df)
     # Check results (as much as possible)
-    try: self._validateDict()
+    try: pass #self._validateDict()
     except Exception: # Avoid catching BaseExceptions like SystemExit
       sys.stderr.write("An error occurred in validation\nPreviously saved issues\n")
       for err in self.errs: sys.stderr.write("\t" + str(err) + "\n") # Write any errors we found
