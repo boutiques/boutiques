@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse, os, sys, json, random as rnd, string, math, subprocess, time, pwd
+import argparse, os, sys, json, random as rnd, string, math, random, subprocess, time, pwd
 
 # Executor class
 class LocalExecutor(object):
@@ -79,7 +79,8 @@ class LocalExecutor(object):
         os.environ[envVarName], envVars[envVarName] = envVarValue, envVarValue # for non-container and docker resp.
     # Container script constant name
     # Note that docker/singularity cannot do a local volume mount of files starting with a '.', hence this one does not
-    dsname = 'temp-' + str(int(time.time() * 1000)) + '.localExec.boshjob.sh' # time tag to avoid overwrites
+    millitime = int(time.time()*1000)
+    dsname = 'temp-' + str(random.SystemRandom().randint(0,int(millitime))) + "-" + str(millitime) + '.localExec.boshjob.sh' # time tag to avoid overwrites
     # If container is present, alter the command template accordingly
     if conIsPresent and not self.ignoreContainer:
       if conType == 'docker':
