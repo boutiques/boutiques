@@ -139,6 +139,7 @@ class LocalExecutor(object):
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
       print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
+      return exit_code
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -621,7 +622,7 @@ Notes: pass lists by space-separated values
   elif args.execute and (not given(args.input) and not given(args.string)):
     errExit('--exec requires --input or --string be specified')
   elif not os.path.isfile( desc ):
-    errExit('The input JSON descriptor does not seem to exist', False)
+    errExit('The input JSON descriptor ({0}) does not seem to exist'.format(desc), False)
   elif not args.random and (not given(args.input) and not given(args.string)):
     errExit('The default mode requires an input (-i or -s)')
   elif args.random and given(args.string):
@@ -645,7 +646,8 @@ Notes: pass lists by space-separated values
     # Read in given input
     executor.readInput(inData, given(args.string))
     # Execute it
-    executor.execute()
+    exit_code = executor.execute()
+    sys.exit(exit_code)
   # Print random case
   elif args.random:
     # Generate random input
