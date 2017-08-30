@@ -12,6 +12,16 @@
   "schema-version": "0.4",
   "walltime-estimate": 3600,
   "groups": [
+		{
+			"id": "dti_group",
+			"name": "Group of two possible dti input files",
+			"members": [
+				"dti_file",
+				"dti_file_minc"
+			],
+			"mutually-exclusive": true,
+			"one-is-required": true
+		},
     {
       "id": "parcellation_group",
       "name": "Group of all used parcellations",
@@ -32,7 +42,14 @@
       "name": "Diffusion Tensor Image",
       "type": "File",
       "value-key": "[DTI]",
-      "optional": false
+      "optional": true
+    },
+    {
+      "id": "dti_file_minc",
+      "name": "Diffusion Tensor Image",
+      "type": "File",
+      "value-key": "[DTI]",
+      "optional": true
     },
     {
       "id": "bval_file",

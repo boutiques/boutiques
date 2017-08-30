@@ -1,21 +1,29 @@
 #!/usr/bin/env python
+
+# Copyright 2015 - 2017:
+#   The Royal Institution for the Advancement of Learning McGill University,
+#   Centre National de la Recherche Scientifique,
+#   University of Southern California,
+#   Concordia University
 #
-# Copyright (C) 2015
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import simplejson
 import os.path as op
 from jsonschema import validate, ValidationError
@@ -64,16 +72,16 @@ def validate_json(json_file):
 
     # Verify that all command-line key appear in the command-line
     msg_template = "   KeyError: \"{}\" not in command-line or file template"
-    errors += [msg_template.format(k.strip("[]"))
+    errors += [msg_template.format(k)
                for k in clkeys
                if (cmdline.count(k) + " ".join(configFileTemplates).count(k)) < 1]
 
     # Verify that no key contains another key
     msg_template = "   KeyError: \"{}\" contains \"{}\""
-    errors += [msg_template.format(key.strip("[]"), clkeys[jdx].strip("[]"))
+    errors += [msg_template.format(key, clkeys[jdx])
                for idx, key in enumerate(clkeys)
                for jdx in range(0, len(clkeys))
-               if clkeys[jdx].strip("[]") in key and key is not clkeys[jdx]]
+               if clkeys[jdx] in key and key != clkeys[jdx]]
 
     # Verify that all Ids are unique
     inIds, outIds = inputGet("id"), outputGet("id")
@@ -83,6 +91,18 @@ def validate_json(json_file):
     for idx, s1 in enumerate(allIds):
         for jdx, s2 in enumerate(allIds):
             errors += [msg_template.format(s1)] if s1 == s2 and idx < jdx else []
+
+    # Verify that identical keys only exist if they are both in mutex groups
+    msg_template = " MutExError: \"{}\" belongs to 2+ non exclusive IDs"
+    for idx, key in enumerate(clkeys):
+        for jdx in range(idx+1, len(clkeys)):
+            if clkeys[jdx] == key:
+                mids = [inById(mid)["id"] for mid in inIds
+                        if inById(mid)["value-key"] == key]
+                for idx, grp in enumerate(descriptor["groups"]):
+                    mutex = grp.get("mutually-exclusive")
+                    if set(grp["members"]) == set(mids) and not mutex:
+                        errors += [msg_template.format(key)]
 
     # Verify that output files have unique path-templates
     msg_template = "OutputError: \"{}\" and \"{}\" have the same path-template"
