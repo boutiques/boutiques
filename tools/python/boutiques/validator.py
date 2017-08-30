@@ -72,16 +72,16 @@ def validate_json(json_file):
 
     # Verify that all command-line key appear in the command-line
     msg_template = "   KeyError: \"{}\" not in command-line or file template"
-    errors += [msg_template.format(k.strip("[]"))
+    errors += [msg_template.format(k)
                for k in clkeys
                if (cmdline.count(k) + " ".join(configFileTemplates).count(k)) < 1]
 
     # Verify that no key contains another key
     msg_template = "   KeyError: \"{}\" contains \"{}\""
-    errors += [msg_template.format(key.strip("[]"), clkeys[jdx].strip("[]"))
+    errors += [msg_template.format(key, clkeys[jdx])
                for idx, key in enumerate(clkeys)
                for jdx in range(0, len(clkeys))
-               if clkeys[jdx].strip("[]") in key and key is not clkeys[jdx]]
+               if clkeys[jdx] in key and key != clkeys[jdx]]
 
     # Verify that all Ids are unique
     inIds, outIds = inputGet("id"), outputGet("id")
@@ -91,6 +91,18 @@ def validate_json(json_file):
     for idx, s1 in enumerate(allIds):
         for jdx, s2 in enumerate(allIds):
             errors += [msg_template.format(s1)] if s1 == s2 and idx < jdx else []
+
+    # Verify that identical keys only exist if they are both in mutex groups
+    msg_template = " MutExError: \"{}\" belongs to 2+ non exclusive IDs"
+    for idx, key in enumerate(clkeys):
+        for jdx in range(idx+1, len(clkeys)):
+            if clkeys[jdx] == key:
+                mids = [inById(mid)["id"] for mid in inIds
+                        if inById(mid)["value-key"] == key]
+                for idx, grp in enumerate(descriptor["groups"]):
+                    mutex = grp.get("mutually-exclusive")
+                    if set(grp["members"]) == set(mids) and not mutex:
+                        errors += [msg_template.format(key)]
 
     # Verify that output files have unique path-templates
     msg_template = "OutputError: \"{}\" and \"{}\" have the same path-template"
