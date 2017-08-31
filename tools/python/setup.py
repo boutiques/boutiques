@@ -29,5 +29,8 @@ setup(name="boutiques",
       data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),
                   ("exgood", ["boutiques/schema/examples/good.json"]),
                   ("exinvalid", ["boutiques/schema/examples/invalid.json"]),
+                  ("exbidsgood", ["boutiques/schema/examples/bids_good.json"]),
+                  ("exbidsbad1", ["boutiques/schema/examples/bids_bad1.json"]),
+                  ("exbidsbad2", ["boutiques/schema/examples/bids_bad2.json"]),
                   ("exbad", ["boutiques/schema/examples/bad.json"])],
       zip_safe=False)

@@ -217,7 +217,7 @@ def validate_json(json_file):
     errors = None if errors == [] else errors
     if errors is None:
         print("Boutiques validation OK")
-        return 0
+        return descriptor
     else:
         raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
 
@@ -226,9 +226,16 @@ def main(args=None):
     parser = ArgumentParser("Boutiques Validator")
     parser.add_argument("jsonfile", action="store",
                         help="The Boutiques descriptor you wish to validate")
+    parser.add_argument("--bids", "-b", action="store_true",
+                        help="Flag indicating if descriptor is for a BIDS app")
     results = parser.parse_args() if args is None else parser.parse_args(args)
-    validate_json(results.jsonfile)
 
+    descriptor = validate_json(results.jsonfile)
+
+    if results.bids:
+        from boutiques.bids import validate_bids
+        validate_bids(descriptor, valid=True)
+        return 0
 
 if __name__ == "__main__":
     main()
