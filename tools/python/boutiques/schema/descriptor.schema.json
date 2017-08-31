@@ -181,6 +181,11 @@
                         "id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
                         "description": "True if at least one of the inputs in the group must be active at runtime.",
                         "type": "boolean"
+                    },
+                    "all-or-none": {
+                        "id": "http://github.com/boutiques/boutiques-schema/group/all-or-none",
+                        "description": "True if members of the group need to be toggled together",
+                        "type": "boolean"
                     }
                 },
                 "required": [

@@ -2,7 +2,7 @@
   "name": "demo-tool",
   "tool-version": "v1",
   "description": "a tool that does things",
-  "command-line": "mytool.py [key1] [key2] [key3] [key4] [key5] [key6] [key7] [flag1]",
+  "command-line": "mytool.py [key1] [key2] [key3] [key4] [key5] [key6] [key7] [flag1] [extra1] [extra2]",
   "container-image": {
     "type": "docker",
     "image": "user/image:v1",
@@ -11,6 +11,17 @@
   "schema-version": "0.4",
   "walltime-estimate": 100,
   "groups": [
+		{
+			"id": "all_or_noner",
+			"name": "fail all or none",
+			"members": [
+				"extra1",
+				"extra2"
+			],
+			"mutually-exclusive": true,
+			"one-is-required": true,
+			"all-or-none": true
+		},
     {
       "id": "group1",
       "name": "group 1",
@@ -49,6 +60,20 @@
       "type": "File",
       "value-key": "[key1]",
       "optional": true
+    },
+    {
+      "id": "extra1",
+      "name": "extra 1",
+      "type": "File",
+      "value-key": "[extra1]",
+      "optional": true
+    },
+    {
+      "id": "extra2",
+      "name": "file 2",
+      "type": "File",
+      "value-key": "[extra2]",
+      "optional": false
     },
     {
       "id": "key1_mod",
