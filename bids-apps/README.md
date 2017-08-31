@@ -35,3 +35,4 @@ You can then use your BIDS app in the tools that support
 * [CBRAIN](https://github.com/aces/cbrain)
 * [clowdr](https://github.com/clowdcontrol/clowder)
 * [sim](https://github.com/big-data-lab-team/sim)
+* [VIP](http://github.com/virtual-imaging-platform)
