@@ -8,7 +8,7 @@
     "image": "user/image:v1",
     "index": "http://index.docker.io"
     },
-  "schema-version": "0.4",
+  "schema-version": "0.5",
   "groups": [
 		{
 			"id": "all_or_noner",

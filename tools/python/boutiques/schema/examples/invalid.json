@@ -3,7 +3,7 @@
     "tool-version": "1.0",
     "description": "A simple script to test output files",
     "command-line": "output.sh [INPUT_FILE] [OUTPUT_FILE]",
-    "schema-version": "0.4",
+    "schema-version": "0.5",
     "container-image": {
 	"type": "docker",
 	"image": "boutiques/examples"

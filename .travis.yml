@@ -11,13 +11,12 @@ python:
 - pypy-5.3.1
 
 install:
-- pip install nose
-- pip install coveralls
+- pip install coveralls pytest pytest-runner
 - pip install ./tools/python/
 
 script:
 - cd ./tools/python/
-- coverage run --source boutiques setup.py test
+- coverage run --source boutiques setup.py pytest
 
 after_success:
 - coveralls

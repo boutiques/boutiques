@@ -7,7 +7,7 @@
         "type": "docker",
         "image": "bids/ndmg:v0.0.48-1"
     },
-    "schema-version" : "0.4",
+    "schema-version" : "0.5",
     "inputs" : [
 		{
         "id" : "bids_dir",
