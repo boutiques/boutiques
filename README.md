@@ -2,6 +2,8 @@
 
 # Boutiques
 [![DOI](https://zenodo.org/badge/32616811.svg)](https://zenodo.org/badge/latestdoi/32616811)
+[![Build Status](https://travis-ci.org/boutiques/boutiques.svg?branch=develop)](https://travis-ci.org/boutiques/boutiques)
+[![Coverage Status](https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop)](https://coveralls.io/github/boutiques/boutiques?branch=develop)
 
 Boutiques is a cross-platform application repository framework. See http://boutiques.github.io for more information.
 
