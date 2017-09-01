@@ -1,4 +1,7 @@
 *.pyc
+*.swp
+.cache/
+.eggs/
 *.egg-info*
 .coverage
 env/
