@@ -1,25 +1,22 @@
 # BIDS apps in Boutiques
 
-Here is how to integrate a [BIDS
-app](http://bids-apps.neuroimaging.io) in Boutiques:
-1. Copy `template.json`.
-2. Edit the strings identified by `@@...@@`:
-   1. APP_NAME: App name.
-   2. VERSION: App version.
-   3. GIT_REPO_URL: Git repo app URL.
-   4. DOCKER_ENTRYPOINT: Entrypoint used in the Docker container. Example: `/run.py`.
-   5. CONTAINER_IMAGE: Container image name available on DockerHub. Example: `bids/example`.
-   6. ANALYSIS_TYPES: The types of analyses supported by the app. Example: "participant", "group".
+To integrate a [BIDS
+app](http://bids-apps.neuroimaging.io) in Boutiques, import it with `bosh-import`:
+```bosh-import <bids_dir> <output_file.json>```
 
-
-The steps above will produce only the inputs that are common to all
-BIDS apps, that is, `BIDS directory`, `output directory`, `analysis
-level` and `participant label`. To make your Boutiques descriptor
-complete, you should also describe the inputs that are specific to
-your BIDS app by adding JSON objects to the `inputs` array. Refer to the [Getting Started
+The resulting Boutiques descriptor will contain only the inputs that
+are common to all BIDS apps, that is, `BIDS directory`, `output
+directory`, `analysis level` and `participant label`. To make your
+Boutiques descriptor complete, add a JSON object to the `inputs` array
+for each additional input in your app. Refer to the [Getting Started
 Guide](https://github.com/boutiques/boutiques/blob/master/examples/Getting%20Started%20with%20Boutiques.ipynb)
 for more information.
 
+Edit the `value-choices` property of input `analysis_level` to remove
+the analysis levels that are not supported by the app. For instance,
+if the app supports only participant analyses, replace
+`"value-choices" : [ "participant", "group", "session" ]` by
+`"value-choices" : [ "participant" ]`.
 
 ## Examples
 
