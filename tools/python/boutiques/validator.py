@@ -214,6 +214,17 @@ def validate_json(json_file):
                        for member in set(grp["members"])
                        if member in inIds and not inById(member)["optional"]]
 
+        # Verify one-is-required groups should never have required members
+        if "all-or-none" in grp.keys():
+            msg_template = " GroupError: \"{}\" is an all-or-none group and cannot be paired with one-is-required or mutually-exclusive groups"
+            if "one-is-required" in grp.keys() or "mutually-exclusive" in grp.keys():
+                errors += [msg_template.format(grp["id"])]
+
+            msg_template = " GroupError: \"{}\" is an all-or-none group and contains a required member, \"{}\""
+            errors += [msg_template.format(grp["id"], member)
+                       for member in set(grp["members"])
+                       if member in inIds and not inById(member)["optional"]]
+
     errors = None if errors == [] else errors
     if errors is None:
         print("Boutiques validation OK")
