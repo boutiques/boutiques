@@ -26,7 +26,7 @@
 
 import argparse, os
 
-class Importer(object):
+class Importer():
 
     def __init__(self,app_dir,output_file):
         self.app_dir = app_dir
@@ -35,8 +35,6 @@ class Importer(object):
         self.output_file = output_file
 
     def get_entry_point(self):
-        content = None
-        entrypoint = None
         with open(os.path.join(self.app_dir,"Dockerfile")) as f:
             content = f.readlines()
         for line in content:
@@ -47,13 +45,11 @@ class Importer(object):
             
     def import_bids(self):
 
-        template_string = None
         with open(self.template_file) as f:
             template_string = f.read()
 
         errors = []
         app_name = os.path.basename(self.app_dir)
-        version = None
         with open(os.path.join(self.app_dir,"version"),"r") as f:
             version = f.read().strip()
         git_repo = "https://github.com/BIDS-Apps/"+app_name
