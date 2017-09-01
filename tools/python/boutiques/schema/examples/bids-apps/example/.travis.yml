@@ -1,0 +1,30 @@
+sudo: required
+
+cache:
+  directories:
+    - ${HOME}/data
+
+services:
+  - docker
+
+before_install:
+  - export REPO_NAME=$( echo $TRAVIS_REPO_SLUG | cut -d'/' -f2 )
+  - if [[ ! -d ~/data/ds114_test1 ]]; then travis_retry wget -c -O ${HOME}/ds114_test1.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" && mkdir -p ${HOME}/data && tar xf ${HOME}/downloads/ds114_test1.tar -C ${HOME}/data; fi
+  - if [[ ! -d ~/data/ds114_test2 ]]; then travis_retry wget -c -O ${HOME}/ds114_test2.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162" && mkdir -p ${HOME}/data && tar xf ${HOME}/downloads/ds114_test2.tar -C ${HOME}/data; fi
+  - git describe --tags > version
+  - docker build -t bids/${REPO_NAME,,} .
+  - mkdir -p ${HOME}/outputs
+
+script:
+  # print version
+  - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset bids/${REPO_NAME,,} --version
+  # participant level tests for single session dataset
+  - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${REPO_NAME,,} /bids_dataset /outputs participant --participant_label 01
+  - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${REPO_NAME,,} /bids_dataset /outputs participant --participant_label 02
+  # group level test for single session dataset
+  - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${REPO_NAME,,} /bids_dataset /outputs group
+  # participant level tests for a longitudinal dataset
+  - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${REPO_NAME,,} /bids_dataset /outputs participant --participant_label 01
+  - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${REPO_NAME,,} /bids_dataset /outputs participant --participant_label 02
+  # group level test for a longitudinal dataset
+  - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${REPO_NAME,,} /bids_dataset /outputs group
