@@ -9,7 +9,7 @@
     "index": "http://index.docker.io",
     "entrypoint": false
   },
-  "schema-version": "0.4",
+  "schema-version": "0.5",
   "suggested-resources": {
     "cpu-cores": 1,
     "ram": 12,

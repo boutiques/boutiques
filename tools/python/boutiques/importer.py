@@ -24,7 +24,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import argparse, os
+from argparse import ArgumentParser
+from jsonschema import ValidationError
+import os
+
 
 class Importer():
 
@@ -35,6 +38,7 @@ class Importer():
         self.output_file = output_file
 
     def get_entry_point(self):
+        entrypoint = None
         with open(os.path.join(self.app_dir,"Dockerfile")) as f:
             content = f.readlines()
         for line in content:
@@ -44,7 +48,6 @@ class Importer():
         return entrypoint
             
     def import_bids(self):
-
         with open(self.template_file) as f:
             template_string = f.read()
 
@@ -60,6 +63,9 @@ class Importer():
         if not entrypoint:
             errors.append("No entrypoint found in container.") 
         
+        if len(errors):
+            raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
+
         template_string = template_string.replace("@@APP_NAME@@",app_name)
         template_string = template_string.replace("@@VERSION@@",version)
         template_string = template_string.replace("@@GIT_REPO_URL@@",git_repo)
@@ -70,15 +76,11 @@ class Importer():
         with open(self.output_file,"w") as f:
             f.write(template_string)
 
-        if len(errors):
-            for line in errors:
-                print(line)
         
 def main(args=None):
 
     # Arguments parsing
-    parser=argparse.ArgumentParser()
-    # Required inputs
+    parser = ArgumentParser()
     parser.add_argument("bids_app_dir", help="Root directory of the BIDS app to import.")
     parser.add_argument("output_file", help="File where the Boutiques descriptor will be written.")
     results = parser.parse_args() if args is None else parser.parse_args(args)
