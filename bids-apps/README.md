@@ -17,7 +17,9 @@ Edit the `value-choices` property of input `analysis_level` to remove
 the analysis levels that are not supported by the app. For instance,
 if the app supports only participant analyses, replace:
 ```"value-choices" : [ "participant", "group", "session" ]```
+
 by:
+
 ```"value-choices" : [ "participant" ]```.
 
 ## Examples
