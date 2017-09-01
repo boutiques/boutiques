@@ -7,7 +7,7 @@
         "type": "docker",
         "image": "@@CONTAINER_IMAGE@@"
     },
-    "schema-version" : "0.4",
+    "schema-version" : "0.5",
     "inputs" : [{
         "id" : "bids_dir",
         "name" : "BIDS directory",
