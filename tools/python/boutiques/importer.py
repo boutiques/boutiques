@@ -52,7 +52,7 @@ class Importer():
             template_string = f.read()
 
         errors = []
-        app_name = os.path.basename(self.app_dir)
+        app_name = os.path.basename(os.path.abspath(self.app_dir))
         with open(os.path.join(self.app_dir,"version"),"r") as f:
             version = f.read().strip()
         git_repo = "https://github.com/BIDS-Apps/"+app_name
