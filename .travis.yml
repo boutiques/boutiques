@@ -13,9 +13,10 @@ python:
 install:
 - pip install nose
 - pip install coveralls
-- pip install .
+- pip install ./tools/python/
 
 script:
+- cd ./tools/python/
 - coverage run --source boutiques setup.py test
 
 after_success:
