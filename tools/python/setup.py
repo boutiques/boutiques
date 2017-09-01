@@ -23,10 +23,12 @@ setup(name="boutiques",
         "console_scripts": [
             "bosh-validate=boutiques.validator:main",
             "bosh=boutiques.localExec:main",
-            "bosh-invocation=boutiques.invocationSchemaHandler:main"
+            "bosh-invocation=boutiques.invocationSchemaHandler:main",
+            "bosh-import=boutiques.importer:main"
         ]
       },
       data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),
+                  ("bids-template", ["boutiques/bids-app-template/template.json"]),
                   ("exgood", ["boutiques/schema/examples/good.json"]),
                   ("exinvalid", ["boutiques/schema/examples/invalid.json"]),
                   ("exbidsgood", ["boutiques/schema/examples/bids_good.json"]),

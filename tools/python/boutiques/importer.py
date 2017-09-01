@@ -78,16 +78,16 @@ class Importer(object):
             for line in errors:
                 print(line)
         
-def main():
+def main(args=None):
 
     # Arguments parsing
     parser=argparse.ArgumentParser()
     # Required inputs
     parser.add_argument("bids_app_dir", help="Root directory of the BIDS app to import.")
     parser.add_argument("output_file", help="File where the Boutiques descriptor will be written.")
-    args = parser.parse_args()
+    results = parser.parse_args() if args is None else parser.parse_args(args)
     
-    importer = Importer(args.bids_app_dir,args.output_file)
+    importer = Importer(results.bids_app_dir,results.output_file)
     importer.import_bids()
 
 # Execute program
