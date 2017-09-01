@@ -14,8 +14,12 @@ import os
 class TestImport(TestCase):
 
     def test_import_good(self):
-        bids_app = op.join(op.split(bofile)[0], 'schema/examples/bids-apps/example')
+        bids_app = op.join(op.split(bofile)[0], 'schema/examples/bids-apps/example_good')
         self.assertFalse(main(args=[bids_app, 'test-import.json']))
+
+    def test_import_bad(self):
+        bids_app = op.join(op.split(bofile)[0], 'schema/examples/bids-apps/example_bad')
+        self.assertRaises(ValidationError, main, [bids_app, 'test-import.json'])
 
     def test_import_valid(self):
         self.assertFalse(main_validate(args=['-b','test-import.json']))
