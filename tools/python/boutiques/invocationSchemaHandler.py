@@ -3,7 +3,12 @@
 # A script for handling invocation schema generation and validation for Boutiques application descriptors
 # Requires jsonschema 2.5
 
-import json, jsonschema as jsa, argparse, os, sys
+import json
+import jsonschema as jsa
+import os
+import sys
+import argparse
+from functools import reduce
 
 # Generate an invocation schema from a Boutiques application descriptor
 def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
@@ -46,8 +51,8 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
     return h
   schema["properties"] = reduce(addTypeConstraints, inputs, {})
   # Required inputs
-  reqInputs = map(lambda x: x['id'], filter(lambda x: not x.get('optional'), inputs))
-  if len(reqInputs) > 0: schema["required"] = reqInputs
+  reqInputs = [x['id'] for x in [x for x in inputs if not x.get('optional')]]
+  if len(list(reqInputs)) > 0: schema["required"] = reqInputs
   # Helper functions (assumes properly formed descriptor)
   byInd  = lambda id: [i for i in inputs if id==i['id']][0]
   isFlag = lambda id: (byInd(id)['type'] == 'Flag')
@@ -56,7 +61,7 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
   def reqMember(m): # Generate code for a one-is-required member
     if isFlag(m): return { "properties" : { m : { "enum" : [ True ] } }, "required" : [m] }
     else: return { "required" : [m] }
-  if len(g1r) > 0: schema["allOf"] = map(lambda g: {"anyOf" : map(reqMember, g['members'])}, g1r)
+  if len(g1r) > 0: schema["allOf"] = [{"anyOf" : list(map(reqMember, g['members']))} for g in g1r]
   # Handle requires and disables-inputs/mutex constraints
   def handleDisablesRequires(h,inval):
     i, h = RMap( inval ), RMap( h )
@@ -126,7 +131,7 @@ def writeSchema(s, f, indenter=3):
   with open(f,"w") as outfile: outfile.write( _prettySchema( s, indenter ) )
 
 # Script exit helper
-def errExit(msg, print_usage = True, err_code = 1):
+def errExit(msg, parser, print_usage = True, err_code = 1):
     if print_usage: parser.print_usage()
     sys.stderr.write('Error: ' + msg + '\n')
     sys.exit( err_code )
@@ -134,11 +139,10 @@ def errExit(msg, print_usage = True, err_code = 1):
 # Pretty version of a schema
 def _prettySchema(s, indenter=3): return json.dumps( s, indent=indenter, separators=(',', ' : ') )
 
-# Main program start
-if __name__ == "__main__":
 
+def main():
   # Description
-  description = "\n".join(map(lambda x: x[3:],'''
+  description = "\n".join([x[3:] for x in '''
    Script for generating invocation schemas (i.e. JSON schemas for input values) associated to a Boutiques application
      descriptor and/or validating input data examples with respect to invocation schemas.
 
@@ -160,7 +164,7 @@ if __name__ == "__main__":
         "outputFile" : "output.gif",
         ...
      }
-  '''.split("\n")))
+  '''.split("\n")])
 
   # Parse inputs
   parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
@@ -174,25 +178,25 @@ if __name__ == "__main__":
   # Check arguments
   given = lambda x: not (x is None)
   if given(args.input) and given(args.schema):
-    errExit('-i and -s cannot be used together')
+    errExit('-i and -s cannot be used together', parser)
   elif (not given(args.input)) and (not given(args.schema)):
-    errExit('At least one of -i and -s is required')
+    errExit('At least one of -i and -s is required', parser)
   elif (not given(args.input)) and given(args.output):
-    errExit('-o cannot be used without -i')
+    errExit('-o cannot be used without -i', parser)
   elif given(args.output) and (given(args.data) or given(args.schema)):
-    errExit('-o cannot be used with -d or -s')
+    errExit('-o cannot be used with -d or -s', parser)
   elif given(args.schema) and (not given(args.data)):
-    errExit('-s cannot be used without -d')
+    errExit('-s cannot be used without -d', parser)
   elif given(args.schema) and (given(args.input) or given(args.output)):
-    errExit('-s cannot be used with -i or -o')
+    errExit('-s cannot be used with -i or -o', parser)
   elif given(args.input) and not os.path.isfile( args.input ):
-    errExit('Cannot find input file ' + str( args.input ) )
+    errExit('Cannot find input file ' + str( args.input ), parser)
   elif given(args.data) and not os.path.isfile( args.data ):
-    errExit('Cannot find data file ' + str( args.data ) )
+    errExit('Cannot find data file ' + str( args.data ), parser)
   elif given(args.schema) and not os.path.isfile( args.schema ):
-    errExit('Cannot find schema file ' + str( args.schema ) )
+    errExit('Cannot find schema file ' + str( args.schema ), parser)
   elif args.compact and (given(args.schema) or given(args.data)):
-    errExit('Cannot use -c with -s or -d')
+    errExit('Cannot use -c with -s or -d', parser)
 
   # Read in JSON (fast fail if invalid)
   try:
@@ -200,11 +204,15 @@ if __name__ == "__main__":
     if given(args.schema): inSchema = json.loads( open(args.schema).read() )
     if given(args.data):   data     = json.loads( open(args.data).read() )
   except Exception as e:
-    errExit("Error incurred during json parsing: " + str( e.message ))
+    errExit("Error incurred during json parsing: " + str( e.message ), parser)
 
   # Validate, write, or print depending on arguments
   invSchema = generateInvocationSchema(desc) if given(args.input) else inSchema
   if given(args.output): writeSchema(invSchema, args.output, None if args.compact else 3)
   elif given(args.data): validateSchema(invSchema, data)
   else: print(_prettySchema(invSchema, None if args.compact else 3))
+
+# Main program start
+if __name__ == "__main__":
+    main()
 
