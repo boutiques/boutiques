@@ -2,7 +2,8 @@
 
 To integrate a [BIDS
 app](http://bids-apps.neuroimaging.io) in Boutiques, import it with `bosh-import`:
-```bosh-import <bids_dir> <output_file.json>```
+
+```bosh-import <bids_dir> <output_file.json>```.
 
 The resulting Boutiques descriptor will contain only the inputs that
 are common to all BIDS apps, that is, `BIDS directory`, `output
@@ -14,9 +15,10 @@ for more information.
 
 Edit the `value-choices` property of input `analysis_level` to remove
 the analysis levels that are not supported by the app. For instance,
-if the app supports only participant analyses, replace
-`"value-choices" : [ "participant", "group", "session" ]` by
-`"value-choices" : [ "participant" ]`.
+if the app supports only participant analyses, replace:
+```"value-choices" : [ "participant", "group", "session" ]```
+by:
+```"value-choices" : [ "participant" ]```.
 
 ## Examples
 
