@@ -1,8 +1,0 @@
-{
-    "inputs": [
-	{   "bids_dir" : "ds001"},
-	{    "output_dir_name" : "example-output"},
-	{    "analysis_level": "participant"	},
-	{    "participant_label": "01"	}
-	    ]
-}

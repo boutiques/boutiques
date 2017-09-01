@@ -1,9 +1,0 @@
-# Boutiques descriptors
-
-This directory contains a
-[Boutiques](https://github.com/boutiques/boutiques) descriptor for the
-BIDS app and an example of invocation.
-
-## How to use
-
-* Install Boutiques: `pip install boutiques`
