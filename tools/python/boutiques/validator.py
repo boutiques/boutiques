@@ -52,7 +52,7 @@ def validate_json(json_file):
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        print("JSON Validation error (Boutiques validation not yet performed)")
+        print("JSON Validation error (Rigorous Boutiques validation not yet performed)")
         raise ValidationError(e)
 
     # Helper get-function
