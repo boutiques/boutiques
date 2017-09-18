@@ -1,0 +1,9 @@
+{
+  "inputs" : [
+    { "str_input" : "foo" },
+    { "num_input" : 4 },
+    { "file_input" : "test.txt" },
+      { "enum_input" : "val1" }
+  ]
+}
+

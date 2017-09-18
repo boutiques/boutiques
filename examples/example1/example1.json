@@ -1,7 +1,7 @@
 {
     "tool-version": "0.0.1", 
     "name": "Example Boutiques Tool", 
-    "command-line": "exampleTool1 [STRING_INPUT] [FILE_INPUT] [ENUM_INPUT] | exampleTool2 [FLAG_INPUT] [NUMBER_INPUT] >> [LOG]", 
+    "command-line": "exampleTool1 [STRING_INPUT] [FILE_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT]  &> [LOG]", 
     "inputs": [
         {
             "command-line-flag": "-i", 
