@@ -122,7 +122,7 @@ def validate_json(json_file):
             msg_template = " InputError: \"{}\" must have a command-line flag"
             errors += [msg_template.format(inp["id"])] if "command-line-flag" not in inp.keys() else []
 
-            msg_template = " InputError: \"{}\" should not be required"
+            msg_template = " InputError: \"{}\" is of type Flag, it has to be optional"
             errors += [msg_template.format(inp["id"])] if inp["optional"] is False else []
 
         # Verify number-type inputs min/max are sensible
