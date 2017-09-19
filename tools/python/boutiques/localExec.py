@@ -114,7 +114,6 @@ class LocalExecutor(object):
         for mount_string in mount_strings:
           docker_mounts += " -v "+mount_string
         dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + docker_mounts + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
-        print(dcmd)
       elif conType == 'singularity':
         singularity_mounts = ""
         for mount_string in mounts:
