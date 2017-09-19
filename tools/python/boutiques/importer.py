@@ -83,7 +83,7 @@ class Importer():
                     descriptor["container-image"]["index"] = img[0] + "://"
                 del descriptor["container-image"]["url"]
             elif "docker" == descriptor["container-image"]["type"] and descriptor["container-image"].get("index"):
-                url = descriptor["container-image"]["index"] = descriptor["container-image"]["index"].split("://")[1]
+                url = descriptor["container-image"]["index"] = descriptor["container-image"]["index"].split("://")[-1]
 
         if "walltime-estimate" in descriptor.keys():
             descriptor["suggested-resources"] = {"walltime-estimate": descriptor["walltime-estimate"]}
