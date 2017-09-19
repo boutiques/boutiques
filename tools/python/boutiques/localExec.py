@@ -60,13 +60,12 @@ class LocalExecutor(object):
         raise ValueError(msg.format(", ".join(conEngines), self.con['type']))
 
   # Attempt local execution of the command line generated from the input values
-  def execute(self):
+  def execute(self, mount_strings):
     '''
     The execute method runs the generated command line (from either generateRandomParams or readInput).
     If docker is specified, it will attempt to use it, instead of local execution.
     After execution, it checks for output file existence.
-    '''
-
+    '''    
     command, exit_code, con = self.cmdLine[0], None, self.con or {}
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for Container image
@@ -110,10 +109,18 @@ class LocalExecutor(object):
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
       if conType == 'docker':
-        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        # export mounts to docker string
+        docker_mounts = ""
+        for mount_string in mount_strings:
+          docker_mounts += " -v "+mount_string
+        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + docker_mounts + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        print(dcmd)
       elif conType == 'singularity':
+        singularity_mounts = ""
+        for mount_string in mounts:
+          singularity_mounts += " -B "+mount_string
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity exec --rm' + envString + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec --rm' + envString + singularity_mounts + ' -B ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
@@ -594,8 +601,9 @@ Notes: pass lists by space-separated values
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
   parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
+  parser.add_argument('-v', '--mounts', type=str, nargs="*", help = "Directories to be mounted in the container in addition to $PWD. Will be passed to Docker with -v or to Singularity with -B.")
   parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
-  parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root)')
+  parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root).')
   parser.add_argument('--ignoreContainer', action = 'store_true', help = 'Attempt execution locally, even if a container is specified.')
   parser.add_argument('-d', '--destroyTempScripts', action = 'store_true', help = 'Destroys any temporary scripts used to execute commands in containers.')
   args = parser.parse_args()
@@ -647,7 +655,7 @@ Notes: pass lists by space-separated values
     # Read in given input
     executor.readInput(inData, given(args.string))
     # Execute it
-    exit_code = executor.execute()
+    exit_code = executor.execute(args.mounts)
     sys.exit(exit_code)
   # Print random case
   elif args.random:
