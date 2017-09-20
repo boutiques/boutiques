@@ -108,18 +108,15 @@ class LocalExecutor(object):
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
+      mount_strings.append('${PWD}:' + launchDir)
       if conType == 'docker':
         # export mounts to docker string
-        docker_mounts = ""
-        for mount_string in mount_strings:
-          docker_mounts += " -v "+mount_string
-        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + docker_mounts + ' -v ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        docker_mounts = " -v ".join(m for m in mount_strings)
+        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       elif conType == 'singularity':
-        singularity_mounts = ""
-        for mount_string in mounts:
-          singularity_mounts += " -B "+mount_string
+        singularity_mounts = " -B ".join(m for m in mount_strings)
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity exec --rm' + envString + singularity_mounts + ' -B ${PWD}:' + launchDir + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec --rm' + envString + singularity_mounts + ' -B ' + singularity_mounts + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
@@ -600,7 +597,7 @@ Notes: pass lists by space-separated values
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
   parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
-  parser.add_argument('-v', '--mounts', type=str, nargs="*", help = "Directories to be mounted in the container in addition to $PWD. Will be passed to Docker with -v or to Singularity with -B.")
+  parser.add_argument('-v', '--mounts', type=str, nargs="*", help = "Directories to be mounted in the container in addition to $PWD. Will be passed to Docker with -v or to Singularity with -B. Must comply to the syntax accepted by Docker or Singularity. For instance, /a:/b:ro would mount host directory /a to container directory /b with read-only permissions.")
   parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
   parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root).')
   parser.add_argument('--ignoreContainer', action = 'store_true', help = 'Attempt execution locally, even if a container is specified.')
