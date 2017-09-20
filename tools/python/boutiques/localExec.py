@@ -108,6 +108,7 @@ class LocalExecutor(object):
       # Change launch (working) directory if desired
       launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
       # Run it in docker
+      mount_strings = [] if not mount_strings else mount_strings
       mount_strings.append('${PWD}:' + launchDir)
       if conType == 'docker':
         # export mounts to docker string
