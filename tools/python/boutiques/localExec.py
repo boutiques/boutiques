@@ -90,7 +90,6 @@ class LocalExecutor(object):
         # Pull the docker image
         if self._localExecute("singularity pull shub://" + str(conImage)):
           print("Container not found online - trying local copy")
-        print(code)
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
