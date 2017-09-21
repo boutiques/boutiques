@@ -1,8 +1,0 @@
-#!/bin/bash
-
-set -e
-set -u
-
-test -f $3 || echo "$3 does not exist"
-
-echo $*
