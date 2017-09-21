@@ -73,7 +73,7 @@
         }
     ], 
     "container-image": {
-        "image": "boutiques/example1", 
+        "image": "boutiques/example1:test",
         "type": "docker"
     }, 
     "schema-version": "0.5", 
