@@ -84,10 +84,13 @@ class LocalExecutor(object):
     if conIsPresent and not self.ignoreContainer:
       if conType == 'docker':
         # Pull the docker image
-        self._localExecute( "docker pull " + str(conImage) )
+        if self._localExecute("docker pull " + str(conImage)):
+          print("Container not found online - trying local copy")
       elif conType == 'singularity':
         # Pull the docker image
-        self._localExecute( "singularity pull shub://" + str(conImage) )
+        if self._localExecute("singularity pull shub://" + str(conImage)):
+          print("Container not found online - trying local copy")
+        print(code)
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
@@ -117,7 +120,7 @@ class LocalExecutor(object):
       elif conType == 'singularity':
         singularity_mounts = " -B ".join(m for m in mount_strings)
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity exec --rm' + envString + singularity_mounts + ' -B ' + singularity_mounts + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec --rm' + envString + ' -B ' + singularity_mounts + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
@@ -149,7 +152,9 @@ class LocalExecutor(object):
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
     try: # Note: invokes the command through the shell (potential injection dangers)
-      process = subprocess.Popen(command , shell=True)
+      process = subprocess.Popen(command, shell=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
     except OSError as e:
       sys.stderr.write('OS Error during attempted execution!')
       raise e
