@@ -1,8 +1,8 @@
 {
   "inputs" : [
     { "str_input" : "foo" },
-    { "num_input" : 4 },
-    { "file_input" : "test.txt" },
+      { "file_input" : "./setup.py" },
+      { "config_num" : 4 },
       { "enum_input" : "val1" }
   ]
 }

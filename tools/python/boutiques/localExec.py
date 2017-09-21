@@ -20,7 +20,7 @@ class LocalExecutor(object):
   """
 
   # Constructor
-  def __init__(self,desc, options={}):
+  def __init__(self, desc, options={}):
     ## Initial parameters ##
     self.desc_path = desc  # Save descriptor path
     self.errs      = []    # Empty errors holder
@@ -131,7 +131,7 @@ class LocalExecutor(object):
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if conIsPresent and self.destroyTempScripts:
-      if os.path.isfile( dsname ): os.remove( dsname )
+      if os.path.isfile(dsname): os.remove(dsname)
     # Check for output files (note: the path-template can contain value-keys
     print('Looking for output files:')
     for outfile in self.desc_dict['output-files']:
@@ -149,9 +149,9 @@ class LocalExecutor(object):
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
     try: # Note: invokes the command through the shell (potential injection dangers)
-      process = subprocess.Popen( command , shell=True )
+      process = subprocess.Popen(command , shell=True)
     except OSError as e:
-      sys.stderr.write( 'OS Error during attempted execution!' )
+      sys.stderr.write('OS Error during attempted execution!')
       raise e
     except ValueError as e:
       sys.stderr.write( 'Input Value Error during attempted execution!' )
@@ -259,7 +259,8 @@ class LocalExecutor(object):
     # Clear the dictionary
     self.in_dict = {}
     # Fill in the required parameters
-    for reqp in [r for r in self.inputs if self.safeGet(r['id'],'optional')==False]:
+    for reqp in [r for r in self.inputs if not r.get('optional')]:
+      print(reqp['id'])
       self.in_dict[reqp['id']] = makeParam(reqp)
     # Fill in a random choice for each one-is-required group
     for grp in [g for g in self.groups if self.safeGrpGet(g['id'],'one-is-required')]:
@@ -345,7 +346,7 @@ class LocalExecutor(object):
     toRm = []
     for inprm in self.in_dict:
       if str(self.in_dict[inprm]).lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
-        toRm.append( inprm )
+        toRm.append(inprm)
       elif self.byId(inprm)['type'] == 'Flag' and self.in_dict[inprm] == True:
         self.in_dict[inprm] = "true" # Fix json inputs using bools instead of strings
     for r in toRm: del self.in_dict[r]
@@ -546,7 +547,7 @@ class LocalExecutor(object):
       sys.exit(1)
 
 
-def main():
+def main(args=None):
   # Parse arguments
   description = '''
 A local tool executor to help test JSON descriptors for use in the Boutiques framework.
@@ -603,67 +604,68 @@ Notes: pass lists by space-separated values
   parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root).')
   parser.add_argument('--ignoreContainer', action = 'store_true', help = 'Attempt execution locally, even if a container is specified.')
   parser.add_argument('-d', '--destroyTempScripts', action = 'store_true', help = 'Destroys any temporary scripts used to execute commands in containers.')
-  args = parser.parse_args()
+  results = parser.parse_args() if args is None else parser.parse_args(args)
 
   # Check arguments
-  desc = args.desc[0]
+  desc = results.desc[0]
   def errExit(msg, print_usage = True):
     if print_usage: parser.print_usage()
     sys.stderr.write('Error: ' + msg + '\n')
     sys.exit(1)
   given = lambda x: not (x is None)
 
-  if given(args.num) and args.num < 1:
+  if given(results.num) and results.num < 1:
     errExit('--num was not given an appropriate value')
-  elif given(args.num) and not args.random:
+  elif given(results.num) and not results.random:
     errExit('--num requires random')
-  elif args.random and args.execute:
+  elif results.random and results.execute:
     errExit('--random and --exec cannot be used together')
-  elif args.random and given(args.input):
+  elif results.random and given(results.input):
     errExit('--random and --input cannot be used together')
-  elif given(args.input) and not os.path.isfile( args.input ):
-    errExit('The input file ' + str(args.input) + ' does not seem to exist', False)
-  elif given(args.input) and not (args.input.endswith(".json") or args.input.endswith(".csv")):
-    errExit('Input file ' + str(args.input) + ' must end in .json or .csv')
-  elif args.execute and (not given(args.input) and not given(args.string)):
+  elif given(results.input) and not os.path.isfile( results.input ):
+    errExit('The input file ' + str(results.input) + ' does not seem to exist', False)
+  elif given(results.input) and not (results.input.endswith(".json") or results.input.endswith(".csv")):
+    errExit('Input file ' + str(results.input) + ' must end in .json or .csv')
+  elif results.execute and (not given(results.input) and not given(results.string)):
     errExit('--exec requires --input or --string be specified')
   elif not os.path.isfile( desc ):
     errExit('The input JSON descriptor ({0}) does not seem to exist'.format(desc), False)
-  elif not args.random and (not given(args.input) and not given(args.string)):
+  elif not results.random and (not given(results.input) and not given(results.string)):
     errExit('The default mode requires an input (-i or -s)')
-  elif args.random and given(args.string):
+  elif results.random and given(results.string):
     errExit('--random and --string cannot be used together')
-  elif given(args.num) and given(args.string):
+  elif given(results.num) and given(results.string):
     errExit('--num and --string cannot be used together')
-  elif not given(args.num):
-    args.num = 1
+  elif not given(results.num):
+    results.num = 1
 
   # Prepare inputs
-  inData = args.input if given(args.input) else ( args.string if given(args.string) else None )
+  inData = results.input if given(results.input) else ( results.string if given(results.string) else None )
   # Generate object that will perform the commands
-  executor = LocalExecutor(desc, { 'forcePathType'      : not args.dontForcePathType,
-                                   'destroyTempScripts' : args.destroyTempScripts,
-                                   'ignoreContainer'    : args.ignoreContainer,
-                                   'changeUser'         : args.changeUser              })
+  executor = LocalExecutor(desc, { 'forcePathType'      : not results.dontForcePathType,
+                                   'destroyTempScripts' : results.destroyTempScripts,
+                                   'ignoreContainer'    : results.ignoreContainer,
+                                   'changeUser'         : results.changeUser              })
 
   ### Run the executor with the given parameters ###
   # Execution case
-  if args.execute:
+  if results.execute:
     # Read in given input
-    executor.readInput(inData, given(args.string))
+    executor.readInput(inData, given(results.string))
     # Execute it
-    exit_code = executor.execute(args.mounts)
-    sys.exit(exit_code)
+    exit_code = executor.execute(results.mounts)
+    if exit_code:
+      sys.exit(exit_code)
   # Print random case
-  elif args.random:
+  elif results.random:
     # Generate random input
-    executor.generateRandomParams(args.num)
+    executor.generateRandomParams(results.num)
     # Print the resulting command line
     executor.printCmdLine()
   # Print input case (default: no execution)
   else:
     # Read in given input
-    executor.readInput(inData, given(args.string))
+    executor.readInput(inData, given(results.string))
     # Print the resulting command line
     executor.printCmdLine()
 
