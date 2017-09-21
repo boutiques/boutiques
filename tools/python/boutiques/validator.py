@@ -68,7 +68,9 @@ def validate_json(json_file):
     errors = []
 
     clkeys = inputGet("value-key") + outputGet("value-key")
-    configFileTemplates = outputGet("file-template") + outputGet("path-template")
+    flattenedTemplates = [y for x in outputGet("file-template") for y in x]
+    configFileTemplates = flattenedTemplates + outputGet("path-template")
+    
     cmdline = descriptor["command-line"]
 
     # Verify that all command-line key appear in the command-line

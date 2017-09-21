@@ -1,2 +1,2 @@
 from centos
-ADD exampleTool1 /bin
+ADD exampleTool1.py /bin
