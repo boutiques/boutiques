@@ -4,6 +4,7 @@ VERSION = "0.5.2.1"
 DEPS = [
          "simplejson",
          "jsonschema",
+         "gitpython",
        ]
 
 setup(name="boutiques",
