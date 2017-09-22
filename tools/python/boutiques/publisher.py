@@ -32,8 +32,9 @@ import git, json, os, sys
 
 class Publisher():
 
-    def __init__(self, boutiques_dir, author=None, base_url=None):
+    def __init__(self, boutiques_dir, remote_name=None, author=None, base_url=None):
         self.boutiques_dir = os.path.abspath(boutiques_dir)
+        self.remote_name = remote_name if remote_name else 'origin'
         self.author = author
         self.base_url = base_url
         try:
@@ -43,7 +44,7 @@ class Publisher():
               sys.exit(1)
 
         for remote in self.boutiques_repo.remotes:
-            if remote.name == "origin":
+            if remote.name == self.remote_name:
                 self.boutiques_remote = remote
 
         if not self.base_url:
@@ -125,10 +126,13 @@ def main(args=None):
     parser.add_argument("--boutiques-repo", "-b", action="store",
                         default='.',
                         help="Local path to a Git repo containing Boutiques descriptors to publish.")
+    parser.add_argument("--remote-name", "-r", action="store",
+                        default='origin',
+                        help="Remote name to use in Git repo to get URL of Boutiques descriptor.")
+    parser.add_argument("--author", "-a", action="store",
+                        help="Author name (default: author of last commit in Git repo).")
     results = parser.parse_args() if args is None else parser.parse_args(args)
-    boutiques_dir = results.boutiques_repo  
-    publisher = Publisher(boutiques_dir)
-    publisher.publish()
+    publisher = Publisher(results.boutiques_repo, results.remote_name, results.author).publish()
             
 # Execute program
 if  __name__ == "__main__":
