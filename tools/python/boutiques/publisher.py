@@ -288,7 +288,7 @@ class Publisher():
             existing_tools['entities'].append(tool)
         # Write updated tools
         json_file = open(self.tools_file, "w")
-        json_file.write(json.dumps(tools, indent=4, sort_keys=True))
+        json_file.write(json.dumps(json_tools, indent=4, sort_keys=True))
         json_file.close()
         # Commit tools file
         self.neurolinks_repo.index.add([self.tools_file])
