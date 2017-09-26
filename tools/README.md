@@ -17,12 +17,10 @@ bosh (BOutiques SHell) suite of tools to create and use boutiques descriptors.
     * Print a command line based on parameters from an input file: `bosh -i input_param_file.csv ./tool.json`
   * Check the help page (`-h` option) for more options and documentation.
 
-3. `bosh-invocation`: a Python script to generate and test invocation schemas (i.e. JSON schemas for input values) associated to a Boutiques application
-     descriptor and validating input data examples with respect to these invocation schemas.
+3. `bosh-invocation`: generate invocation schemas and validates invocations.
   * Usage examples:
-    * Generates an invocation schema: `bosh-invocation -i ./toolDescriptor.json`
-    * Validate input data (i.e. specific tool parameter arguments): `bosh-invocation -i ./toolDescriptor.json -d ./tool.exampleInputs.json`
-  * Check the help page (`-h` option) for more options and documentation.
+    * Add invocation schema to tool descriptor: `bosh-invocation ./toolDescriptor.json`
+    * Validate input data: `bosh-invocation ./toolDescriptor.json -i ./tool.exampleInputs.json`
 
 4. `pegasus-boutiques`: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
 
