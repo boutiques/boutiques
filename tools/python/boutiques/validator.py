@@ -53,8 +53,7 @@ def validate_json(json_file):
         validate(descriptor, schema)
     except ValidationError as e:
         print("JSON Validation error (Rigorous Boutiques validation not yet performed)")
-        print(str(e))
-        raise ValidationError(e)
+        raise ValidationError(e.message)
 
     # Helper get-function
     safeGet   = lambda desc, sec, targ: [item[targ] for item in desc[sec]
