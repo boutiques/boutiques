@@ -244,11 +244,11 @@ class Publisher():
                 else:
                     singularity_container = os.path.join(index,container_image.get("image")) 
         identifier = label.replace(" ","_")
+        boutiques_url = self.get_url(descriptor_file_name)
         if self.inter:
             self.tool_author = self.get_from_stdin("Tool author",
                                                    self.tool_author)
             self.tool_url = self.get_from_stdin("Tool URL", self.tool_url, "URL")
-            boutiques_url = self.get_url(descriptor_file_name)
             boutiques_url = self.get_from_stdin("Boutiques descriptor URL",
                                                 boutiques_url, "URL")
         return self.get_json_string(identifier, label, description,
