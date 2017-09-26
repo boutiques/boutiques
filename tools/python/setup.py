@@ -5,6 +5,7 @@ DEPS = [
          "simplejson",
          "jsonschema",
          "gitpython",
+         "PyGithub",
        ]
 
 setup(name="boutiques",
