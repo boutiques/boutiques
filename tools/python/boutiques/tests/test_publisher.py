@@ -10,4 +10,5 @@ class TestPublisher(TestCase):
     
     def test_publisher(self):
          self.assertFalse(main(args=['-b',
-                                     self.get_boutiques_dir()]))
+                                     self.get_boutiques_dir(),
+                                     '-y']))
