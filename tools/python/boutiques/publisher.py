@@ -34,7 +34,7 @@ import git, json, os, sys, urllib2
 class Publisher():
 
     def __init__(self, boutiques_dir, remote_name, tool_author, tool_url, no_int,
-                 neurolinks_repo_url, neurolinks_dest_path, github_user, github_password):
+                 neurolinks_repo_url, neurolinks_dest_path, github_user, github_password, no_github):
         self.boutiques_dir = os.path.abspath(boutiques_dir)
         self.remote_name = remote_name if remote_name else 'origin'
         try:
@@ -61,12 +61,15 @@ class Publisher():
 
         self.tool_url = tool_url if tool_url else "http://example.com"
         self.no_int = no_int
+        self.no_github = no_github
+
+        if self.no_github:
+            return
 
         # Set github credentials
         self.github_user = github_user
         self.github_password = github_password
         self.fix_github_credentials()
-        
         # Fork and clone the neurolinks repo
         if neurolinks_repo_url.startswith("http"):
             fork_url = self.fork_repo(neurolinks_repo_url) # won't do anything if fork already exists
@@ -196,7 +199,7 @@ class Publisher():
         return descriptors
 
     def get_neurolinks_json(self, descriptor_file_name, tools):
-        entities = tools['entities']
+        entities = tools.get('entities')
         with open(descriptor_file_name, "r") as f:
             descriptor = json.load(f)
         self.print_banner(descriptor)
@@ -235,6 +238,8 @@ class Publisher():
         return url
 
     def contains(self, label, tools):
+        if not tools:
+            return
         for tool in tools:
             if tool['label'] == label:
                 return True
@@ -246,14 +251,16 @@ class Publisher():
     
     def publish(self):
         json_tools = []
-        # Load existing tools
-        with open(self.tools_file, "r") as json_file:
-            tools = json.load(json_file)
+        existing_tools = {}
+        if not self.no_github:
+            # Load existing tools
+            with open(self.tools_file, "r") as json_file:
+                existing_tools = json.load(json_file)
         # Get new tools from boutiques repo
         descriptors = self.get_descriptors()
         for descriptor_file_name in descriptors:
             # Build neurolinks string
-            neurolinks_json = self.get_neurolinks_json(descriptor_file_name, tools)
+            neurolinks_json = self.get_neurolinks_json(descriptor_file_name, existing_tools)
             # Have user review before commit
             if not self.no_int and neurolinks_json:
                 print("Tool summary:")
@@ -266,9 +273,13 @@ class Publisher():
         if len(json_tools) == 0:
             print("Nothing to publish, bye!")
             return
+        if self.no_github:
+            for tool in json_tools:
+                print(json.dumps(tool, indent=4, sort_keys=True))
+            return
         # Add new tools to existing tools
         for tool in json_tools:
-            tools['entities'].append(tool)
+            existing_tools['entities'].append(tool)
         # Write updated tools
         json_file = open(self.tools_file, "w")
         json_file.write(json.dumps(tools, indent=4, sort_keys=True))
@@ -330,6 +341,8 @@ configured and usable without password.")
     parser.add_argument("--tool-url", "-t", action="store",
                         default='http://example.com',
                         help="Default tool URL.")
+    parser.add_argument("--no-github", action="store_true",
+                        help="Do not interact with GitHub at all (useful for tests).")
     parser.add_argument("--github-login", "-l", action="store",
                         help="GitHub login used to fork, clone and PR to {0}. Defaults to value in $HOME/.pygithub. Saved in $HOME/.pygithub if specified.".format(neurolinks_github_repo_url))
     parser.add_argument("--github-password", "-p", action="store",
@@ -342,7 +355,7 @@ configured and usable without password.")
     publisher = Publisher(results.boutiques_repo, results.boutiques_remote,
                           results.author_name, results.tool_url, results.noint,
                           results.neurolinks_repo, neurolinks_dest_path,
-                          results.github_login, results.github_password).publish()
+                          results.github_login, results.github_password, results.no_github).publish()
             
 # Execute program
 if  __name__ == "__main__":
