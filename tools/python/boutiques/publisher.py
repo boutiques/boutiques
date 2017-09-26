@@ -163,7 +163,10 @@ class Publisher():
         if self.no_int:
             return default_value
         prompt = question+" ("+default_value+"): " if default_value else question+": "
-        answer = raw_input(prompt)
+        try:
+            answer = raw_input(prompt) # Python 2
+        except NameError:
+            answer = input(prompt) # Python 3
         answer = answer if answer else default_value
         if input_type == "URL":
             while not self.check_url(answer):
@@ -288,7 +291,7 @@ class Publisher():
             existing_tools['entities'].append(tool)
         # Write updated tools
         json_file = open(self.tools_file, "w")
-        json_file.write(json.dumps(json_tools, indent=4, sort_keys=True))
+        json_file.write(json.dumps(existing_tools, indent=4, sort_keys=True))
         json_file.close()
         # Commit tools file
         self.neurolinks_repo.index.add([self.tools_file])
