@@ -1,7 +1,0 @@
-nl:neurodocker rdf:type owl:ObjectProperty ;
-    rdfs:label "@@__LABEL__@@"^^xsd:string ;
-    obo:IAO_0000115 "@@__DESCRIPTION__@@"^^xsd:string ;
-    prov:wasCreatedBy "@@__AUTHOR__@@"^^xsd:string ;
-    dct:source "@@__URL__@@"^^xsd:string ;
-    nl:has_boutiques:true			
-    obo:IAO_0000121 ""^^xsd:string .
