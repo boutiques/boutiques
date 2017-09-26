@@ -132,7 +132,7 @@ def errExit(msg, parser, err_code = 1):
 def main(args=None):
 
   # Description
-  description = "Adds an invocation schema to a Boutiques descriptor. If invocation is passed, validates it against invocation schema."
+  description = "Adds an invocation schema to a Boutiques descriptor. If an invocation is passed, validates it against invocation schema."
   # Parse inputs
   parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument('tool',   help = 'Boutiques tool descriptor.')
