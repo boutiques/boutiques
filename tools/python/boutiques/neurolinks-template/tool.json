@@ -1,0 +1,8 @@
+{
+    "identity": "nl:@@__ID__@@",
+    "label": "@@__LABEL__@@",
+    "description": "@@__DESCRIPTION__@@",
+    "author": "@@__TOOL_AUTHOR__@@",
+    "url": "@@__TOOL_URL__@@",
+    "boutiquesdescriptor": "@@__BOUTIQUES_URL__@@"
+}

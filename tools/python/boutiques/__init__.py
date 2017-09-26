@@ -4,6 +4,7 @@ from .localExec import LocalExecutor
 from .invocationSchemaHandler import generateInvocationSchema, writeSchema
 from .validator import validate_json
 from .bids import validate_bids
+from .publisher import Publisher
 
-__all__ = ['localExec', 'invocationSchemaHandler', 'validator', 'bids']
+__all__ = ['localExec', 'invocationSchemaHandler', 'validator', 'bids', 'publisher']
 
