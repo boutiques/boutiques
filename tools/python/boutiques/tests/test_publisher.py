@@ -9,6 +9,7 @@ class TestPublisher(TestCase):
         return os.path.join(os.path.split(bofile)[0],"..","..","..")
     
     def test_publisher(self):
-         self.assertFalse(main(args=['-b',
-                                     self.get_boutiques_dir(),
-                                     '-y', '--no-github']))
+         self.assertFalse(main(args=[self.get_boutiques_dir(),
+                                     'test author',
+                                     'example.com',
+                                     '--no-github']))

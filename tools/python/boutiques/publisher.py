@@ -39,7 +39,7 @@ except ImportError:
 
 class Publisher():
 
-    def __init__(self, boutiques_dir, remote_name, tool_author, tool_url, no_int,
+    def __init__(self, boutiques_dir, remote_name, tool_author, tool_url, inter,
                  neurolinks_repo_url, neurolinks_dest_path, github_user, github_password, no_github):
         self.boutiques_dir = os.path.abspath(boutiques_dir)
         self.remote_name = remote_name if remote_name else 'origin'
@@ -55,18 +55,19 @@ class Publisher():
                 self.boutiques_remote = remote
 
         url = self.boutiques_remote.url
-        # If remote URL is on Github, try to guess the URL of the Bboutiques descriptor
+        # If remote URL is on Github, try to guess the URL of the Boutiques descriptor
         if "github.com" in url: 
-            url = url.replace(".git","").replace("git@github.com:","http://github.com/")
-            url = url.replace("http://github.com", "https://raw.githubusercontent.com")
-            url += "/master"
+            url = url.replace(".git","").replace("git@github.com:","https://github.com/")
+            url = url.replace("https://github.com/", "https://raw.githubusercontent.com/")
+            url = url.replace("http://github.com/", "https://raw.githubusercontent.com/")
+            url += "master"
         self.base_url = url
 
         # Try to guess the tool author
         self.tool_author = tool_author
 
         self.tool_url = tool_url if tool_url else "http://example.com"
-        self.no_int = no_int
+        self.inter = inter
         self.no_github = no_github
 
         if self.no_github:
@@ -160,7 +161,7 @@ class Publisher():
             return False
 
     def get_from_stdin(self, question, default_value=None, input_type=None):
-        if self.no_int:
+        if not self.inter:
             return default_value
         prompt = question+" ("+default_value+"): " if default_value else question+": "
         try:
@@ -212,11 +213,15 @@ class Publisher():
         with open(descriptor_file_name, "r") as f:
             descriptor = json.load(f)
         self.print_banner(descriptor)
-        if(self.get_from_stdin("Publish Y/n?","n") != "Y") and not self.no_int:
-            return None
+        if self.inter:
+            if(self.get_from_stdin("Publish Y/n?","Y") != "Y"):
+                return None
         if(self.contains(descriptor['name'],entities)):
+            if not self.inter:
+                print('Not overwriting existing entry - use interactive mode to override')
+                return None
             if(self.get_from_stdin("{0} is already published, overwrite Y/n?".format(
-                    descriptor['name']),"n") != "Y") and not self.no_int:
+                    descriptor['name']),"n") != "Y"):
                 return None
             tools['entities'] = self.remove(descriptor['name'], entities)
         label = descriptor['name']
@@ -227,17 +232,25 @@ class Publisher():
         if container_image:
             if container_image.get('type') == "docker":
                 index = container_image.get('index') if container_image.get('index') else 'http://index.docker.io'
-                docker_container = os.path.join(index,container_image.get("image"))
+                if "index.docker.io" in index:
+                    index = "https://hub.docker.com/r/"
+                elif "quay.io" in index:
+                    index = "https://quay.io/repository"
+                docker_container = os.path.join(index,container_image.get("image").split(':')[0])
             if container_image.get('type') == "singularity":
                 index = container_image.get('index') if container_image.get('index') else 'shub://'
-                singularity_container = os.path.join(index,container_image.get("image")) 
+                if index == "docker://":
+                    singularity_container = os.path.join("https://hub.docker.com",container_image.get("image").split(':')[0]) 
+                else:
+                    singularity_container = os.path.join(index,container_image.get("image")) 
         identifier = label.replace(" ","_")
-        self.tool_author = self.get_from_stdin("Tool author",
-                                               self.tool_author)
-        self.tool_url = self.get_from_stdin("Tool URL", self.tool_url, "URL")
         boutiques_url = self.get_url(descriptor_file_name)
-        boutiques_url = self.get_from_stdin("Boutiques descriptor URL",
-                                            boutiques_url, "URL")
+        if self.inter:
+            self.tool_author = self.get_from_stdin("Tool author",
+                                                   self.tool_author)
+            self.tool_url = self.get_from_stdin("Tool URL", self.tool_url, "URL")
+            boutiques_url = self.get_from_stdin("Boutiques descriptor URL",
+                                                boutiques_url, "URL")
         return self.get_json_string(identifier, label, description,
                                                  self.tool_author, self.tool_url,
                                                  boutiques_url, docker_container, singularity_container)
@@ -271,7 +284,7 @@ class Publisher():
             # Build neurolinks string
             neurolinks_json = self.get_neurolinks_json(descriptor_file_name, existing_tools)
             # Have user review before commit
-            if not self.no_int and neurolinks_json:
+            if not self.inter and neurolinks_json:
                 print("Tool summary:")
                 print(json.dumps(neurolinks_json, indent=4, sort_keys=True))
                 if(self.get_from_stdin("Publish Y/n?","n") != "Y"):
@@ -335,34 +348,31 @@ for valid Boutiques descriptors and imports them in Neurolinks \
 format. Uses your GitHub account to fork the Neurolinks repository and \
 commit new tools in it. Requires that your GitHub ssh key is \
 configured and usable without password.")
-    parser.add_argument("--boutiques-repo", "-b", action="store",
-                        default='.',
+    parser.add_argument("boutiques_repo", action="store",
                         help="Local path to a Git repo containing Boutiques descriptors to publish.")
+    parser.add_argument("author_name", action="store",
+                        help="Default author name.")
+    parser.add_argument("tool_url", action="store",
+                        help="Default tool URL.")
     parser.add_argument("--neurolinks-repo", "-n", action="store",
                         default=get_neurolinks_default(),
                         help="Local path to a Git clone of {0}. Remotes: 'origin' should point to a writable fork from which a PR will be initiated; 'base' will be pulled before any update, should point to {0}. If a URL is provided, will attempt to fork it on GitHub and clone it to {1}.".format(neurolinks_github_repo_url, neurolinks_dest_path))
     parser.add_argument("--boutiques-remote", "-r", action="store",
                         default='origin',
                         help="Name of Boutiques Git repo remote used to get URLs of Boutiques descriptor.")
-    parser.add_argument("--author-name", "-d", action="store",
-                        default = os.getenv("USER"),
-                        help="Default author name.")
-    parser.add_argument("--tool-url", "-t", action="store",
-                        default='http://example.com',
-                        help="Default tool URL.")
     parser.add_argument("--no-github", action="store_true",
                         help="Do not interact with GitHub at all (useful for tests).")
-    parser.add_argument("--github-login", "-l", action="store",
+    parser.add_argument("--github-login", "-u", action="store",
                         help="GitHub login used to fork, clone and PR to {0}. Defaults to value in $HOME/.pygithub. Saved in $HOME/.pygithub if specified.".format(neurolinks_github_repo_url))
     parser.add_argument("--github-password", "-p", action="store",
                         help="GitHub password used to fork, clone and PR to {0}. Defaults to value in $HOME/.pygithub. Saved in $HOME/.pygithub if specified.".format(neurolinks_github_repo_url))
-    parser.add_argument("--noint", "-y", action="store_true",
+    parser.add_argument("--inter", "-i", action="store_true",
                         default = False,
-                        help="Non-interactive mode. Uses default values everywhere. Does not check if URLs are correct or accessible.")
+                        help="Interactive mode. Does not use default values everywhere, checks if URLs are correct or accessible.")
     
     results = parser.parse_args() if args is None else parser.parse_args(args)
     publisher = Publisher(results.boutiques_repo, results.boutiques_remote,
-                          results.author_name, results.tool_url, results.noint,
+                          results.author_name, results.tool_url, results.inter,
                           results.neurolinks_repo, neurolinks_dest_path,
                           results.github_login, results.github_password, results.no_github).publish()
             
