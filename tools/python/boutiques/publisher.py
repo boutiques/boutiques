@@ -30,6 +30,12 @@ from boutiques.validator import validate_json
 from git import Repo
 from github import Github
 import git, json, os, sys, urllib2
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen, URLError
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen, URLError
 
 class Publisher():
 
@@ -166,11 +172,11 @@ class Publisher():
 
     def check_url(self, url):
         try:
-            code = urllib2.urlopen(url).getcode()
+            code = urlopen(url).getcode()
         except ValueError as e:
             print("error: {0}".format(e.message))
             return False
-        except urllib2.URLError as e:
+        except URLError as e:
             print("error: {0}".format(e.message))
             return False
         if code != 200:
