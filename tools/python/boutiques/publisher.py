@@ -29,7 +29,7 @@ from jsonschema import ValidationError
 from boutiques.validator import validate_json
 from git import Repo
 from github import Github
-import git, json, os, sys, urllib2
+import git, json, os, sys
 try:
     # For Python 3.0 and later
     from urllib.request import urlopen, URLError
