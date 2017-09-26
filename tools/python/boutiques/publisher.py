@@ -55,11 +55,12 @@ class Publisher():
                 self.boutiques_remote = remote
 
         url = self.boutiques_remote.url
-        # If remote URL is on Github, try to guess the URL of the Bboutiques descriptor
+        # If remote URL is on Github, try to guess the URL of the Boutiques descriptor
         if "github.com" in url: 
-            url = url.replace(".git","").replace("git@github.com:","http://github.com/")
-            url = url.replace("http://github.com", "https://raw.githubusercontent.com")
-            url += "/master"
+            url = url.replace(".git","").replace("git@github.com:","https://github.com/")
+            url = url.replace("https://github.com/", "https://raw.githubusercontent.com/")
+            url = url.replace("http://github.com/", "https://raw.githubusercontent.com/")
+            url += "master"
         self.base_url = url
 
         # Try to guess the tool author
@@ -231,17 +232,25 @@ class Publisher():
         if container_image:
             if container_image.get('type') == "docker":
                 index = container_image.get('index') if container_image.get('index') else 'http://index.docker.io'
-                docker_container = os.path.join(index,container_image.get("image"))
+                if "index.docker.io" in index:
+                    index = "https://hub.docker.com/r/"
+                elif "quay.io" in index:
+                    index = "https://quay.io/repository"
+                docker_container = os.path.join(index,container_image.get("image").split(':')[0])
             if container_image.get('type') == "singularity":
                 index = container_image.get('index') if container_image.get('index') else 'shub://'
-                singularity_container = os.path.join(index,container_image.get("image")) 
+                if index == "docker://":
+                    singularity_container = os.path.join("https://hub.docker.com",container_image.get("image").split(':')[0]) 
+                else:
+                    singularity_container = os.path.join(index,container_image.get("image")) 
         identifier = label.replace(" ","_")
-        self.tool_author = self.get_from_stdin("Tool author",
-                                               self.tool_author)
-        self.tool_url = self.get_from_stdin("Tool URL", self.tool_url, "URL")
-        boutiques_url = self.get_url(descriptor_file_name)
-        boutiques_url = self.get_from_stdin("Boutiques descriptor URL",
-                                            boutiques_url, "URL")
+        if self.inter:
+            self.tool_author = self.get_from_stdin("Tool author",
+                                                   self.tool_author)
+            self.tool_url = self.get_from_stdin("Tool URL", self.tool_url, "URL")
+            boutiques_url = self.get_url(descriptor_file_name)
+            boutiques_url = self.get_from_stdin("Boutiques descriptor URL",
+                                                boutiques_url, "URL")
         return self.get_json_string(identifier, label, description,
                                                  self.tool_author, self.tool_url,
                                                  boutiques_url, docker_container, singularity_container)
