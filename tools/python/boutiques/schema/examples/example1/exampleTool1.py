@@ -16,8 +16,8 @@ def main(args=None):
     parser=argparse.ArgumentParser(description="A tool to test Boutiques", formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-c', '--config_file', type=lambda x:file_exists(parser,x),
                          help='A config file with a number.')
-    parser.add_argument('-i', '--string_input', nargs=1, help='Any string.')
-    parser.add_argument('file_input', metavar='file_input',
+    parser.add_argument('-i', '--string_input', nargs='+', help='One or more strings.')
+    parser.add_argument('file', metavar='file_input',
                         type=lambda x: file_exists(parser, x),
                         nargs=1, help='Any existing file.')
     parser.add_argument('-f', '--flag', action='store_true', help='A flag.')

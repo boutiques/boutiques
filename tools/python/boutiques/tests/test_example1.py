@@ -25,9 +25,14 @@ class TestExample1(TestCase):
         self.assertFalse(main(args=['-i',
                                     os.path.join(example1_dir,"invocation.json"),
                                     os.path.join(example1_dir,"example1.json"),
-                                    '-e','-d']))
+                                    '-e']))
+        self.assertFalse(main(args=['-i',
+                                    os.path.join(example1_dir,"invocation.json"),
+                                    os.path.join(example1_dir,"example1.json"),
+                                    '-e', '-k']))
+
 
     def test_example1_no_exec_random(self):
         example1_dir = os.path.join(self.get_examples_dir(),"example1")       
         self.assertFalse(main(args=[os.path.join(example1_dir,"example1.json"),
-                                    '-r', '-n' '10']))
+                                    '-r', '-n' '3']))

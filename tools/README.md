@@ -27,4 +27,3 @@ bosh (BOutiques SHell) suite of tools to create and use boutiques descriptors.
 5. `bosh-publish`: publish Boutiques descriptors to [Neurolinks](https://brainhack101.github.io/neurolinks).
 
 6. `pegasus-boutiques`: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
-
