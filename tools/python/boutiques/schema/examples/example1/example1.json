@@ -1,125 +1,130 @@
 {
-    "tool-version": "0.0.1", 
-    "name": "Example Boutiques Tool", 
-    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [FILE_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT]  &> [LOG]",
-    "environment-variables": [ { "name": "ENVAR", "value": "theValue"}],
+    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] &> [LOG]", 
+    "container-image": {
+        "image": "boutiques/example1:test", 
+        "type": "docker"
+    }, 
+    "description": "This property describes the tool or application", 
+    "environment-variables": [
+        {
+            "name": "ENVAR", 
+            "value": "theValue"
+        }
+    ], 
+    "groups": [
+        {
+            "description": "This group forces us to choose exactly one of the file or the enum input to use.", 
+            "id": "an_example_group", 
+            "members": [
+                "num_input", 
+                "enum_input"
+            ], 
+            "mutually-exclusive": true, 
+            "name": "Example group 1", 
+            "one-is-required": true
+        }
+    ], 
     "inputs": [
         {
             "command-line-flag": "-i", 
-            "description": "Describe the use and meaning of the parameter", 
             "default-value": "aStringValue", 
-            "value-key": "[STRING_INPUT]", 
-            "type": "String", 
+            "description": "Describe the use and meaning of the parameter", 
+            "id": "str_input", 
             "list": true, 
             "max-list-entries": 3, 
-            "id": "str_input", 
             "min-list-entries": 1, 
-            "name": "A string input"
-        },
+            "name": "A string input", 
+            "type": "String", 
+            "value-key": "[STRING_INPUT]"
+        }, 
         {
+            "id": "config_num", 
             "name": "A number put in the configuration file", 
-            "value-key": "[CONFIG_NUMBER]", 
             "type": "Number", 
-            "id": "config_num",
-	    "value-choices": [
-		4
-            ]
-        },
+            "value-choices": [
+                4
+            ], 
+            "value-key": "[CONFIG_NUMBER]"
+        }, 
         {
             "command-line-flag": "-n", 
-            "name": "A number input", 
-            "value-key": "[NUMBER_INPUT]", 
-            "type": "Number", 
-            "maximum": 1, 
-            "minimum": 0, 
             "command-line-flag-separator": "=", 
             "exclusive-minimum": true, 
+            "id": "num_input", 
+            "maximum": 1, 
+            "minimum": 0, 
+            "name": "A number input", 
             "optional": true, 
-            "id": "num_input"
+            "type": "Number", 
+            "value-key": "[NUMBER_INPUT]"
         }, 
         {
-            "value-key": "[FILE_INPUT]", 
-            "optional": true,
-            "type": "File", 
             "id": "file_input", 
-            "name": "A file input"
+            "name": "A file input", 
+            "optional": true, 
+            "type": "File", 
+            "value-key": "[FILE_INPUT]"
         }, 
         {
-	    "command-line-flag": "-e", 
+            "command-line-flag": "-e", 
+            "id": "enum_input", 
             "name": "An enum input", 
-            "value-key": "[ENUM_INPUT]", 
             "optional": true, 
+            "type": "String", 
             "value-choices": [
                 "val1", 
                 "val2", 
                 "val3"
             ], 
-            "type": "String", 
-            "id": "enum_input"
+            "value-key": "[ENUM_INPUT]"
         }, 
         {
             "command-line-flag": "-f", 
+            "disables-inputs": [
+                "num_input"
+            ], 
+            "id": "flag_input", 
             "name": "A flag input", 
-            "value-key": "[FLAG_INPUT]", 
             "optional": true, 
             "requires-inputs": [
                 "file_input"
             ], 
-            "disables-inputs": [
-                "num_input"
-            ], 
             "type": "Flag", 
-            "id": "flag_input"
+            "value-key": "[FLAG_INPUT]"
         }
     ], 
-    "container-image": {
-        "image": "boutiques/example1:test",
-        "type": "docker"
-    }, 
-    "schema-version": "0.5", 
-    "groups": [
-        {
-            "description": "This group forces us to choose exactly one of the file or the enum input to use.", 
-            "one-is-required": true, 
-            "mutually-exclusive": true, 
-            "members": [
-                "num_input", 
-                "enum_input"
-            ], 
-            "id": "an_example_group", 
-            "name": "Example group 1"
-        }
-    ], 
+    "name": "Example Boutiques Tool", 
     "output-files": [
         {
             "description": "The output log file from the example tool", 
-            "value-key": "[LOG]", 
             "id": "logfile", 
-            "path-template": "log-[STRING_INPUT].txt", 
+            "name": "Log file", 
+            "path-template": "log-[CONFIG_NUMBER].txt", 
             "path-template-stripped-extensions": [
                 ".txt", 
                 ".csv"
             ], 
-            "name": "Log file"
+            "value-key": "[LOG]"
         }, 
         {
-            "path-template": "output/*_exampleOutputTag.resultType", 
-            "optional": true, 
-            "list": true, 
             "id": "output_files", 
-            "name": "outfiles"
-        },
-	{
-	    "id": "config_file",
-	    "name": "Configuration file",
-	    "command-line-flag": "-c", 
-	    "value-key": "[CONFIG_FILE]",
-            "path-template": "./config.txt",
-	    "file-template": [
-		"# This is a demo configuration file",
-		"numInput=[CONFIG_NUMBER]"
-	    ]
-	}
+            "list": true, 
+            "name": "outfiles", 
+            "optional": true, 
+            "path-template": "output/*_exampleOutputTag.resultType"
+        }, 
+        {
+            "command-line-flag": "-c", 
+            "file-template": [
+                "# This is a demo configuration file", 
+                "numInput=[CONFIG_NUMBER]"
+            ], 
+            "id": "config_file", 
+            "name": "Configuration file", 
+            "path-template": "./config.txt", 
+            "value-key": "[CONFIG_FILE]"
+        }
     ], 
-    "description": "This property describes the tool or application"
+    "schema-version": "0.5", 
+    "tool-version": "0.0.1"
 }

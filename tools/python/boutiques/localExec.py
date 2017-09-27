@@ -51,7 +51,7 @@ class LocalExecutor(object):
     self.con = self.desc_dict['container-image']
     self.launchDir = None if self.con is None else self.con.get('working-directory')
     ## Extra Options ##
-    # Include: forcePathType, ignoreContainer, and destroyTempScripts
+    # Include: forcePathType and destroyTempScripts
     for option in list(options.keys()): setattr(self, option, options.get(option))
     # Container Implementation check
     conEngines = ['docker', 'singularity']
@@ -81,7 +81,7 @@ class LocalExecutor(object):
     millitime = int(time.time()*1000)
     dsname = 'temp-' + str(random.SystemRandom().randint(0,int(millitime))) + "-" + str(millitime) + '.localExec.boshjob.sh' # time tag to avoid overwrites
     # If container is present, alter the command template accordingly
-    if conIsPresent and not self.ignoreContainer:
+    if conIsPresent:
       if conType == 'docker':
         # Pull the docker image
         if self._localExecute("docker pull " + str(conImage)):
@@ -100,7 +100,7 @@ class LocalExecutor(object):
       # If --changeUser was desired, run with su so that any output files are owned by the user instead of root
       if self.changeUser: command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
       cmdString = "#!/bin/bash -l\n" + userchange + str( command )
-      with open(dsname,"w") as scrFile: scrFile.write( cmdString )
+      with open(dsname,"w") as scrFile: scrFile.write(cmdString)
       # Ensure the script is executable
       self._localExecute( "chmod 755 " + dsname )
       # Prepare extra environment variables
@@ -318,7 +318,7 @@ class LocalExecutor(object):
       self.cmdLine.append( self._generateCmdLineFromInDict() )
 
   # Read in parameter input file or string
-  def readInput(self,infile,stringInput):
+  def readInput(self, infile):
 
     '''
     The readInput method sets the in_dict field of the executor object, based on a fixed input.
@@ -330,20 +330,8 @@ class LocalExecutor(object):
 
     # Quick check that the descriptor has already been read in
     assert self.desc_dict != None
-    # String case
-    if stringInput:
-      instrings = [s.strip().split(",") for s in infile.split(";") if not s=='']
-      self.in_dict = {v[0].strip() : v[1].strip() for v in instrings if len(v)==2}
-    # File case
-    else:
-      # Read in input file (in_dict : id -> given value)
-      with open(infile, 'r') as inparams:
-        if infile.endswith('.csv'): # csv case
-          lines = [ line.strip().split(",") for line in inparams.readlines() ]
-          self.in_dict = { line[0].strip() : line[1].strip() for line in lines if len(line)==2}
-        else: # json case
-          ins = json.loads( inparams.read() )['inputs']
-          self.in_dict = { list(d.keys())[0] : list(d.values())[0] for d in ins }
+    with open(infile, 'r') as inparams:
+      self.in_dict = json.loads(inparams.read())
     # Input dictionary
     if self.debug: print( "Input: " + str( self.in_dict ) )
     # Fix special flag case: flags given the false value are treated as non-existent
@@ -384,7 +372,14 @@ class LocalExecutor(object):
         clk = self.safeGet(paramId,'value-key')
         if clk is None: continue          
         if paramId in list(in_out_dict.keys()): # param has a value
-          val = str(in_out_dict[paramId])
+          val = in_out_dict[paramId]
+          if type(val) is list:
+            s_val = ""
+            for x in val:
+              s_val += x+" "
+            val = s_val
+          else:
+              val = str(val)
           # Add flags and separator if necessary
           if useFlags:
             flag   = self.safeGet(paramId,'command-line-flag') or ''
@@ -508,10 +503,9 @@ class LocalExecutor(object):
           launchDir = self.launchDir if (not self.launchDir is None) else os.getcwd()
           for ftarg in (str(val).split() if isList else [val]):
             # Special case 1: launchdir is specified and we want to use absolute path
-            # This is ignored when --ignoreContainer has been activated
             # Note: in this case, the pwd is mounted as the launchdir; we do not attempt to move files if they will not be mounted, currently
             # That is, specified files that are not in the pwd or a subfolder will not be mounted to the container
-            if targ.get('uses-absolute-path') == True and (not self.launchDir is None) and (not self.ignoreContainer):
+            if targ.get('uses-absolute-path') == True and (not self.launchDir is None):
               relpath = os.path.relpath(ftarg, os.getcwd()) # relative path to target, from the pwd
               mountedAbsPath = os.path.join(launchDir,relpath) # absolute path in the container
               replacementFiles.append( os.path.abspath(mountedAbsPath) )
@@ -553,61 +547,18 @@ class LocalExecutor(object):
 
 def main(args=None):
   # Parse arguments
-  description = '''
-A local tool executor to help test JSON descriptors for use in the Boutiques framework.
-Should be used after successfully running validator.rb.
+  description = "A local Boutiques tool executor and debugger."
 
-Program flow:
-  - Requires a JSON descriptor of the tool, following the Boutiques schema.
-  - Requires an input set of parameters. Can either:
-    o Come from a .json file or .csv file [Specfied by --input/-i]
-    o Be randomly generated based on the input json descriptor [Specified by --random/-r]
-    o Be specifed on the command line itself [Specified by --string/-s]
-  - The tool can then either:
-    o Print the resulting command-line based on the input (to help check correctness of the permitted command lines) [Default behaviour]
-    o Attempt to execute the command line output by the tool, for the given parameters (not for the random case) [--exec/-e flag]
-
-Notes: validating the schema with a validator is recommended first. This script does not check the descriptor with respect to the schema.
-       Only in the -e case are output files checked for, at the end. If docker is specified with -e, it will attempt to execute via docker.
-
-Formats:
-A .json input file should have an "inputs" array with one value per id, which should look like:
-{
-  "inputs" : [
-    { "input_id_1" : "val1" },
-    { "input_id_2" : "val2" },
-    { "input_list" : "a b c" },
-    { "input_flag" : "true" },
-    ...
-  ]
-}
-
-A .csv input file should look like the following:
-input_id_1,val1
-input_id_2,val2
-input_list,a b c
-input_flag,true
-...
-
-A string input should look like:
-python localExec.py descriptor.json -s 'in_id_1,val_1;in_list,a b c;in_flag,true;in_id_2,val_2;...'
-
-Notes: pass lists by space-separated values
-       pass flags with 'true' or 'false' (false is the same as not including it)
-       note the quotes in the -s input option
-'''
   parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('desc', metavar='descriptor', nargs = 1, help = 'The input JSON tool descriptor to test.')
-  parser.add_argument('-i', '--input', help = 'Input parameter values with which to test the generation (.json or .csv).')
+  parser.add_argument('desc', metavar='descriptor', nargs = 1, help = 'A Boutiques JSON descriptor.')
+  parser.add_argument('-i', '--input', help = 'Input parameter values complying to the tool invocation schema.')
   parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.')
   parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
   parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
-  parser.add_argument('-s', '--string', help = "Take as input a semicolon-separated string of comma-separated tuples on the command line.")
   parser.add_argument('-v', '--mounts', type=str, nargs="*", help = "Directories to be mounted in the container in addition to $PWD. Will be passed to Docker with -v or to Singularity with -B. Must comply to the syntax accepted by Docker or Singularity. For instance, /a:/b:ro would mount host directory /a to container directory /b with read-only permissions.")
   parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
   parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root).')
-  parser.add_argument('--ignoreContainer', action = 'store_true', help = 'Attempt execution locally, even if a container is specified.')
-  parser.add_argument('-d', '--destroyTempScripts', action = 'store_true', help = 'Destroys any temporary scripts used to execute commands in containers.')
+  parser.add_argument('-k', '--keepTempScripts', action = 'store_true', help = 'Do not remove temporary scripts used to execute commands in containers.')
   results = parser.parse_args() if args is None else parser.parse_args(args)
 
   # Check arguments
@@ -616,46 +567,40 @@ Notes: pass lists by space-separated values
     if print_usage: parser.print_usage()
     sys.stderr.write('Error: ' + msg + '\n')
     sys.exit(1)
-  given = lambda x: not (x is None)
 
-  if given(results.num) and results.num < 1:
+  if results.num and results.num < 1:
     errExit('--num was not given an appropriate value')
-  elif given(results.num) and not results.random:
+  elif results.num and not results.random:
     errExit('--num requires random')
   elif results.random and results.execute:
     errExit('--random and --exec cannot be used together')
-  elif results.random and given(results.input):
+  elif results.random and results.input:
     errExit('--random and --input cannot be used together')
-  elif given(results.input) and not os.path.isfile( results.input ):
+  elif results.input and not os.path.isfile(results.input):
     errExit('The input file ' + str(results.input) + ' does not seem to exist', False)
-  elif given(results.input) and not (results.input.endswith(".json") or results.input.endswith(".csv")):
-    errExit('Input file ' + str(results.input) + ' must end in .json or .csv')
-  elif results.execute and (not given(results.input) and not given(results.string)):
-    errExit('--exec requires --input or --string be specified')
-  elif not os.path.isfile( desc ):
+  elif results.input and not results.input.endswith(".json") :
+    errExit('Input file ' + str(results.input) + ' must end in .json')
+  elif results.execute and not results.input:
+    errExit('--exec requires --input')
+  elif not os.path.isfile(desc):
     errExit('The input JSON descriptor ({0}) does not seem to exist'.format(desc), False)
-  elif not results.random and (not given(results.input) and not given(results.string)):
-    errExit('The default mode requires an input (-i or -s)')
-  elif results.random and given(results.string):
-    errExit('--random and --string cannot be used together')
-  elif given(results.num) and given(results.string):
-    errExit('--num and --string cannot be used together')
-  elif not given(results.num):
+  elif not results.random and not results.input:
+    errExit('The default mode requires an input (-i)')
+  elif not results.num:
     results.num = 1
 
   # Prepare inputs
-  inData = results.input if given(results.input) else ( results.string if given(results.string) else None )
+  inData = results.input
   # Generate object that will perform the commands
   executor = LocalExecutor(desc, { 'forcePathType'      : not results.dontForcePathType,
-                                   'destroyTempScripts' : results.destroyTempScripts,
-                                   'ignoreContainer'    : results.ignoreContainer,
+                                   'destroyTempScripts' : not results.keepTempScripts,
                                    'changeUser'         : results.changeUser              })
 
   ### Run the executor with the given parameters ###
   # Execution case
   if results.execute:
     # Read in given input
-    executor.readInput(inData, given(results.string))
+    executor.readInput(inData)
     # Execute it
     exit_code = executor.execute(results.mounts)
     if exit_code:
@@ -669,7 +614,7 @@ Notes: pass lists by space-separated values
   # Print input case (default: no execution)
   else:
     # Read in given input
-    executor.readInput(inData, given(results.string))
+    executor.readInput(inData)
     # Print the resulting command line
     executor.printCmdLine()
 
