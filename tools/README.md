@@ -23,4 +23,3 @@ bosh (BOutiques SHell) suite of tools to create and use boutiques descriptors.
     * Validate input data: `bosh-invocation ./toolDescriptor.json -i ./tool.exampleInputs.json`
 
 4. `pegasus-boutiques`: a python API to generate [Pegasus](https://pegasus.isi.edu) workflows from Boutiques JSON descriptors.
-
