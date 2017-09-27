@@ -53,7 +53,7 @@ def validate_json(json_file):
         validate(descriptor, schema)
     except ValidationError as e:
         print("JSON Validation error (Rigorous Boutiques validation not yet performed)")
-        raise ValidationError(e)
+        raise ValidationError(e.message)
 
     # Helper get-function
     safeGet   = lambda desc, sec, targ: [item[targ] for item in desc[sec]
@@ -67,7 +67,9 @@ def validate_json(json_file):
     errors = []
 
     clkeys = inputGet("value-key") + outputGet("value-key")
-    configFileTemplates = outputGet("file-template") + outputGet("path-template")
+    flattenedTemplates = [y for x in outputGet("file-template") for y in x]
+    configFileTemplates = flattenedTemplates + outputGet("path-template")
+    
     cmdline = descriptor["command-line"]
 
     # Verify that all command-line key appear in the command-line
@@ -122,7 +124,7 @@ def validate_json(json_file):
             msg_template = " InputError: \"{}\" must have a command-line flag"
             errors += [msg_template.format(inp["id"])] if "command-line-flag" not in inp.keys() else []
 
-            msg_template = " InputError: \"{}\" should not be required"
+            msg_template = " InputError: \"{}\" is of type Flag, it has to be optional"
             errors += [msg_template.format(inp["id"])] if inp["optional"] is False else []
 
         # Verify number-type inputs min/max are sensible

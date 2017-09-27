@@ -1,0 +1,10 @@
+{
+    "dti_file": "/tmp/test.nii.gz",
+    "atlas": "/ndmg_atlases/atlas/MNI152_T1_1mm.nii.gz",
+    "bval_file": "/tmp/bval.txt",
+    "bvec_file": "/tmp/bvec.txt",
+    "mask": "/ndmg_atlases/atlas/MNI152_T1_1mm_brain_mask.nii.gz",
+    "mprage_file": "/tmp/mprage.nii.gz",
+    "outdir": "/tmp",
+    "cpac200": "/ndmg_atlases/labels/CPAC200.nii.gz"
+}
