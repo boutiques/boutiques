@@ -4,6 +4,8 @@ VERSION = "0.5.2.2"
 DEPS = [
          "simplejson",
          "jsonschema",
+         "gitpython",
+         "PyGithub",
        ]
 
 setup(name="boutiques",
@@ -38,7 +40,8 @@ setup(name="boutiques",
             "bosh-validate=boutiques.validator:main",
             "bosh=boutiques.localExec:main",
             "bosh-invocation=boutiques.invocationSchemaHandler:main",
-            "bosh-import=boutiques.importer:main"
+            "bosh-import=boutiques.importer:main",
+            "bosh-publish=boutiques.publisher:main"
         ]
       },
       data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),
