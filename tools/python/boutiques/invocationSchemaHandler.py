@@ -9,6 +9,7 @@ import os
 import sys
 import argparse
 from functools import reduce
+from boutiques.validator import validate_json
 
 # Generate an invocation schema from a Boutiques application descriptor
 def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
@@ -21,7 +22,7 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
   schema = {
     "$schema"              : "http://json-schema.org/draft-04/schema#",
     "title"                : str(oname),
-    "description"          : "Input parameters schema for " + str(descName.lower()) + ".",
+    "description"          : "Invocation schema for " + str(descName.lower()) + ".",
     "type"                 : "object",
     "additionalProperties" : False
   }
@@ -113,104 +114,48 @@ def validateSchema(s, d=None):
   try:
     jsa.Draft4Validator.check_schema(s)
   except jsa.SchemaError as se:
-    errExit("Invocation schema is invalid wrt meta-schema!\n" + str(se.message), False)
+    errExit("Invocation schema is invalid.\n" + str(se.message), False)
   # Check data instance against schema
-  if not d is None:
-    errs  = list(jsa.Draft4Validator(s).iter_errors(d))
-    nerrs = len( errs )
-    if nerrs > 0:
-      print("Encountered " + str(nerrs) + " error" + ('s!' if nerrs > 1 else '!') )
-      for e in sorted(errs, key=str): print("\t" + str(e.message))
-      sys.exit(1)
-    else:
-      print("Valid data!")
-      sys.exit(0)
-
-# Write an invocation schema out
-def writeSchema(s, f, indenter=3):
-  with open(f,"w") as outfile: outfile.write( _prettySchema( s, indenter ) )
-
+  if d:
+    try:
+      jsa.validate(d, s)
+    except jsa.ValidationError as e:
+      print(str(e))
+      raise jsa.ValidationError(e)
+    print("Invocation Schema validation OK")
+          
 # Script exit helper
-def errExit(msg, parser, print_usage = True, err_code = 1):
-    if print_usage: parser.print_usage()
+def errExit(msg, parser, err_code = 1):
     sys.stderr.write('Error: ' + msg + '\n')
     sys.exit( err_code )
 
-# Pretty version of a schema
-def _prettySchema(s, indenter=3): return json.dumps( s, indent=indenter, separators=(',', ' : ') )
+def main(args=None):
 
-
-def main():
   # Description
-  description = "\n".join([x[3:] for x in '''
-   Script for generating invocation schemas (i.e. JSON schemas for input values) associated to a Boutiques application
-     descriptor and/or validating input data examples with respect to invocation schemas.
-
-   Example usages:
-     Generate input schema (printed to console)
-       python invocationSchemaHandler.py -i toolDescriptor.json
-     Generate input schema (printed in compact form)
-       python invocationSchemaHandler.py -i tooDescriptor.json -c
-     Write input schema to output file
-       python invocationSchemaHandler.py -i toolDescriptor.json -o tool.invocationSchema.json
-     Validate input data (i.e. tool parameter arguments) with implicit invocation schema generation
-       python invocationSchemaHandler.py -i toolDescriptor.json -d tool.exampleInputs.json
-     Validate input with respect to invokation schema (standard json schema validation)
-       python invocationSchemaHandler.py -s tool.invocationSchema.json -d tool.exampleInputs.json
-
-   Example input (i.e. that passed by -d) must be a single JSON data map, such as:
-     {
-        "inputFile" : "input.csv",
-        "outputFile" : "output.gif",
-        ...
-     }
-  '''.split("\n")])
-
+  description = "Adds an invocation schema to a Boutiques descriptor. If an invocation is passed, validates it against invocation schema."
   # Parse inputs
   parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('-i', '--input',   help = 'Input Boutiques json tool or application descriptor')
-  parser.add_argument('-o', '--output',  help = 'Output file to which a generated invokation schema is written')
-  parser.add_argument('-d', '--data',    help = 'Input values in a json file, to be validated against the invocation schema')
-  parser.add_argument('-s', '--schema',  help = 'An invocation schema json file')
-  parser.add_argument('-c', '--compact', action = 'store_true', help = 'Compact printing')
-  args = parser.parse_args()
-
-  # Check arguments
-  given = lambda x: not (x is None)
-  if given(args.input) and given(args.schema):
-    errExit('-i and -s cannot be used together', parser)
-  elif (not given(args.input)) and (not given(args.schema)):
-    errExit('At least one of -i and -s is required', parser)
-  elif (not given(args.input)) and given(args.output):
-    errExit('-o cannot be used without -i', parser)
-  elif given(args.output) and (given(args.data) or given(args.schema)):
-    errExit('-o cannot be used with -d or -s', parser)
-  elif given(args.schema) and (not given(args.data)):
-    errExit('-s cannot be used without -d', parser)
-  elif given(args.schema) and (given(args.input) or given(args.output)):
-    errExit('-s cannot be used with -i or -o', parser)
-  elif given(args.input) and not os.path.isfile( args.input ):
-    errExit('Cannot find input file ' + str( args.input ), parser)
-  elif given(args.data) and not os.path.isfile( args.data ):
-    errExit('Cannot find data file ' + str( args.data ), parser)
-  elif given(args.schema) and not os.path.isfile( args.schema ):
-    errExit('Cannot find schema file ' + str( args.schema ), parser)
-  elif args.compact and (given(args.schema) or given(args.data)):
-    errExit('Cannot use -c with -s or -d', parser)
-
+  parser.add_argument('tool',   help = 'Boutiques tool descriptor.')
+  parser.add_argument('-i', '--invocation',    help = 'Input values in a JSON file to be validated against the invocation schema.')
+  result = parser.parse_args() if args is None else parser.parse_args(args)
+   
   # Read in JSON (fast fail if invalid)
   try:
-    if given(args.input):  desc     = json.loads( open(args.input).read() )
-    if given(args.schema): inSchema = json.loads( open(args.schema).read() )
-    if given(args.data):   data     = json.loads( open(args.data).read() )
+    validate_json(result.tool) # validates boutiques descriptor
+    if result.invocation:
+      data = json.loads(open(result.invocation).read())
   except Exception as e:
-    errExit("Error incurred during json parsing: " + str( e.message ), parser)
+    print(str(e))
+    errExit("Error during JSON parsing: " + str( e.message ), parser)
 
-  # Validate, write, or print depending on arguments
-  invSchema = generateInvocationSchema(desc) if given(args.input) else inSchema
-  if given(args.output): writeSchema(invSchema, args.output, None if args.compact else 3)
-  elif given(args.data): validateSchema(invSchema, data)
-  else: print(_prettySchema(invSchema, None if args.compact else 3))
+  # Do the work
+  desc = json.loads(open(result.tool).read())
+  invSchema = desc.get('invocation-schema') if desc.get('invocation-schema') else generateInvocationSchema(desc)
+  desc['invocation-schema'] = invSchema
+  with open(result.tool,'w') as f:
+    f.write(json.dumps(desc, indent=4, sort_keys=True))
+  if result.invocation:
+    validateSchema(invSchema, data)
 
 # Main program start
 if __name__ == "__main__":
