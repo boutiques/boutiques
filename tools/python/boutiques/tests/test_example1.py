@@ -8,28 +8,28 @@ from boutiques.bosh import bosh
 class TestExample1(TestCase):
 
     def get_examples_dir(self):
-        return os.path.join(os.path.dirname(__file__),
-                            "..", "schema", "examples")
-                
+        return os.path.join(os.path.dirname(bfile),
+                            "schema", "examples")
+
     def test_example1_no_exec(self):
-        example1_dir = os.path.join(self.get_examples_dir(),"example1")       
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")       
         self.assertFalse(bosh(["exec", "simulate",
                                os.path.join(example1_dir, "example1.json"),
                                "-i",
-                               os.path.join(example1_dir,"invocation.json")]))
+                               os.path.join(example1_dir, "invocation.json")]))
 
     def test_example1_exec(self):
-        example1_dir = os.path.join(self.get_examples_dir(),"example1")       
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")       
         self.assertFalse(bosh(["exec", "launch",
                                os.path.join(example1_dir, "example1.json"),
-                               os.path.join(example1_dir,"invocation.json")]))
+                               os.path.join(example1_dir, "invocation.json")]))
         self.assertFalse(bosh(["exec", "launch",
                                os.path.join(example1_dir, "example1.json"),
                                "-x",
-                               os.path.join(example1_dir,"invocation.json")]))
+                               os.path.join(example1_dir, "invocation.json")]))
 
     def test_example1_no_exec_random(self):
-        example1_dir = os.path.join(self.get_examples_dir(),"example1")       
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")       
         self.assertFalse(bosh(["exec", "simulate",
                                os.path.join(example1_dir, "example1.json"),
                                "-r", "-n", "3"]))

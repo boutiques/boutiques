@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser, RawTextHelpFormatter
+import jsonschema
+import json
 import os, sys
 
 class BoutiquesEndpoints():
@@ -37,7 +39,7 @@ class BoutiquesEndpoints():
                             help="show this help message and exit")
 
         helps = any([True for ht in ["--help", "-h"] if ht in params])
-        if len(params) == 1 and helps:
+        if len(params) <= 1 and helps:
             parser.print_help()
             raise SystemExit 
         else:
@@ -45,12 +47,6 @@ class BoutiquesEndpoints():
             descriptor = args.descriptor
             mode = args.mode
             params += ["--help"] if args.help is True else []
-
-        def errExit(msg, print_usage = True):
-          if print_usage: parser.print_usage()
-          sys.stderr.write("Error: " + msg + "\n")
-          sys.exit(1)
-
 
         if mode == "launch":
             parser = ArgumentParser("Launches an invocation.")
@@ -69,11 +65,11 @@ class BoutiquesEndpoints():
             # Do some basic input scrubbing
             inp = results.input
             if not os.path.isfile(inp):
-                errExit("Input file {} does not exist.".format(inp), False)
+                raise SystemExit("Input file {} does not exist".format(inp))
             elif not inp.endswith(".json"):
-                errExit("Input file {} must end in 'json'.".format(inp), False)
+                raise SystemExit("Input file {} must end in json".format(inp))
             elif not os.path.isfile(descriptor):
-                errExit("JSON descriptor {} does not seem to exist.".format(descriptor), False)
+                raise SystemExit("JSON descriptor {} does not exist".format(descriptor))
 
             # Generate object that will perform the commands
             from boutiques.localExec import LocalExecutor
@@ -102,21 +98,21 @@ class BoutiquesEndpoints():
             rand = results.random
             numb = results.number
             if numb and numb < 1:
-                errExit("--number value must be positive.", False)
+                raise SystemExit("--number value must be positive.")
             elif numb and not rand:
-                errExit("--number value requires --random setting.")
+                raise SystemExit("--number value requires --random setting.")
             elif rand and inp:
-              errExit("--random setting and --input value cannot be used together.")
+                raise SystemExit("--random setting and --input value cannot be used together.")
             elif inp and not os.path.isfile(inp):
-                errExit("Input file {} does not exist.".format(inp), False)
+                raise SystemExit("Input file {} does not exist.".format(inp))
             elif inp and not inp.endswith(".json"):
-                errExit("Input file {} must end in 'json'.".format(inp), False)
+                raise SystemExit("Input file {} must end in 'json'.".format(inp))
             elif not os.path.isfile(descriptor):
-                errExit("JSON descriptor {} does not seem to exist.".format(descriptor), False)
+                raise SystemExit("JSON descriptor {} does not seem to exist.".format(descriptor))
             elif not rand and not inp:
-              errExit("The default mode requires an input (-i).")
+                raise SystemExit("The default mode requires an input (-i).")
             elif not numb:
-              numb = 1
+                numb = 1
 
             # Generate object that will perform the commands
             from boutiques.localExec import LocalExecutor
@@ -131,30 +127,31 @@ class BoutiquesEndpoints():
                 executor.readInput(inp)
                 executor.printCmdLine()
 
-        else:
-            parser.print_help()
-    
     def bosh_import(self, params):
-        parser = ArgumentParser(description="Publish a clowdr analysis.")
-        parser.add_argument("analysis", action="store", help="JSON object for "
-                            "an analysis in the clowdr schema.")
-        parser.add_argument("--no-cache", "-n", action="store_true",
-                            help="Ignores local copies of fetched files.")
-        parser.add_argument("--local", "-l", action="store_true",
-                            help="Launches the service on your machine.")
-        inp = parser.parse_args(params)
-        print(inp)
-        print("TODO: All this function")
-    
+        parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
+        parser.add_argument("type", help="Type of import we are performing",
+                            choices=["bids", "0.4"])
+        parser.add_argument("output", help="Where the Boutiques descriptor will be written.")
+        parser.add_argument("--input", help="File for existing Boutiques descriptor of older version.")
+        parser.add_argument("--bids_app", help="Root directory of the BIDS app to import.")
+        results = parser.parse_args(params)
+
+        from boutiques.importer import Importer
+        importer = Importer(results.output)
+        if results.type == "0.4":
+            importer.upgrade_04(results.input)
+        elif results.type == "bids":
+            importer.import_bids(results.bids_app)
+
     def bosh_publish(self, params):
         neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
         neurolinks_dest_path = os.path.join(os.getenv("HOME"),"neurolinks")
-        
+
         def get_neurolinks_default():
             if os.path.isdir(neurolinks_dest_path):
                 return neurolinks_dest_path
             return neurolinks_github_repo_url
-        
+
         parser = ArgumentParser("Boutiques publisher",
                                 description="A publisher of Boutiques tools in Neurolinks"
                                 "(https://brainhack101.github.io/neurolinks). Crawls a Git"
@@ -204,14 +201,38 @@ class BoutiquesEndpoints():
                               results.author_name, results.tool_url, results.inter,
                               results.neurolinks_repo, neurolinks_dest_path,
                               results.github_login, results.github_password, results.no_github).publish()
-    
+
     def bosh_invocation(self, params):
-        parser = ArgumentParser(description="Generator for a clowdr analysis.")
-        parser.add_argument("analysis", action="store", help="JSON object to "
-                            "store the generated analysis object.")
-        inp = parser.parse_args(params)
-        print(inp)
-        print("TODO: All this function")
+        parser = ArgumentParser("Creates invocation schema and validates invocations")
+        parser.add_argument("descriptor", action="store",
+                            help="The Boutiques descriptor.")
+        parser.add_argument("-i", "--invocation", action="store",
+                            help="Input values in a JSON file to be validated against "
+                            "the invocation schema.")
+        result = parser.parse_args(params)
+
+        try:
+            from boutiques.validator import validate_descriptor
+            validate_descriptor(result.descriptor)
+            if result.invocation:
+                data = json.loads(open(result.invocation).read())
+        except Exception as e:
+            print("Error reading JSON:")
+            raise ValidationError(e.message)
+
+        descriptor = json.loads(open(result.descriptor).read())
+        if descriptor.get("invocation-schema"):
+            invSchema = descriptor.get("invocation-schema")
+        else:
+            from boutiques.invocationSchemaHandler import generateInvocationSchema
+            invSchema = generateInvocationSchema(descriptor)
+
+        descriptor["invocation-schema"] = invSchema
+        with open(result.descriptor, "w") as f:
+            f.write(json.dumps(descriptor, indent=4, sort_keys=True))
+        if result.invocation:
+            from boutiques.invocationSchemaHandler import validateSchema
+            validateSchema(invSchema, data)
 
 
 def bosh(args=None):

@@ -5,7 +5,7 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
 
-class TestExample1(TestCase):
+class TestBosh(TestCase):
 
     def test_help(self):
         self.assertRaises(SystemExit, bosh, [])

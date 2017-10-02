@@ -135,24 +135,3 @@ class Importer():
         with open(self.output_file,"w") as f:
             f.write(template_string)
 
-        
-def main(args=None):
-
-    # Arguments parsing
-    parser = ArgumentParser()
-    parser.add_argument("importing", help="Type of import we are performing",
-                        choices=['bids', '0.4'])
-    parser.add_argument("output_file", help="File where the Boutiques descriptor will be written.")
-    parser.add_argument("--input_file", help="File for existing Boutiques descriptor of older version")
-    parser.add_argument("--bids_app_dir", help="Root directory of the BIDS app to import.")
-    results = parser.parse_args() if args is None else parser.parse_args(args)
-
-    importer = Importer(results.output_file)
-    if results.importing == '0.4':
-        importer.upgrade_04(results.input_file)
-    elif results.importing == 'bids':
-        importer.import_bids(results.bids_app_dir)
-
-# Execute program
-if  __name__ == "__main__":
-    main()

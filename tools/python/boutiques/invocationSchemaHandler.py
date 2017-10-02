@@ -4,7 +4,7 @@
 # Requires jsonschema 2.5
 
 import json
-import jsonschema as jsa
+import jsonschema
 import os
 import sys
 import argparse
@@ -112,52 +112,20 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
 def validateSchema(s, d=None):
   # Check schema wrt meta-schema
   try:
-    jsa.Draft4Validator.check_schema(s)
-  except jsa.SchemaError as se:
+    jsonschema.Draft4Validator.check_schema(s)
+  except jsonschema.SchemaError as se:
     errExit("Invocation schema is invalid.\n" + str(se.message), False)
   # Check data instance against schema
   if d:
     try:
-      jsa.validate(d, s)
-    except jsa.ValidationError as e:
+      jsonschema.validate(d, s)
+    except jsonschema.ValidationError as e:
       print(str(e))
-      raise jsa.ValidationError(e)
+      raise jsonschema.ValidationError(e)
     print("Invocation Schema validation OK")
           
 # Script exit helper
 def errExit(msg, parser, err_code = 1):
     sys.stderr.write('Error: ' + msg + '\n')
     sys.exit( err_code )
-
-def main(args=None):
-
-  # Description
-  description = "Adds an invocation schema to a Boutiques descriptor. If an invocation is passed, validates it against invocation schema."
-  # Parse inputs
-  parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('tool',   help = 'Boutiques tool descriptor.')
-  parser.add_argument('-i', '--invocation',    help = 'Input values in a JSON file to be validated against the invocation schema.')
-  result = parser.parse_args() if args is None else parser.parse_args(args)
-   
-  # Read in JSON (fast fail if invalid)
-  try:
-    validate_descriptor(result.tool) # validates boutiques descriptor
-    if result.invocation:
-      data = json.loads(open(result.invocation).read())
-  except Exception as e:
-    print(str(e))
-    errExit("Error during JSON parsing: " + str( e.message ), parser)
-
-  # Do the work
-  desc = json.loads(open(result.tool).read())
-  invSchema = desc.get('invocation-schema') if desc.get('invocation-schema') else generateInvocationSchema(desc)
-  desc['invocation-schema'] = invSchema
-  with open(result.tool,'w') as f:
-    f.write(json.dumps(desc, indent=4, sort_keys=True))
-  if result.invocation:
-    validateSchema(invSchema, data)
-
-# Main program start
-if __name__ == "__main__":
-    main()
 
