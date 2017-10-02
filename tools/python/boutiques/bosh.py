@@ -36,10 +36,15 @@ class BoutiquesEndpoints():
         parser.add_argument("--help", "-h", action="store_true",
                             help="show this help message and exit")
 
-        args, params = parser.parse_known_args(params)
-        descriptor = args.descriptor
-        mode = args.mode
-        params += ["--help"] if args.help is True else []
+        helps = any([True for ht in ["--help", "-h"] if ht in params])
+        if len(params) == 1 and helps:
+            parser.print_help()
+            raise SystemExit 
+        else:
+            args, params = parser.parse_known_args(params)
+            descriptor = args.descriptor
+            mode = args.mode
+            params += ["--help"] if args.help is True else []
 
         def errExit(msg, print_usage = True):
           if print_usage: parser.print_usage()
@@ -249,3 +254,4 @@ def bosh(args=None):
         return out
     else:
         parser.print_help()
+        raise SystemExit 
