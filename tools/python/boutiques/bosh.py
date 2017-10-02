@@ -5,8 +5,8 @@ import jsonschema
 import json
 import os, sys
 
-class BoutiquesEndpoints():
-    def bosh_validate(self, params):
+class BoutiquesTools():
+    def validate(self, params):
         parser = ArgumentParser("Boutiques descriptor validator")
         parser.add_argument("descriptor", action="store",
                             help="The Boutiques descriptor.")
@@ -24,7 +24,7 @@ class BoutiquesEndpoints():
         # If it gets here without error, return code 0
         return 0
     
-    def bosh_execute(self, params):
+    def execute(self, params):
         parser = ArgumentParser("Boutiques local executor", add_help=False)
         parser.add_argument("mode", action="store",
                             help="Mode of operation to use. Launch: takes a "
@@ -127,7 +127,7 @@ class BoutiquesEndpoints():
                 executor.readInput(inp)
                 executor.printCmdLine()
 
-    def bosh_import(self, params):
+    def importer(self, params):
         parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
         parser.add_argument("type", help="Type of import we are performing",
                             choices=["bids", "0.4"])
@@ -145,7 +145,7 @@ class BoutiquesEndpoints():
         elif results.type == "bids":
             importer.import_bids(inp)
 
-    def bosh_publish(self, params):
+    def publish(self, params):
         neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
         neurolinks_dest_path = os.path.join(os.getenv("HOME"),"neurolinks")
 
@@ -204,7 +204,7 @@ class BoutiquesEndpoints():
                               results.neurolinks_repo, neurolinks_dest_path,
                               results.github_login, results.github_password, results.no_github).publish()
 
-    def bosh_invocation(self, params):
+    def invocation(self, params):
         parser = ArgumentParser("Creates invocation schema and validates invocations")
         parser.add_argument("descriptor", action="store",
                             help="The Boutiques descriptor.")
@@ -259,21 +259,21 @@ def bosh(args=None):
     func = args.function
     params += ["--help"] if args.help is True else []
 
-    endpoints = BoutiquesEndpoints()
+    endpoints = BoutiquesTools()
     if func == "validate":
-        out = endpoints.bosh_validate(params)
+        out = endpoints.validate(params)
         return out
     elif func == "exec":
-        out = endpoints.bosh_execute(params)
+        out = endpoints.execute(params)
         return out
     elif func == "import":
-        out = endpoints.bosh_import(params)
+        out = endpoints.importer(params)
         return out
     elif func == "publish":
-        out = endpoints.bosh_publish(params)
+        out = endpoints.publish(params)
         return out
     elif func == "invocation":
-        out = endpoints.bosh_invocation(params)
+        out = endpoints.invocation(params)
         return out
     else:
         parser.print_help()
