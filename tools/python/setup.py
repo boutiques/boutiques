@@ -37,11 +37,7 @@ setup(name="boutiques",
       install_requires=DEPS,
       entry_points = {
         "console_scripts": [
-            "bosh-validate=boutiques.validator:main",
-            "bosh=boutiques.bosh.bosh",
-            "bosh-invocation=boutiques.invocationSchemaHandler:main",
-            "bosh-import=boutiques.importer:main",
-            "bosh-publish=boutiques.publisher:main"
+            "bosh=boutiques.bosh:bosh",
         ]
       },
       data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),

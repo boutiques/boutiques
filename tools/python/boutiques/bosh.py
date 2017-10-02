@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser, RawTextHelpFormatter
-import os
+import os, sys
 
 class BoutiquesEndpoints():
     def bosh_validate(self, params):
-        parser = ArgumentParser("Boutiques Validator")
+        parser = ArgumentParser("Boutiques descriptor validator")
         parser.add_argument("descriptor", action="store",
                             help="The Boutiques descriptor.")
         parser.add_argument("--bids", "-b", action="store_true",
                             help="Flag indicating if descriptor is a BIDS app")
+        print(params)
         results = parser.parse_args(params)
 
         from boutiques.validator import validate_descriptor
@@ -23,78 +24,111 @@ class BoutiquesEndpoints():
         return 0
     
     def bosh_execute(self, params):
-        # Parse arguments
-        description = "A local Boutiques tool executor and debugger."
+        parser = ArgumentParser("Boutiques local executor", add_help=False)
+        parser.add_argument("mode", action="store",
+                            help="Mode of operation to use. Launch: takes a "
+                            "set of inputs compliant with invocation schema "
+                            "and launches the tool. Simulate: shows sample "
+                            "command-lines based on the provided descriptor"
+                            " based on provided or randomly generated "
+                            "inputs.", choices=["launch", "simulate"])
+        parser.add_argument("descriptor", action="store",
+                            help="The Boutiques descriptor.")
+        parser.add_argument("--help", "-h", action="store_true",
+                            help="show this help message and exit")
 
-        parser = ArgumentParser(description = description)
-        parser.add_argument('desc', metavar='descriptor', nargs = 1, help = 'A Boutiques JSON descriptor.')
-        parser.add_argument('-i', '--input', help = 'Input parameter values complying to the tool invocation schema.')
-        parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.')
-        parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
-        parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
-        parser.add_argument('-v', '--mounts', type=str, nargs="*", help = "Directories to be mounted in the container in addition to $PWD. Will be passed to Docker with -v or to Singularity with -B. Must comply to the syntax accepted by Docker or Singularity. For instance, /a:/b:ro would mount host directory /a to container directory /b with read-only permissions.")
-        parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
-        parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root).')
-        parser.add_argument('-k', '--keepTempScripts', action = 'store_true', help = 'Do not remove temporary scripts used to execute commands in containers.')
-        results = parser.parse_args(params)
+        args, params = parser.parse_known_args(params)
+        descriptor = args.descriptor
+        mode = args.mode
+        params += ["--help"] if args.help is True else []
 
-        # Check arguments
-        desc = results.desc[0]
         def errExit(msg, print_usage = True):
           if print_usage: parser.print_usage()
-          sys.stderr.write('Error: ' + msg + '\n')
+          sys.stderr.write("Error: " + msg + "\n")
           sys.exit(1)
 
-        if results.num and results.num < 1:
-          errExit('--num was not given an appropriate value')
-        elif results.num and not results.random:
-          errExit('--num requires random')
-        elif results.random and results.execute:
-          errExit('--random and --exec cannot be used together')
-        elif results.random and results.input:
-          errExit('--random and --input cannot be used together')
-        elif results.input and not os.path.isfile(results.input):
-          errExit('The input file ' + str(results.input) + ' does not seem to exist', False)
-        elif results.input and not results.input.endswith(".json") :
-          errExit('Input file ' + str(results.input) + ' must end in .json')
-        elif results.execute and not results.input:
-          errExit('--exec requires --input')
-        elif not os.path.isfile(desc):
-          errExit('The input JSON descriptor ({0}) does not seem to exist'.format(desc), False)
-        elif not results.random and not results.input:
-          errExit('The default mode requires an input (-i)')
-        elif not results.num:
-          results.num = 1
 
-        # Prepare inputs
-        inData = results.input
-        # Generate object that will perform the commands
-        from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(desc, { 'forcePathType'      : not results.dontForcePathType,
-                                         'destroyTempScripts' : not results.keepTempScripts,
-                                         'changeUser'         : results.changeUser              })
+        if mode == "launch":
+            parser = ArgumentParser("Launches an invocation.")
+            parser.add_argument("input", action="store",
+                                help="Input JSON complying to invocation.")
+            parser.add_argument("-v", "--volumes", action="store", type=str,
+                                help="Volumes to mount when launching the "
+                                "container. Format consistently the following:"
+                                " /a:/b will mount local direcotry /a to "
+                                "container directory /b.", nargs="*")
+            parser.add_argument("-x", "--debug", action="store_true",
+                                help="Keeps temporary scripts used during "
+                                "execution.")
+            results = parser.parse_args(params)
 
-        ### Run the executor with the given parameters ###
-        # Execution case
-        if results.execute:
-          # Read in given input
-          executor.readInput(inData)
-          # Execute it
-          exit_code = executor.execute(results.mounts)
-          if exit_code:
-            sys.exit(exit_code)
-        # Print random case
-        elif results.random:
-          # Generate random input
-          executor.generateRandomParams(results.num)
-          # Print the resulting command line
-          executor.printCmdLine()
-        # Print input case (default: no execution)
+            # Do some basic input scrubbing
+            inp = results.input
+            if not os.path.isfile(inp):
+                errExit("Input file {} does not exist.".format(inp), False)
+            elif not inp.endswith(".json"):
+                errExit("Input file {} must end in 'json'.".format(inp), False)
+            elif not os.path.isfile(descriptor):
+                errExit("JSON descriptor {} does not seem to exist.".format(descriptor), False)
+
+            # Generate object that will perform the commands
+            from boutiques.localExec import LocalExecutor
+            executor = LocalExecutor(descriptor,
+                                     {"forcePathType"      : True,
+                                      "destroyTempScripts" : not results.debug,
+                                      "changeUser"         : True})
+            executor.readInput(inp)
+            # Execute it
+            exit_code = executor.execute(results.volumes)
+            if exit_code:
+                sys.exit(exit_code)
+
+        elif mode == "simulate":
+            parser = ArgumentParser("Simulates an invocation.")
+            parser.add_argument("-i", "--input", action="store",
+                                help="Input JSON complying to invocation.")
+            parser.add_argument("-r", "--random", action="store_true",
+                                help="Generate random set of inputs.")
+            parser.add_argument("-n", "--number", type=int, action="store",
+                                help="Number of random input sets to create.")
+            results = parser.parse_args(params)
+
+            # Do some basic input scrubbing
+            inp = results.input
+            rand = results.random
+            numb = results.number
+            if numb and numb < 1:
+                errExit("--number value must be positive.", False)
+            elif numb and not rand:
+                errExit("--number value requires --random setting.")
+            elif rand and inp:
+              errExit("--random setting and --input value cannot be used together.")
+            elif inp and not os.path.isfile(inp):
+                errExit("Input file {} does not exist.".format(inp), False)
+            elif inp and not inp.endswith(".json"):
+                errExit("Input file {} must end in 'json'.".format(inp), False)
+            elif not os.path.isfile(descriptor):
+                errExit("JSON descriptor {} does not seem to exist.".format(descriptor), False)
+            elif not rand and not inp:
+              errExit("The default mode requires an input (-i).")
+            elif not numb:
+              numb = 1
+
+            # Generate object that will perform the commands
+            from boutiques.localExec import LocalExecutor
+            executor = LocalExecutor(descriptor,
+                                     {"forcePathType"      : True,
+                                      "destroyTempScripts" : True,
+                                      "changeUser"         : True})
+            if rand:
+                executor.generateRandomParams(numb)
+                executor.printCmdLine()
+            else:
+                executor.readInput(inp)
+                executor.printCmdLine()
+
         else:
-          # Read in given input
-          executor.readInput(inData)
-          # Print the resulting command line
-          executor.printCmdLine()
+            parser.print_help()
     
     def bosh_import(self, params):
         parser = ArgumentParser(description="Publish a clowdr analysis.")
@@ -150,7 +184,7 @@ def bosh(args=None):
 
     args, params = parser.parse_known_args(args)
     func = args.function
-    params += [args.help] if args.help is True else []
+    params += ["--help"] if args.help is True else []
 
     endpoints = BoutiquesEndpoints()
     if func == "validate":
@@ -170,7 +204,3 @@ def bosh(args=None):
         return out
     else:
         parser.print_help()
-
-
-if __name__ == "__main__":
-    bosh()

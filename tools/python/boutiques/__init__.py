@@ -5,7 +5,7 @@ from .invocationSchemaHandler import generateInvocationSchema
 from .validator import validate_descriptor
 from .bids import validate_bids
 from .publisher import Publisher
-from .bosh import bosh
+from .bosh import BoutiquesEndpoints, bosh
 
 __all__ = ['localExec',
            'invocationSchemaHandler',
