@@ -10,7 +10,6 @@ class BoutiquesEndpoints():
                             help="The Boutiques descriptor.")
         parser.add_argument("--bids", "-b", action="store_true",
                             help="Flag indicating if descriptor is a BIDS app")
-        print(params)
         results = parser.parse_args(params)
 
         from boutiques.validator import validate_descriptor
