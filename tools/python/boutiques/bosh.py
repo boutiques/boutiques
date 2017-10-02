@@ -131,17 +131,19 @@ class BoutiquesEndpoints():
         parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
         parser.add_argument("type", help="Type of import we are performing",
                             choices=["bids", "0.4"])
-        parser.add_argument("output", help="Where the Boutiques descriptor will be written.")
-        parser.add_argument("--input", help="File for existing Boutiques descriptor of older version.")
-        parser.add_argument("--bids_app", help="Root directory of the BIDS app to import.")
+        parser.add_argument("descriptor", help="Where the Boutiques descriptor will be written.")
+        parser.add_argument("input", help="Input to be convered. For '0.4', is JSON descriptor,"
+                            " for 'bids' is base directory of BIDS app.")
         results = parser.parse_args(params)
 
+        descriptor = results.descriptor
+        inp = results.input
         from boutiques.importer import Importer
-        importer = Importer(results.output)
+        importer = Importer(descriptor)
         if results.type == "0.4":
-            importer.upgrade_04(results.input)
+            importer.upgrade_04(inp)
         elif results.type == "bids":
-            importer.import_bids(results.bids_app)
+            importer.import_bids(inp)
 
     def bosh_publish(self, params):
         neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
