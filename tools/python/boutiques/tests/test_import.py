@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 from unittest import TestCase
-from boutiques.validator import validate_json, main as main_validate
+from boutiques.bosh import bosh
 from boutiques.importer import main
-from boutiques.bids import validate_bids
 from boutiques import __file__ as bofile
 from jsonschema.exceptions import ValidationError
 import os.path as op
@@ -26,7 +25,7 @@ class TestImport(TestCase):
                                                   "test-import.json"])
 
     def test_import_bids_valid(self):
-        self.assertFalse(main_validate(args=["-b","test-import.json"]))
+        self.assertFalse(bosh(["validate", "test-import.json", "-b"]))
         os.remove("test-import.json")
 
     def test_upgrade_04(self):

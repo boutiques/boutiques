@@ -9,7 +9,7 @@ import os
 import sys
 import argparse
 from functools import reduce
-from boutiques.validator import validate_json
+from boutiques.validator import validate_descriptor
 
 # Generate an invocation schema from a Boutiques application descriptor
 def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
@@ -141,7 +141,7 @@ def main(args=None):
    
   # Read in JSON (fast fail if invalid)
   try:
-    validate_json(result.tool) # validates boutiques descriptor
+    validate_descriptor(result.tool) # validates boutiques descriptor
     if result.invocation:
       data = json.loads(open(result.invocation).read())
   except Exception as e:

@@ -26,7 +26,7 @@
 
 from argparse import ArgumentParser
 from jsonschema import ValidationError
-from boutiques.validator import validate_json
+from boutiques.validator import validate_descriptor
 import json
 import os
 
@@ -91,7 +91,7 @@ class Importer():
 
         with open(self.output_file, 'w') as fhandle:
             fhandle.write(json.dumps(descriptor, indent=4))
-        validate_json(self.output_file)
+        validate_descriptor(self.output_file)
 
     def get_entry_point(self, app_dir):
         entrypoint = None

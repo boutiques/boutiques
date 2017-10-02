@@ -26,7 +26,7 @@
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from jsonschema import ValidationError
-from boutiques.validator import validate_json
+from boutiques.validator import validate_descriptor
 from git import Repo
 from github import Github
 import git, json, os, sys
@@ -155,7 +155,7 @@ class Publisher():
 
     def is_boutiques_descriptor(self, json_file):
         try:
-            validate_json(json_file)
+            validate_descriptor(json_file)
             return True
         except:
             return False

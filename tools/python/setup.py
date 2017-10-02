@@ -38,7 +38,7 @@ setup(name="boutiques",
       entry_points = {
         "console_scripts": [
             "bosh-validate=boutiques.validator:main",
-            "bosh=boutiques.localExec:main",
+            "bosh=boutiques.bosh.bosh",
             "bosh-invocation=boutiques.invocationSchemaHandler:main",
             "bosh-import=boutiques.importer:main",
             "bosh-publish=boutiques.publisher:main"
