@@ -3,7 +3,7 @@
 import os, subprocess
 from unittest import TestCase
 from boutiques import __file__ as bfile
-from boutiques.bosh import bosh
+from boutiques import bosh
 
 class TestExample1(TestCase):
 

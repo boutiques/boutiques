@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from unittest import TestCase
-from boutiques.bosh import bosh
+from boutiques import bosh
 from boutiques import __file__ as bfile
 from jsonschema.exceptions import ValidationError
 import os.path as op
