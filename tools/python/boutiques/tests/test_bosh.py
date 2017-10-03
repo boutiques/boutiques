@@ -12,9 +12,9 @@ class TestBosh(TestCase):
         self.assertRaises(SystemExit, bosh, ["--help"])
         self.assertRaises(SystemExit, bosh, ["exec", "--help"])
         self.assertRaises(SystemExit, bosh, ["exec", "launch",
-                                             "fakepath.json", "--help"])
+                                             "--help"])
         self.assertRaises(SystemExit, bosh, ["exec", "simulate",
-                                             "fakepath.json", "--help"])
+                                             "--help"])
         self.assertRaises(SystemExit, bosh, ["publish", "--help"])
         self.assertRaises(SystemExit, bosh, ["import", "--help"])
         self.assertRaises(SystemExit, bosh, ["validate", "--help"])

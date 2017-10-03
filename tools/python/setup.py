@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "0.5.3"
+VERSION = "0.5.4"
 DEPS = [
          "simplejson",
          "jsonschema",
@@ -42,6 +42,7 @@ setup(name="boutiques",
       },
       data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),
                   ("bids-template", ["boutiques/bids-app-template/template.json"]),
+                  ("neurolinks-template", ["boutiques/neurolinks-template/tool.json"]),
                   ("exgood", ["boutiques/schema/examples/good.json"]),
                   ("exinvalid", ["boutiques/schema/examples/invalid.json"]),
                   ("exbidsgood", ["boutiques/schema/examples/bids_good.json"]),
