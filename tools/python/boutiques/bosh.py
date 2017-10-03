@@ -33,8 +33,6 @@ class BoutiquesTools():
                             "command-lines based on the provided descriptor"
                             " based on provided or randomly generated "
                             "inputs.", choices=["launch", "simulate"])
-        parser.add_argument("descriptor", action="store",
-                            help="The Boutiques descriptor.")
         parser.add_argument("--help", "-h", action="store_true",
                             help="show this help message and exit")
 
@@ -44,12 +42,13 @@ class BoutiquesTools():
             raise SystemExit 
         else:
             args, params = parser.parse_known_args(params)
-            descriptor = args.descriptor
             mode = args.mode
             params += ["--help"] if args.help is True else []
 
         if mode == "launch":
             parser = ArgumentParser("Launches an invocation.")
+            parser.add_argument("descriptor", action="store",
+                                help="The Boutiques descriptor.")
             parser.add_argument("input", action="store",
                                 help="Input JSON complying to invocation.")
             parser.add_argument("-v", "--volumes", action="store", type=str,
@@ -61,6 +60,7 @@ class BoutiquesTools():
                                 help="Keeps temporary scripts used during "
                                 "execution.")
             results = parser.parse_args(params)
+            descriptor = results.descriptor
 
             # Do some basic input scrubbing
             inp = results.input
@@ -85,6 +85,8 @@ class BoutiquesTools():
 
         elif mode == "simulate":
             parser = ArgumentParser("Simulates an invocation.")
+            parser.add_argument("descriptor", action="store",
+                                help="The Boutiques descriptor.")
             parser.add_argument("-i", "--input", action="store",
                                 help="Input JSON complying to invocation.")
             parser.add_argument("-r", "--random", action="store_true",
@@ -92,6 +94,7 @@ class BoutiquesTools():
             parser.add_argument("-n", "--number", type=int, action="store",
                                 help="Number of random input sets to create.")
             results = parser.parse_args(params)
+            descriptor = results.descriptor
 
             # Do some basic input scrubbing
             inp = results.input
