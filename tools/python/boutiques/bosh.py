@@ -59,6 +59,8 @@ def execute(*params):
         parser.add_argument("-x", "--debug", action="store_true",
                             help="Keeps temporary scripts used during "
                             "execution.")
+        parser.add_argument("-u", "--user", action="store_true",
+                            help="Runs the container as local user ({0}) instead of root.".format(os.getenv("USER")))
         results = parser.parse_args(params)
 
         # Do some basic input scrubbing
@@ -75,12 +77,12 @@ def execute(*params):
         executor = LocalExecutor(descriptor,
                                  {"forcePathType"      : True,
                                   "destroyTempScripts" : not results.debug,
-                                  "changeUser"         : True})
+                                  "changeUser"         : results.user})
         executor.readInput(inp)
         # Execute it
         exit_code = executor.execute(results.volumes)
         if exit_code:
-            sys.exit(exit_code)
+            raise SystemExit(exit_code)
 
     if mode == "simulate":
         parser = ArgumentParser("Simulates an invocation.")
