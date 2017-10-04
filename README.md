@@ -5,7 +5,6 @@
 [![DOI](https://zenodo.org/badge/32616811.svg)](https://zenodo.org/badge/latestdoi/32616811)
 [![PyPI](https://img.shields.io/pypi/v/boutiques.svg)](https://pypi.python.org/pypi/boutiques)
 [![PyPI](https://img.shields.io/pypi/pyversions/boutiques.svg)](https://pypi.python.org/pypi/boutiques)
-
 [![Build Status](https://travis-ci.org/boutiques/boutiques.svg?branch=develop)](https://travis-ci.org/boutiques/boutiques)
 [![Coverage Status](https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop)](https://coveralls.io/github/boutiques/boutiques?branch=develop)
 
@@ -20,7 +19,7 @@ the Boutiques Python tool provides users with functionality to perform a variety
 
 Simple! Just open your favourite terminal and type:
 
-    pip install boutiques
+    $ pip install boutiques
 
 Alongside installing the Boutiques package, this will also ensure the dependencies are installed: `simplejson`, `jsonschema`,
 `gitpython`, and `pygithub`. 
