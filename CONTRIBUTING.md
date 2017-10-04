@@ -15,7 +15,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 5. Rinse & repeat until you and the maintainers agree
 
 ## Code of Conduct
-> *"Just, don't be a dick!"* :smile:
+> *"Just, don't be a jerk!"* :smile:
 
 ### Our Pledge
 
