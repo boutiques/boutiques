@@ -19,6 +19,7 @@ before_install:
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 
 install:
+- pip install --upgrade setuptools
 - pip install coveralls pytest pytest-runner
 - pip install ./tools/python/
 
