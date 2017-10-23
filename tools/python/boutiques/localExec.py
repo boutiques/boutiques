@@ -119,7 +119,7 @@ class LocalExecutor(object):
       elif conType == 'singularity':
         singularity_mounts = " -B ".join(m for m in mount_strings)
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity exec --rm' + envString + ' -B ' + singularity_mounts + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec' + envString + ' -B ' + singularity_mounts + ' -W ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
