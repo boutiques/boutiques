@@ -33,4 +33,4 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")       
         self.assertFalse(bosh(["exec", "simulate",
                                os.path.join(example1_dir, "example1.json"),
-                               "-r", "-n", "3"]))
+                               "-r", "3"]))

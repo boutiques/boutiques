@@ -93,21 +93,18 @@ def execute(*params):
                             help="The Boutiques descriptor.")
         parser.add_argument("-i", "--input", action="store",
                             help="Input JSON complying to invocation.")
-        parser.add_argument("-r", "--random", action="store_true",
-                            help="Generate random set of inputs.")
-        parser.add_argument("-n", "--number", type=int, action="store",
-                            help="Number of random input sets to create.")
+        parser.add_argument("-r", "--random", action="store", type=int,
+                            nargs="*", help="Generate random set of inputs.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
 
         # Do some basic input scrubbing
         inp = results.input
-        rand = results.random
-        numb = results.number
+        rand = results.random is not None
+        numb = results.random[0] if rand and len(results.random) > 0 else 1
+
         if numb and numb < 1:
             raise SystemExit("--number value must be positive.")
-        if numb and not rand:
-            raise SystemExit("--number value requires --random setting.")
         if rand and inp:
             raise SystemExit("--random setting and --input value cannot be used together.")
         if inp and not os.path.isfile(inp):
@@ -118,8 +115,6 @@ def execute(*params):
             raise SystemExit("JSON descriptor {} does not seem to exist.".format(descriptor))
         if not rand and not inp:
             raise SystemExit("The default mode requires an input (-i).")
-        if not numb:
-            numb = 1
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
