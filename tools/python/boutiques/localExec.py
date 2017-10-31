@@ -67,7 +67,7 @@ class LocalExecutor(object):
     After execution, it checks for output file existence.
     '''    
     command, exit_code, con = self.cmdLine[0], None, self.con or {}
-    print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
+    log_data = 'Attempting execution of command:\n\t' + command + '\n---/* Start program output */---\n'
     # Check for Container image
     conType, conImage = con['type'], con['image']
     conIsPresent = (not conImage is None) 
@@ -85,13 +85,13 @@ class LocalExecutor(object):
       if conType == 'docker':
         # Pull the docker image
         if self._localExecute("docker pull " + str(conImage)):
-          print("Container not found online - trying local copy")
+          log_data += "Container not found online - trying local copy \n"
       elif conType == 'singularity':
         # Pull the docker image
         if self._localExecute("singularity pull shub://" + str(conImage)):
-          print("Container not found online - trying local copy")
+          log_data += "Container not found online - trying local copy\n"
       else:
-        print('Unrecognized container type: \"%s\"'%conType)
+        log_data += 'Unrecognized container type: \"%s\"\n'%conType 
         sys.exit(1)
       # Generate command script
       uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
@@ -121,21 +121,21 @@ class LocalExecutor(object):
         #TODO: Test singularity runtime on cluster
         dcmd = 'singularity exec' + envString + ' -B ' + singularity_mounts + ' -W ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
-        print('Unrecognized container type: \"%s\"'%conType)
+        log_data += 'Unrecognized container type: \"%s\"\n'%conType
         sys.exit(1)
-      print('Executing via: ' + dcmd)
+      log_data += 'Executing via: ' + dcmd + '\n'
       exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
       exit_code = self._localExecute( command )
     # Report exit status
-    print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
+    log_data += '---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')\n'
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if conIsPresent and self.destroyTempScripts:
       if os.path.isfile(dsname): os.remove(dsname)
     # Check for output files (note: the path-template can contain value-keys
-    print('Looking for output files:')
+    log_data += 'Looking for output files:\n'
     for outfile in self.desc_dict['output-files']:
       outFileName = self.out_dict[outfile['id']]
       # Look for the target file
@@ -145,8 +145,8 @@ class LocalExecutor(object):
       s1 = 'Optional' if isOptional else 'Required'
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
-      print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
-      return exit_code
+      log_data += "\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName + '\n'
+      return exit_code, log_data
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -154,6 +154,7 @@ class LocalExecutor(object):
       process = subprocess.Popen(command, shell=True,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
+
     except OSError as e:
       sys.stderr.write('OS Error during attempted execution!')
       raise e
@@ -161,7 +162,10 @@ class LocalExecutor(object):
       sys.stderr.write( 'Input Value Error during attempted execution!' )
       raise e
     else:
-      return process.wait()
+      output = process.communicate()
+      result = output[0] + '\n' + output[1] if output[0] != '' else output[1]
+
+      return (process.returncode, result)
 
   # Private method to generate a random input parameter set that follows the constraints from the json descriptor
   # This method fills in the in_dict field of the object with constrained random values
