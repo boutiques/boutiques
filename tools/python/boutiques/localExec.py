@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import argparse, os, sys, json, random as rnd, string, math, random, subprocess, time, pwd
+import argparse, os, sys, json, random as rnd, string, math, random, subprocess, time, platform 
+if platform.system() != 'Windows':
+  import pwd
 
 # Executor class
 class LocalExecutor(object):
@@ -94,9 +96,15 @@ class LocalExecutor(object):
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
       # Generate command script
-      uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
-      # Adds the user to the container before executing the templated command line
-      userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
+      userchange = None
+      uname = None
+      if platform.system == 'Windows':
+        uname = str(os.getlogin())
+        userchange = '' if not self.changeUser else ("useradd {0}\n".format(uname))
+      else:
+        uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
+        # Adds the user to the container before executing the templated command line
+        userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
       # If --changeUser was desired, run with su so that any output files are owned by the user instead of root
       if self.changeUser: command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
       cmdString = "#!/bin/bash -l\n" + userchange + str( command )
