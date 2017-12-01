@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import argparse, os, sys, json, random as rnd, string, math, random, subprocess, time, platform 
-if platform.system() != 'Windows':
-  import pwd
+import argparse, os, sys, json, random as rnd, string, math, random, subprocess, time, pwd
 
 # Executor class
 class LocalExecutor(object):
@@ -96,18 +94,13 @@ class LocalExecutor(object):
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
       # Generate command script
-      userchange = None
-      uname = None
-      if platform.system == 'Windows':
-        uname = str(os.getlogin())
-        userchange = '' if not self.changeUser else ("useradd {0}\n".format(uname))
-      else:
-        uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
-        # Adds the user to the container before executing the templated command line
-        userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
+      uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
+      # Adds the user to the container before executing the templated command line
+      userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
       # If --changeUser was desired, run with su so that any output files are owned by the user instead of root
+      # Get the supported shell by the docker or singularity
       if self.changeUser: command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
-      cmdString = "#!/bin/bash -l\n" + userchange + str( command )
+      cmdString = "#!/bin/sh -l\n" + userchange + str( command )
       with open(dsname,"w") as scrFile: scrFile.write(cmdString)
       # Ensure the script is executable
       self._localExecute( "chmod 755 " + dsname )
@@ -123,7 +116,7 @@ class LocalExecutor(object):
       if conType == 'docker':
         # export mounts to docker string
         docker_mounts = " -v ".join(m for m in mount_strings)
-        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'docker run --entrypoint=/bin/sh --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       elif conType == 'singularity':
         singularity_mounts = " -B ".join(m for m in mount_strings)
         #TODO: Test singularity runtime on cluster
