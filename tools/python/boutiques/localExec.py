@@ -135,7 +135,7 @@ class LocalExecutor(object):
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if conIsPresent and self.destroyTempScripts:
       if os.path.isfile(dsname): os.remove(dsname)
-    # Check for output files (note: the path-template can contain value-keys
+    # Check for output files (note: the path-template can contain value-keys)
     print('Looking for output files:')
     for outfile in self.desc_dict['output-files']:
       outFileName = self.out_dict[outfile['id']]
@@ -147,7 +147,7 @@ class LocalExecutor(object):
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
       print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
-      return exit_code
+    return exit_code
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
