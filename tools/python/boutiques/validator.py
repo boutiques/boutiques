@@ -28,15 +28,15 @@ import simplejson
 import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
-from boutiques import __file__
+from boutiques import __file__ as bfile
 
 
 # Main validation module
-def validate_json(json_file):
+def validate_descriptor(json_file):
     """
     Validates the Boutiques descriptor against the schema.
     """
-    path, fil = op.split(__file__)
+    path, fil = op.split(bfile)
     schema_file = op.join(path, "schema", "descriptor.schema.json")
 
     # Load schema
@@ -233,22 +233,3 @@ def validate_json(json_file):
         return descriptor
     else:
         raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
-
-
-def main(args=None):
-    parser = ArgumentParser("Boutiques Validator")
-    parser.add_argument("jsonfile", action="store",
-                        help="The Boutiques descriptor you wish to validate")
-    parser.add_argument("--bids", "-b", action="store_true",
-                        help="Flag indicating if descriptor is for a BIDS app")
-    results = parser.parse_args() if args is None else parser.parse_args(args)
-
-    descriptor = validate_json(results.jsonfile)
-
-    if results.bids:
-        from boutiques.bids import validate_bids
-        validate_bids(descriptor, valid=True)
-        return 0
-
-if __name__ == "__main__":
-    main()

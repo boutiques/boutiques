@@ -98,8 +98,9 @@ class LocalExecutor(object):
       # Adds the user to the container before executing the templated command line
       userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
       # If --changeUser was desired, run with su so that any output files are owned by the user instead of root
+      # Get the supported shell by the docker or singularity
       if self.changeUser: command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
-      cmdString = "#!/bin/bash -l\n" + userchange + str( command )
+      cmdString = "#!/bin/sh -l\n" + userchange + str( command )
       with open(dsname,"w") as scrFile: scrFile.write(cmdString)
       # Ensure the script is executable
       self._localExecute( "chmod 755 " + dsname )
@@ -115,11 +116,11 @@ class LocalExecutor(object):
       if conType == 'docker':
         # export mounts to docker string
         docker_mounts = " -v ".join(m for m in mount_strings)
-        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'docker run --entrypoint=/bin/sh --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       elif conType == 'singularity':
         singularity_mounts = " -B ".join(m for m in mount_strings)
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity exec --rm' + envString + ' -B ' + singularity_mounts + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec' + envString + ' -B ' + singularity_mounts + ' -W ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
@@ -134,7 +135,7 @@ class LocalExecutor(object):
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if conIsPresent and self.destroyTempScripts:
       if os.path.isfile(dsname): os.remove(dsname)
-    # Check for output files (note: the path-template can contain value-keys
+    # Check for output files (note: the path-template can contain value-keys)
     print('Looking for output files:')
     for outfile in self.desc_dict['output-files']:
       outFileName = self.out_dict[outfile['id']]
@@ -146,7 +147,7 @@ class LocalExecutor(object):
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
       print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
-      return exit_code
+    return exit_code
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -543,81 +544,3 @@ class LocalExecutor(object):
       sys.stderr.write("Problems found with prospective input:\n")
       for err in self.errs: sys.stderr.write("\t" + err + "\n")
       sys.exit(1)
-
-
-def main(args=None):
-  # Parse arguments
-  description = "A local Boutiques tool executor and debugger."
-
-  parser = argparse.ArgumentParser(description = description, formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument('desc', metavar='descriptor', nargs = 1, help = 'A Boutiques JSON descriptor.')
-  parser.add_argument('-i', '--input', help = 'Input parameter values complying to the tool invocation schema.')
-  parser.add_argument('-e', '--execute', action = 'store_true', help = 'Execute the program with the given inputs.')
-  parser.add_argument('-r', '--random', action = 'store_true', help = 'Generate a random set of input parameters to check.')
-  parser.add_argument('-n', '--num', type = int, help = 'Number of random parameter sets to examine.')
-  parser.add_argument('-v', '--mounts', type=str, nargs="*", help = "Directories to be mounted in the container in addition to $PWD. Will be passed to Docker with -v or to Singularity with -B. Must comply to the syntax accepted by Docker or Singularity. For instance, /a:/b:ro would mount host directory /a to container directory /b with read-only permissions.")
-  parser.add_argument('--dontForcePathType', action = 'store_true', help = 'Fail if an input does not conform to absolute-path specification (rather than converting the path type).')
-  parser.add_argument('--changeUser', action = 'store_true', help = 'Changes user in a container to the current user (prevents files generated from being owned by root).')
-  parser.add_argument('-k', '--keepTempScripts', action = 'store_true', help = 'Do not remove temporary scripts used to execute commands in containers.')
-  results = parser.parse_args() if args is None else parser.parse_args(args)
-
-  # Check arguments
-  desc = results.desc[0]
-  def errExit(msg, print_usage = True):
-    if print_usage: parser.print_usage()
-    sys.stderr.write('Error: ' + msg + '\n')
-    sys.exit(1)
-
-  if results.num and results.num < 1:
-    errExit('--num was not given an appropriate value')
-  elif results.num and not results.random:
-    errExit('--num requires random')
-  elif results.random and results.execute:
-    errExit('--random and --exec cannot be used together')
-  elif results.random and results.input:
-    errExit('--random and --input cannot be used together')
-  elif results.input and not os.path.isfile(results.input):
-    errExit('The input file ' + str(results.input) + ' does not seem to exist', False)
-  elif results.input and not results.input.endswith(".json") :
-    errExit('Input file ' + str(results.input) + ' must end in .json')
-  elif results.execute and not results.input:
-    errExit('--exec requires --input')
-  elif not os.path.isfile(desc):
-    errExit('The input JSON descriptor ({0}) does not seem to exist'.format(desc), False)
-  elif not results.random and not results.input:
-    errExit('The default mode requires an input (-i)')
-  elif not results.num:
-    results.num = 1
-
-  # Prepare inputs
-  inData = results.input
-  # Generate object that will perform the commands
-  executor = LocalExecutor(desc, { 'forcePathType'      : not results.dontForcePathType,
-                                   'destroyTempScripts' : not results.keepTempScripts,
-                                   'changeUser'         : results.changeUser              })
-
-  ### Run the executor with the given parameters ###
-  # Execution case
-  if results.execute:
-    # Read in given input
-    executor.readInput(inData)
-    # Execute it
-    exit_code = executor.execute(results.mounts)
-    if exit_code:
-      sys.exit(exit_code)
-  # Print random case
-  elif results.random:
-    # Generate random input
-    executor.generateRandomParams(results.num)
-    # Print the resulting command line
-    executor.printCmdLine()
-  # Print input case (default: no execution)
-  else:
-    # Read in given input
-    executor.readInput(inData)
-    # Print the resulting command line
-    executor.printCmdLine()
-
-# Execute program
-if  __name__ == "__main__":
-    main()

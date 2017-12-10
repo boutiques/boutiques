@@ -26,7 +26,7 @@
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from jsonschema import ValidationError
-from boutiques.validator import validate_json
+from boutiques.validator import validate_descriptor
 from git import Repo
 from github import Github
 import git, json, os, sys
@@ -155,7 +155,7 @@ class Publisher():
 
     def is_boutiques_descriptor(self, json_file):
         try:
-            validate_json(json_file)
+            validate_descriptor(json_file)
             return True
         except:
             return False
@@ -330,52 +330,4 @@ class Publisher():
 
     def pr(self, fork_url, base_url):
         print("Create a pull request from {0} to {1} to finalize publication. This cannot be done automatically.".format(fork_url,base_url))
-        
-    
-def main(args=None):
-    
-    neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
-    neurolinks_dest_path = os.path.join(os.getenv("HOME"),"neurolinks")
-    
-    def get_neurolinks_default():
-        if os.path.isdir(neurolinks_dest_path):
-            return neurolinks_dest_path
-        return neurolinks_github_repo_url
-    
-    parser = ArgumentParser("Boutiques publisher", formatter_class=ArgumentDefaultsHelpFormatter, description="A publisher of Boutiques tools in Neurolinks \
-(https://brainhack101.github.io/neurolinks). Crawls a Git repository \
-for valid Boutiques descriptors and imports them in Neurolinks \
-format. Uses your GitHub account to fork the Neurolinks repository and \
-commit new tools in it. Requires that your GitHub ssh key is \
-configured and usable without password.")
-    parser.add_argument("boutiques_repo", action="store",
-                        help="Local path to a Git repo containing Boutiques descriptors to publish.")
-    parser.add_argument("author_name", action="store",
-                        help="Default author name.")
-    parser.add_argument("tool_url", action="store",
-                        help="Default tool URL.")
-    parser.add_argument("--neurolinks-repo", "-n", action="store",
-                        default=get_neurolinks_default(),
-                        help="Local path to a Git clone of {0}. Remotes: 'origin' should point to a writable fork from which a PR will be initiated; 'base' will be pulled before any update, should point to {0}. If a URL is provided, will attempt to fork it on GitHub and clone it to {1}.".format(neurolinks_github_repo_url, neurolinks_dest_path))
-    parser.add_argument("--boutiques-remote", "-r", action="store",
-                        default='origin',
-                        help="Name of Boutiques Git repo remote used to get URLs of Boutiques descriptor.")
-    parser.add_argument("--no-github", action="store_true",
-                        help="Do not interact with GitHub at all (useful for tests).")
-    parser.add_argument("--github-login", "-u", action="store",
-                        help="GitHub login used to fork, clone and PR to {0}. Defaults to value in $HOME/.pygithub. Saved in $HOME/.pygithub if specified.".format(neurolinks_github_repo_url))
-    parser.add_argument("--github-password", "-p", action="store",
-                        help="GitHub password used to fork, clone and PR to {0}. Defaults to value in $HOME/.pygithub. Saved in $HOME/.pygithub if specified.".format(neurolinks_github_repo_url))
-    parser.add_argument("--inter", "-i", action="store_true",
-                        default = False,
-                        help="Interactive mode. Does not use default values everywhere, checks if URLs are correct or accessible.")
-    
-    results = parser.parse_args() if args is None else parser.parse_args(args)
-    publisher = Publisher(results.boutiques_repo, results.boutiques_remote,
-                          results.author_name, results.tool_url, results.inter,
-                          results.neurolinks_repo, neurolinks_dest_path,
-                          results.github_login, results.github_password, results.no_github).publish()
-            
-# Execute program
-if  __name__ == "__main__":
-    main()
+

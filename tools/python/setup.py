@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "0.5.3"
+VERSION = "0.5.4"
 DEPS = [
          "simplejson",
          "jsonschema",
@@ -37,15 +37,12 @@ setup(name="boutiques",
       install_requires=DEPS,
       entry_points = {
         "console_scripts": [
-            "bosh-validate=boutiques.validator:main",
-            "bosh=boutiques.localExec:main",
-            "bosh-invocation=boutiques.invocationSchemaHandler:main",
-            "bosh-import=boutiques.importer:main",
-            "bosh-publish=boutiques.publisher:main"
+            "bosh=boutiques.bosh:bosh",
         ]
       },
       data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),
                   ("bids-template", ["boutiques/bids-app-template/template.json"]),
+                  ("neurolinks-template", ["boutiques/neurolinks-template/tool.json"]),
                   ("exgood", ["boutiques/schema/examples/good.json"]),
                   ("exinvalid", ["boutiques/schema/examples/invalid.json"]),
                   ("exbidsgood", ["boutiques/schema/examples/bids_good.json"]),
