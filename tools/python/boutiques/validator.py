@@ -32,6 +32,26 @@ from boutiques import __file__ as bfile
 
 
 # Main validation module
+def validate_invocation(descriptor, invocation):
+    """
+    Validates the Boutiques invocation agasint the descriptor schema.
+    """
+    with open(descriptor) as fhandle:
+        descriptor = simplejson.load(fhandle)
+
+    with open(invocation) as fhandle:
+        invocation = simplejson.load(fhandle)
+
+    try:
+        validate(invocation, descriptor)
+    except ValidationError as e:
+        print("JSON Validation error")
+        raise ValidationError(e.message)
+    
+    print("Invocation validation OK")
+    return invocation
+
+# Main validation module
 def validate_descriptor(json_file):
     """
     Validates the Boutiques descriptor against the schema.
