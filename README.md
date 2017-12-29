@@ -69,16 +69,24 @@ in with the `-i` flag rather than using the `-r` and `-n` flags. Again, as I'm s
 ### Launch Your Tool
 
 Your descriptor has now been vetted both by the validator and simulation to describe meaningful command-lines for your tool - now it's time
-to put it to work! You can also use the `exec` function to launch an analysis, provided you've described your inputs in `inputs.json` with the
+to put it to work! You can also use the `exec` function to launch an analysis, provided you've described your inputs in `invocation.json` with the
 matching key-value pairs as in your descriptor (this is called the `invocationSchema`, which you can also generate and learn about with
 `bosh invocation`). One catch: we assume you have [Docker](https://docker.com) or [Singularity](https://singularity.lbl.gov) installed. A fair
 assumption, nowadays? We hope so:
 
-    $ bosh exec launch descriptor.json inputs.json
+    $ bosh exec launch descriptor.json invocation.json
 
 You just launched your tool! You should be seeing outputs to your terminal, and by default your current working directory will be mounted to the
 container. You can mount more volumes with `-v` (consistent with Docker), and see what other options are available, such as switching users in
 the container, through the usual help menu, `bosh exec launch -h`.
+
+### Query Your Tool
+
+If you've been using your tool and forget what exactly that output file will be named, or if it's optional, but find re-reading the descriptor a
+bit cumbersome, you should just query your invocation! If we wanted to check the location of our output corresponding to the id `my_batmobile`, or
+which of our inputs are numbers and optional, we could do the following two queries, respectively:
+
+    $ bosh query descriptor.json invocation.json output-files/id=my_batmobile inputs/type=Number,optional=True
 
 ### Publish Your Tool
 

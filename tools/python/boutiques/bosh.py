@@ -5,6 +5,7 @@ import jsonschema
 import json
 import os, sys
 
+
 def validate(*params):
     parser = ArgumentParser("Boutiques descriptor validator")
     parser.add_argument("descriptor", action="store",
@@ -28,7 +29,8 @@ def validate(*params):
 
     # If it gets here without error, return code 0
     return 0
-    
+
+
 def execute(*params):
     parser = ArgumentParser("Boutiques local executor", add_help=False)
     parser.add_argument("mode", action="store",
@@ -55,7 +57,7 @@ def execute(*params):
         parser = ArgumentParser("Launches an invocation.")
         parser.add_argument("descriptor", action="store",
                             help="The Boutiques descriptor.")
-        parser.add_argument("input", action="store",
+        parser.add_argument("invocation", action="store",
                             help="Input JSON complying to invocation.")
         parser.add_argument("-v", "--volumes", action="store", type=str,
                             help="Volumes to mount when launching the "
@@ -70,10 +72,8 @@ def execute(*params):
         results = parser.parse_args(params)
         descriptor = results.descriptor
 
-
-
         # Do some basic input scrubbing
-        inp = results.input
+        inp = results.invocation
         if not os.path.isfile(inp):
             raise SystemExit("Input file {} does not exist".format(inp))
         if not inp.endswith(".json"):
@@ -135,6 +135,7 @@ def execute(*params):
             executor.readInput(inp)
             executor.printCmdLine()
 
+
 def importer(*params):
     parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
     parser.add_argument("type", help="Type of import we are performing",
@@ -152,6 +153,7 @@ def importer(*params):
         importer.upgrade_04(inp)
     elif results.type == "bids":
         importer.import_bids(inp)
+
 
 def publish(*params):
     neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
@@ -212,6 +214,7 @@ def publish(*params):
                           results.neurolinks_repo, neurolinks_dest_path,
                           results.github_login, results.github_password, results.no_github).publish()
 
+
 def invocation(*params):
     parser = ArgumentParser("Creates invocation schema and validates invocations")
     parser.add_argument("descriptor", action="store",
@@ -245,6 +248,37 @@ def invocation(*params):
         validateSchema(invSchema, data)
 
 
+def query(*params):
+    parser = ArgumentParser("")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor.")
+    parser.add_argument("invocation", action="store",
+                        help="Input JSON complying to invocation.")
+    parser.add_argument("query", action="store", nargs="*",
+                        help="The query to be performed. Simply request keys "
+                        "from the descriptor (i.e. output-files), and chain "
+                        "together queries (i.e. id=myfile or optional=false) "
+                        "slashes between them and commas connecting them. "
+                        "(i.e. output-files/optional=false,id=myfile). "
+                        "Perform multiple queries by separating them with a "
+                        "space.")
+    result = parser.parse_args(params)
+
+    # Generate object that will parse the invocation and descriptor
+    from boutiques.localExec import LocalExecutor
+    executor = LocalExecutor(result.descriptor,
+                             {"forcePathType"      : True,
+                              "destroyTempScripts" : True,
+                              "changeUser"         : True})
+    executor.readInput(result.invocation)
+
+    from boutiques.query import queryEngine
+    query_results = []
+    for query in result.query:
+        query_results += [ queryEngine(executor, query) ]
+    return query_results[0] if len(query_results) == 1 else query_results
+
+
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
                             add_help=False)
@@ -257,9 +291,10 @@ def bosh(args=None):
                         "from an older version of the schema. Publish: creates"
                         "an entry in NeuroLinks for the descriptor and tool."
                         "Invocation: generates the invocation schema for a "
-                        "given descriptor.",
+                        "given descriptor. Query: given an invocation and a "
+                        "descriptor, queries execution properties.",
                         choices=["validate", "exec", "import",
-                                 "publish", "invocation"])
+                                 "publish", "invocation", "query"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
 
@@ -281,6 +316,9 @@ def bosh(args=None):
         return out
     elif func == "invocation":
         out = invocation(*params)
+        return out
+    elif func == "query":
+        out = query(*params)
         return out
     else:
         parser.print_help()
