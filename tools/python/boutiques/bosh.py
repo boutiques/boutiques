@@ -12,22 +12,13 @@ def validate(*params):
                         help="The Boutiques descriptor.")
     parser.add_argument("--bids", "-b", action="store_true",
                         help="Flag indicating if descriptor is a BIDS app")
-    parser.add_argument("--invocation", "-i", action="store",
-                        help="Invocation to be validated against descriptor")
     results = parser.parse_args(params)
 
-    if results.invocation is None:
-        from boutiques.validator import validate_descriptor
-        descriptor = validate_descriptor(results.descriptor)
-        if results.bids:
-            from boutiques.bids import validate_bids
-            validate_bids(descriptor, valid=True)
-
-    else:
-        from boutiques.validator import validate_invocation
-        invocation = validate_invocation(results.descriptor, results.invocation)
-
-    # If it gets here without error, return code 0
+    from boutiques.validator import validate_descriptor
+    descriptor = validate_descriptor(results.descriptor)
+    if results.bids:
+        from boutiques.bids import validate_bids
+        validate_bids(descriptor, valid=True)
     return 0
 
 
