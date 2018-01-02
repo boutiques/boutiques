@@ -28,8 +28,8 @@
 def evaluateEngine(executor, query):
     try:
         #TODO: improve splitting to not fail in valid situations
-        layers = query.split("/")[:-1]
-        conditions = query.split("/")[-1]
+        layers = query.split("/")[:-1] if "/" in query else [query]
+        conditions = query.split("/")[-1] if "/" in query else []
         if len(conditions) > 0:
             if "," in conditions:
                 conditions = conditions.split(",")
@@ -53,8 +53,9 @@ def evaluateEngine(executor, query):
                     elif rhs == "True":
                         rhs = True
 
-                if obj[lhs] != rhs:
-                    eligible = False
+                if obj.get(lhs) != rhs:
+                    if not (obj.get(lhs) is None and rhs is False):
+                        eligible = False
 
             if eligible:
                 if "output-files" in layers:
