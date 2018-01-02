@@ -80,13 +80,14 @@ You just launched your tool! You should be seeing outputs to your terminal, and 
 container. You can mount more volumes with `-v` (consistent with Docker), and see what other options are available, such as switching users in
 the container, through the usual help menu, `bosh exec launch -h`.
 
-### Query Your Tool
+### Evaluate Your Usage
 
 If you've been using your tool and forget what exactly that output file will be named, or if it's optional, but find re-reading the descriptor a
-bit cumbersome, you should just query your invocation! If we wanted to check the location of our output corresponding to the id `my_batmobile`, or
-which of our inputs are numbers and optional, we could do the following two queries, respectively:
+bit cumbersome, you should just evaluate your invocation! If we wanted to check the location of our output corresponding to the id `my_batmobile`,
+or which of our inputs are numbers and optional, we could do the following two queries, respectively:
 
-    $ bosh query descriptor.json invocation.json output-files/id=my_batmobile inputs/type=Number,optional=True
+    $ bosh evaluate descriptor.json invocation.json output-files/id=my_batmobile inputs/type=Number,optional=True
+    [{"my_batmobile": "/the/batcave/batmobile.car"}, {"bad_guys": "0", "times_saved_gotham": "5000"}]
 
 ### Publish Your Tool
 
