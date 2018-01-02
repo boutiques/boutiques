@@ -308,7 +308,7 @@ def bosh(args=None):
     elif func == "invocation":
         out = invocation(*params)
         return out
-    elif func == "eval":
+    elif func == "evaluate":
         out = evaluate(*params)
         return out
     else:

@@ -28,8 +28,8 @@
 def evaluateEngine(executor, query):
     try:
         #TODO: improve splitting to not fail in valid situations
-        layers = query.split("/")[:-1]
-        conditions = query.split("/")[-1]
+        layers = query.split("/")[:-1] if "/" in query else [query]
+        conditions = query.split("/")[-1] if "/" in query else []
         if len(conditions) > 0:
             if "," in conditions:
                 conditions = conditions.split(",")
