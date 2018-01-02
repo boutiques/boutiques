@@ -5,7 +5,7 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 
-class TestQuery(TestCase):
+class TestEvaluate(TestCase):
 
     def set_examples(self):
         example1_dir = os.path.join(os.path.dirname(bfile), "schema",
@@ -13,25 +13,25 @@ class TestQuery(TestCase):
         self.desc = os.path.join(example1_dir, "example1.json")
         self.invo = os.path.join(example1_dir, "invocation.json")
 
-    def test_queryoutput(self):
+    def test_evaloutput(self):
         self.set_examples()
-        query = bosh.query(self.desc, self.invo, "output-files/")
+        query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './config.txt'}
         assert(query == expect)
         
-        query = bosh.query(self.desc, self.invo, "output-files/id=logfile")
+        query = bosh.evaluate(self.desc, self.invo, "output-files/id=logfile")
         expect = {'logfile': 'log-4.txt'}
         assert(query == expect)
 
-        query = bosh.query(self.desc, self.invo, "output-files/id=log-file")
+        query = bosh.evaluate(self.desc, self.invo, "output-files/id=log-file")
         expect = {}
         assert(query == expect)
 
-    def test_queryinput(self):
+    def test_evalinput(self):
         self.set_examples()
-        query = bosh.query(self.desc, self.invo, "inputs/")
+        query = bosh.evaluate(self.desc, self.invo, "inputs/")
         expect = {'str_input': ['foo', 'bar'],
                   'config_num': 4,
                   'num_input': None,
@@ -40,30 +40,30 @@ class TestQuery(TestCase):
                   'flag_input': None}
         assert(query == expect)
         
-        query = bosh.query(self.desc, self.invo,
-                           "inputs/type=Flag,id=flag_input",
-                           "inputs/type=Number")
+        query = bosh.evaluate(self.desc, self.invo,
+                              "inputs/type=Flag,id=flag_input",
+                              "inputs/type=Number")
         expect = [ {'flag_input': None},
                    {'config_num': 4,
                     'num_input': None} ]
         assert(query == expect)
 
-        query = bosh.query(self.desc, self.invo, "inputs/id=strinputs")
+        query = bosh.evaluate(self.desc, self.invo, "inputs/id=strinputs")
         expect = {}
         assert(query == expect)
 
-        query = bosh.query(self.desc, self.invo, "inputt/nonsense=strinputs")
+        query = bosh.evaluate(self.desc, self.invo, "inputt/nonsense=strinputs")
         expect = {}
         assert(query == expect)
 
-    def test_querygroups(self):
+    def test_evalgroups(self):
         self.set_examples()
-        query = bosh.query(self.desc, self.invo, "groups/")
+        query = bosh.evaluate(self.desc, self.invo, "groups/")
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}
         assert(query == expect)
         
-        query = bosh.query(self.desc, self.invo, "groups/mutually-exclusive=True")
+        query = bosh.evaluate(self.desc, self.invo, "groups/mutually-exclusive=True")
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}
         assert(query == expect)

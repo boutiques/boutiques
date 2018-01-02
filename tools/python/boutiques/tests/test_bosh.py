@@ -19,5 +19,5 @@ class TestBosh(TestCase):
         self.assertRaises(SystemExit, bosh, ["import", "--help"])
         self.assertRaises(SystemExit, bosh, ["validate", "--help"])
         self.assertRaises(SystemExit, bosh, ["invocation", "--help"])
-        self.assertRaises(SystemExit, bosh, ["query", "--help"])
+        self.assertRaises(SystemExit, bosh, ["evaluate", "--help"])
 

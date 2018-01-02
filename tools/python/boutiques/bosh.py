@@ -239,8 +239,8 @@ def invocation(*params):
         validateSchema(invSchema, data)
 
 
-def query(*params):
-    parser = ArgumentParser("")
+def evaluate(*params):
+    parser = ArgumentParser("Evaluates parameter values for a descriptor and invocation")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("invocation", action="store",
@@ -263,10 +263,10 @@ def query(*params):
                               "changeUser"         : True})
     executor.readInput(result.invocation)
 
-    from boutiques.query import queryEngine
+    from boutiques.evaluate import evaluateEngine
     query_results = []
     for query in result.query:
-        query_results += [ queryEngine(executor, query) ]
+        query_results += [ evaluateEngine(executor, query) ]
     return query_results[0] if len(query_results) == 1 else query_results
 
 
@@ -282,10 +282,10 @@ def bosh(args=None):
                         "from an older version of the schema. Publish: creates"
                         "an entry in NeuroLinks for the descriptor and tool."
                         "Invocation: generates the invocation schema for a "
-                        "given descriptor. Query: given an invocation and a "
+                        "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties.",
                         choices=["validate", "exec", "import",
-                                 "publish", "invocation", "query"])
+                                 "publish", "invocation", "evaluate"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
 
@@ -308,8 +308,8 @@ def bosh(args=None):
     elif func == "invocation":
         out = invocation(*params)
         return out
-    elif func == "query":
-        out = query(*params)
+    elif func == "eval":
+        out = evaluate(*params)
         return out
     else:
         parser.print_help()

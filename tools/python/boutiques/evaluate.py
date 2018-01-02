@@ -25,7 +25,7 @@
 # SOFTWARE.
 
 
-def queryEngine(executor, query):
+def evaluateEngine(executor, query):
     try:
         #TODO: improve splitting to not fail in valid situations
         layers = query.split("/")[:-1]
