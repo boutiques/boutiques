@@ -53,8 +53,9 @@ def evaluateEngine(executor, query):
                     elif rhs == "True":
                         rhs = True
 
-                if obj[lhs] != rhs:
-                    eligible = False
+                if obj.get(lhs) != rhs:
+                    if not (obj.get(lhs) is None and rhs is False):
+                        eligible = False
 
             if eligible:
                 if "output-files" in layers:
