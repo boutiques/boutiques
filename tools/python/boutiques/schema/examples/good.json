@@ -286,5 +286,10 @@
         "ram": 12,
         "walltime-estimate": 3600
     },
+    "tags": {
+	"domain": "testing",
+	"status": "experimental",
+	"foo": "bar"	
+    },
     "tool-version": "v0.0.41-1"
 }
