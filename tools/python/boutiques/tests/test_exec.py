@@ -52,15 +52,14 @@ class TestExec(TestCase):
         self.assertRaises(SystemExit, bosh, ["exec", "simulate",
                                              os.path.join(example1_dir,
                                                           "example1.json"),
-                                             "-n", "-2"])
+                                             "-r", "-2"])
+        self.assertFalse(bosh(["exec", "simulate",
+                               os.path.join(example1_dir,"example1.json"),
+                               "-r", "1"]))
         self.assertRaises(SystemExit, bosh, ["exec", "simulate",
                                              os.path.join(example1_dir,
                                                           "example1.json"),
-                                             "-n", "1"])
-        self.assertRaises(SystemExit, bosh, ["exec", "simulate",
-                                             os.path.join(example1_dir,
-                                                          "example1.json"),
-                                             "-r", "-i",
+                                             "-r", "1", "-i",
                                              os.path.join(example1_dir,
                                                           "invocation.json")])
         self.assertRaises(SystemExit, bosh, ["exec", "simulate",

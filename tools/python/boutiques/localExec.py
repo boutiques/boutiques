@@ -98,8 +98,9 @@ class LocalExecutor(object):
       # Adds the user to the container before executing the templated command line
       userchange = '' if not self.changeUser else ("useradd --uid " + uid + ' ' + uname + "\n")
       # If --changeUser was desired, run with su so that any output files are owned by the user instead of root
+      # Get the supported shell by the docker or singularity
       if self.changeUser: command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
-      cmdString = "#!/bin/bash -l\n" + userchange + str( command )
+      cmdString = "#!/bin/sh -l\n" + userchange + str( command )
       with open(dsname,"w") as scrFile: scrFile.write(cmdString)
       # Ensure the script is executable
       self._localExecute( "chmod 755 " + dsname )
@@ -115,26 +116,26 @@ class LocalExecutor(object):
       if conType == 'docker':
         # export mounts to docker string
         docker_mounts = " -v ".join(m for m in mount_strings)
-        dcmd = 'docker run --entrypoint=/bin/bash --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'docker run --entrypoint=/bin/sh --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       elif conType == 'singularity':
         singularity_mounts = " -B ".join(m for m in mount_strings)
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity exec --rm' + envString + ' -B ' + singularity_mounts + ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec' + envString + ' -B ' + singularity_mounts + ' -W ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
       print('Executing via: ' + dcmd)
-      exit_code = self._localExecute( dcmd )
+      (stdout, stderr), exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
-      exit_code = self._localExecute( command )
+      (stdout, stderr), exit_code = self._localExecute( command )
     # Report exit status
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if conIsPresent and self.destroyTempScripts:
       if os.path.isfile(dsname): os.remove(dsname)
-    # Check for output files (note: the path-template can contain value-keys
+    # Check for output files (note: the path-template can contain value-keys)
     print('Looking for output files:')
     for outfile in self.desc_dict['output-files']:
       outFileName = self.out_dict[outfile['id']]
@@ -146,7 +147,7 @@ class LocalExecutor(object):
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
       print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
-      return exit_code
+    return exit_code, stdout, stderr
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -161,7 +162,7 @@ class LocalExecutor(object):
       sys.stderr.write( 'Input Value Error during attempted execution!' )
       raise e
     else:
-      return process.wait()
+      return process.communicate(), process.returncode
 
   # Private method to generate a random input parameter set that follows the constraints from the json descriptor
   # This method fills in the in_dict field of the object with constrained random values
