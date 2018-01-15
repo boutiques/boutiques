@@ -5,6 +5,7 @@ from .invocationSchemaHandler import generateInvocationSchema
 from .validator import validate_descriptor
 from .bids import validate_bids
 from .publisher import Publisher
+from .evaluate import evaluateEngine
 from .bosh import *
 
 __all__ = ['localExec',
@@ -12,5 +13,6 @@ __all__ = ['localExec',
            'validator',
            'bids',
            'publisher',
+           'evaluate',
            'bosh']
 

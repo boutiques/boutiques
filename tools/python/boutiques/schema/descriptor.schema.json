@@ -57,9 +57,9 @@
                             "type": "string"
                         },
                         "entrypoint": {
-                          "id": "http://github.com/boutiques/boutiques-schema/container/entrypoint",
-                          "description": "Flag indicating whether or not the container uses an entrypoint.",
-                          "type": "boolean"
+                            "id": "http://github.com/boutiques/boutiques-schema/container/entrypoint",
+                            "description": "Flag indicating whether or not the container uses an entrypoint.",
+                            "type": "boolean"
                         },
                         "index": {
                             "id": "http://github.com/boutiques/boutiques-schema/container/index",
@@ -128,7 +128,9 @@
                     "value"
                 ],
                 "additionalProperties": false
-            }
+            },
+	    "minItems": 1,
+	    "uniqueItems": true
         },
         "groups": {
             "id": "http://github.com/boutiques/boutiques-schema/groups",
@@ -188,7 +190,9 @@
                     "members"
                 ],
                 "additionalProperties": false
-            }
+            },
+	    "minItems": 1,
+	    "uniqueItems": true
         },
         "inputs": {
             "id": "http://github.com/boutiques/boutiques-schema/inputs",
@@ -376,7 +380,9 @@
                     "exclusive-maximum": ["maximum"]
                 },
                 "additionalProperties": false
-            }
+            },
+	    "minItems": 1,
+	    "uniqueItems": true
         },
         "output-files": {
             "id": "http://github.com/boutiques/boutiques-schema/output-files",
@@ -479,7 +485,9 @@
                     "command-line-flag-separator": ["command-line-flag"]
                 },
                 "additionalProperties": false
-            }
+            },
+	    "minItems": 1,
+	    "uniqueItems": true
         },
         "invocation-schema": {
             "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
@@ -513,14 +521,51 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                 "walltime-estimate": {
-                     "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/walltime-estimate",
-                     "type": "number",
-                     "description": "Estimated wall time of a task in seconds.",
-                     "minimum": 0
-                 }
+                "walltime-estimate": {
+                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/walltime-estimate",
+                    "type": "number",
+                    "description": "Estimated wall time of a task in seconds.",
+                    "minimum": 0
+                }
             }
         },
+	"tags": {
+            "id": "http://github.com/boutiques/boutiques-schema/tags",
+            "type": "object",
+            "description": "An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
+	    "additionalProperties": {
+                "type": "string",
+                "description": "Tag values"
+            }
+        },
+	"error-codes": {
+            "id": "http://github.com/boutiques/boutiques-schema/error-codes",
+            "type": "array",
+            "description": "An array of key-value pairs specifying exit codes and their description. Can be used for tools to specify the meaning of particular exit codes. Exit code 0 is assumed to indicate a successful execution.",
+            "items": {
+                "id": "http://github.com/boutiques/boutiques-schema/error-codes",
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "id": "http://github.com/boutiques/boutiques-schema/error-codes/code",
+                        "description": "Value of the exit code",
+                        "type": "integer"
+                    },
+                    "description": {
+                        "id": "http://github.com/boutiques/boutiques-schema/error-codes/description",
+                        "description": "Description of the error code.",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "description"
+                ],
+                "additionalProperties": false
+            },
+	    "minItems": 1,
+	    "uniqueItems": true
+	},
         "custom": {
             "id": "http://github.com/boutiques/boutiques-schema/custom",
             "type": "object"
