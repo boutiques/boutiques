@@ -125,10 +125,10 @@ class LocalExecutor(object):
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
       print('Executing via: ' + dcmd)
-      exit_code = self._localExecute( dcmd )
+      (stdout, stderr), exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
-      exit_code = self._localExecute( command )
+      (stdout, stderr), exit_code = self._localExecute( command )
     # Report exit status
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
@@ -147,7 +147,7 @@ class LocalExecutor(object):
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
       print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
-    return exit_code
+    return exit_code, stdout, stderr
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -162,7 +162,7 @@ class LocalExecutor(object):
       sys.stderr.write( 'Input Value Error during attempted execution!' )
       raise e
     else:
-      return process.wait()
+      return process.communicate(), process.returncode
 
   # Private method to generate a random input parameter set that follows the constraints from the json descriptor
   # This method fills in the in_dict field of the object with constrained random values

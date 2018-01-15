@@ -80,7 +80,7 @@ def execute(*params):
                                   "changeUser"         : results.user})
         executor.readInput(inp)
         # Execute it
-        exit_code = executor.execute(results.volumes)
+        exit_code, _, _ = executor.execute(results.volumes)
         if exit_code:
             raise SystemExit(exit_code)
 
