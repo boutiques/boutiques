@@ -35,7 +35,7 @@ class TestExample1(TestCase):
         with self.assertRaises(SystemExit) as context:
            bosh(["exec", "launch", os.path.join(example1_dir, "example1.json"),
                   os.path.join(example1_dir, "invocation_missing_script.json")])
-        self.assertTrue('File does not exist!' in context.exception.args[1]['Tool'])
+        self.assertTrue('File does not exist!' in str(context.exception))
 
     def test_example1_no_exec_random(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")       
