@@ -67,7 +67,7 @@ class LocalExecutor(object):
     After execution, it checks for output file existence.
     '''    
     command, exit_code, con = self.cmdLine[0], None, self.con or {}
-    log_data = 'Attempting execution of command:\n\t' + command + '\n---/* Start program output */---\n'
+    print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for Container image
     conType, conImage = con['type'], con['image']
     conIsPresent = (not conImage is None) 
@@ -85,13 +85,13 @@ class LocalExecutor(object):
       if conType == 'docker':
         # Pull the docker image
         if self._localExecute("docker pull " + str(conImage)):
-          log_data += "Container not found online - trying local copy \n"
+          print("Container not found online - trying local copy")
       elif conType == 'singularity':
         # Pull the docker image
         if self._localExecute("singularity pull shub://" + str(conImage)):
-          log_data += "Container not found online - trying local copy\n"
+          print("Container not found online - trying local copy")
       else:
-        log_data += 'Unrecognized container type: \"%s\"\n'%conType 
+        print('Unrecognized container type: \"%s\"'%conType) 
         sys.exit(1)
       # Generate command script
       uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
@@ -122,7 +122,7 @@ class LocalExecutor(object):
         #TODO: Test singularity runtime on cluster
         dcmd = 'singularity exec' + envString + ' -B ' + singularity_mounts + ' -W ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
       else:
-        log_data += 'Unrecognized container type: \"%s\"\n'%conType
+        print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
       print('Executing via: ' + dcmd)
       (stdout, stderr), exit_code = self._localExecute( dcmd )
@@ -134,7 +134,7 @@ class LocalExecutor(object):
     if stderr is not None and stderr != '':
        err_dict['Container'] = stderr   
     # Report exit status
-    log_data += '---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')\n'
+    print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
     if conIsPresent and self.destroyTempScripts:
