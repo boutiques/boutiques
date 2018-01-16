@@ -131,5 +131,11 @@
 	"foo": "bar"
     },
     "schema-version": "0.5", 
-    "tool-version": "0.0.1"
+    "tool-version": "0.0.1",
+    "error-codes": [
+        {
+        "code": 2,
+        "description": "File does not exist!"
+        }
+    ]
 }

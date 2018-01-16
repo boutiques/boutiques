@@ -80,9 +80,9 @@ def execute(*params):
                                   "changeUser"         : results.user})
         executor.readInput(inp)
         # Execute it
-        exit_code, _, _ = executor.execute(results.volumes)
+        exit_code, _, err_dict = executor.execute(results.volumes)
         if exit_code:
-            raise SystemExit(exit_code)
+            raise SystemExit(exit_code, err_dict)
 
     if mode == "simulate":
         parser = ArgumentParser("Simulates an invocation.")

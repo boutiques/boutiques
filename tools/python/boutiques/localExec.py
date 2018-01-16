@@ -129,6 +129,10 @@ class LocalExecutor(object):
     # Otherwise, just run command locally
     else:
       (stdout, stderr), exit_code = self._localExecute( command )
+
+    err_dict = {}
+    if stderr is not None and stderr != '':
+       err_dict['Container'] = stderr   
     # Report exit status
     log_data += '---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')\n'
     time.sleep(0.5) # Give the OS a (half) second to finish writing
@@ -147,7 +151,12 @@ class LocalExecutor(object):
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
       print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
-    return exit_code, stdout, stderr
+    if 'error-codes' in list(self.desc_dict.keys()):
+      for err_elem in self.desc_dict['error-codes']:
+         if err_elem['code'] == exit_code:
+            err_dict['Tool'] = err_elem['description']
+            break
+    return exit_code, stdout, err_dict
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
