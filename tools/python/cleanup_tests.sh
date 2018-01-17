@@ -7,3 +7,4 @@
 
 rm temp-*.sh log-*.txt config*.txt
 git checkout boutiques/schema/examples/good.json
+git checkout boutiques/schema/examples/example1/example1.json
