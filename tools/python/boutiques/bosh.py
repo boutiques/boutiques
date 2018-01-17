@@ -64,8 +64,6 @@ def execute(*params):
         descriptor = results.descriptor
         inp = results.invocation
 
-        valid = invocation(descriptor, '-i', inp)
-
         # Do some basic input scrubbing
         if not os.path.isfile(inp):
             raise SystemExit("Input file {} does not exist".format(inp))
@@ -74,6 +72,8 @@ def execute(*params):
         if not os.path.isfile(descriptor):
             raise SystemExit("JSON descriptor {} does not exist".format(descriptor))
 
+        valid = invocation(descriptor, '-i', inp)
+        valid = invocation(descriptor, '-i', inp)
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor,
@@ -99,7 +99,6 @@ def execute(*params):
 
         # Do some basic input scrubbing
         inp = results.input
-        valid = invocation(descriptor, '-i', inp) if inp else invocation(descriptor)
         rand = results.random is not None
         numb = results.random[0] if rand and len(results.random) > 0 else 1
 
@@ -115,6 +114,8 @@ def execute(*params):
             raise SystemExit("JSON descriptor {} does not seem to exist.".format(descriptor))
         if not rand and not inp:
             raise SystemExit("The default mode requires an input (-i).")
+
+        valid = invocation(descriptor, '-i', inp) if inp else invocation(descriptor)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -220,6 +221,7 @@ def invocation(*params):
 
     try:
         from boutiques.validator import validate_descriptor
+        from jsonschema import ValidationError
         validate_descriptor(result.descriptor)
         if result.invocation:
             data = json.loads(open(result.invocation).read())
