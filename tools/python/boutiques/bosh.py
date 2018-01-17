@@ -62,9 +62,11 @@ def execute(*params):
                             help="Runs the container as local user ({0}) instead of root.".format(os.getenv("USER")))
         results = parser.parse_args(params)
         descriptor = results.descriptor
+        inp = results.invocation
+
+        valid = invocation(descriptor, '-i', inp)
 
         # Do some basic input scrubbing
-        inp = results.invocation
         if not os.path.isfile(inp):
             raise SystemExit("Input file {} does not exist".format(inp))
         if not inp.endswith(".json"):
@@ -97,6 +99,7 @@ def execute(*params):
 
         # Do some basic input scrubbing
         inp = results.input
+        valid = invocation(descriptor, '-i', inp) if inp else invocation(descriptor)
         rand = results.random is not None
         numb = results.random[0] if rand and len(results.random) > 0 else 1
 
