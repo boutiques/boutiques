@@ -129,7 +129,7 @@ class LocalExecutor(object):
     # Otherwise, just run command locally
     else:
       (stdout, stderr), exit_code = self._localExecute( command )
-    if stdout != '': print('Docker output: '+ str(stdout))
+    if stdout != '': print('Execution output: '+ str(stdout))
     # Report exit status
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
@@ -156,7 +156,7 @@ class LocalExecutor(object):
             break
     error_msg = ''
     if stderr != '':
-        error_msg = 'Docker ERR ({0}): {1}'.format(exit_code, stderr)
+        error_msg = 'Execution ERR ({0}): {1}'.format(exit_code, stderr)
     if desc_err != '':
         error_msg += '{0}{1} ERR ({2}): {3}'.format('\n' if error_msg != '' else '', self.desc_dict['name'], exit_code, desc_err)
     
