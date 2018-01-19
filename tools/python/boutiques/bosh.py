@@ -73,7 +73,6 @@ def execute(*params):
             raise SystemExit("JSON descriptor {} does not exist".format(descriptor))
 
         valid = invocation(descriptor, '-i', inp)
-        valid = invocation(descriptor, '-i', inp)
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor,

@@ -1,0 +1,7 @@
+{
+    "str_input" : [ "foo", "bar" ],
+    "file_input" : "./setup.py",
+    "config_num" : 4,
+    "enum_input" : "val1"
+}
+
