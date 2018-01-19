@@ -1,5 +1,5 @@
 {
-    "command-line": "echo [CONFIG_FILE] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] &> [LOG]",
+    "command-line": "echo [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] &> [LOG]",
     "description": "This property describes the tool or application",
     "groups": [
         {
@@ -195,17 +195,6 @@
                 ".csv"
             ],
             "value-key": "[LOG]"
-        },
-        {
-            "command-line-flag": "-c",
-            "file-template": [
-                "# This is a demo configuration file",
-                "numInput=[CONFIG_NUMBER]"
-            ],
-            "id": "config_file",
-            "name": "Configuration file",
-            "path-template": "./config.txt",
-            "value-key": "[CONFIG_FILE]"
         }
     ],
     "schema-version": "0.5",
