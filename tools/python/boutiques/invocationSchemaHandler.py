@@ -120,8 +120,7 @@ def validateSchema(s, d=None):
     try:
       jsonschema.validate(d, s)
     except jsonschema.ValidationError as e:
-      print(str(e))
-      raise jsonschema.ValidationError(e)
+      raise jsonschema.ValidationError(e.message)
     print("Invocation Schema validation OK")
           
 # Script exit helper

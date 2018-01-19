@@ -219,12 +219,11 @@ def invocation(*params):
     result = parser.parse_args(params)
 
     try:
-        from boutiques.validator import validate_descriptor
         from jsonschema import ValidationError
-        validate_descriptor(result.descriptor)
+        validate(result.descriptor)
         if result.invocation:
             data = json.loads(open(result.invocation).read())
-    except Exception as e:
+    except ValidationError as e:
         print("Error reading JSON:")
         raise ValidationError(e.message)
 
@@ -234,13 +233,17 @@ def invocation(*params):
     else:
         from boutiques.invocationSchemaHandler import generateInvocationSchema
         invSchema = generateInvocationSchema(descriptor)
-        
+
     descriptor["invocation-schema"] = invSchema
     with open(result.descriptor, "w") as f:
         f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        validateSchema(invSchema, data)
+        try:
+            validateSchema(invSchema, data)
+        except ValidationError as e:
+            print("Invalid invcoation:")
+            raise ValidationError(e.message)
 
 
 def evaluate(*params):
