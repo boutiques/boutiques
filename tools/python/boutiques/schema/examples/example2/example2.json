@@ -197,13 +197,6 @@
             "value-key": "[LOG]"
         },
         {
-            "id": "output_files",
-            "list": true,
-            "name": "outfiles",
-            "optional": true,
-            "path-template": "output/*_exampleOutputTag.resultType"
-        },
-        {
             "command-line-flag": "-c",
             "file-template": [
                 "# This is a demo configuration file",
