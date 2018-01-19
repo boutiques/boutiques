@@ -1,5 +1,5 @@
 {
-    "command-line": "echo [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] &> [LOG]",
+    "command-line": "/bin/echo [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] &> [LOG]",
     "description": "This property describes the tool or application",
     "groups": [
         {
