@@ -62,9 +62,9 @@ def execute(*params):
                             help="Runs the container as local user ({0}) instead of root.".format(os.getenv("USER")))
         results = parser.parse_args(params)
         descriptor = results.descriptor
+        inp = results.invocation
 
         # Do some basic input scrubbing
-        inp = results.invocation
         if not os.path.isfile(inp):
             raise SystemExit("Input file {} does not exist".format(inp))
         if not inp.endswith(".json"):
@@ -72,6 +72,7 @@ def execute(*params):
         if not os.path.isfile(descriptor):
             raise SystemExit("JSON descriptor {} does not exist".format(descriptor))
 
+        valid = invocation(descriptor, '-i', inp)
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor,
@@ -112,6 +113,8 @@ def execute(*params):
             raise SystemExit("JSON descriptor {} does not seem to exist.".format(descriptor))
         if not rand and not inp:
             raise SystemExit("The default mode requires an input (-i).")
+
+        valid = invocation(descriptor, '-i', inp) if inp else invocation(descriptor)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -216,11 +219,11 @@ def invocation(*params):
     result = parser.parse_args(params)
 
     try:
-        from boutiques.validator import validate_descriptor
-        validate_descriptor(result.descriptor)
+        from jsonschema import ValidationError
+        validate(result.descriptor)
         if result.invocation:
             data = json.loads(open(result.invocation).read())
-    except Exception as e:
+    except ValidationError as e:
         print("Error reading JSON:")
         raise ValidationError(e.message)
 
@@ -230,13 +233,17 @@ def invocation(*params):
     else:
         from boutiques.invocationSchemaHandler import generateInvocationSchema
         invSchema = generateInvocationSchema(descriptor)
-        
+
     descriptor["invocation-schema"] = invSchema
     with open(result.descriptor, "w") as f:
         f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        validateSchema(invSchema, data)
+        try:
+            validateSchema(invSchema, data)
+        except ValidationError as e:
+            print("Invalid invcoation:")
+            raise ValidationError(e.message)
 
 
 def evaluate(*params):
