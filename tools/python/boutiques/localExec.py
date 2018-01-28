@@ -58,7 +58,7 @@ class LocalExecutor(object):
     if (not self.con is None) and self.con['type'] not in conEngines:
         msg = 'Other container types than {} (e.g. {}) are not yet supported'
         raise ValueError(msg.format(", ".join(conEngines), self.con['type']))
-
+  
   # Attempt local execution of the command line generated from the input values
   def execute(self, mount_strings):
     '''
@@ -338,6 +338,10 @@ class LocalExecutor(object):
     # Fix special flag case: flags given the false value are treated as non-existent
     toRm = []
     for inprm in self.in_dict:
+      try: id = self.byId(inprm)
+      except Exception: #Avoid an incorrect input.json entry
+        sys.stderr.write("ERROR: An error occured in your input json having an unknown parameter {0}\n".format(inprm))
+        raise
       if str(self.in_dict[inprm]).lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
         toRm.append(inprm)
       elif self.byId(inprm)['type'] == 'Flag' and self.in_dict[inprm] == True:
