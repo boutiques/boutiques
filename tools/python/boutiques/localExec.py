@@ -340,7 +340,7 @@ class LocalExecutor(object):
     for inprm in self.in_dict:
       try: id = self.byId(inprm)
       except Exception: #Avoid an incorrect input.json entry
-        sys.stderr.write("Error: An error occured in your input json having an unknown parameter {0}\n".format(inprm))
+        sys.stderr.write("ERROR: An error occured in your input json having an unknown parameter {0}\n".format(inprm))
         raise
       if str(self.in_dict[inprm]).lower() == 'false' and self.byId(inprm)['type'] == 'Flag':
         toRm.append(inprm)
