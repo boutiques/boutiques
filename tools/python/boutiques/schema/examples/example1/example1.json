@@ -124,7 +124,18 @@
             "path-template": "./config.txt", 
             "value-key": "[CONFIG_FILE]"
         }
-    ], 
+    ],
+    "tags": {
+	"domain": "testing",
+	"programming-language": "Python",
+	"foo": "bar"
+    },
     "schema-version": "0.5", 
-    "tool-version": "0.0.1"
+    "tool-version": "0.0.1",
+    "error-codes": [
+        {
+        "code": 2,
+        "description": "File does not exist!"
+        }
+    ]
 }
