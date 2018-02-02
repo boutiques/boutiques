@@ -17,6 +17,7 @@ def main(args=None):
     parser.add_argument('-c', '--config_file', type=lambda x:file_exists(parser,x),
                          help='A config file with a number.')
     parser.add_argument('-i', '--string_input', nargs='+', help='One or more strings.')
+    parser.add_argument('-l', '--int_input', nargs='+', help='One or more ints.', type=int)
     parser.add_argument('file', metavar='file_input',
                         type=lambda x: file_exists(parser, x),
                         nargs=1, help='Any existing file.')

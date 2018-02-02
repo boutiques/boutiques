@@ -392,7 +392,7 @@ class LocalExecutor(object):
           if type(val) is list:
             s_val = ""
             for x in val:
-              s_val += x+" "
+              s_val += str(x) + " "
             val = s_val
           else:
               val = str(val)

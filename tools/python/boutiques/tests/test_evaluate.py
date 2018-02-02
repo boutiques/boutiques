@@ -37,6 +37,7 @@ class TestEvaluate(TestCase):
                   'num_input': None,
                   'file_input': './setup.py',
                   'enum_input': 'val1',
+                  'list_int_input': [1, 2, 3],
                   'flag_input': None}
         assert(query == expect)
         
@@ -45,7 +46,8 @@ class TestEvaluate(TestCase):
                               "inputs/type=Number")
         expect = [ {'flag_input': None},
                    {'config_num': 4,
-                    'num_input': None} ]
+                    'num_input': None,
+                    'list_int_input': [1, 2, 3]} ]
         assert(query == expect)
 
         query = bosh.evaluate(self.desc, self.invo, "inputs/id=strinputs")
