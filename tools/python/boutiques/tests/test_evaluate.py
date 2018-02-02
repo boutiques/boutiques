@@ -37,7 +37,7 @@ class TestEvaluate(TestCase):
                   'num_input': None,
                   'file_input': './setup.py',
                   'enum_input': 'val1',
-                  'list_int_input': [1, 2, 3]
+                  'list_int_input': [1, 2, 3],
                   'flag_input': None}
         assert(query == expect)
         
