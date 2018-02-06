@@ -421,7 +421,7 @@
 				    "properties": {
 					"path": {
 					    "id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/assertions\/out-files\/output\/path",
-					    "description": "Expected path of one of the outputted file",
+					    "description": "Expected path of one of the output file",
 					    "minLength": 1,
 					    "type": "string"
 					},
