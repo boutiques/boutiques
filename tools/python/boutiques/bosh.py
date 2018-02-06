@@ -307,7 +307,7 @@ def bosh(args=None):
                         "Invocation: generates the invocation schema for a "
                         "given descriptor.",
                         choices=["validate", "exec", "import",
-                                 "publish", "invocation"])
+                                 "publish", "invocation", "test"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
 
@@ -330,6 +330,9 @@ def bosh(args=None):
     elif func == "invocation":
         out = invocation(*params)
         return out
+    elif func == "test":
+        out = test(*params)
+        return out
     else:
         parser.print_help()
-        raise SystemExit 
+        raise SystemExit
