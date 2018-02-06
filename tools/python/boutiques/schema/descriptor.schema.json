@@ -384,6 +384,80 @@
 	    "minItems": 1,
 	    "uniqueItems": true
         },
+	"tests": {
+	    "id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests",
+	    "type": "array",
+	    "minItems": 1,
+	    "items": {
+		"id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case",
+		"type": "object",
+		"properties": {
+		    "name": {
+			"id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/name",
+			"minLength": 1,
+			"description": "Name of the test-case",
+			"type": "string"
+		    },
+		    "invocation": {
+			"id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/invocation",
+			"type": "object"
+		    },
+		    "assertions": {
+			"id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/assertions",
+			"type": "object",
+			"properties": {
+			    "exit-code": {
+				"id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/assertions\/exit-code",
+				"description": "Expected code returned by the program.",
+				"type": "integer"
+			    },
+			    "output-files": {
+				"id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/assertions\/out-files",
+				"type": "array",
+				"minItems": 1,
+				"items": {
+				    "id": "http:\/\/github.com\/boutiques\/boutiques-schema\/test-case\/assertions\/out-files\/output",
+				    "type": "object",
+				    "properties": {
+					"path": {
+					    "id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/assertions\/out-files\/output\/path",
+					    "description": "Expected path of one of the outputted file",
+					    "minLength": 1,
+					    "type": "string"
+					},
+					"reference": {
+					    "id": "http:\/\/github.com\/boutiques\/boutiques-schema\/tests\/test-case\/assertions\/out-files\/output\/reference",
+					    "description": "Path to a file for which its content should be matched against a specific outputted file. The outputted file to match should be the one for which its path equals to the one specified in the path field.",
+					    "minLength": 1,
+					    "type": "string"
+					}
+				    },
+				    "required": [
+					"path"
+				    ]
+				}
+			    }
+			},
+			"anyOf": [
+			    {
+				"required": [
+				    "exit-code"
+				]
+			    },
+			    {
+				"required": [
+				    "out-files"
+				]
+			    }
+			]
+		    }
+		},
+		"required": [
+		    "name",
+		    "assertions"
+		]
+	    }
+	},
         "output-files": {
             "id": "http://github.com/boutiques/boutiques-schema/output-files",
             "type": "array",

@@ -277,6 +277,60 @@ def evaluate(*params):
     return query_results[0] if len(query_results) == 1 else query_results
 
 
+def test(*params):
+	#TODO
+	parser = ArgumentParser("Perform all the tests defined within the given descriptor")
+	#TODO
+	parser.add_argument("descriptor", action="store", help="The Boutiques descriptor.")
+	result = parser.parse_args(params)
+
+
+	
+	# First step: Generation of the invocation schema (and document validation).
+	invocation(result.descriptor)
+
+
+	# Second step: Extraction of all the invocations defined for the test-cases.
+	descriptor = json.loads(open(result.descriptor).read())
+	import StringIO
+	invocationFiles = []
+	
+	if (not descriptor.has_key("tests")):
+		raise SystemExit("No test found in descriptor")
+	
+	noInvocations = True
+	
+	for test in descriptor["tests"]:
+		
+		# Test may be defined but invocation may be missing.
+		# In such a case we have no choice but to consider the test invalid.
+		if (not test.has_key("invocation")):
+			continue
+		
+		noInvocations = False
+		
+		# Create temporary file for the invocation() function.
+		import tempfile
+		invocationJSON = test["invocation"];
+		tempInvocationJSON = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+		tempInvocationJSON.write(json.dumps(invocationJSON))
+		tempInvocationJSON.seek(0)
+		
+		# Check if the invocation is valid.
+		invocation(result.descriptor, "--invocation", tempInvocationJSON.name)
+		
+		# Destroy the temporary file.
+		temporaryInvocationJSON.close()
+		
+	# Make sure that we have found at least one test with an invocation defined in the descriptor.
+	if (noInvocations == True):
+		raise SystemExit("Test(s) found inside descriptor are missing invocations.")
+		
+	# Third step: Now all the invocations have been properly validated. We only need to launch the actual tests.
+	import pytest
+	pytest.main(["test.py", "--descriptor", result.descriptor])
+        
+
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
                             add_help=False)
@@ -292,7 +346,7 @@ def bosh(args=None):
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties.",
                         choices=["validate", "exec", "import",
-                                 "publish", "invocation", "evaluate"])
+                                 "publish", "invocation", "evaluate", "test"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
 
@@ -318,6 +372,9 @@ def bosh(args=None):
     elif func == "evaluate":
         out = evaluate(*params)
         return out
+    elif func == "test":
+        out = test(*params)
+        return out
     else:
         parser.print_help()
-        raise SystemExit 
+        raise SystemExit
