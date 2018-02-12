@@ -1,9 +1,7 @@
 import json, tempfile
 
 def pytest_addoption(parser):
-    parser.addoption("--descriptor", action="append", default=[],
-        help="list of stringinputs to pass to test functions")
-
+    parser.addoption("--descriptor", action="append", default=[])
 
 def fetchTests(descriptorFileName):
 	descriptor = json.loads(open(descriptorFileName).read());
@@ -12,11 +10,6 @@ def fetchTests(descriptorFileName):
 	
 	# For each test present in the descriptor:
 	for test in descriptor["tests"]:
-
-		# Invocations may not have specified. In such case, we simply skip the current test.
-		if (not test.has_key("invocation")):
-			continue	
-
 		# We first extract the invocation and put it inside a temporary file.
 		invocationJSON = json.dumps(test["invocation"])
 		tempInvocationJSON = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
@@ -30,11 +23,8 @@ def fetchTests(descriptorFileName):
 		print("test added");
 	return tests;
 	
-
-
 def pytest_generate_tests(metafunc):
 	descriptorFileName =  metafunc.config.getoption('descriptor')
 	print(descriptorFileName[0]);
 	tests = fetchTests(descriptorFileName[0]);
-
 	metafunc.parametrize("descriptor, test, invocation", tests)
