@@ -559,3 +559,10 @@ class LocalExecutor(object):
       sys.stderr.write("Problems found with prospective input:\n")
       for err in self.errs: sys.stderr.write("\t" + err + "\n")
       sys.exit(1)
+
+  # Return a dictionary mapping output ids to computed output file paths
+  # Require an input file
+  def getOutputFiles(self, inp):
+    self.readInput(inp)
+    self._generateOutputFileNames()
+    return self.out_dict
