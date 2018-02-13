@@ -16,29 +16,29 @@ class TestExample1(TestCase):
         self.assertFalse(bosh(["exec", "simulate",
                                os.path.join(example1_dir, "example1.json"),
                                "-i",
-                               os.path.join(example1_dir, "invocation.json")]))
+                               os.path.join(example1_dir, "invocation.json")])[0])
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(), reason="Docker not installed")
     def test_example1_exec(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")       
         self.assertFalse(bosh(["exec", "launch",
                                os.path.join(example1_dir, "example1.json"),
-                               os.path.join(example1_dir, "invocation.json")]))
+                               os.path.join(example1_dir, "invocation.json")])[0])
         self.assertFalse(bosh(["exec", "launch",
                                os.path.join(example1_dir, "example1.json"),
                                "-x",
-                               os.path.join(example1_dir, "invocation.json")]))
+                               os.path.join(example1_dir, "invocation.json")])[0])
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(), reason="Docker not installed")
     def test_example1_exec_missing_script(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        with self.assertRaises(SystemExit) as context:
-           bosh(["exec", "launch", os.path.join(example1_dir, "example1.json"),
+        (exit_code, stdout, stderr) = bosh(["exec", "launch", os.path.join(example1_dir, "example1.json"),
                   os.path.join(example1_dir, "invocation_missing_script.json")])
-        self.assertTrue('Example Boutiques Tool ERR (2): File does not exist!' in context.exception.args[0])
+        self.assertTrue(exit_code)
+        self.assertTrue('Example Boutiques Tool ERR (2): File does not exist!' in stderr)
 
     def test_example1_no_exec_random(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")       
         self.assertFalse(bosh(["exec", "simulate",
                                os.path.join(example1_dir, "example1.json"),
-                               "-r", "3"]))
+                               "-r", "3"])[0])

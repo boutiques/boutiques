@@ -84,8 +84,8 @@ def execute(*params):
         # Execute it
         exit_code, stdout, stderr = executor.execute(results.volumes)
         print("Exit code: {}".format(exit_code))
-        print("Standard output: {}".format(stdout))
-        print("Standard error: {}".format(stderr))
+        print("Standard output: \"{}\"".format(stdout))
+        print("Standard error: \"{}\"".format(stderr))
         return (exit_code, stdout, stderr)
 
     if mode == "simulate":
