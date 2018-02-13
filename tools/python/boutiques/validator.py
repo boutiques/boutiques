@@ -226,7 +226,35 @@ def validate_descriptor(json_file):
             errors += [msg_template.format(grp["id"], member)
                        for member in set(grp["members"])
                        if member in inIds and not inById(member)["optional"]]
-
+    
+    # Verify tests
+    if "tests" in descriptor.keys():
+        tests_names = []
+        for test in descriptor["tests"]:
+            
+            tests_names.append(test["name"])
+            if "output-files" in test["assertions"].keys():
+                test_output_ids = safeGet(test["assertions"], "output-files", "id")
+                
+                # Verify if output reference ids are valid
+                msg_template = "  TestError: \"{}\" output id not found, in test \"{}\""
+                errors += [msg_template.format(output_id , test["name"])
+                           for output_id in test_output_ids
+                           if (output_id not in outIds)]
+                
+                # Verify that we do not have multiple output references refering to the same id
+                msg_template = "  TestError: \"{}\" output id cannot appear more than once within same test, in test \"{}\""
+                errors += [msg_template.format(output_id , test["name"])
+                           for output_id in set(test_output_ids)
+                           if (test_output_ids.count(output_id) > 1)]
+            
+        # Verify that all the defined tests have unique names
+        msg_template = "  TestError: \"{}\" test name is non-unique"
+        errors += [msg_template.format(test_name)
+        	   for test_name in set(tests_names)
+                   if (tests_names.count(test_name) > 1)]
+    
+					   
     errors = None if errors == [] else errors
     if errors is None:
         print("Boutiques validation OK")
