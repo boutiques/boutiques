@@ -264,10 +264,6 @@
                     {
                         "id": "logfile",
                         "reference": "./boutiques/schema/examples/ref_log.txt"
-                    },
-                    {
-                        "id": "config_file",
-                        "reference": "./boutiques/schema/examples/ref_config.txt"
                     }
                 ]
             },
