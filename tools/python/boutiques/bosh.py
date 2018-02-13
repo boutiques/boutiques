@@ -83,10 +83,10 @@ def execute(*params):
         executor.readInput(inp)
         # Execute it
         exit_code, stdout, stderr = executor.execute(results.volumes)
-        print("Exit code: "+exit_code)
-        print("Standard output: "+stdout)
-        print("Standard error: "+stderr)
-        return (exit_code, out_msg, err_msg)
+        print("Exit code: {}".format(exit_code))
+        print("Standard output: {}".format(stdout))
+        print("Standard error: {}".format(stderr))
+        return (exit_code, stdout, stderr)
 
     if mode == "simulate":
         parser = ArgumentParser("Simulates an invocation.")
@@ -287,29 +287,30 @@ def test(*params):
     parser.add_argument("descriptor", action="store", help="The Boutiques descriptor.")
     result = parser.parse_args(params)
 
-    # First step: Generation of the invocation schema (and descriptor validation).
+    # Generation of the invocation schema (and descriptor validation).
     invocation(result.descriptor)
     
-    # Second step: Extraction of all the invocations defined for the test-cases.
+    # Extraction of all the invocations defined for the test-cases.
     descriptor = json.loads(open(result.descriptor).read())
-    invocationFiles = []
     
-    if (not descriptor.has_key("tests")):
+    if (not descriptor.get("tests")):
         raise SystemExit("No test found in descriptor")
     
     for test in descriptor["tests"]:
-	# Create temporary file for the invocation() function.
-	invocationJSON = test["invocation"];
-	tempInvocationJSON = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
-	tempInvocationJSON.write(json.dumps(invocationJSON))
-	tempInvocationJSON.seek(0)
-	# Check if the invocation is valid.
-	invocation(result.descriptor, "--invocation", tempInvocationJSON.name)
-	# Destroy the temporary file.
-	tempInvocationJSON.close()
+        # Create temporary file for the invocation() function.
+        invocation_JSON = test["invocation"];
+        temp_invocation_JSON = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+        temp_invocation_JSON.write(json.dumps(invocation_JSON).encode())
+        temp_invocation_JSON.seek(0)
+        # Check if the invocation is valid.
+        invocation(result.descriptor, "--invocation", temp_invocation_JSON.name)
+        # Destroy the temporary file.
+        temp_invocation_JSON.close()
 	
-    # Third step: Now all the invocations have been properly validated. We only need to launch the actual tests.
-    pytest.main(["test.py", "--descriptor", result.descriptor])
+    # Now all the invocations have been properly validated. We only need to launch the actual tests.
+    test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test.py")
+    return pytest.main([test_path, "--descriptor", result.descriptor])
+ 
 
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
