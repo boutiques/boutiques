@@ -5,10 +5,7 @@ import hashlib
 import pytest
 
 
-def test(descriptor, test, invocation):
-    print("invocation: %s" % invocation.name);
-    print("test: %s" % test["name"])
-    
+def test(descriptor, test, invocation):    
     # Run pipeline.
     exit_code, stdout, stderr = bosh(["exec", "launch", descriptor, invocation.name])
     
