@@ -129,8 +129,9 @@ class LocalExecutor(object):
     # Otherwise, just run command locally
     else:
       (stdout, stderr), exit_code = self._localExecute( command )
-    if stdout != '': print('Execution output: '+ str(stdout))
     # Report exit status
+    print('---/* Begin program output */---')
+    if stdout != '': print(stdout.decode('utf-8'))
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.

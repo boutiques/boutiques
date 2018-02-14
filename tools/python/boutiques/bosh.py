@@ -82,8 +82,6 @@ def execute(*params):
         executor.readInput(inp)
         # Execute it
         stdout, stderr, exit_code, err_msg = executor.execute(results.volumes)
-        print(stdout)
-        print(stderr)
         if exit_code:
             raise SystemExit(err_msg)
 
