@@ -160,7 +160,7 @@ class LocalExecutor(object):
     if desc_err != '':
         error_msg += '{0}{1} ERR ({2}): {3}'.format('\n' if error_msg != '' else '', self.desc_dict['name'], exit_code, desc_err)
     
-    return exit_code, stdout, error_msg
+    return stdout, stderr, exit_code, error_msg
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
