@@ -41,7 +41,7 @@ setup(name="boutiques",
         ]
       },
       data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),
-                  ("bids-template", ["boutiques/bids-app-template/template.json"]),
+                  ("bids-app-template", ["boutiques/bids-app-template/template.json"]),
                   ("neurolinks-template", ["boutiques/neurolinks-template/tool.json"]),
                   ("exgood", ["boutiques/schema/examples/good.json"]),
                   ("exinvalid", ["boutiques/schema/examples/invalid.json"]),
