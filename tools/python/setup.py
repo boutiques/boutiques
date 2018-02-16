@@ -40,13 +40,11 @@ setup(name="boutiques",
             "bosh=boutiques.bosh:bosh",
         ]
       },
-      data_files=[("schema", ["boutiques/schema/descriptor.schema.json"]),
-                  ("bids-app-template", ["boutiques/bids-app-template/template.json"]),
-                  ("neurolinks-template", ["boutiques/neurolinks-template/tool.json"]),
-                  ("exgood", ["boutiques/schema/examples/good.json"]),
-                  ("exinvalid", ["boutiques/schema/examples/invalid.json"]),
-                  ("exbidsgood", ["boutiques/schema/examples/bids_good.json"]),
-                  ("exbidsbad1", ["boutiques/schema/examples/bids_bad1.json"]),
-                  ("exbidsbad2", ["boutiques/schema/examples/bids_bad2.json"]),
-                  ("exbad", ["boutiques/schema/examples/bad.json"])],
+      package_data = { "boutiques": [
+                          "boutiques/schema/descriptor.schema.json",
+                          "boutiques/bids-app-template/template.json",
+                          "boutiques/neurolinks-template/tool.json",
+                          "boutiques/schema/examples/*.json"
+                        ]
+                     },
       zip_safe=False)
