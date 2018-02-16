@@ -40,11 +40,4 @@ setup(name="boutiques",
             "bosh=boutiques.bosh:bosh",
         ]
       },
-      package_data = { "boutiques": [
-                          "boutiques/schema/descriptor.schema.json",
-                          "boutiques/bids-app-template/template.json",
-                          "boutiques/neurolinks-template/tool.json",
-                          "boutiques/schema/examples/*.json"
-                        ]
-                     },
       zip_safe=False)

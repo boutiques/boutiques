@@ -1,4 +1,4 @@
 include requirements.txt
-include boutiques/schema/
-include boutiques/bids-app-template/
-include boutiques/neurolinks-template/
+recursive-include boutiques/schema/ *
+recursive-include boutiques/bids-app-template/ *
+recursive-include boutiques/neurolinks-template/ *
