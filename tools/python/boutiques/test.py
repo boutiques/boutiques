@@ -16,10 +16,8 @@ def test(descriptor, test, invocation):
     
     if "output-files" in assertions:
     
-        # Setting up a new LocalExecutor instance just for the sake of computing the list of output files path, coupled with their respective ids.
-        executor = localExec.LocalExecutor(descriptor,
-                                 {"forcePathType"      : True})
-        outputted = executor.getOutputFiles(invocation.name)
+        # Acquiring a hash map of output ids mapping to output file paths.
+        outputted = bosh(["evaluate", descriptor, invocation.name, "output-files/"])
         
         for output_file in assertions["output-files"]:
             
