@@ -456,7 +456,7 @@
                 "required": [
                   "name",
                   "assertions",
-		  "invocation"
+                  "invocation"
                 ]
             }
         },
