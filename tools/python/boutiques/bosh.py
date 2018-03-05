@@ -4,6 +4,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 import jsonschema
 import json
 import os, sys
+import os.path as op
 import tempfile
 import pytest
 
@@ -291,10 +292,12 @@ def test(*params):
     invocation(result.descriptor)
     
     # Extraction of all the invocations defined for the test-cases.
-    descriptor = json.loads(open(result.descriptor).read())
+    with open(result.descriptor) as fhandle:
+        descriptor = json.loads(fhandle.read())   # might just need to be `fhandle` in this context, but not sure    
     
     if (not descriptor.get("tests")):
-        raise SystemExit("No test found in descriptor")
+        # If no tests have been specified, we simply consider that testing was successful.
+        return 0
     
     for test in descriptor["tests"]:
         # Create temporary file for the invocation() function.
@@ -308,7 +311,8 @@ def test(*params):
         temp_invocation_JSON.close()
 	
     # Now all the invocations have been properly validated. We only need to launch the actual tests.
-    test_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test.py")
+
+    test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
     return pytest.main([test_path, "--descriptor", result.descriptor])
  
 
