@@ -33,7 +33,7 @@ class TestExample1(TestCase):
     def test_example1_exec_missing_script(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         (exit_code, stdout, stderr) = bosh(["exec", "launch", os.path.join(example1_dir, "example1.json"),
-                  os.path.join(example1_dir, "invocation_missing_script.json")])
+                                            os.path.join(example1_dir, "invocation_missing_script.json")])
         self.assertTrue(exit_code)
         self.assertTrue('Example Boutiques Tool ERR (2): File does not exist!' in stderr)
 
