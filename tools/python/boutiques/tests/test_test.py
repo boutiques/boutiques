@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import os, subprocess, pytest
+import subprocess, pytest
+import os.path as op
 from unittest import TestCase
 from boutiques import __file__ as bfile
 from boutiques import bosh
@@ -9,18 +10,18 @@ from jsonschema.exceptions import ValidationError
 class TestTest(TestCase):
 
     def get_examples_dir(self):
-        return os.path.join(os.path.dirname(bfile),
-                            "schema", "examples")
+        return op.join(op.dirname(bfile),
+                       "schema", "examples")
     
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(), reason="Docker not installed")
     def test_test_good(self):
         self.assertFalse(bosh(["test",
-                     os.path.join(self.get_examples_dir(), "tests_good.json")]))
+                               op.join(self.get_examples_dir(), "tests_good.json")]))
 
     def test_test_invalid(self):
         with self.assertRaises(ValidationError) as context:
            bosh(["test",
-                  os.path.join(self.get_examples_dir(), "tests_invalid.json")])
+                 op.join(self.get_examples_dir(), "tests_invalid.json")])
         error_1 = "TestError: \"this_id_does_not_exist\" output id not found, in test \"test1\""  
         error_2 = "TestError: \"logfile\" output id cannot appear more than once within same test, in test \"test1\""
         error_3 = "TestError: \"testNameDefinedTwice\" test name is non-unique"
@@ -36,14 +37,14 @@ class TestTest(TestCase):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(), reason="Docker not installed")
     def test_test_failure_mismatched_exitcode(self):
         self.assertEqual(1, bosh(["test",
-                                  os.path.join(self.get_examples_dir(), "tests_failure_exitcode.json")]))
+                                  op.join(self.get_examples_dir(), "tests_failure_exitcode.json")]))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(), reason="Docker not installed")
     def test_test_failure_mismatched_reference_content(self):
         self.assertEqual(1, bosh(["test",
-                                  os.path.join(self.get_examples_dir(), "tests_failure_reference.json")]))
+                                  op.join(self.get_examples_dir(), "tests_failure_reference.json")]))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(), reason="Docker not installed")
     def test_test_failure_unproduced_output(self):
         self.assertEqual(1, bosh(["test",
-                                  os.path.join(self.get_examples_dir(), "tests_failure_output_id.json")]))
+                                  op.join(self.get_examples_dir(), "tests_failure_output_id.json")]))
