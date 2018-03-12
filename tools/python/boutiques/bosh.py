@@ -82,10 +82,7 @@ def execute(*params):
         executor.readInput(inp)
         # Execute it
         stdout, stderr, exit_code, err_msg = executor.execute(results.volumes)
-        if exit_code:
-            raise SystemExit(err_msg)
-        else:
-            return stdout, stderr, exit_code
+        return stdout, stderr, exit_code, err_msg
 
     if mode == "simulate":
         parser = ArgumentParser("Simulates an invocation.")
