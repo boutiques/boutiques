@@ -32,7 +32,7 @@ from boutiques import __file__ as bfile
 
 
 # Main validation module
-def validate_descriptor(json_file):
+def validate_descriptor(json_file, **kwargs):
     """
     Validates the Boutiques descriptor against the schema.
     """
@@ -229,7 +229,8 @@ def validate_descriptor(json_file):
 
     errors = None if errors == [] else errors
     if errors is None:
-        print("Boutiques validation OK")
+        if kwargs.get("verbose"):
+            print("Boutiques validation OK")
         return descriptor
     else:
         raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
