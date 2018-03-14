@@ -128,7 +128,6 @@ def execute(*params):
             executor.readInput(inp)
             executor.printCmdLine()
 
-
 def importer(*params):
     parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
     parser.add_argument("type", help="Type of import we are performing",
@@ -147,7 +146,24 @@ def importer(*params):
     elif results.type == "bids":
         importer.import_bids(inp)
 
+def exporter(*params):
+    parser = ArgumentParser("Export Boutiques descriptor to other formats.")
+    parser.add_argument("type", help="Type of export we are performing. For carmin, pipeline id is set to the output file name.",
+                        choices=["carmin"])
+    parser.add_argument("descriptor", help="Boutiques descriptor to export.")
+    parser.add_argument("output", help="Output file where to write the converted descriptor.")
+    results = parser.parse_args(params)
 
+    descriptor = results.descriptor
+    output = results.output
+
+    bosh(["validate", results.descriptor])
+    
+    from boutiques.exporter import Exporter
+    exporter = Exporter(descriptor)
+    if results.type == "carmin":
+        exporter.carmin(output)
+        
 def publish(*params):
     neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
     neurolinks_dest_path = os.path.join(os.getenv("HOME"),"neurolinks")
@@ -275,7 +291,6 @@ def evaluate(*params):
         query_results += [ evaluateEngine(executor, query) ]
     return query_results[0] if len(query_results) == 1 else query_results
 
-
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
                             add_help=False)
@@ -285,12 +300,13 @@ def bosh(args=None):
                         "Exec: launches or simulates an execution given a "
                         "descriptor and a set of inputs. Import: creates a "
                         "descriptor for a BIDS app or updates a descriptor "
-                        "from an older version of the schema. Publish: creates"
+                        "from an older version of the schema. Export: exports a"
+                        "descriptor to other formats. Publish: creates"
                         "an entry in NeuroLinks for the descriptor and tool."
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties.",
-                        choices=["validate", "exec", "import",
+                        choices=["validate", "exec", "import", "export",
                                  "publish", "invocation", "evaluate"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -308,6 +324,9 @@ def bosh(args=None):
     elif func == "import":
         out = importer(*params)
         return out
+    elif func == "export":
+        out = exporter(*params)
+        return out
     elif func == "publish":
         out = publish(*params)
         return out
@@ -319,4 +338,4 @@ def bosh(args=None):
         return out
     else:
         parser.print_help()
-        raise SystemExit 
+        raise SystemExit
