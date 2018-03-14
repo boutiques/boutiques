@@ -158,12 +158,7 @@ def exporter(*params):
     descriptor = results.descriptor
     output = results.output
 
-    try:
-        from jsonschema import ValidationError
-        validate(results.descriptor)
-    except ValidationError as e:
-        print("Error reading JSON:")
-        raise ValidationError(e.message)
+    bosh(["validate", results.descriptor])
     
     from boutiques.exporter import Exporter
     exporter = Exporter(descriptor)
