@@ -257,7 +257,7 @@ def invocation(*params):
         try:
             validateSchema(invSchema, data)
         except ValidationError as e:
-            print("Invalid invcoation:")
+            print("Invalid invocation:")
             raise ValidationError(e.message)
 
 
