@@ -286,5 +286,20 @@
         "ram": 12,
         "walltime-estimate": 3600
     },
+    "tags": {
+	"domain": "testing",
+	"status": "experimental",
+	"foo": "bar"	
+    },
+    "error-codes": [
+	    {
+		"code": 1,
+		"description": "crashed"
+	    },
+	    {
+		"code": 12,
+		"description": "crashed badly"
+	    }
+    ],
     "tool-version": "v0.0.41-1"
 }

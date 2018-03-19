@@ -48,7 +48,7 @@ class LocalExecutor(object):
     # Returns the required inputs of a given input id, or the empty string
     self.reqsOf     = lambda t: self.safeGet(t,"requires-inputs") or []
     ## Container-image Options ##
-    self.con = self.desc_dict['container-image']
+    self.con = self.desc_dict.get('container-image')
     self.launchDir = None if self.con is None else self.con.get('working-directory')
     ## Extra Options ##
     # Include: forcePathType and destroyTempScripts
@@ -97,7 +97,7 @@ class LocalExecutor(object):
         if self._localExecute("singularity pull --name \"{}\" {}{}".format(conName, conIndex, conImage)):
           print("Container not found online - trying local copy")
       else:
-        print('Unrecognized container type: \"%s\"'%conType)
+        print('Unrecognized container type: \"%s\"'%conType) 
         sys.exit(1)
       # Generate command script
       uname, uid = pwd.getpwuid( os.getuid() )[ 0 ], str(os.getuid())
@@ -133,11 +133,13 @@ class LocalExecutor(object):
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
       print('Executing via: ' + dcmd)
-      exit_code = self._localExecute( dcmd )
+      (stdout, stderr), exit_code = self._localExecute( dcmd )
     # Otherwise, just run command locally
     else:
-      exit_code = self._localExecute( command )
+      (stdout, stderr), exit_code = self._localExecute( command )
     # Report exit status
+    print('---/* Begin program output */---')
+    if stdout != '': print(stdout.decode('utf-8'))
     print('---/* End program output */---\nCompleted execution (exit code: ' + str(exit_code) + ')')
     time.sleep(0.5) # Give the OS a (half) second to finish writing
     # Destroy temporary docker script, if desired. By default, keep the script so the dev can look at it.
@@ -155,7 +157,19 @@ class LocalExecutor(object):
       s2 = '' if exists else 'not '
       err = "Error! " if (not isOptional and not exists) else '' # Add error warning when required file is missing
       print("\t"+err+s1+" output file \'"+outfile['name']+"\' was "+s2+"found at "+ outFileName)
-    return exit_code
+    desc_err = ''
+    if 'error-codes' in list(self.desc_dict.keys()):
+      for err_elem in self.desc_dict['error-codes']:
+         if err_elem['code'] == exit_code:
+            desc_err = err_elem['description']
+            break
+    error_msg = ''
+    if stderr != b'':
+        error_msg = 'Execution ERR ({0}): {1}'.format(exit_code, stderr)
+    if desc_err != '':
+        error_msg += '{0}{1} ERR ({2}): {3}'.format('\n' if error_msg != '' else '', self.desc_dict['name'], exit_code, desc_err)
+
+    return stdout, stderr, exit_code, error_msg
 
   # Private method that attempts to locally execute the given command. Returns the exit code.
   def _localExecute(self,command):
@@ -163,6 +177,7 @@ class LocalExecutor(object):
       process = subprocess.Popen(command, shell=True,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
+
     except OSError as e:
       sys.stderr.write('OS Error during attempted execution!')
       raise e
@@ -170,7 +185,8 @@ class LocalExecutor(object):
       sys.stderr.write( 'Input Value Error during attempted execution!' )
       raise e
     else:
-      return process.wait()
+      return process.communicate(), process.returncode
+
 
   # Private method to generate a random input parameter set that follows the constraints from the json descriptor
   # This method fills in the in_dict field of the object with constrained random values
@@ -286,7 +302,7 @@ class LocalExecutor(object):
     # Choose a random number of times to try to fill optional inputs
     opts = [p for p in self.inputs if self.safeGet(p['id'],'') in [None,True]]
     # Loop a random number of times, each time attempting to fill a random parameter
-    for _ in range(rnd.randint( len(opts) / 2 + 1, len(opts) * 2)):
+    for _ in range(rnd.randint( int(len(opts) / 2 + 1), len(opts) * 2)):
       targ = rnd.choice( opts ) # Choose an optional output
       # If it is already filled in, continue
       if targ['id'] in list(self.in_dict.keys()): continue
@@ -385,7 +401,7 @@ class LocalExecutor(object):
           if type(val) is list:
             s_val = ""
             for x in val:
-              s_val += x+" "
+              s_val += str(x) + " "
             val = s_val
           else:
               val = str(val)
