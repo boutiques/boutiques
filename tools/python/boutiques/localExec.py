@@ -85,17 +85,21 @@ class LocalExecutor(object):
     if conIsPresent:
       if conType == 'docker':
         # Pull the docker image
-        if self._localExecute("docker pull " + str(conImage)):
+        if self._localExecute("docker pull " + str(conImage))[1]:
           print("Container not found online - trying local copy")
       elif conType == 'singularity':
         if not conIndex:
           conIndex = "shub://"
         elif not conIndex.endswith("://"):
           conIndex = conIndex + "://"
-        conName = conImage.replace("/", "-") + ".img"
-        # Pull the docker image
-        if self._localExecute("singularity pull --name \"{}\" {}{}".format(conName, conIndex, conImage)):
-          print("Container not found online - trying local copy")
+        conName = conImage.replace("/", "-") + ".simg"
+
+        if conName not in os.listdir('./'):
+          print(os.listdir('./'))
+          # Pull the singularity image
+          if self._localExecute("singularity pull --name \"{}\" {}{}".format(conName, conIndex, conImage))[1]:
+            print("Container not found online - trying local copy")
+        conName = op.abspath(conName)
       else:
         print('Unrecognized container type: \"%s\"'%conType) 
         sys.exit(1)
