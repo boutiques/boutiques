@@ -22,11 +22,11 @@ class TestExample2(TestCase):
         example2_dir = os.path.join(self.get_examples_dir(), "example2")       
         self.assertFalse(bosh(["exec", "launch",
                                os.path.join(example2_dir, "example2.json"),
-                               os.path.join(example2_dir, "invocation.json")]))
+                               os.path.join(example2_dir, "invocation.json")])[2])
         self.assertFalse(bosh(["exec", "launch",
                                os.path.join(example2_dir, "example2.json"),
                                "-x",
-                               os.path.join(example2_dir, "invocation.json")]))
+                               os.path.join(example2_dir, "invocation.json")])[2])
 
     def test_example2_no_exec_random(self):
         example2_dir = os.path.join(self.get_examples_dir(), "example2")       
