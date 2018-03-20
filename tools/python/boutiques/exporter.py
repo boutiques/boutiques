@@ -67,7 +67,7 @@ class Exporter():
         with open(self.descriptor, 'r') as fhandle:
             descriptor = json.load(fhandle)
 
-        carmin_desc['id'] = os.path.splitext(self.descriptor)[0] # not ideal
+        carmin_desc['identifier'] = os.path.splitext(self.descriptor)[0] # not ideal
         carmin_desc['name'] = descriptor.get('name')
         carmin_desc['version'] = descriptor.get('tool-version')
         carmin_desc['description'] = descriptor.get('description')
