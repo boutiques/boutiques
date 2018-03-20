@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse, os, sys, json, random as rnd, string, math, random, subprocess, time, pwd
+import argparse, os, sys, json, random as rnd, string, math, random, subprocess, time, pwd, os.path as op
 
 # Executor class
 class LocalExecutor(object):
@@ -69,7 +69,7 @@ class LocalExecutor(object):
     command, exit_code, con = self.cmdLine[0], None, self.con or {}
     print('Attempting execution of command:\n\t' + command + '\n---/* Start program output */---')
     # Check for Container image
-    conType, conImage = con.get('type'), con.get('image')
+    conType, conImage, conIndex = con.get('type'), con.get('image'), con.get("index")
     conIsPresent = (not conImage is None) 
     # Export environment variables, if they are specified in the descriptor
     envVars = {}
@@ -80,16 +80,26 @@ class LocalExecutor(object):
     # Note that docker/singularity cannot do a local volume mount of files starting with a '.', hence this one does not
     millitime = int(time.time()*1000)
     dsname = 'temp-' + str(random.SystemRandom().randint(0,int(millitime))) + "-" + str(millitime) + '.localExec.boshjob.sh' # time tag to avoid overwrites
+    dsname = op.realpath(dsname)
     # If container is present, alter the command template accordingly
     if conIsPresent:
       if conType == 'docker':
         # Pull the docker image
-        if self._localExecute("docker pull " + str(conImage)):
+        if self._localExecute("docker pull " + str(conImage))[1]:
           print("Container not found online - trying local copy")
       elif conType == 'singularity':
-        # Pull the docker image
-        if self._localExecute("singularity pull shub://" + str(conImage)):
-          print("Container not found online - trying local copy")
+        if not conIndex:
+          conIndex = "shub://"
+        elif not conIndex.endswith("://"):
+          conIndex = conIndex + "://"
+        conName = conImage.replace("/", "-") + ".simg"
+
+        if conName not in os.listdir('./'):
+          print(os.listdir('./'))
+          # Pull the singularity image
+          if self._localExecute("singularity pull --name \"{}\" {}{}".format(conName, conIndex, conImage))[1]:
+            print("Container not found online - trying local copy")
+        conName = op.abspath(conName)
       else:
         print('Unrecognized container type: \"%s\"'%conType) 
         sys.exit(1)
@@ -109,18 +119,20 @@ class LocalExecutor(object):
       if envVars:
         for (key,val) in list(envVars.items()): envString += "-e " + str(key) + "=\'" + str(val) + '\' '
       # Change launch (working) directory if desired
-      launchDir = '${PWD}' if (self.launchDir is None) else self.launchDir
+      launchDir = op.realpath('./') if (self.launchDir is None) else self.launchDir
+      launchDir = op.realpath(launchDir)
       # Run it in docker
       mount_strings = [] if not mount_strings else mount_strings
-      mount_strings.append('${PWD}:' + launchDir)
+      mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1] for m in mount_strings]
+      mount_strings.append(op.realpath('./') + ':' + launchDir)
       if conType == 'docker':
         # export mounts to docker string
         docker_mounts = " -v ".join(m for m in mount_strings)
-        dcmd = 'docker run --entrypoint=/bin/sh --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'docker run --entrypoint=/bin/sh --rm' + envString + ' -v '+docker_mounts+ ' -w ' + launchDir + ' ' + str(conImage) + ' ' + dsname
       elif conType == 'singularity':
         singularity_mounts = " -B ".join(m for m in mount_strings)
         #TODO: Test singularity runtime on cluster
-        dcmd = 'singularity exec' + envString + ' -B ' + singularity_mounts + ' -W ' + launchDir + ' ' + str(conImage) + ' ./' + dsname
+        dcmd = 'singularity exec' + envString + ' -B ' + singularity_mounts + ' -W ' + launchDir + ' ' + str(conName) + ' ' + dsname
       else:
         print('Unrecognized container type: \"%s\"'%conType)
         sys.exit(1)
@@ -156,11 +168,11 @@ class LocalExecutor(object):
             desc_err = err_elem['description']
             break
     error_msg = ''
-    if stderr != '':
+    if stderr != b'':
         error_msg = 'Execution ERR ({0}): {1}'.format(exit_code, stderr)
     if desc_err != '':
         error_msg += '{0}{1} ERR ({2}): {3}'.format('\n' if error_msg != '' else '', self.desc_dict['name'], exit_code, desc_err)
-    
+
     return stdout, stderr, exit_code, error_msg
 
   # Private method that attempts to locally execute the given command. Returns the exit code.

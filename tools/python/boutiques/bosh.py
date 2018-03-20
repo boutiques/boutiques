@@ -320,7 +320,7 @@ def bosh(args=None):
         return out
     elif func == "exec":
         out = execute(*params)
-        return out
+        return out[2]
     elif func == "import":
         out = importer(*params)
         return out

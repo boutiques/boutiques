@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "0.5.6"
+VERSION = "0.5.6.post1"
 DEPS = [
          "simplejson",
          "jsonschema",
