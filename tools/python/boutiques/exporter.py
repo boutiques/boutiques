@@ -47,6 +47,7 @@ class Exporter():
     def convert_input_or_output(self, input_or_output, is_output):
         param = {}
         param['name'] = input_or_output.get('name')
+        param['id'] = input_or_output.get('id')
         if is_output:
             param['type'] = 'File'
         else:
