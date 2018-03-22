@@ -16,7 +16,7 @@ class TestExample1(TestCase):
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir, "example1.json"),
                                       "-i",
-                                      os.path.join(example1_dir, "invocation.json")))
+                                      os.path.join(example1_dir, "invocation.json"))[2])
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(), reason="Docker not installed")
     def test_example1_exec(self):
@@ -45,4 +45,4 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")       
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir, "example1.json"),
-                                      "-r", "3"))
+                                      "-r", "3")[2])

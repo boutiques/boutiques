@@ -55,7 +55,7 @@ class TestExec(TestCase):
                                                      "-r", "-2"])
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir,"example1.json"),
-                                      "-r", "1"))
+                                      "-r", "1")[2])
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(example1_dir,
                                                                   "example1.json"),
