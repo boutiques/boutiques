@@ -127,6 +127,7 @@ def execute(*params):
         else:
             executor.readInput(inp)
             executor.printCmdLine()
+        return "", "", 0, "" # for consistency with execute (stdout, stderr, exit_code, err_msg)
 
 def importer(*params):
     parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")

@@ -16,7 +16,7 @@ class TestExample2(TestCase):
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example2_dir, "example2.json"),
                                       "-i",
-                                      os.path.join(example2_dir, "invocation.json")))
+                                      os.path.join(example2_dir, "invocation.json"))[2])
 
     def test_example2_exec(self):
         example2_dir = os.path.join(self.get_examples_dir(), "example2")       
@@ -32,4 +32,4 @@ class TestExample2(TestCase):
         example2_dir = os.path.join(self.get_examples_dir(), "example2")       
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example2_dir, "example2.json"),
-                                      "-r", "3"))
+                                      "-r", "3")[2])
