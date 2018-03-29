@@ -1,6 +1,6 @@
 import os.path as op
-from boutiques import bosh, localExec
 from boutiques import __file__ as bfile
+import boutiques as bosh
 import hashlib
 import pytest
 
