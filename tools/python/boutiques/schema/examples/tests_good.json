@@ -263,7 +263,7 @@
                 "output-files": [
                     {
                         "id": "logfile",
-                        "reference": "./boutiques/schema/examples/ref_log.txt"
+                        "md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
                     }
                 ]
             },
