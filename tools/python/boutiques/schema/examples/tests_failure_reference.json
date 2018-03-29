@@ -263,7 +263,7 @@
                 "output-files": [
                     {
                         "id": "logfile",
-                        "reference": "./boutiques/schema/examples/ref_config.txt"
+                        "md5-reference": "WRONGMD5"
                     }
                 ]
             },
