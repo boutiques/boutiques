@@ -426,9 +426,9 @@
                                             "pattern": "^[0-9,_,a-z,A-Z]*$",
                                             "type": "string"
                                         },
-                                        "reference": {
+                                        "md5-reference": {
                                             "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/reference",
-                                            "description": "Path to a file whose content will be compared against the outputed file matching the associated id",
+                                            "description": "MD5 checksum string to match against the MD5 checksum of the output-file specified by the id object",
                                             "minLength": 1,
                                             "type": "string"
                                         }
