@@ -31,6 +31,7 @@ class TestExec(TestCase):
 
     def test_failing_simulate(self):
         example1_dir = os.path.join(self.get_examples_dir(),"example1")       
+
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(example1_dir,
                                                                   "fake.json"),

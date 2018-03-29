@@ -6,6 +6,7 @@ DEPS = [
          "jsonschema",
          "gitpython",
          "PyGithub",
+         "pytest",
        ]
 
 setup(name="boutiques",
