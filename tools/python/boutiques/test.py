@@ -22,7 +22,7 @@ def test(descriptor, test, invocation):
     if "output-files" in assertions:
     
         # Acquiring a hash map of output ids mapping to output file paths.
-        outputted = bosh(["evaluate", descriptor, invocation.name, "output-files/"])
+        outputted = bosh.evaluate(descriptor, invocation.name, "output-files/")
         
         for output_file in assertions["output-files"]:
             
