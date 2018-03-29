@@ -344,7 +344,7 @@ def bosh(args=None):
                         "an entry in NeuroLinks for the descriptor and tool."
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
-                        "descriptor, queries execution properties.",
+                        "descriptor, queries execution properties."
                         "Test: run pytest on a descriptor detailing tests",
                         choices=["validate", "exec", "import", "export",
                                  "publish", "invocation", "evaluate", "test"])
