@@ -12,7 +12,7 @@ def compute_md5(filename):
 
 def test(descriptor, test, invocation):    
     # Run pipeline.
-    stdout, stderr, exit_code, err_msg = bosh(["exec", "launch", descriptor, invocation.name])
+    stdout, stderr, exit_code, err_msg = bosh.execute("launch", descriptor, invocation.name)
     
     # Choose appropriate assertion scenario
     assertions = test["assertions"]
