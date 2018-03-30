@@ -1,11 +1,12 @@
 from setuptools import setup
 
-VERSION = "0.5.6"
+VERSION = "0.5.7"
 DEPS = [
          "simplejson",
          "jsonschema",
          "gitpython",
          "PyGithub",
+         "pytest",
        ]
 
 setup(name="boutiques",

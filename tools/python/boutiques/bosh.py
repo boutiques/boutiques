@@ -4,7 +4,9 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 import jsonschema
 import json
 import os, sys
-
+import os.path as op
+import tempfile
+import pytest
 
 def validate(*params):
     parser = ArgumentParser("Boutiques descriptor validator")
@@ -127,6 +129,8 @@ def execute(*params):
         else:
             executor.readInput(inp)
             executor.printCmdLine()
+        
+        return "", "", 0, "" # for consistency with execute (stdout, stderr, exit_code, err_msg)
 
 def importer(*params):
     parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
@@ -291,6 +295,41 @@ def evaluate(*params):
         query_results += [ evaluateEngine(executor, query) ]
     return query_results[0] if len(query_results) == 1 else query_results
 
+
+def test(*params):
+
+    parser = ArgumentParser("Perform all the tests defined within the given descriptor")
+    parser.add_argument("descriptor", action="store", help="The Boutiques descriptor.")
+    result = parser.parse_args(params)
+
+    # Generation of the invocation schema (and descriptor validation).
+    invocation(result.descriptor)
+    
+    # Extraction of all the invocations defined for the test-cases.
+    with open(result.descriptor) as fhandle:
+        descriptor = json.loads(fhandle.read())   # might just need to be `fhandle` in this context, but not sure    
+    
+    if (not descriptor.get("tests")):
+        # If no tests have been specified, we simply consider that testing was successful.
+        return 0
+    
+    for test in descriptor["tests"]:
+        # Create temporary file for the invocation() function.
+        invocation_JSON = test["invocation"];
+        temp_invocation_JSON = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+        temp_invocation_JSON.write(json.dumps(invocation_JSON).encode())
+        temp_invocation_JSON.seek(0)
+        # Check if the invocation is valid.
+        invocation(result.descriptor, "--invocation", temp_invocation_JSON.name)
+        # Destroy the temporary file.
+        temp_invocation_JSON.close()
+	
+    # Now all the invocations have been properly validated. We only need to launch the actual tests.
+
+    test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
+    return pytest.main([test_path, "--descriptor", result.descriptor])
+ 
+
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
                             add_help=False)
@@ -305,9 +344,11 @@ def bosh(args=None):
                         "an entry in NeuroLinks for the descriptor and tool."
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
-                        "descriptor, queries execution properties.",
+                        "descriptor, queries execution properties."
+                        "Test: run pytest on a descriptor detailing tests",
                         choices=["validate", "exec", "import", "export",
-                                 "publish", "invocation", "evaluate"])
+                                 "publish", "invocation", "evaluate", "test"])
+
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
 
@@ -320,7 +361,7 @@ def bosh(args=None):
         return out
     elif func == "exec":
         out = execute(*params)
-        return out
+        return out[2]
     elif func == "import":
         out = importer(*params)
         return out
@@ -335,6 +376,9 @@ def bosh(args=None):
         return out
     elif func == "evaluate":
         out = evaluate(*params)
+        return out
+    elif func == "test":
+        out = test(*params)
         return out
     else:
         parser.print_help()

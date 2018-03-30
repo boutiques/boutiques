@@ -26,7 +26,7 @@
 
 import json
 import os
-
+import uuid
 
 class Exporter():
 
@@ -47,6 +47,7 @@ class Exporter():
     def convert_input_or_output(self, input_or_output, is_output):
         param = {}
         param['name'] = input_or_output.get('name')
+        param['id'] = input_or_output.get('id')
         if is_output:
             param['type'] = 'File'
         else:
@@ -66,7 +67,7 @@ class Exporter():
         with open(self.descriptor, 'r') as fhandle:
             descriptor = json.load(fhandle)
 
-        carmin_desc['id'] = os.path.splitext(self.descriptor)[0] # not ideal
+        carmin_desc['identifier'] = str(uuid.uuid4())
         carmin_desc['name'] = descriptor.get('name')
         carmin_desc['version'] = descriptor.get('tool-version')
         carmin_desc['description'] = descriptor.get('description')
