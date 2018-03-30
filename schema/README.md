@@ -14,9 +14,12 @@
 | environment-variables | array | An array of key-value pairs specifying environment variable names and their values to be used in the execution environment. |  |
 | groups | array | Sets of identifiers of inputs, each specifying an input group. |  |
 | inputs | array |  |  |
+| tests | array |  |  |
 | output-files | array |  |  |
 | [invocation-schema](#invocation-schema) | object |  |  |
 | [suggested-resources](#suggested-resources) | object |  |  |
+| [tags](#tags) | object | An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future. |  |
+| error-codes | array | An array of key-value pairs specifying exit codes and their description. Can be used for tools to specify the meaning of particular exit codes. Exit code 0 is assumed to indicate a successful execution. |  |
 | [custom](#custom) | object |  |  |
 Allowed schema-version: ENUM(0.5)
 
@@ -131,6 +134,40 @@ Allowed type: ENUM(String, File, Flag, Number)
 
 *****
 
+## tests
+
+#### Type: object
+
+Required: name, assertions, invocation
+
+| Name    | Type    | Description | Example |
+| ------- | ------- | ----------- | ------- |
+| name | string | Name of the test-case |  |
+| [invocation](#invocation) | object |  |  |
+| [assertions](#assertions) | object |  |  |
+
+*****
+
+## invocation
+
+#### Type: object
+
+
+*****
+
+## assertions
+
+#### Type: object
+
+Required any of: exit-code, output-files
+
+| Name    | Type    | Description | Example |
+| ------- | ------- | ----------- | ------- |
+| exit-code | integer | Expected code returned by the program. |  |
+| output-files | array |  |  |
+
+*****
+
 ## output-files
 
 #### Type: object
@@ -140,6 +177,7 @@ Required: id, name, path-template
 | Name    | Type    | Description | Example |
 | ------- | ------- | ----------- | ------- |
 | id | string | A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: "data_file" |  |
+| md5-reference | string | MD5 checksum string to match against the MD5 checksum of the output-file specified by the id object |  |
 | name | string | A human-readable output name. Example: 'Data file' |  |
 | description | string | Output description. |  |
 | value-key | string | A string contained in command-line, substituted by the output value and/or flag at runtime. |  |
@@ -191,163 +229,33 @@ Allowed id: PATTERN(^[0-9,_,a-z,A-Z]*$)
 
 *****
 
+## tags
+
+#### Type: object
+
+__An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.__
+
+
+*****
+
+## error-codes
+
+#### Type: object
+
+
+Required: code, description
+
+| Name    | Type    | Description | Example |
+| ------- | ------- | ----------- | ------- |
+| code | integer | Value of the exit code |  |
+| description | string | Description of the error code. |  |
+
+*****
+
 ## custom
 
 #### Type: object
 
+
+
 *****
-
-
-
-## Command-line substitution
-
-At runtime, a __value__ is assigned to each input in ```inputs```.
-
-* Inputs of type "String" may contain any string (encoding is not specified).
-* Inputs of type "Number" must contain a string representing a number.
-* Inputs of type "File" must contain a string representing a file path (absolute or relative to the execution directory).
-* Inputs of type "Flag" must contain a boolean.
-
-When input is a list, __value__ contains the concatenation of all strings in the list, separated by spaces. Spaces included in list elements must be escaped by '\', or the elements must be single-quoted (Linux conventions).  An input of type "Flag" may not be a list.
-
-The tool command line is generated as follows:
-
-1. For each input in ```inputs```, where input has a ```value-key``` and input has __value__:
-  * In ```command-line```, replace input ```value-key``` by:
-         * ```command-line-flag``` if input is of type "Flag".
-         * ```command-line-flag``` ```command-line-flag-separator``` __value__ (i.e. separated only by ```command-line-flag-separator``` if it is present).
-         * ```command-line-flag``` __value__ (space-separated) otherwise.
-  * For each output in ```output-files```
-         * If ```path-template``` contains input ```value-key```, replace ```value-key``` by __value__, having previously removed the last occurrence of character '.' and subsequent characters from __value__ when input is of type "File".
-2. For each output in ```output-files```, where output has a ```value-key```:
-  * In ```command-line```, replace output ```value-key``` by:
-         * ```command-line-flag``` ```path-template``` (space-separated). At this step, input ```value-key```s contained in ```path-template``` are already substituted.
-
-## Examples
-
-An annotated example of a Boutiques application descriptor:
-```javascript
-{
-  // An example Boutiques JSON descriptor
-  // Note that real JSON cannot include comments like this
-  "name" : "Example Boutiques Tool",
-  "tool-version" : "0.0.1",
-  "description" : "This property describes the tool or application",
-  // The actual command line run will be generated by substituting given input values into this string,
-  // using the "value-key" property of the input. Notice we can chain multiple commands easily.
-  "command-line" : "exampleTool_1 [STRING_INPUT] [FILE_INPUT] [ENUM_INPUT] | exampleTool_2 [FLAG_INPUT] [NUMBER_INPUT] >> [LOG]",
-  // Optionally specify a container image that can be used to execute the tool
-  "container-image": {
-        "type": "docker",
-        "image": "boutiques/examples"
-  },
-  "schema-version" : 0.5, // The version of the Boutiques schema this descriptor follows
-  "inputs" : [{
-    // A string parameter
-    "id" : "str_input", // A unique id for this input (e.g. for platforms to differentiate inputs)
-    "name" : "A string input", // A human readable name for the input parameter (e.g. for UI display)
-    "type" : "String",
-    "description" : "Describe the use and meaning of the parameter",
-    "optional" : false, // Means the parameter is required for the tool
-    // This will be prepended to the input value before substitution into the command line
-    "command-line-flag" : "-i",
-    "value-key" : "[STRING_INPUT]", // Used for substitution into the command-line above
-    "list" : true, // When true, allows multiple inputs to be given for this parameter
-    // Restrict lists to have only a specific number of members
-    "min-list-entries" : 1,
-    "max-list-entries" : 3,
-    // Default values can also be specified for parameters
-    "default-value" : "aStringValue"
-  }, {
-    // A numerical parameter
-    "id" : "num_input",
-    "name" : "A number input",
-    "type" : "Number",
-    "value-key" : "[NUMBER_INPUT]",
-    "optional" : true, // Means this parameter is not strictly required for the tool to be used
-    // Can alter the prefix flag to use a different separator (e.g. here -n=<inputval>)
-    "command-line-flag" : "-n",
-    "command-line-separator" : "=",
-    // Use constraints to specify a number in (0,1]
-    "minimum" : 0,
-    "maximum" : 1,
-    "exclusive-minimum" : true,
-    "exclusive-maximum" : false,
-    "integer" : false // Make 'true' to require the number is an integer
-  }, {
-    // File input parameters are specified like strings
-    // Implementation details, like validation of file existence, are left to platforms
-    "id" : "file_input",
-    "name" : "A file input",
-    "type" : "File",
-    "optional" : true,
-    "value-key" : "[FILE_INPUT]"
-  }, {
-    // An enum-type input
-    "id" : "enum_input",
-    "name" : "An enum input",
-    "type" : "Enum",
-    "enum-value-choices" : ["val1","val2","val3"],
-    "value-key" : "[ENUM_INPUT]"
-  }, {
-    // A flag input: essentially a boolean describing the presence or absence of a command-line flag
-    "id" : "flag_input",
-    "name" : "A flag input",
-    "type" : "Flag",
-    // Command line substitution can only be the flag or nothing (no extra values given)
-    "command-line-flag" : "-f",
-    "value-key" : "[FLAG_INPUT]",
-    // Can specify a list of ids of parameters that this input requires to be used
-    "requires-inputs" : ["file_input"],
-    // Can also specify a list of ids that are not permitted to be used (added to command-line)
-    // when this parameter is active (given a value)
-    "disables-inputs" : ["num_input"]
-  }],
-  // This section specifies the set of output files from the tool
-  "output-files" : [{
-    "id" : "logfile", // As above, a unique id for the output
-    "name" : "Log file",
-    "description" : "The output log file from the example tool",
-    // Path-template specifies where the output file will be
-    // Note that it can automatically depend on the input values
-    "path-template" : "log-[STRING_INPUT].txt",
-    // This specifies the substitution key of path-template into the command-line
-    "value-key" : "[LOG]",
-    // Any input keys (e.g. here str_input) will have any of the following extensions removed
-    // from their value before substitution (e.g. if 'in.csv' was given to str_input, 'in' would
-    // would be the resulting substituted value in [STRING_INPUT])
-    "path-template-stripped-extensions" : [".txt", ".csv"],
-    // As above, optional : false requires that the output file exists
-    "optional" : false
-  }, {
-    // We can also represent sets of output files using a wildcard
-    "id" : "output_files",
-    "name" : "outfiles",
-    // When capturing multiple files, list should be true
-    "list" : true,
-    // A regular expression style wildcard (*) is used to capture multiple files
-    "path-template" : "output/*_exampleOutputTag.resultType",
-    "optional" : true // I.e. this output may not necessarily be created
-  }],
-  // Parameter groups represent semantically related sets of input parameters. They can be used
-  // to specify inter-parameter disabling/requirement, and to help automatic UI generation on platforms.
-  "groups" : [{
-    "id" : "an_example_group",
-    "name" : "Example group 1",
-    "description" : "This group forces us to choose exactly one of the file or the enum input to use.",
-    // The set of ids that form the member parameters of the group
-    "members" : ["file_input", "enum_input"],
-    // When true, only one of the group members can be active (given as input) at a time
-    "mutually-exclusive" : true,
-    // When true, at least one of the group members must be specified in the input values
-    "one-is-required" : true
-  }]
-}
-```
-
-See the [cbrain-plugins-neuro repo](https://github.com/aces/cbrain-plugins-neuro/tree/master/cbrain_task_descriptors "Boutiques example descriptors at cbrain-plugins-neuro") for some example descriptors currently in use.
-
-More examples (TODO)
-* Inputs without value-key.
-* List outputs without a value-key.
-
