@@ -85,9 +85,8 @@ the container, through the usual help menu, `bosh exec launch -h`.
 You may now want to write a test for your descriptor, so that everyone
 using it could check that it produces correct results. This can be
 done by extending the tool descriptor with a `tests` property. For
-instance, the description below would test if `bosh launch exec`
-returns with exit code 0 and produces a file in output `logfile` with
-the specified MD5 hash.
+instance, the description below would test if the execution of the specified invocation returns with exit code 0 and produces a file in output `logfile` with
+the right MD5 hash.
 ```
 "tests": [
         {
@@ -120,7 +119,7 @@ the specified MD5 hash.
 ```
 You can then test your descriptor by simply typing:
 
-$ bosh test descriptor.json
+    $ bosh test descriptor.json
 
 ### Evaluate Your Usage
 
