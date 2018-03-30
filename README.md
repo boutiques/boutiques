@@ -80,6 +80,47 @@ You just launched your tool! You should be seeing outputs to your terminal, and 
 container. You can mount more volumes with `-v` (consistent with Docker), and see what other options are available, such as switching users in
 the container, through the usual help menu, `bosh exec launch -h`.
 
+### Test Your Tool
+
+You may now want to write a test for your descriptor, so that everyone
+using it could check that it produces correct results. This can be
+done by extending the tool descriptor with a `tests` property. For
+instance, the description below would test if the execution of the specified invocation returns with exit code 0 and produces a file in output `logfile` with
+the right MD5 hash.
+```
+"tests": [
+        {
+	     "name": "test1",
+	     "invocation": {
+                "config_num": 4,
+                "enum_input": "val1",
+                "file_input": "/tests/image.nii.gz",
+                "list_int_input": [
+                    1,
+                    2,
+                    3
+                ],
+                "str_input": [
+                    "foo",
+                    "bar"
+                ]
+            },
+            "assertions": {
+                "exit-code": 0,
+                "output-files": [
+                    {
+                        "id": "logfile",
+                        "md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
+                    }
+                ]
+            }
+    }
+]
+```
+You can then test your descriptor by simply typing:
+
+    $ bosh test descriptor.json
+
 ### Evaluate Your Usage
 
 If you've been using your tool and forget what exactly that output file will be named, or if it's optional, but find re-reading the descriptor a
