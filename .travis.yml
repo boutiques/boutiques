@@ -20,12 +20,12 @@ before_install:
 
 install:
 - pip install --upgrade setuptools
-- pip install coveralls pytest pytest-runner pylint
+- pip install coveralls pytest pytest-runner pycodestyle
 - pip install ./tools/python/
 
 script:
 - cd ./tools/python/
-- pylint **/*.py
+- pycodestyle --max-line-length=80 **/*.py
 - coverage run --source boutiques setup.py pytest
 
 after_success:
