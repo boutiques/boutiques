@@ -25,6 +25,7 @@ install:
 
 script:
 - cd ./tools/python/
+- pylint **/*.py
 - coverage run --source boutiques setup.py pytest
 
 after_success:
