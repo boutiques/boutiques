@@ -29,7 +29,10 @@ from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
 from git import Repo
 from github import Github
-import git, json, os, sys
+import git
+import json
+import os
+import sys
 try:
     # For Python 3.0 and later
     from urllib.request import urlopen, URLError
@@ -37,17 +40,20 @@ except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen, URLError
 
+
 class Publisher():
 
     def __init__(self, boutiques_dir, remote_name, tool_author, tool_url, inter,
-                 neurolinks_repo_url, neurolinks_dest_path, github_user, github_password, no_github):
+                 neurolinks_repo_url, neurolinks_dest_path,
+                 github_user, github_password, no_github):
         self.boutiques_dir = os.path.abspath(boutiques_dir)
         self.remote_name = remote_name if remote_name else 'origin'
         try:
             self.boutiques_repo = Repo(self.boutiques_dir)
         except git.exc.InvalidGitRepositoryError as e:
             # We won't publish a descriptor which is not in a Git repo!
-            sys.stderr.write('error: %s is not a Git repository.\n' % self.boutiques_dir)
+            sys.stderr.write('error: %s is not a Git repository.\n'
+                             % self.boutiques_dir)
             sys.exit(1)
 
         for remote in self.boutiques_repo.remotes:
@@ -55,11 +61,15 @@ class Publisher():
                 self.boutiques_remote = remote
 
         url = self.boutiques_remote.url
-        # If remote URL is on Github, try to guess the URL of the Boutiques descriptor
-        if "github.com" in url: 
-            url = url.replace(".git","").replace("git@github.com:","https://github.com/")
-            url = url.replace("https://github.com/", "https://raw.githubusercontent.com/")
-            url = url.replace("http://github.com/", "https://raw.githubusercontent.com/")
+        # If remote URL is on Github, try to guess the URL
+        # of the Boutiques descriptor
+        if "github.com" in url:
+            url = url.replace(".git", "").replace("git@github.com:",
+                                                  "https://github.com/")
+            url = url.replace("https://github.com/",
+                              "https://raw.githubusercontent.com/")
+            url = url.replace("http://github.com/",
+                              "https://raw.githubusercontent.com/")
             url += "master"
         self.base_url = url
 
@@ -79,49 +89,57 @@ class Publisher():
         self.fix_github_credentials()
         # Fork and clone the neurolinks repo
         if neurolinks_repo_url.startswith("http"):
-            fork_url = self.fork_repo(neurolinks_repo_url) # won't do anything if fork already exists
-            neurolinks_local_url = self.clone_repo(fork_url, neurolinks_dest_path)
+            # won't do anything if fork already exists
+            fork_url = self.fork_repo(neurolinks_repo_url)
+            neurolinks_local_url = self.clone_repo(fork_url,
+                                                   neurolinks_dest_path)
             # Add base neurolinks repo as remote and pull from it, in case
             # fork already existed and is outdated
             self.neurolinks_repo = Repo(neurolinks_local_url)
-            base = self.neurolinks_repo.create_remote('base', neurolinks_repo_url)
+            base = self.neurolinks_repo.create_remote('base',
+                                                      neurolinks_repo_url)
             neurolinks_repo_url = neurolinks_local_url
         else:
             self.neurolinks_repo = Repo(neurolinks_repo_url)
         self.neurolinks_repo.remotes.base.pull('master')
-        
+
         self.tools_file = os.path.abspath(os.path.join(neurolinks_repo_url,
                                                        'jsons', 'tool.json'))
         if not os.path.isfile(self.tools_file):
-            print("error: cannot find {0} (check neurolinks repo).".format(self.tools_file))
+            print("error: cannot find {0} (check "
+                  "neurolinks repo).".format(self.tools_file))
             sys.exit(1)
-            
+
     def fix_github_credentials(self):
-        pygithub_file = os.path.join(os.getenv("HOME"),".pygithub")
+        pygithub_file = os.path.join(os.getenv("HOME"), ".pygithub")
         # Read saved credentials
         try:
-            with open(pygithub_file,"r") as f:
+            with open(pygithub_file, "r") as f:
                 json_creds = json.load(f)
         except IOError:
             json_creds = {}
         except ValueError:
             json_creds = {}
-        # Credentials passed as parameters have precedence. Ask credentials if none
+        # Credentials passed as parameters have precedence.
+        # Ask credentials if none
         # can be found
-        username = self.github_user if self.github_user else json_creds.get('user')
+        username = self.github_user
+        if self.github_user else json_creds.get('user')
         if not username:
             username = self.get_from_stdin("GitHub login")
-        password = self.github_password if self.github_password else json_creds.get('password')
+        password = self.github_password
+        if self.github_password else json_creds.get('password')
         if not password:
-            password = self.get_from_stdin("GitHub password (user: {0})".format(username))
+            password = self.get_from_stdin("GitHub password "
+                                           "(user: {0})".format(username))
         # Save credentials
         self.github_username = username
         self.github_password = password
         json_creds['user'] = self.github_username
         json_creds['password'] = self.github_password
-        with open(pygithub_file,"w") as f:
+        with open(pygithub_file, "w") as f:
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
-        
+
     def find_json_files(self, directory):
         json_files = []
         for root, dirs, files in os.walk(directory):
@@ -129,8 +147,10 @@ class Publisher():
                 if file.endswith(".json"):
                     json_files.append(os.path.join(root, file))
         return json_files
-    
-    def get_json_string(self, identifier, label, description, tool_author, tool_url, boutiques_url, docker_container, singularity_container):
+
+    def get_json_string(self, identifier, label, description,
+                        tool_author, tool_url, boutiques_url,
+                        docker_container, singularity_container):
 
         path, fil = os.path.split(__file__)
         template_file = os.path.join(path, "neurolinks-template", "tool.json")
@@ -140,38 +160,44 @@ class Publisher():
 
         template_string = template_string.replace("@@__ID__@@", identifier)
         template_string = template_string.replace("@@__LABEL__@@", label)
-        template_string = template_string.replace("@@__DESCRIPTION__@@", description)
-        template_string = template_string.replace("@@__TOOL_AUTHOR__@@", tool_author)
-        template_string = template_string.replace("@@__TOOL_URL__@@", tool_url)
-        template_string = template_string.replace("@@__BOUTIQUES_URL__@@", boutiques_url)
+        template_string = template_string.replace("@@__DESCRIPTION__@@",
+                                                  description)
+        template_string = template_string.replace("@@__TOOL_AUTHOR__@@",
+                                                  tool_author)
+        template_string = template_string.replace("@@__TOOL_URL__@@",
+                                                  tool_url)
+        template_string = template_string.replace("@@__BOUTIQUES_URL__@@",
+                                                  boutiques_url)
 
         json_string = json.loads(template_string)
         if docker_container:
             json_string['dockercontainer'] = docker_container
         if singularity_container:
             json_string['singularitycontainer'] = singularity_container
-            
+
         return json_string
 
     def is_boutiques_descriptor(self, json_file):
         try:
             validate_descriptor(json_file)
             return True
-        except:
+        except Exception:
             return False
 
     def get_from_stdin(self, question, default_value=None, input_type=None):
         if not self.inter:
             return default_value
-        prompt = question+" ("+default_value+"): " if default_value else question+": "
+        prompt = question+" ("+default_value+"): "
+        if default_value else question+": "
         try:
-            answer = raw_input(prompt) # Python 2
+            answer = raw_input(prompt)  # Python 2
         except NameError:
-            answer = input(prompt) # Python 3
+            answer = input(prompt)  # Python 3
         answer = answer if answer else default_value
         if input_type == "URL":
             while not self.check_url(answer):
-                answer = self.get_from_stdin(question, default_value, input_type)
+                answer = self.get_from_stdin(question,
+                                             default_value, input_type)
         return answer
 
     def check_url(self, url):
@@ -189,11 +215,10 @@ class Publisher():
         else:
             print("  ... URL is accessible.")
             return True
-            
-    
+
     def print_banner(self, descriptor):
         name = descriptor['name']
-        text = "Found Boutiques tool {0}".format(name,"")
+        text = "Found Boutiques tool {0}".format(name, "")
         line = ""
         for i in range(0, len(text)):
             line = line + "="
@@ -201,11 +226,11 @@ class Publisher():
         print(line)
         print(text)
         print(line)
-        
+
     def get_descriptors(self):
         json_strings = []
         json_files = self.find_json_files(self.boutiques_dir)
-        descriptors = [ x for x in json_files if self.is_boutiques_descriptor(x) ]
+        descriptors = [x for x in json_files if self.is_boutiques_descriptor(x)]
         return descriptors
 
     def get_neurolinks_json(self, descriptor_file_name, tools):
@@ -214,14 +239,16 @@ class Publisher():
             descriptor = json.load(f)
         self.print_banner(descriptor)
         if self.inter:
-            if(self.get_from_stdin("Publish Y/n?","Y") != "Y"):
+            if(self.get_from_stdin("Publish Y/n?", "Y") != "Y"):
                 return None
-        if(self.contains(descriptor['name'],entities)):
+        if(self.contains(descriptor['name'], entities)):
             if not self.inter:
-                print('Not overwriting existing entry - use interactive mode to override')
+                print('Not overwriting existing entry - '
+                      'use interactive mode to override')
                 return None
-            if(self.get_from_stdin("{0} is already published, overwrite Y/n?".format(
-                    descriptor['name']),"n") != "Y"):
+            if(self.get_from_stdin("{0} is already published,"
+                                   " overwrite Y/n?".format(
+                    descriptor['name']), "n") != "Y"):
                 return None
             tools['entities'] = self.remove(descriptor['name'], entities)
         label = descriptor['name']
@@ -231,31 +258,44 @@ class Publisher():
         container_image = descriptor.get('container-image')
         if container_image:
             if container_image.get('type') == "docker":
-                index = container_image.get('index') if container_image.get('index') else 'http://index.docker.io'
+                index = container_image.get('index')
+                if container_image.get('index') else 'http://index.docker.io'
                 if "index.docker.io" in index:
                     index = "https://hub.docker.com/r/"
                 elif "quay.io" in index:
                     index = "https://quay.io/repository"
-                docker_container = os.path.join(index,container_image.get("image").split(':')[0])
+                docker_container = os.path.join(index,
+                                                container_image.
+                                                get("image").split(':')[0])
             if container_image.get('type') == "singularity":
-                index = container_image.get('index') if container_image.get('index') else 'shub://'
+                index = container_image.get('index')
+                if container_image.get('index') else 'shub://'
                 if index == "docker://":
-                    singularity_container = os.path.join("https://hub.docker.com",container_image.get("image").split(':')[0]) 
+                    singularity_container = os.path.join(
+                                               "https://hub.docker.com",
+                                               container_image.get("image").
+                                               split(':')[0])
                 else:
-                    singularity_container = os.path.join(index,container_image.get("image")) 
-        identifier = label.replace(" ","_")
+                    singularity_container = os.path.join(
+                                                index,
+                                                container_image.get("image"))
+        identifier = label.replace(" ", "_")
         boutiques_url = self.get_url(descriptor_file_name)
         if self.inter:
             self.tool_author = self.get_from_stdin("Tool author",
                                                    self.tool_author)
-            self.tool_url = self.get_from_stdin("Tool URL", self.tool_url, "URL")
+            self.tool_url = self.get_from_stdin("Tool URL",
+                                                self.tool_url,
+                                                "URL")
             boutiques_url = self.get_from_stdin("Boutiques descriptor URL",
                                                 boutiques_url, "URL")
         return self.get_json_string(identifier, label, description,
-                                                 self.tool_author, self.tool_url,
-                                                 boutiques_url, docker_container, singularity_container)
+                                    self.tool_author, self.tool_url,
+                                    boutiques_url, docker_container,
+                                    singularity_container)
+
     def get_url(self, file_path):
-        file_path = file_path.replace(self.boutiques_dir,"")
+        file_path = file_path.replace(self.boutiques_dir, "")
         url = self.base_url + file_path
         return url
 
@@ -268,9 +308,9 @@ class Publisher():
         return False
 
     def remove(self, label, tools):
-        new_tools = [ x for x in tools if x['label'] != label ]
+        new_tools = [x for x in tools if x['label'] != label]
         return new_tools
-    
+
     def publish(self):
         json_tools = []
         existing_tools = {}
@@ -282,12 +322,14 @@ class Publisher():
         descriptors = self.get_descriptors()
         for descriptor_file_name in descriptors:
             # Build neurolinks string
-            neurolinks_json = self.get_neurolinks_json(descriptor_file_name, existing_tools)
+            neurolinks_json = self.get_neurolinks_json(
+                                          descriptor_file_name,
+                                          existing_tools)
             # Have user review before commit
             if not self.inter and neurolinks_json:
                 print("Tool summary:")
                 print(json.dumps(neurolinks_json, indent=4, sort_keys=True))
-                if(self.get_from_stdin("Publish Y/n?","n") != "Y"):
+                if(self.get_from_stdin("Publish Y/n?", "n") != "Y"):
                     neurolinks_json = None
             # Publish json string unless user didn't want to
             if neurolinks_json:
@@ -308,15 +350,17 @@ class Publisher():
         json_file.close()
         # Commit tools file
         self.neurolinks_repo.index.add([self.tools_file])
-        self.neurolinks_repo.index.commit("Added tool {0} with bosh-publish".format(tool['label']))
+        self.neurolinks_repo.index.commit("Added tool {0} with "
+                                          "bosh-publish".format(
+                                                        tool['label']))
         # Push to fork
         self.neurolinks_repo.remotes.origin.push()
         # Make PR
         self.pr(self.neurolinks_repo.remotes.origin.url,
                 self.neurolinks_repo.remotes.base.url)
-            
+
     def clone_repo(self, repo_url, dest_path):
-        print("Cloning {0} to {1}...".format(repo_url,dest_path))
+        print("Cloning {0} to {1}...".format(repo_url, dest_path))
         Repo.clone_from(repo_url, dest_path)
         return os.path.abspath(dest_path)
 
@@ -326,8 +370,9 @@ class Publisher():
         github_user = g.get_user()
         repo = g.get_repo("brainhack101/neurolinks")
         myfork = github_user.create_fork(repo)
-        return myfork.ssh_url        
+        return myfork.ssh_url
 
     def pr(self, fork_url, base_url):
-        print("Create a pull request from {0} to {1} to finalize publication. This cannot be done automatically.".format(fork_url,base_url))
-
+        print("Create a pull request from {0} to {1} to finalize"
+              " publication. This cannot be done automatically.".
+              format(fork_url, base_url))
