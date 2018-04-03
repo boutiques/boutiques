@@ -39,25 +39,28 @@ def validate_bids(descriptor, valid=False):
 
     errors = []
 
-    #TODO: verify not only that all fields/keys exist, their properties, too
+    # TODO: verify not only that all fields/keys exist, their properties, too
 
     # Ensure the command-line conforms to the BIDS app spec
     msg_template = "   CLIError: command-line doesn't match template: {}"
-    cltemp = "mkdir -p OUTPUT_DIR; (.*) BIDS_DIR OUTPUT_DIR ANALYSIS_LEVEL" +\
-          " PARTICIPANT_LABEL SESSION_LABEL[\\s]*(.*)"
+    cltemp = "mkdir -p OUTPUT_DIR; (.*) BIDS_DIR OUTPUT_DIR ANALYSIS_LEVEL"
+    " PARTICIPANT_LABEL SESSION_LABEL[\\s]*(.*)"
     cmdline = descriptor["command-line"]
-    if len(re.findall(cltemp, cmdline)) < 1: errors += [msg_template.format(cltemp)]
+    if len(re.findall(cltemp, cmdline)) < 1:
+        errors += [msg_template.format(cltemp)]
 
-    # Verify IDs are present which link to the OUTPUT_DIR key bot as File and String
+    # Verify IDs are present which link to the OUTPUT_DIR
+    # key bot as File and String
     ftypes = set(["File", "String"])
     msg_template = "   OutError: \"{}\" types for outdir do not match \"{}\""
     outtypes = set([inp["type"]
                     for inp in descriptor["inputs"]
                     if inp["value-key"] == "OUTPUT_DIR"])
-    if outtypes != ftypes: errors += [msg_template.format(", ".join(outtypes), ", ".join(ftypes))]
+    if outtypes != ftypes:
+        errors += [msg_template.format(", ".join(outtypes), ", ".join(ftypes))]
 
-    # Verify that analysis levels is an enumerable with some subset of "paricipant",
-    # "session", and "group"
+    # Verify that analysis levels is an enumerable with some
+    # subset of "paricipant", "session", and "group"
     choices = ["session", "participant", "group"]
     msg_template = " LevelError: \"{}\" is not a valid analysis level"
     alevels = [inp["value-choices"]
@@ -66,7 +69,7 @@ def validate_bids(descriptor, valid=False):
     errors += [msg_template.format(lv)
                for lv in alevels
                if lv not in choices]
-    
+
     # Verify there is only a single output defined (the directory)
     msg_template = "OutputError: 0 or multiple outputs defined"
     if len(descriptor["output-files"]) != 1:
@@ -81,4 +84,5 @@ def validate_bids(descriptor, valid=False):
     if errors is None:
         print("BIDS validation OK")
     else:
-        raise ValidationError("Invalid BIDS app descriptor:\n"+"\n".join(errors))
+        raise ValidationError("Invalid BIDS app descriptor:"
+                              "\n"+"\n".join(errors))
