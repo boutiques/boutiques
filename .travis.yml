@@ -20,7 +20,7 @@ before_install:
 
 install:
 - pip install --upgrade setuptools
-- pip install coveralls pytest pytest-runner
+- pip install coveralls pytest pytest-runner pylint
 - pip install ./tools/python/
 
 script:
