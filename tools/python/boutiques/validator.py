@@ -52,7 +52,7 @@ def validate_descriptor(json_file, **kwargs):
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        print("JSON Validation error (Rigorous Boutiques validation"
+        print("JSON Validation error (Rigorous Boutiques validation"\
               " not yet performed)")
         raise ValidationError(e.message)
 
@@ -147,8 +147,8 @@ def validate_descriptor(json_file, **kwargs):
             else:
                 errors += []
 
-            msg_template = " InputError: \"{}\" is of type Flag,"
-            " it has to be optional"
+            msg_template = " InputError: \"{}\" is of type Flag,"\
+                           " it has to be optional"
             if inp["optional"] is False:
                 errors += [msg_template.format(inp["id"])]
             else:
@@ -156,8 +156,8 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify number-type inputs min/max are sensible
         elif inp["type"] == "Number":
-            msg_template = " InputError: \"{}\" cannot have greater"
-            " min ({}) than max ({})"
+            msg_template = " InputError: \"{}\" cannot have greater"\
+                           " min ({}) than max ({})"
             minn = inp["minimum"] if "minimum" in inp.keys() else -float("Inf")
             maxx = inp["maximum"] if "maximum" in inp.keys() else float("Inf")
             if minn > maxx:
@@ -167,15 +167,15 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify enum-type inputs (at least 1 option, default in set)
         elif "value-choices" in inp.keys():
-            msg_template = " InputError: \"{}\" must have at least"
-            " one value choice"
+            msg_template = " InputError: \"{}\" must have at least"\
+                           " one value choice"
             if len(inp["value-choices"]) < 1:
                 errors += [msg_template.format(inp["id"])]
             else:
                 errors += []
 
-            msg_template = " InputError: \"{}\" cannot have default"
-            " value outside its choices"
+            msg_template = " InputError: \"{}\" cannot have default"\
+                           " value outside its choices"
             if ("default-value" in inp.keys()
                and inp["default-value"] not in inp["value-choices"]):
                     errors += [msg_template.format(inp["id"])]
@@ -185,8 +185,8 @@ def validate_descriptor(json_file, **kwargs):
         # Verify list-type inputs (min entries less than max,
         # no negative entries (both on min and max)
         if "list" in inp.keys():
-            msg_template = " InputError: \"{}\" cannot have greater min"
-            " entries ({}) than max entries ({})"
+            msg_template = " InputError: \"{}\" cannot have greater min"\
+                           " entries ({}) than max entries ({})"
             minn = inp.get("min-list-entries") or 0
             maxx = inp.get("max-list-entries") or float("Inf")
             if minn > maxx:
@@ -194,12 +194,12 @@ def validate_descriptor(json_file, **kwargs):
             else:
                 errors += []
 
-            msg_template = " InputError: \"{}\" cannot have negative min"
-            " entries ({})"
+            msg_template = " InputError: \"{}\" cannot have negative min"\
+                           " entries ({})"
             errors += [msg_template.format(inp["id"], minn)] if minn < 0 else []
 
-            msg_template = " InputError: \"{}\" cannot have non-positive"
-            " max entries ({})"
+            msg_template = " InputError: \"{}\" cannot have non-positive"\
+                           " max entries ({})"
             if maxx <= 0:
                 errors += [msg_template.format(inp["id"], maxx)]
             else:
@@ -222,8 +222,8 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify required inputs cannot require or disable other parameters
         if "requires-inputs" in inp.keys() or "disables-inputs" in inp.keys():
-            msg_template = " InputError: \"{}\" cannot require or"
-            " disable other inputs"
+            msg_template = " InputError: \"{}\" cannot require or"\
+                           " disable other inputs"
             if not inp["optional"]:
                 errors += [msg_template.format(inp["id"])]
 
@@ -242,8 +242,8 @@ def validate_descriptor(json_file, **kwargs):
                    if grp["members"].count(member) > 1]
 
         for jdx, grp2 in enumerate(descriptor["groups"]):
-            msg_template = " GroupError: \"{}\" and \"{}\" both contain"
-            " member \"{}\""
+            msg_template = " GroupError: \"{}\" and \"{}\" both contain"\
+                           " member \"{}\""
             errors += [msg_template.format(grp["id"], grp2["id"], m1)
                        for m1 in grp["members"]
                        for m2 in grp2["members"]
@@ -252,15 +252,15 @@ def validate_descriptor(json_file, **kwargs):
         # Verify mutually exclusive groups cannot have required members
         # nor requiring members
         if "mutually-exclusive" in grp.keys():
-            msg_template = " GroupError: \"{}\" is mutually-exclusive"
-            " and cannot have required members, such as \"{}\""
+            msg_template = " GroupError: \"{}\" is mutually-exclusive"\
+                           " and cannot have required members, such as \"{}\""
             errors += [msg_template.format(grp["id"], member)
                        for member in set(grp["members"])
                        if not inById(member)["optional"]]
 
-            msg_template = " GroupError: \"{}\" is mutually-exclusive"
-            " and cannot have members require one another,"
-            " such as \"{}\" and \"{}\""
+            msg_template = " GroupError: \"{}\" is mutually-exclusive"\
+                           " and cannot have members require one another,"\
+                           " such as \"{}\" and \"{}\""
             for member in set(grp["members"]):
                 if "requires-inputs" in inById(member).keys():
                     errors += [msg_template.format(grp["id"], member, req)
@@ -269,17 +269,17 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify one-is-required groups should never have required members
         if "one-is-required" in grp.keys():
-            msg_template = " GroupError: \"{}\" is a one-is-required"
-            " group and contains a required member, \"{}\""
+            msg_template = " GroupError: \"{}\" is a one-is-required"\
+                           " group and contains a required member, \"{}\""
             errors += [msg_template.format(grp["id"], member)
                        for member in set(grp["members"])
                        if member in inIds and not inById(member)["optional"]]
 
         # Verify one-is-required groups should never have required members
         if "all-or-none" in grp.keys():
-            msg_template = " GroupError: \"{}\" is an all-or-none group"
-            " and cannot be paired with one-is-required"
-            " or mutually-exclusive groups"
+            msg_template = " GroupError: \"{}\" is an all-or-none group"\
+                           " and cannot be paired with one-is-required"\
+                           " or mutually-exclusive groups"
             if ("one-is-required" in grp.keys()
                or "mutually-exclusive" in grp.keys()):
                     errors += [msg_template.format(grp["id"])]
@@ -301,16 +301,17 @@ def validate_descriptor(json_file, **kwargs):
                                           "output-files", "id")
 
                 # Verify if output reference ids are valid
-                msg_template = "  TestError: \"{}\" output id"
-                " not found, in test \"{}\""
+                msg_template = "  TestError: \"{}\" output id"\
+                               " not found, in test \"{}\""
                 errors += [msg_template.format(output_id, test["name"])
                            for output_id in test_output_ids
                            if (output_id not in outIds)]
 
                 # Verify that we do not have multiple output
                 # references refering to the same id
-                msg_template = "  TestError: \"{}\" output id"
-                " cannot appear more than once within same test, in test \"{}\""
+                msg_template = "  TestError: \"{}\" output id"\
+                               " cannot appear more than once within"\
+                               " same test, in test \"{}\""
                 errors += [msg_template.format(output_id, test["name"])
                            for output_id in set(test_output_ids)
                            if (test_output_ids.count(output_id) > 1)]

@@ -29,11 +29,11 @@ def validate(*params):
 def execute(*params):
     parser = ArgumentParser("Boutiques local executor", add_help=False)
     parser.add_argument("mode", action="store",
-                        help="Mode of operation to use. Launch: takes a "
-                        "set of inputs compliant with invocation schema "
-                        "and launches the tool. Simulate: shows sample "
-                        "command-lines based on the provided descriptor"
-                        " based on provided or randomly generated "
+                        help="Mode of operation to use. Launch: takes a "\
+                        "set of inputs compliant with invocation schema "\
+                        "and launches the tool. Simulate: shows sample "\
+                        "command-lines based on the provided descriptor"\
+                        " based on provided or randomly generated "\
                         "inputs.", choices=["launch", "simulate"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -54,15 +54,15 @@ def execute(*params):
         parser.add_argument("invocation", action="store",
                             help="Input JSON complying to invocation.")
         parser.add_argument("-v", "--volumes", action="store", type=str,
-                            help="Volumes to mount when launching the "
-                            "container. Format consistently the following:"
-                            " /a:/b will mount local direcotry /a to "
+                            help="Volumes to mount when launching the "\
+                            "container. Format consistently the following:"\
+                            " /a:/b will mount local direcotry /a to "\
                             "container directory /b.", nargs="*")
         parser.add_argument("-x", "--debug", action="store_true",
-                            help="Keeps temporary scripts used during "
+                            help="Keeps temporary scripts used during "\
                             "execution.")
         parser.add_argument("-u", "--user", action="store_true",
-                            help="Runs the container as local user ({0})"
+                            help="Runs the container as local user ({0})"\
                             " instead of root.".format(os.getenv("USER")))
         results = parser.parse_args(params)
         descriptor = results.descriptor
@@ -108,7 +108,7 @@ def execute(*params):
         if numb and numb < 1:
             raise SystemExit("--number value must be positive.")
         if rand and inp:
-            raise SystemExit("--random setting and --input value cannot "
+            raise SystemExit("--random setting and --input value cannot "\
                              "be used together.")
         if inp and not os.path.isfile(inp):
             raise SystemExit("Input file {} does not exist.".format(inp))
@@ -143,9 +143,9 @@ def importer(*params):
     parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
     parser.add_argument("type", help="Type of import we are performing",
                         choices=["bids", "0.4"])
-    parser.add_argument("descriptor", help="Where the Boutiques"
+    parser.add_argument("descriptor", help="Where the Boutiques"\
                         " descriptor will be written.")
-    parser.add_argument("input", help="Input to be convered. For '0.4'"
+    parser.add_argument("input", help="Input to be convered. For '0.4'"\
                         ", is JSON descriptor,"
                         " for 'bids' is base directory of BIDS app.")
     results = parser.parse_args(params)
@@ -162,12 +162,12 @@ def importer(*params):
 
 def exporter(*params):
     parser = ArgumentParser("Export Boutiques descriptor to other formats.")
-    parser.add_argument("type", help="Type of export we are performing."
-                        " For carmin, pipeline id is set to the output"
+    parser.add_argument("type", help="Type of export we are performing."\
+                        " For carmin, pipeline id is set to the output"\
                         " file name.",
                         choices=["carmin"])
     parser.add_argument("descriptor", help="Boutiques descriptor to export.")
-    parser.add_argument("output", help="Output file where to write the"
+    parser.add_argument("output", help="Output file where to write the"\
                         " converted descriptor.")
     results = parser.parse_args(params)
 
@@ -192,21 +192,21 @@ def publish(*params):
         return neurolinks_github_repo_url
 
     parser = ArgumentParser("Boutiques publisher",
-                            description="A publisher of Boutiques tools"
-                            " in Neurolinks"
-                            "(https://brainhack101.github.io/neurolinks)."
-                            " Crawls a Git"
-                            "repository for valid Boutiques descriptors"
-                            " and imports them"
-                            "in Neurolinks format. Uses your GitHub"
-                            " account to fork the "
-                            "Neurolinks repository and commit new tools"
-                            " in it. Requires "
-                            "that your GitHub ssh key is configured"
-                            " and usable without"
+                            description="A publisher of Boutiques tools"\
+                            " in Neurolinks"\
+                            "(https://brainhack101.github.io/neurolinks)."\
+                            " Crawls a Git"\
+                            "repository for valid Boutiques descriptors"\
+                            " and imports them"\
+                            "in Neurolinks format. Uses your GitHub"\
+                            " account to fork the "\
+                            "Neurolinks repository and commit new tools"\
+                            " in it. Requires "\
+                            "that your GitHub ssh key is configured"\
+                            " and usable without"\
                             "password.")
     parser.add_argument("boutiques_repo", action="store",
-                        help="Local path to a Git repository containing"
+                        help="Local path to a Git repository containing"\
                         " Boutiques descriptors to publish.")
     parser.add_argument("author_name", action="store",
                         help="Default author name.")
@@ -214,35 +214,35 @@ def publish(*params):
                         help="Default tool URL.")
     parser.add_argument("--neurolinks-repo", "-n", action="store",
                         default=get_neurolinks_default(),
-                        help="Local path to a Git clone of {0}. Remotes:"
-                        " 'origin' should point to a writable fork from"
-                        " which a PR will be initiated; 'base' will be"
-                        " pulled before any update, should point to"
-                        " {0}. If a URL is provided, will attempt to"
+                        help="Local path to a Git clone of {0}. Remotes:"\
+                        " 'origin' should point to a writable fork from"\
+                        " which a PR will be initiated; 'base' will be"\
+                        " pulled before any update, should point to"\
+                        " {0}. If a URL is provided, will attempt to"\
                         " fork it on GitHub and clone it to {1}.".
                         format(neurolinks_github_repo_url,
                                neurolinks_dest_path))
     parser.add_argument("--boutiques-remote", "-r", action="store",
                         default='origin',
-                        help="Name of Boutiques Git repo remote used to"
+                        help="Name of Boutiques Git repo remote used to"\
                         " get URLs of Boutiques descriptor.")
     parser.add_argument("--no-github", action="store_true",
-                        help="Do not interact with GitHub at all"
+                        help="Do not interact with GitHub at all"\
                         " (useful for tests).")
     parser.add_argument("--github-login", "-u", action="store",
-                        help="GitHub login used to fork, clone and PR"
-                        " to {}. Defaults to value in $HOME/.pygithub."
-                        " Saved in $HOME/.pygithub if "
+                        help="GitHub login used to fork, clone and PR"\
+                        " to {}. Defaults to value in $HOME/.pygithub."\
+                        " Saved in $HOME/.pygithub if "\
                         "specified.".format(neurolinks_github_repo_url))
     parser.add_argument("--github-password", "-p", action="store",
-                        help="GitHub password used to fork, clone and"
-                        " PR to {}. Defaults to value in $HOME/.pygithub."
+                        help="GitHub password used to fork, clone and"\
+                        " PR to {}. Defaults to value in $HOME/.pygithub."\
                         " Saved in $HOME/.pygithub if specified."
                         .format(neurolinks_github_repo_url))
     parser.add_argument("--inter", "-i", action="store_true",
                         default=False,
-                        help="Interactive mode. Does not use default "
-                        "values everywhere, "
+                        help="Interactive mode. Does not use default "\
+                        "values everywhere, "\
                         "checks if URLs are correct or accessible.")
 
     results = parser.parse_args(params)
@@ -256,13 +256,13 @@ def publish(*params):
 
 
 def invocation(*params):
-    parser = ArgumentParser("Creates invocation schema and validates"
+    parser = ArgumentParser("Creates invocation schema and validates"\
                             " invocations")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("-i", "--invocation", action="store",
-                        help="Input values in a JSON file to be"
-                        " validated against "
+                        help="Input values in a JSON file to be"\
+                        " validated against "\
                         "the invocation schema.")
     result = parser.parse_args(params)
 
@@ -295,19 +295,19 @@ def invocation(*params):
 
 
 def evaluate(*params):
-    parser = ArgumentParser("Evaluates parameter values for a descriptor"
+    parser = ArgumentParser("Evaluates parameter values for a descriptor"\
                             " and invocation")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("invocation", action="store",
                         help="Input JSON complying to invocation.")
     parser.add_argument("query", action="store", nargs="*",
-                        help="The query to be performed. Simply request keys "
-                        "from the descriptor (i.e. output-files), and chain "
-                        "together queries (i.e. id=myfile or optional=false) "
-                        "slashes between them and commas connecting them. "
-                        "(i.e. output-files/optional=false,id=myfile). "
-                        "Perform multiple queries by separating them with a "
+                        help="The query to be performed. Simply request keys "\
+                        "from the descriptor (i.e. output-files), and chain "\
+                        "together queries (i.e. id=myfile or optional=false) "\
+                        "slashes between them and commas connecting them. "\
+                        "(i.e. output-files/optional=false,id=myfile). "\
+                        "Perform multiple queries by separating them with a "\
                         "space.")
     result = parser.parse_args(params)
 
@@ -328,9 +328,9 @@ def evaluate(*params):
 
 def test(*params):
 
-    parser = ArgumentParser("Perform all the tests defined within the"
+    parser = ArgumentParser("Perform all the tests defined within the"\
                             " given descriptor")
-    parser.add_argument("descriptor", action="store", help="The Boutiques"
+    parser.add_argument("descriptor", action="store", help="The Boutiques"\
                         " descriptor.")
     result = parser.parse_args(params)
 
@@ -368,17 +368,17 @@ def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
                             add_help=False)
     parser.add_argument("function", action="store", nargs="?",
-                        help="The tool within boutiques/bosh you wish to run. "
-                        "Validate: validates an existing boutiques descriptor."
-                        "Exec: launches or simulates an execution given a "
-                        "descriptor and a set of inputs. Import: creates a "
-                        "descriptor for a BIDS app or updates a descriptor "
-                        "from an older version of the schema. Export: exports a"
-                        "descriptor to other formats. Publish: creates"
-                        "an entry in NeuroLinks for the descriptor and tool."
-                        "Invocation: generates the invocation schema for a "
-                        "given descriptor. Eval: given an invocation and a "
-                        "descriptor, queries execution properties."
+                        help="The tool within boutiques/bosh you wish to run. "\
+                        "Validate: validates an existing boutiques descriptor."\
+                        "Exec: launches or simulates an execution given a "\
+                        "descriptor and a set of inputs. Import: creates a "\
+                        "descriptor for a BIDS app or updates a descriptor "\
+                        "from an older version of the schema. Export: exports a"\
+                        "descriptor to other formats. Publish: creates"\
+                        "an entry in NeuroLinks for the descriptor and tool."\
+                        "Invocation: generates the invocation schema for a "\
+                        "given descriptor. Eval: given an invocation and a "\
+                        "descriptor, queries execution properties."\
                         "Test: run pytest on a descriptor detailing tests",
                         choices=["validate", "exec", "import", "export",
                                  "publish", "invocation", "evaluate", "test"])
