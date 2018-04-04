@@ -52,16 +52,28 @@ def validate_descriptor(json_file, **kwargs):
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        print("JSON Validation error (Rigorous Boutiques validation not yet performed)")
+        print("JSON Validation error (Rigorous Boutiques validation"
+              " not yet performed)")
         raise ValidationError(e.message)
 
-    # Helper get-function
-    safeGet   = lambda desc, sec, targ: [item[targ] for item in desc[sec]
-                                         if list(item.keys()).count(targ)]
-    inputGet  = lambda s: safeGet(descriptor, "inputs", s)
-    outputGet = lambda s: safeGet(descriptor, "output-files", s)
-    groupGet  = lambda s: safeGet(descriptor, "groups", s)
-    inById    = lambda i: descriptor["inputs"][inputGet("id").index(i)] if i in inputGet("id") else {}
+    # Helper get functions
+    def safeGet(desc, sec, targ):
+        return [item[targ] for item in desc[sec]
+                if list(item.keys()).count(targ)]
+
+    def inputGet(s):
+        return safeGet(descriptor, "inputs", s)
+
+    def outputGet(s):
+        return safeGet(descriptor, "output-files", s)
+
+    def groupGet(s):
+        return safeGet(descriptor, "groups", s)
+
+    def inById(i):
+        if i in inputGet("id"):
+            return descriptor["inputs"][inputGet("id").index(i)]
+        return {}
 
     # Begin looking at Boutiques-specific failures
     errors = []
@@ -69,14 +81,15 @@ def validate_descriptor(json_file, **kwargs):
     clkeys = inputGet("value-key") + outputGet("value-key")
     flattenedTemplates = [y for x in outputGet("file-template") for y in x]
     configFileTemplates = flattenedTemplates + outputGet("path-template")
-    
+
     cmdline = descriptor["command-line"]
 
     # Verify that all command-line key appear in the command-line
     msg_template = "   KeyError: \"{}\" not in command-line or file template"
     errors += [msg_template.format(k)
                for k in clkeys
-               if (cmdline.count(k) + " ".join(configFileTemplates).count(k)) < 1]
+               if (cmdline.count(k) +
+                   " ".join(configFileTemplates).count(k)) < 1]
 
     # Verify that no key contains another key
     msg_template = "   KeyError: \"{}\" contains \"{}\""
@@ -92,7 +105,10 @@ def validate_descriptor(json_file, **kwargs):
     msg_template = "    IdError: \"{}\" is non-unique"
     for idx, s1 in enumerate(allIds):
         for jdx, s2 in enumerate(allIds):
-            errors += [msg_template.format(s1)] if s1 == s2 and idx < jdx else []
+            if s1 == s2 and idx < jdx:
+                errors += [msg_template.format(s1)]
+            else:
+                errors += []
 
     # Verify that identical keys only exist if they are both in mutex groups
     msg_template = " MutExError: \"{}\" belongs to 2+ non exclusive IDs"
@@ -110,50 +126,84 @@ def validate_descriptor(json_file, **kwargs):
     msg_template = "OutputError: \"{}\" and \"{}\" have the same path-template"
     for idx, out1 in enumerate(descriptor["output-files"]):
         for jdx, out2 in enumerate(descriptor["output-files"]):
-            errors += [msg_template.format(out1["id"], out2["id"])] if out1["path-template"] == out2["path-template"] and jdx > idx else []
+            if out1["path-template"] == out2["path-template"] and jdx > idx:
+                errors += [msg_template.format(out1["id"], out2["id"])]
+            else:
+                errors += []
 
     # Verify inputs
     for inp in descriptor["inputs"]:
 
-        # Add optional property in case it's not there (default to false as in JSON)
+        # Add optional property in case it's not
+        # there (default to false as in JSON)
         if "optional" not in inp.keys():
             inp["optional"] = False
-        
+
         # Verify flag-type inputs (have flags, not required, cannot be lists)
         if inp["type"] == "Flag":
             msg_template = " InputError: \"{}\" must have a command-line flag"
-            errors += [msg_template.format(inp["id"])] if "command-line-flag" not in inp.keys() else []
+            if "command-line-flag" not in inp.keys():
+                errors += [msg_template.format(inp["id"])]
+            else:
+                errors += []
 
-            msg_template = " InputError: \"{}\" is of type Flag, it has to be optional"
-            errors += [msg_template.format(inp["id"])] if inp["optional"] is False else []
+            msg_template = " InputError: \"{}\" is of type Flag,"\
+                           " it has to be optional"
+            if inp["optional"] is False:
+                errors += [msg_template.format(inp["id"])]
+            else:
+                errors += []
 
         # Verify number-type inputs min/max are sensible
         elif inp["type"] == "Number":
-            msg_template = " InputError: \"{}\" cannot have greater min ({}) than max ({})"
+            msg_template = " InputError: \"{}\" cannot have greater"\
+                           " min ({}) than max ({})"
             minn = inp["minimum"] if "minimum" in inp.keys() else -float("Inf")
             maxx = inp["maximum"] if "maximum" in inp.keys() else float("Inf")
-            errors += [msg_template.format(inp["id"], minn, maxx)] if minn > maxx else []
+            if minn > maxx:
+                errors += [msg_template.format(inp["id"], minn, maxx)]
+            else:
+                errors += []
 
         # Verify enum-type inputs (at least 1 option, default in set)
         elif "value-choices" in inp.keys():
-            msg_template = " InputError: \"{}\" must have at least one value choice"
-            errors += [msg_template.format(inp["id"])] if len(inp["value-choices"]) < 1 else []
+            msg_template = " InputError: \"{}\" must have at least"\
+                           " one value choice"
+            if len(inp["value-choices"]) < 1:
+                errors += [msg_template.format(inp["id"])]
+            else:
+                errors += []
 
-            msg_template = " InputError: \"{}\" cannot have default value outside its choices"
-            errors += [msg_template.format(inp["id"])] if "default-value" in inp.keys() and inp["default-value"] not in inp["value-choices"] else []
+            msg_template = " InputError: \"{}\" cannot have default"\
+                           " value outside its choices"
+            if ("default-value" in inp.keys()
+               and inp["default-value"] not in inp["value-choices"]):
+                    errors += [msg_template.format(inp["id"])]
+            else:
+                errors += []
 
-        # Verify list-type inputs (min entries less than max, no negative entries (both on min and max)
+        # Verify list-type inputs (min entries less than max,
+        # no negative entries (both on min and max)
         if "list" in inp.keys():
-            msg_template = " InputError: \"{}\" cannot have greater min entries ({}) than max entries ({})"
-            minn = inp["min-list-entries"] if "min-list-entries" in inp.keys() else 0
-            maxx = inp["max-list-entries"] if "max-list-entries" in inp.keys() else float("Inf")
-            errors += [msg_template.format(inp["id"], minn, maxx)] if minn > maxx else []
+            msg_template = " InputError: \"{}\" cannot have greater min"\
+                           " entries ({}) than max entries ({})"
+            minn = inp.get("min-list-entries") or 0
+            maxx = inp.get("max-list-entries") or float("Inf")
+            if minn > maxx:
+                errors += [msg_template.format(inp["id"], minn, maxx)]
+            else:
+                errors += []
 
-            msg_template = " InputError: \"{}\" cannot have negative min entries ({})"
+            msg_template = " InputError: \"{}\" cannot have negative min"\
+                           " entries ({})"
             errors += [msg_template.format(inp["id"], minn)] if minn < 0 else []
 
-            msg_template = " InputError: \"{}\" cannot have non-positive max entries ({})"
-            errors += [msg_template.format(inp["id"], maxx)] if maxx <= 0 else []
+            msg_template = " InputError: \"{}\" cannot have non-positive"\
+                           " max entries ({})"
+            if maxx <= 0:
+                errors += [msg_template.format(inp["id"], maxx)]
+            else:
+                errors += []
 
         # Verify requires- and disables-inputs (present ids, non-overlapping)
         msg_template = " InputError: \"{}\" {}d id \"{}\" not found"
@@ -172,14 +222,16 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify required inputs cannot require or disable other parameters
         if "requires-inputs" in inp.keys() or "disables-inputs" in inp.keys():
-            msg_template = " InputError: \"{}\" cannot require or disable other inputs"
+            msg_template = " InputError: \"{}\" cannot require or"\
+                           " disable other inputs"
             if not inp["optional"]:
                 errors += [msg_template.format(inp["id"])]
 
     # Verify groups
     for idx, grpid in enumerate(grpIds):
         grp = descriptor['groups'][idx]
-        # Verify group members must (exist in inputs, show up once, only belong to single group)
+        # Verify group members must (exist in inputs, show up
+        # once, only belong to single group)
         msg_template = " GroupError: \"{}\" member \"{}\" does not exist"
         errors += [msg_template.format(grp["id"], member)
                    for member in grp["members"] if member not in inIds]
@@ -190,19 +242,25 @@ def validate_descriptor(json_file, **kwargs):
                    if grp["members"].count(member) > 1]
 
         for jdx, grp2 in enumerate(descriptor["groups"]):
-            msg_template = " GroupError: \"{}\" and \"{}\" both contain member \"{}\""
+            msg_template = " GroupError: \"{}\" and \"{}\" both contain"\
+                           " member \"{}\""
             errors += [msg_template.format(grp["id"], grp2["id"], m1)
                        for m1 in grp["members"]
                        for m2 in grp2["members"]
                        if m1 == m2 and idx > jdx]
 
-        # Verify mutually exclusive groups cannot have required members nor requiring members
+        # Verify mutually exclusive groups cannot have required members
+        # nor requiring members
         if "mutually-exclusive" in grp.keys():
-            msg_template = " GroupError: \"{}\" is mutually-exclusive and cannot have required members, such as \"{}\""
+            msg_template = " GroupError: \"{}\" is mutually-exclusive"\
+                           " and cannot have required members, such as \"{}\""
             errors += [msg_template.format(grp["id"], member)
-                       for member in set(grp["members"]) if not inById(member)["optional"]]
+                       for member in set(grp["members"])
+                       if not inById(member)["optional"]]
 
-            msg_template = " GroupError: \"{}\" is mutually-exclusive and cannot have members require one another, such as \"{}\" and \"{}\""
+            msg_template = " GroupError: \"{}\" is mutually-exclusive"\
+                           " and cannot have members require one another,"\
+                           " such as \"{}\" and \"{}\""
             for member in set(grp["members"]):
                 if "requires-inputs" in inById(member).keys():
                     errors += [msg_template.format(grp["id"], member, req)
@@ -211,50 +269,59 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify one-is-required groups should never have required members
         if "one-is-required" in grp.keys():
-            msg_template = " GroupError: \"{}\" is a one-is-required group and contains a required member, \"{}\""
+            msg_template = " GroupError: \"{}\" is a one-is-required"\
+                           " group and contains a required member, \"{}\""
             errors += [msg_template.format(grp["id"], member)
                        for member in set(grp["members"])
                        if member in inIds and not inById(member)["optional"]]
 
         # Verify one-is-required groups should never have required members
         if "all-or-none" in grp.keys():
-            msg_template = " GroupError: \"{}\" is an all-or-none group and cannot be paired with one-is-required or mutually-exclusive groups"
-            if "one-is-required" in grp.keys() or "mutually-exclusive" in grp.keys():
-                errors += [msg_template.format(grp["id"])]
+            msg_template = " GroupError: \"{}\" is an all-or-none group"\
+                           " and cannot be paired with one-is-required"\
+                           " or mutually-exclusive groups"
+            if ("one-is-required" in grp.keys()
+               or "mutually-exclusive" in grp.keys()):
+                    errors += [msg_template.format(grp["id"])]
 
-            msg_template = " GroupError: \"{}\" is an all-or-none group and contains a required member, \"{}\""
+            msg_template = " GroupError: \"{}\" is an all-or-none"
+            " group and contains a required member, \"{}\""
             errors += [msg_template.format(grp["id"], member)
                        for member in set(grp["members"])
                        if member in inIds and not inById(member)["optional"]]
-    
+
     # Verify tests
     if "tests" in descriptor.keys():
         tests_names = []
         for test in descriptor["tests"]:
-            
+
             tests_names.append(test["name"])
             if "output-files" in test["assertions"].keys():
-                test_output_ids = safeGet(test["assertions"], "output-files", "id")
-                
+                test_output_ids = safeGet(test["assertions"],
+                                          "output-files", "id")
+
                 # Verify if output reference ids are valid
-                msg_template = "  TestError: \"{}\" output id not found, in test \"{}\""
-                errors += [msg_template.format(output_id , test["name"])
+                msg_template = "  TestError: \"{}\" output id"\
+                               " not found, in test \"{}\""
+                errors += [msg_template.format(output_id, test["name"])
                            for output_id in test_output_ids
                            if (output_id not in outIds)]
-                
-                # Verify that we do not have multiple output references refering to the same id
-                msg_template = "  TestError: \"{}\" output id cannot appear more than once within same test, in test \"{}\""
-                errors += [msg_template.format(output_id , test["name"])
+
+                # Verify that we do not have multiple output
+                # references refering to the same id
+                msg_template = "  TestError: \"{}\" output id"\
+                               " cannot appear more than once within"\
+                               " same test, in test \"{}\""
+                errors += [msg_template.format(output_id, test["name"])
                            for output_id in set(test_output_ids)
                            if (test_output_ids.count(output_id) > 1)]
-            
+
         # Verify that all the defined tests have unique names
         msg_template = "  TestError: \"{}\" test name is non-unique"
         errors += [msg_template.format(test_name)
-        	   for test_name in set(tests_names)
+                   for test_name in set(tests_names)
                    if (tests_names.count(test_name) > 1)]
-    
-					   
+
     errors = None if errors == [] else errors
     if errors is None:
         if kwargs.get("verbose"):

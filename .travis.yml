@@ -20,11 +20,12 @@ before_install:
 
 install:
 - pip install --upgrade setuptools
-- pip install coveralls pytest pytest-runner
+- pip install coveralls pytest pytest-runner pycodestyle
 - pip install ./tools/python/
 
 script:
 - cd ./tools/python/
+- pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
 - coverage run --source boutiques setup.py pytest
 
 after_success:

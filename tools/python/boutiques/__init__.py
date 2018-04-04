@@ -15,4 +15,3 @@ __all__ = ['localExec',
            'publisher',
            'evaluate',
            'bosh']
-
