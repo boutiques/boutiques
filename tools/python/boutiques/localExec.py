@@ -57,35 +57,35 @@ class LocalExecutor(object):
             self.groups = self.desc_dict['groups']
 
         # Retrieves the parameter corresponding to the given id
-        def byId(self, n):
+        def byId(n):
             return [v for v in self.inputs+self.outputs if v['id'] == n][0]
 
         # Retrieves the group corresponding to the given id
-        def byGid(self, g):
+        def byGid(g):
             return [v for v in self.groups if v['id'] == g][0]
 
         # Retrieves the value of a field of an input
         # from the descriptor. Returns None if not present.
-        def safeGet(self, i, k):
-            if k not in list(self.byId(i).keys()):
+        def safeGet(i, k):
+            if k not in list(byId(i).keys()):
                 return None
-            return self.byId(i)[k]
+            return byId(i)[k]
 
         # Retrieves the value of a field of a group from
         # the descriptor. Returns None if not present.
-        def safeGrpGet(self, g, k):
-            if k not in list(self.byGid(g).keys()):
+        def safeGrpGet(g, k):
+            if k not in list(byGId(g).keys()):
                 return None
-            return self.byGid(g)[k]
+            return byGId(g)[k]
 
         # Retrieves the group a given parameter id belongs to;
         # otherwise, returns None
-        def assocGrp(self, i):
+        def assocGrp(i):
             return ([g for g in self.groups if i in g["members"]] or [None])[0]
 
         # Returns the required inputs of a given input id, or the empty string
-        def reqsOf(self, t):
-                return self.safeGet(t, "requires-inputs") or []
+        def reqsOf(t):
+                return safeGet(t, "requires-inputs") or []
 
         # Container-image Options
         self.con = self.desc_dict.get('container-image')
@@ -323,14 +323,14 @@ class LocalExecutor(object):
         def randNum(p):
             param_id, defaultMin, defaultMax = p['id'], -50, 50
             # Check if the input parameter should be an int
-            isInt = self.safeGet(param_id, 'integer')
+            isInt = safeGet(param_id, 'integer')
 
             def roundTowardsZero(x):
                 return int(math.copysign(1, x) * int(abs(x)))
             # Assign random values to min and max,
             # unless they have been specified
-            minv, maxv = self.safeGet(param_id, 'minimum'),
-            self.safeGet(param_id, 'maximum')
+            minv, maxv = safeGet(param_id, 'minimum'),
+            safeGet(param_id, 'maximum')
             if minv is None and maxv is None:
                 minv, maxv = defaultMin, defaultMax
             elif minv is None and not (maxv is None):
@@ -343,9 +343,9 @@ class LocalExecutor(object):
             else:
                 minv, maxv = float(minv), float(maxv)
             # Apply exclusive boundary constraints, if any
-            if self.safeGet(param_id, 'exclusive-minimum'):
+            if safeGet(param_id, 'exclusive-minimum'):
                 minv += (1 if isInt else 0.0001)
-            if self.safeGet(param_id, 'exclusive-maximum'):
+            if safeGet(param_id, 'exclusive-maximum'):
                 maxv -= (1 if isInt else 0.0001)
             # Returns a random int or a random float, depending on the type of p
             return (rnd.randint(minv, maxv)
@@ -354,8 +354,8 @@ class LocalExecutor(object):
         # Generate a random parameter value based on the input
         # type (where prm \in self.inputs)
         def paramSingle(prm):
-            if self.safeGet(prm['id'], 'value-choices'):
-                return rnd.choice(self.safeGet(prm['id'], 'value-choices'))
+            if safeGet(prm['id'], 'value-choices'):
+                return rnd.choice(safeGet(prm['id'], 'value-choices'))
             if prm['type'] == 'String':
                 return randStr()
             if prm['type'] == 'Number':
@@ -370,9 +370,9 @@ class LocalExecutor(object):
         # If prm is a list, a sequence of outputs is generated;
         # otherwise, a single value is returned
         def makeParam(prm):
-            mn = self.safeGet(prm['id'], 'min-list-entries') or 2
-            mx = self.safeGet(prm['id'], 'max-list-entries') or nl
-            isList = self.safeGet(prm['id'], 'list') or False
+            mn = safeGet(prm['id'], 'min-list-entries') or 2
+            mx = safeGet(prm['id'], 'max-list-entries') or nl
+            isList = safeGet(prm['id'], 'list') or False
             return ' '.join(str(paramSingle(prm)) for _ in
                             range(rnd.randint(mn, mx))
                             ) if isList else paramSingle(prm)
@@ -382,13 +382,13 @@ class LocalExecutor(object):
         def disablersOf(inParam):
             return [disabler[0] for disabler in
                     [disabler for disabler in
-                     [(prm['id'], self.safeGet(prm['id'],
+                     [(prm['id'], safeGet(prm['id'],
                                                'disables-inputs') or [])
                       for prm in self.inputs] if inParam['id'] in disabler[1]]]
 
         # Returns the list of mutually requiring parameters of the target
         def mutReqs(targetParam):
-            return [self.byId(mutualReq[0]) for mutualReq in
+            return [byId(mutualReq[0]) for mutualReq in
                     [possibleMutReq for possibleMutReq in
                      [(reqOfTarg, self.reqsOf(reqOfTarg)) for reqOfTarg in
                          self.reqsOf(targetParam['id'])]
@@ -402,7 +402,7 @@ class LocalExecutor(object):
                 return True
             # If a disabler or a disabled target is already active,
             # it cannot be filled
-            for d in disablersOf(targ) + (self.safeGet(
+            for d in disablersOf(targ) + (safeGet(
                                                  targ['id'],
                                                  'disables-inputs') or []):
                 if d in list(self.in_dict.keys()):
@@ -417,8 +417,8 @@ class LocalExecutor(object):
             # If it is in a mutex group with one target already chosen,
             # it cannot be filled
             # Get the group that the target belongs to, if any
-            g = self.assocGrp(targ['id'])
-            if (g is not None) and self.safeGrpGet(g['id'],
+            g = assocGrp(targ['id'])
+            if (g is not None) and safeGrpGet(g['id'],
                                                    'mutually-exclusive'):
                 if len([x for x in g['members']
                         if x in list(self.in_dict.keys())]) > 0:
@@ -460,12 +460,12 @@ class LocalExecutor(object):
             self.in_dict[reqp['id']] = makeParam(reqp)
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
-                    if self.safeGrpGet(g['id'], 'one-is-required')]:
+                    if safeGrpGet(g['id'], 'one-is-required')]:
             # Loop to choose an allowed value,
             # in case a previous choice disabled that one
             while True:
                 # Pick a random parameter
-                choice = self.byId(rnd.choice(grp['members']))
+                choice = byId(rnd.choice(grp['members']))
                 # see if it and its mutual requirements can be filled
                 res = checkMutualRequirements(choice)
                 if res is False:
@@ -476,7 +476,7 @@ class LocalExecutor(object):
                 break  # If we were allowed to add a parameter, we can stop
         # Choose a random number of times to try to fill optional inputs
         opts = [p for p in self.inputs
-                if self.safeGet(p['id'], '') in [None, True]]
+                if safeGet(p['id'], '') in [None, True]]
         # Loop a random number of times, each time
         #  attempting to fill a random parameter
         for _ in range(rnd.randint(int(len(opts) / 2 + 1), len(opts) * 2)):
@@ -561,9 +561,9 @@ class LocalExecutor(object):
         toRm = []
         for inprm in self.in_dict:
             if (str(self.in_dict[inprm]).lower() == 'false'
-               and self.byId(inprm)['type'] == 'Flag'):
+               and byId(inprm)['type'] == 'Flag'):
                     toRm.append(inprm)
-            elif (self.byId(inprm)['type'] == 'Flag'
+            elif (byId(inprm)['type'] == 'Flag'
                   and self.in_dict[inprm] is True):
                 # Fix json inputs using bools instead of strings
                 self.in_dict[inprm] = "true"
@@ -610,7 +610,7 @@ class LocalExecutor(object):
             in_out_dict.update(self.out_dict)
             # Go through all the keys
             for paramId in [x['id'] for x in self.inputs + self.outputs]:
-                clk = self.safeGet(paramId, 'value-key')
+                clk = safeGet(paramId, 'value-key')
                 if clk is None:
                     continue
                 if paramId in list(in_out_dict.keys()):  # param has a value
@@ -624,12 +624,12 @@ class LocalExecutor(object):
                             val = str(val)
                     # Add flags and separator if necessary
                     if useFlags:
-                        flag = self.safeGet(paramId, 'command-line-flag') or ''
-                        sep = self.safeGet(paramId,
+                        flag = safeGet(paramId, 'command-line-flag') or ''
+                        sep = safeGet(paramId,
                                            'command-line-flag-separator') or ' '
                         val = flag + sep + val
                         # special case for flag-type inputs
-                        if self.safeGet(paramId, 'type') == 'Flag':
+                        if safeGet(paramId, 'type') == 'Flag':
                             val = '' if val.lower() == 'false' else flag
                     # Remove file extensions from input value
                     for extension in strippedExtensions:
@@ -654,8 +654,8 @@ class LocalExecutor(object):
             if outputId in list(self.out_dict.keys()):
                 outputFileName = self.out_dict[outputId]
             else:
-                outputFileName = self.safeGet(outputId, 'path-template')
-            strippedExtensions = self.safeGet(
+                outputFileName = safeGet(outputId, 'path-template')
+            strippedExtensions = safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
             if strippedExtensions is None:
@@ -667,7 +667,7 @@ class LocalExecutor(object):
                                                          False,
                                                          "keep",
                                                          strippedExtensions)
-            if self.safeGet(outputId, 'uses-absolute-path'):
+            if safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
 
@@ -675,10 +675,10 @@ class LocalExecutor(object):
     # Configuration files are output files that have a file-template
     def _writeConfigurationFiles(self):
         for outputId in [x['id'] for x in self.outputs]:
-            fileTemplate = self.safeGet(outputId, 'file-template')
+            fileTemplate = safeGet(outputId, 'file-template')
             if fileTemplate is None:
                 continue  # this is not a configuration file
-            strippedExtensions = self.safeGet(
+            strippedExtensions = safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
             if strippedExtensions is None:
@@ -739,9 +739,9 @@ class LocalExecutor(object):
                 return False
         # Check individual inputs
         for key in self.in_dict:
-            isList = self.safeGet(key, "list")
+            isList = safeGet(key, "list")
             # Get current value and schema descriptor properties
-            val, targ = self.in_dict[key], self.byId(key)
+            val, targ = self.in_dict[key], byId(key)
 
             # A little closure helper to check if input values satisfy
             # the json descriptor's constraints
@@ -780,7 +780,7 @@ class LocalExecutor(object):
                     check('integer', lambda x, y: isNumber(x, True),
                           "violates integer requirement", v)
                     check(None, lambda x, y: isNumber(x), "is not a number", v)
-            elif self.safeGet(targ['id'], 'value-choices'):
+            elif safeGet(targ['id'], 'value-choices'):
                 # Value is in the list of allowed values
                 check('value-choices', lambda x, y: x in targ[y],
                       "is not a valid enum choice", val)
