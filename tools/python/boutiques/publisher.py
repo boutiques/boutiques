@@ -124,11 +124,13 @@ class Publisher():
         # Ask credentials if none
         # can be found
         username = self.github_user
-        if self.github_user else json_creds.get('user')
+        if username is None:
+            username = json_creds.get('user')
         if not username:
             username = self.get_from_stdin("GitHub login")
         password = self.github_password
-        if self.github_password else json_creds.get('password')
+        if password is None:
+            password = json_creds.get('password')
         if not password:
             password = self.get_from_stdin("GitHub password "
                                            "(user: {0})".format(username))
@@ -187,8 +189,9 @@ class Publisher():
     def get_from_stdin(self, question, default_value=None, input_type=None):
         if not self.inter:
             return default_value
-        prompt = question+" ("+default_value+"): "
-        if default_value else question+": "
+        prompt = question + ": "
+        if default_value:
+            prompt = question+" ("+default_value+"): "
         try:
             answer = raw_input(prompt)  # Python 2
         except NameError:
@@ -258,8 +261,7 @@ class Publisher():
         container_image = descriptor.get('container-image')
         if container_image:
             if container_image.get('type') == "docker":
-                index = container_image.get('index')
-                if container_image.get('index') else 'http://index.docker.io'
+                index = container_image.get('index') or 'http://index.docker.io'
                 if "index.docker.io" in index:
                     index = "https://hub.docker.com/r/"
                 elif "quay.io" in index:
@@ -268,8 +270,7 @@ class Publisher():
                                                 container_image.
                                                 get("image").split(':')[0])
             if container_image.get('type') == "singularity":
-                index = container_image.get('index')
-                if container_image.get('index') else 'shub://'
+                index = container_image.get('index') or 'shub://'
                 if index == "docker://":
                     singularity_container = os.path.join(
                                                "https://hub.docker.com",

@@ -82,14 +82,14 @@ class Importer():
                     descriptor["container-image"]["image"] = img[1]
                     descriptor["container-image"]["index"] = img[0] + "://"
                 del descriptor["container-image"]["url"]
-            elif "docker" == descriptor["container-image"]["type"] and\
-                 descriptor["container-image"].get("index"):
+            elif ("docker" == descriptor["container-image"]["type"] and
+                  descriptor["container-image"].get("index")):
                 url = descriptor["container-image"]["index"].split("://")[-1]
                 descriptor["container-image"]["index"] = url
 
         if "walltime-estimate" in descriptor.keys():
-            descriptor["suggested-resources"] =
-            {"walltime-estimate": descriptor["walltime-estimate"]}
+            descriptor["suggested-resources"] =\
+              {"walltime-estimate": descriptor["walltime-estimate"]}
             del descriptor["walltime-estimate"]
 
         with open(self.output_file, 'w') as fhandle:
