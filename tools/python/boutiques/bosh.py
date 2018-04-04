@@ -127,7 +127,7 @@ def execute(*params):
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor,
                                  {"forcePathType": True,
-                                  "destroyTempScripts"  True,
+                                  "destroyTempScripts": True,
                                   "changeUser": True})
         if rand:
             executor.generateRandomParams(numb)
