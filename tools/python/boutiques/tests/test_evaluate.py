@@ -5,6 +5,7 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 
+
 class TestEvaluate(TestCase):
 
     def set_examples(self):
@@ -20,7 +21,7 @@ class TestEvaluate(TestCase):
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './config.txt'}
         assert(query == expect)
-        
+
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=logfile")
         expect = {'logfile': 'log-4.txt'}
         assert(query == expect)
@@ -40,14 +41,14 @@ class TestEvaluate(TestCase):
                   'list_int_input': [1, 2, 3],
                   'flag_input': None}
         assert(query == expect)
-        
+
         query = bosh.evaluate(self.desc, self.invo,
                               "inputs/type=Flag,id=flag_input",
                               "inputs/type=Number")
-        expect = [ {'flag_input': None},
-                   {'config_num': 4,
-                    'num_input': None,
-                    'list_int_input': [1, 2, 3]} ]
+        expect = [{'flag_input': None},
+                  {'config_num': 4,
+                   'num_input': None,
+                   'list_int_input': [1, 2, 3]}]
         assert(query == expect)
 
         query = bosh.evaluate(self.desc, self.invo, "inputs/id=strinputs")
@@ -64,9 +65,10 @@ class TestEvaluate(TestCase):
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}
         assert(query == expect)
-        
-        query = bosh.evaluate(self.desc, self.invo, "groups/mutually-exclusive=True")
+
+        query = bosh.evaluate(self.desc,
+                              self.invo,
+                              "groups/mutually-exclusive=True")
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}
         assert(query == expect)
-
