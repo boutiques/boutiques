@@ -44,7 +44,7 @@ def validate_bids(descriptor, valid=False):
     # Ensure the command-line conforms to the BIDS app spec
     msg_template = "   CLIError: command-line doesn't match template: {}"
     cltemp = "mkdir -p OUTPUT_DIR; (.*) BIDS_DIR OUTPUT_DIR ANALYSIS_LEVEL"\
-    " PARTICIPANT_LABEL SESSION_LABEL[\\s]*(.*)"
+             " PARTICIPANT_LABEL SESSION_LABEL[\\s]*(.*)"
     cmdline = descriptor["command-line"]
     if len(re.findall(cltemp, cmdline)) < 1:
         errors += [msg_template.format(cltemp)]

@@ -52,7 +52,7 @@ def validate_descriptor(json_file, **kwargs):
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        print("JSON Validation error (Rigorous Boutiques validation"\
+        print("JSON Validation error (Rigorous Boutiques validation"
               " not yet performed)")
         raise ValidationError(e.message)
 

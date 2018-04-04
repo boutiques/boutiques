@@ -70,7 +70,7 @@ class LocalExecutor(object):
         conEngines = ['docker', 'singularity']
         if (self.con is not None) and self.con['type'] not in conEngines:
                 msg = "Other container types than {} (e.g. {})"\
-                " are not yet supported"
+                      " are not yet supported"
                 raise ValueError(msg.format(", ".join(conEngines),
                                             self.con['type']))
 
@@ -154,7 +154,7 @@ class LocalExecutor(object):
                 if conName not in os.listdir('./'):
                     print(os.listdir('./'))
                     # Pull the singularity image
-                    if self._localExecute("singularity pull --name"\
+                    if self._localExecute("singularity pull --name"
                                           " \"{}\" {}{}".format(conName,
                                                                 conIndex,
                                                                 conImage))[1]:
@@ -219,7 +219,7 @@ class LocalExecutor(object):
         print('---/* Begin program output */---')
         if stdout != '':
             print(stdout.decode('utf-8'))
-        print('---/* End program output */---\nCompleted execution'\
+        print('---/* End program output */---\nCompleted execution'
               ' (exit code: ' + str(exit_code) + ')')
         time.sleep(0.5)  # Give the OS a (half) second to finish writing
         # Destroy temporary docker script, if desired.
@@ -527,7 +527,7 @@ class LocalExecutor(object):
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception:  # Avoid catching BaseExceptions like SystemExit
-                sys.stderr.write("An error occurred in validation\n"\
+                sys.stderr.write("An error occurred in validation\n"
                                  "Previously saved issues\n")
                 for err in self.errs:
                     sys.stderr.write("\t" + str(err) + "\n")
