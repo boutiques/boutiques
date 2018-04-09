@@ -30,7 +30,7 @@ install:
 script:
 - cd ./tools/python/
 - pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
-- jsonlint boutiques/schema/descriptor.schema.json
+- jsonlint -q boutiques/schema/descriptor.schema.json
 - coverage run --source boutiques setup.py pytest
 
 after_success:
