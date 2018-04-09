@@ -10,7 +10,13 @@ import os
 import sys
 import argparse
 from functools import reduce
+from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
+
+
+# An exception class specific to invocations
+class InvocationValidationError(ValidationError):
+    pass
 
 
 # Generate an invocation schema from a Boutiques application descriptor
@@ -161,8 +167,8 @@ def validateSchema(s, d=None, **kwargs):
         if d:
                 try:
                         jsonschema.validate(d, s)
-                except jsonschema.ValidationError as e:
-                        raise jsonschema.ValidationError(e.message)
+                except ValidationError as e:
+                        raise InvocationValidationError(e.message)
                 if kwargs.get("verbose"):
                         print("Invocation Schema validation OK")
 

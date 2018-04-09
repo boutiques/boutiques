@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser, RawTextHelpFormatter
 import jsonschema
 import json
 import os
@@ -8,6 +7,11 @@ import sys
 import os.path as op
 import tempfile
 import pytest
+from argparse import ArgumentParser, RawTextHelpFormatter
+from jsonschema import ValidationError
+from boutiques.localExec import LocalExecutor
+from boutiques.validator import DescriptorValidationError
+from boutiques.invocationSchemaHandler import InvocationValidationError
 
 
 def validate(*params):
@@ -77,9 +81,10 @@ def execute(*params):
             raise SystemExit("JSON descriptor {} does not exist".
                              format(descriptor))
 
+        # Validate invocation and descriptor
         valid = invocation(descriptor, '-i', inp)
+
         # Generate object that will perform the commands
-        from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor,
                                  {"forcePathType": True,
                                   "destroyTempScripts": not results.debug,
@@ -271,14 +276,9 @@ def invocation(*params):
                         " file ")
     result = parser.parse_args(params)
 
-    try:
-        from jsonschema import ValidationError
-        validate(result.descriptor)
-        if result.invocation:
-            data = json.loads(open(result.invocation).read())
-    except ValidationError as e:
-        print("Error reading JSON:")
-        raise ValidationError(e.message)
+    validate(result.descriptor)
+    if result.invocation:
+        data = json.loads(open(result.invocation).read())
 
     descriptor = json.loads(open(result.descriptor).read())
     if descriptor.get("invocation-schema"):
@@ -292,11 +292,7 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        try:
-            validateSchema(invSchema, data)
-        except ValidationError as e:
-            print("Invalid invocation:")
-            raise ValidationError(e.message)
+        validateSchema(invSchema, data)
 
 
 def evaluate(*params):
@@ -395,30 +391,37 @@ def bosh(args=None):
     func = args.function
     params += ["--help"] if args.help is True else []
 
-    if func == "validate":
-        out = validate(*params)
-        return out
-    elif func == "exec":
-        out = execute(*params)
-        return out[2]
-    elif func == "import":
-        out = importer(*params)
-        return out
-    elif func == "export":
-        out = exporter(*params)
-        return out
-    elif func == "publish":
-        out = publish(*params)
-        return out
-    elif func == "invocation":
-        out = invocation(*params)
-        return out
-    elif func == "evaluate":
-        out = evaluate(*params)
-        return out
-    elif func == "test":
-        out = test(*params)
-        return out
-    else:
-        parser.print_help()
-        raise SystemExit
+    try:
+        if func == "validate":
+            out = validate(*params)
+            return out
+        elif func == "exec":
+            out = execute(*params)
+            return out[2]
+        elif func == "import":
+            out = importer(*params)
+            return out
+        elif func == "export":
+            out = exporter(*params)
+            return out
+        elif func == "publish":
+            out = publish(*params)
+            return out
+        elif func == "invocation":
+            out = invocation(*params)
+            return out
+        elif func == "evaluate":
+            out = evaluate(*params)
+            return out
+        elif func == "test":
+            out = test(*params)
+            return out
+        else:
+            parser.print_help()
+            raise SystemExit
+    except DescriptorValidationError as e:
+        print("Validation error in descriptor: " + e.message)
+        return 1
+    except InvocationValidationError as e:
+        print("Validation error in invocation: " + e.message)
+        return 1

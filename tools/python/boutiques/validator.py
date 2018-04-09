@@ -31,6 +31,11 @@ from argparse import ArgumentParser
 from boutiques import __file__ as bfile
 
 
+# An exception class specific to descriptors
+class DescriptorValidationError(ValidationError):
+    pass
+
+
 # Main validation module
 def validate_descriptor(json_file, **kwargs):
     """
@@ -52,9 +57,7 @@ def validate_descriptor(json_file, **kwargs):
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        print("JSON Validation error (Rigorous Boutiques validation"
-              " not yet performed)")
-        raise ValidationError(e.message)
+        raise DescriptorValidationError(e.message)
 
     # Helper get functions
     def safeGet(desc, sec, targ):
@@ -301,7 +304,7 @@ def validate_descriptor(json_file, **kwargs):
                                           "output-files", "id")
 
                 # Verify if output reference ids are valid
-                msg_template = "  TestError: \"{}\" output id"\
+                msg_template = "TestError: \"{}\" output id"\
                                " not found, in test \"{}\""
                 errors += [msg_template.format(output_id, test["name"])
                            for output_id in test_output_ids
@@ -309,7 +312,7 @@ def validate_descriptor(json_file, **kwargs):
 
                 # Verify that we do not have multiple output
                 # references refering to the same id
-                msg_template = "  TestError: \"{}\" output id"\
+                msg_template = "TestError: \"{}\" output id"\
                                " cannot appear more than once within"\
                                " same test, in test \"{}\""
                 errors += [msg_template.format(output_id, test["name"])
@@ -317,7 +320,7 @@ def validate_descriptor(json_file, **kwargs):
                            if (test_output_ids.count(output_id) > 1)]
 
         # Verify that all the defined tests have unique names
-        msg_template = "  TestError: \"{}\" test name is non-unique"
+        msg_template = "TestError: \"{}\" test name is non-unique"
         errors += [msg_template.format(test_name)
                    for test_name in set(tests_names)
                    if (tests_names.count(test_name) > 1)]
@@ -328,4 +331,4 @@ def validate_descriptor(json_file, **kwargs):
             print("Boutiques validation OK")
         return descriptor
     else:
-        raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
+        raise DescriptorValidationError("\n".join(errors))
