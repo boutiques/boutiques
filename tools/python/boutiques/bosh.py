@@ -9,7 +9,6 @@ import tempfile
 import pytest
 from argparse import ArgumentParser, RawTextHelpFormatter
 from jsonschema import ValidationError
-from boutiques.localExec import LocalExecutor
 from boutiques.validator import DescriptorValidationError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 
@@ -85,6 +84,7 @@ def execute(*params):
         valid = invocation(descriptor, '-i', inp)
 
         # Generate object that will perform the commands
+        from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor,
                                  {"forcePathType": True,
                                   "destroyTempScripts": not results.debug,
