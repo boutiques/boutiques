@@ -257,13 +257,18 @@ def publish(*params):
 
 def invocation(*params):
     parser = ArgumentParser("Creates invocation schema and validates"
-                            " invocations")
+                            " invocations. Uses descriptor's invocation"
+                            " schema if it exists, otherwise creates one.")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("-i", "--invocation", action="store",
                         help="Input values in a JSON file to be"
                         " validated against "
                         "the invocation schema.")
+    parser.add_argument("-w", "--write-schema", action="store_true",
+                        help="If descriptor doesn't have an invocation "
+                        "schema, creates one and writes it to the descriptor"
+                        " file ")
     result = parser.parse_args(params)
 
     try:
@@ -281,10 +286,10 @@ def invocation(*params):
     else:
         from boutiques.invocationSchemaHandler import generateInvocationSchema
         invSchema = generateInvocationSchema(descriptor)
-
-    descriptor["invocation-schema"] = invSchema
-    with open(result.descriptor, "w") as f:
-        f.write(json.dumps(descriptor, indent=4, sort_keys=True))
+        if result.write_schema:
+            descriptor["invocation-schema"] = invSchema
+            with open(result.descriptor, "w") as f:
+                f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
         try:
