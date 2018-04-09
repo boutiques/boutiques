@@ -154,13 +154,16 @@ class LocalExecutor(object):
                 if conName not in os.listdir('./'):
                     print(os.listdir('./'))
                     pull_location = "\"{}\" {}{}".format(conName,
-                                                                conIndex,
-                                                                conImage)
-                    print("Container image ({0}) not found in current working directory,"
+                                                         conIndex,
+                                                         conImage)
+                    print("Container image ({0}) not found in current"
+                          " working directory,"
                           " pulling from {1}".format(conName, pull_location))
                     # Pull the singularity image
                     if self._localExecute("singularity pull --name "
                                           pull_location)[1]:
+                        print("Could not pull image.")
+                        sys.exit(1)
                 else:
                     print("Using local container image: {}", conName)
                 conName = op.abspath(conName)
