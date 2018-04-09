@@ -129,8 +129,8 @@
                 ],
                 "additionalProperties": false
             },
-	    "minItems": 1,
-	    "uniqueItems": true
+        "minItems": 1,
+        "uniqueItems": true
         },
         "groups": {
             "id": "http://github.com/boutiques/boutiques-schema/groups",
@@ -191,8 +191,8 @@
                 ],
                 "additionalProperties": false
             },
-	    "minItems": 1,
-	    "uniqueItems": true
+        "minItems": 1,
+        "uniqueItems": true
         },
         "inputs": {
             "id": "http://github.com/boutiques/boutiques-schema/inputs",
@@ -381,8 +381,8 @@
                 },
                 "additionalProperties": false
             },
-	    "minItems": 1,
-	    "uniqueItems": true
+        "minItems": 1,
+        "uniqueItems": true
         },
         "tests": {
             "id": "http://github.com/boutiques/boutiques-schema/tests",
@@ -562,8 +562,8 @@
                 },
                 "additionalProperties": false
             },
-	    "minItems": 1,
-	    "uniqueItems": true
+        "minItems": 1,
+        "uniqueItems": true
         },
         "invocation-schema": {
             "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
@@ -605,16 +605,16 @@
                 }
             }
         },
-	"tags": {
+    "tags": {
             "id": "http://github.com/boutiques/boutiques-schema/tags",
             "type": "object",
             "description": "An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
-	    "additionalProperties": {
+            "additionalProperties": {
                 "type": "string",
                 "description": "Tag values"
             }
         },
-	"error-codes": {
+    "error-codes": {
             "id": "http://github.com/boutiques/boutiques-schema/error-codes",
             "type": "array",
             "description": "An array of key-value pairs specifying exit codes and their description. Can be used for tools to specify the meaning of particular exit codes. Exit code 0 is assumed to indicate a successful execution.",
@@ -639,9 +639,9 @@
                 ],
                 "additionalProperties": false
             },
-	    "minItems": 1,
-	    "uniqueItems": true
-	},
+        "minItems": 1,
+        "uniqueItems": true
+    },
         "custom": {
             "id": "http://github.com/boutiques/boutiques-schema/custom",
             "type": "object"
