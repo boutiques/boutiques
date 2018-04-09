@@ -160,7 +160,7 @@ class LocalExecutor(object):
                           " working directory,"
                           " pulling from {1}".format(conName, pull_location))
                     # Pull the singularity image
-                    if self._localExecute("singularity pull --name "+
+                    if self._localExecute("singularity pull --name " +
                                           pull_location)[1]:
                         print("Could not pull image.")
                         sys.exit(1)
