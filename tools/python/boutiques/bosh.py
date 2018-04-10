@@ -420,8 +420,16 @@ def bosh(args=None):
             parser.print_help()
             raise SystemExit
     except DescriptorValidationError as e:
-        print("Validation error in descriptor: " + e.message)
-        return 1
+        # We don't want to raise an exception when function is called
+        # from CLI.'
+        if __name__ == "__main__":
+            print("Validation error in descriptor: " + e.message)
+            return 1
+        raise e
     except InvocationValidationError as e:
-        print("Validation error in invocation: " + e.message)
-        return 1
+        # We don't want to raise an exception when function is called
+        # from CLI.'
+        if __name__ == "__main__":
+            print("Validation error in invocation: " + e.message)
+            return 1
+        raise e

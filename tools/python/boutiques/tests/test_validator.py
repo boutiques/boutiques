@@ -3,7 +3,7 @@
 from unittest import TestCase
 from boutiques.bosh import bosh
 from boutiques import __file__ as bfile
-from jsonschema.exceptions import ValidationError
+from boutiques.validator import DescriptorValidationError
 import os.path as op
 import os
 

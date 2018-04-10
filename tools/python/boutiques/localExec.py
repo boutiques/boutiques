@@ -142,7 +142,7 @@ class LocalExecutor(object):
             if conType == 'docker':
                 # Pull the docker image
                 if self._localExecute("docker pull " + str(conImage))[1]:
-                    print("Container not found online, trying local copy")
+                    print("Container not found online,  trying local copy")
             elif conType == 'singularity':
                 if not conIndex:
                     conIndex = "shub://"
