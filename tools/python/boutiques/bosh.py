@@ -11,6 +11,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.invocationSchemaHandler import InvocationValidationError
+import traceback
 
 
 def validate(*params):
@@ -391,6 +392,13 @@ def bosh(args=None):
     func = args.function
     params += ["--help"] if args.help is True else []
 
+    # Returns True if bosh was called from the CLI
+    def runs_as_cli():
+        stack = traceback.extract_stack()
+        if len(stack) == 0 or len(stack[0]) < 4:
+            return False
+        return stack[0][3].startswith("load_entry_point")
+
     try:
         if func == "validate":
             out = validate(*params)
@@ -422,14 +430,14 @@ def bosh(args=None):
     except DescriptorValidationError as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
-        if __name__ == "__main__":
+        if runs_as_cli():
             print("Validation error in descriptor: " + e.message)
             return 1
         raise e
     except InvocationValidationError as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
-        if __name__ == "__main__":
+        if runs_as_cli():
             print("Validation error in invocation: " + e.message)
             return 1
         raise e
