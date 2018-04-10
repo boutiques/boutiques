@@ -11,7 +11,6 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.invocationSchemaHandler import InvocationValidationError
-import traceback
 
 
 def validate(*params):
@@ -394,10 +393,7 @@ def bosh(args=None):
 
     # Returns True if bosh was called from the CLI
     def runs_as_cli():
-        stack = traceback.extract_stack()
-        if len(stack) == 0 or len(stack[0]) < 4:
-            return False
-        return stack[0][3].startswith("load_entry_point")
+        return os.path.basename(sys.argv[0]) == "bosh"
 
     try:
         if func == "validate":
