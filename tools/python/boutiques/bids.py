@@ -27,7 +27,7 @@
 import re
 import simplejson
 import os.path as op
-from jsonschema import ValidationError
+from boutiques.validator import DescriptorValidationError
 
 
 # BIDS validation module
@@ -35,7 +35,7 @@ def validate_bids(descriptor, valid=False):
 
     if not valid:
         msg = "Please provide a Boutiques descriptor that has been validated."
-        raise ValidationError(msg)
+        raise DescriptorValidationError(msg)
 
     errors = []
 
@@ -84,5 +84,5 @@ def validate_bids(descriptor, valid=False):
     if errors is None:
         print("BIDS validation OK")
     else:
-        raise ValidationError("Invalid BIDS app descriptor:"
-                              "\n"+"\n".join(errors))
+        raise DescriptorValidationError("Invalid BIDS app descriptor:"
+                                        "\n"+"\n".join(errors))

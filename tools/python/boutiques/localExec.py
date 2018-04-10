@@ -116,8 +116,7 @@ class LocalExecutor(object):
         After execution, it checks for output file existence.
         '''
         command, exit_code, con = self.cmdLine[0], None, self.con or {}
-        print('Attempting execution of command:\n\t' + command +
-              '\n---/* Start program output */---')
+        print('Attempting execution of command:\n\t' + command)
         # Check for Container image
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
@@ -143,7 +142,7 @@ class LocalExecutor(object):
             if conType == 'docker':
                 # Pull the docker image
                 if self._localExecute("docker pull " + str(conImage))[1]:
-                    print("Container not found online - trying local copy")
+                    print("Container not found online,  trying local copy")
             elif conType == 'singularity':
                 if not conIndex:
                     conIndex = "shub://"
