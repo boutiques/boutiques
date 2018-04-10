@@ -85,4 +85,4 @@ def validate_bids(descriptor, valid=False):
         print("BIDS validation OK")
     else:
         raise DescriptorValidationError("Invalid BIDS app descriptor:"
-                              "\n"+"\n".join(errors))
+                                        "\n"+"\n".join(errors))
