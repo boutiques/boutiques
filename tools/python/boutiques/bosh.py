@@ -203,22 +203,23 @@ def publish(*params):
                             "a Zenodo access token, see "
                             "http://developers.zenodo.org/#authentication.")
     parser.add_argument("boutiques_descriptor", action="store",
-                        help="Local path to a "
+                        help="local path of the "
                         " Boutiques descriptor to publish.")
     parser.add_argument("creator", action="store",
-                        help="Creator to use in Zenodo metadata.")
+                        help="creator to use in Zenodo metadata.")
     parser.add_argument("affiliation", action="store",
-                        help="Affiliation to use in Zenodo metadata.")
+                        help="affiliation to use in Zenodo metadata.")
     parser.add_argument("--sandbox", action="store_true",
-                        help="Publishes to Zenodo's sandbox.")
+                        help="publish to Zenodo's sandbox instead of "
+                        "production server. Recommended for tests.")
     parser.add_argument("--zenodo-token", action="store",
-                        help="Zenodo API token to use for authentication."
+                        help="Zenodo API token to use for authentication. "
                         "If not used, token will be read from configuration "
                         "file or requested interactively.")
     parser.add_argument("--no-int", '-y', action="store_true",
-                        help="Disables interactive input.")
+                        help="disable interactive input.")
     parser.add_argument("-v", "--verbose", action="store_true",
-                        help="Prints information messages.")
+                        help="print information messages.")
 
     results = parser.parse_args(params)
 
