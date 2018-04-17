@@ -400,7 +400,7 @@ def bosh(args=None):
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
-            print(e.message)
+            print(e)
             return 1
         raise e
     except DescriptorValidationError as e:

@@ -19,3 +19,8 @@ class TestPublisher(TestCase):
                                "--sandbox", "-y", "-v",
                                "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"]))
+
+        self.assertFalse(bosh(["publish",
+                               os.path.join(example1_dir, "example1.json"),
+                               "Test author", "Test affiliation",
+                               "--sandbox", "-y", "-v"]))
