@@ -189,14 +189,6 @@ def exporter(*params):
 
 
 def publish(*params):
-    neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
-    neurolinks_dest_path = os.path.join(os.getenv("HOME"), "neurolinks")
-
-    def get_neurolinks_default():
-        if os.path.isdir(neurolinks_dest_path):
-            return neurolinks_dest_path
-        return neurolinks_github_repo_url
-
     parser = ArgumentParser("Boutiques publisher",
                             description="A publisher of Boutiques tools"
                             " in Zenodo (http://zenodo.org). Requires "
@@ -349,7 +341,7 @@ def bosh(args=None):
                         "descriptor for a BIDS app or updates a descriptor "
                         "from an older version of the schema. Export: exports a"
                         "descriptor to other formats. Publish: creates"
-                        "an entry in NeuroLinks for the descriptor and tool."
+                        "an entry in Zenodo for the descriptor and tool."
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties."
