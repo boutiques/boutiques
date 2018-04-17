@@ -4,8 +4,7 @@ VERSION = "0.5.7"
 DEPS = [
          "simplejson",
          "jsonschema",
-         "gitpython",
-         "PyGithub",
+         "requests",
          "pytest",
        ]
 

@@ -198,66 +198,29 @@ def publish(*params):
 
     parser = ArgumentParser("Boutiques publisher",
                             description="A publisher of Boutiques tools"
-                            " in Neurolinks"
-                            "(https://brainhack101.github.io/neurolinks)."
-                            " Crawls a Git"
-                            "repository for valid Boutiques descriptors"
-                            " and imports them"
-                            "in Neurolinks format. Uses your GitHub"
-                            " account to fork the "
-                            "Neurolinks repository and commit new tools"
-                            " in it. Requires "
-                            "that your GitHub ssh key is configured"
-                            " and usable without"
-                            "password.")
-    parser.add_argument("boutiques_repo", action="store",
-                        help="Local path to a Git repository containing"
-                        " Boutiques descriptors to publish.")
-    parser.add_argument("author_name", action="store",
-                        help="Default author name.")
-    parser.add_argument("tool_url", action="store",
-                        help="Default tool URL.")
-    parser.add_argument("--neurolinks-repo", "-n", action="store",
-                        default=get_neurolinks_default(),
-                        help="Local path to a Git clone of {0}. Remotes:"
-                        " 'origin' should point to a writable fork from"
-                        " which a PR will be initiated; 'base' will be"
-                        " pulled before any update, should point to"
-                        " {0}. If a URL is provided, will attempt to"
-                        " fork it on GitHub and clone it to {1}.".
-                        format(neurolinks_github_repo_url,
-                               neurolinks_dest_path))
-    parser.add_argument("--boutiques-remote", "-r", action="store",
-                        default='origin',
-                        help="Name of Boutiques Git repo remote used to"
-                        " get URLs of Boutiques descriptor.")
-    parser.add_argument("--no-github", action="store_true",
-                        help="Do not interact with GitHub at all"
-                        " (useful for tests).")
-    parser.add_argument("--github-login", "-u", action="store",
-                        help="GitHub login used to fork, clone and PR"
-                        " to {}. Defaults to value in $HOME/.pygithub."
-                        " Saved in $HOME/.pygithub if "
-                        "specified.".format(neurolinks_github_repo_url))
-    parser.add_argument("--github-password", "-p", action="store",
-                        help="GitHub password used to fork, clone and"
-                        " PR to {}. Defaults to value in $HOME/.pygithub."
-                        " Saved in $HOME/.pygithub if specified."
-                        .format(neurolinks_github_repo_url))
-    parser.add_argument("--inter", "-i", action="store_true",
-                        default=False,
-                        help="Interactive mode. Does not use default "
-                        "values everywhere, "
-                        "checks if URLs are correct or accessible.")
+                            " in Zenodo (http://zenodo.org). Requires "
+                            "a Zenodo access token, see "
+                            "http://developers.zenodo.org/#authentication.")
+    parser.add_argument("boutiques_descriptor", action="store",
+                        help="Local path to a "
+                        " Boutiques descriptor to publish.")
+    parser.add_argument("creator", action="store",
+                        help="Creator to use in Zenodo metadata.")
+    parser.add_argument("affiliation", action="store",
+                        help="Affiliation to use in Zenodo metadata.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Publishes to Zenodo's sandbox'.")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Prints information messages.")
 
     results = parser.parse_args(params)
 
     from boutiques.publisher import Publisher
-    publisher = Publisher(results.boutiques_repo, results.boutiques_remote,
-                          results.author_name, results.tool_url, results.inter,
-                          results.neurolinks_repo, neurolinks_dest_path,
-                          results.github_login, results.github_password,
-                          results.no_github).publish()
+    publisher = Publisher(results.boutiques_descriptor,
+                          results.creator,
+                          results.affiliation,
+                          results.verbose,
+                          results.sandbox).publish()
 
 
 def invocation(*params):
