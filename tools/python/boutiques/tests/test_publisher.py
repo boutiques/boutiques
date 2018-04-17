@@ -1,6 +1,7 @@
 from unittest import TestCase
 from boutiques.bosh import bosh
 from boutiques import __file__ as bfile
+from boutiques.publisher import ZenodoError
 import os
 
 
@@ -13,6 +14,21 @@ class TestPublisher(TestCase):
     def test_publisher(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         print(os.path.join(example1_dir, "example1.json"))
+        self.assertRaises(ZenodoError, bosh, ["publish",
+                                              os.path.join(example1_dir,
+                                                           "example1.json"),
+                                              "Test author",
+                                              "Test affiliation",
+                                              "--sandbox", "-y", "-v"])
+
+        self.assertRaises(ZenodoError, bosh, ["publish",
+                                              os.path.join(example1_dir,
+                                                           "example1.json"),
+                                              "Test author",
+                                              "Test affiliation",
+                                              "--sandbox", "-y", "-v",
+                                              "--zenodo-token", "badtoken"])
+
         self.assertFalse(bosh(["publish",
                                os.path.join(example1_dir, "example1.json"),
                                "Test author", "Test affiliation",

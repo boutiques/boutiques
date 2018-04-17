@@ -189,14 +189,6 @@ def exporter(*params):
 
 
 def publish(*params):
-    neurolinks_github_repo_url = "https://github.com/brainhack101/neurolinks"
-    neurolinks_dest_path = os.path.join(os.getenv("HOME"), "neurolinks")
-
-    def get_neurolinks_default():
-        if os.path.isdir(neurolinks_dest_path):
-            return neurolinks_dest_path
-        return neurolinks_github_repo_url
-
     parser = ArgumentParser("Boutiques publisher",
                             description="A publisher of Boutiques tools"
                             " in Zenodo (http://zenodo.org). Requires "
@@ -396,24 +388,13 @@ def bosh(args=None):
         else:
             parser.print_help()
             raise SystemExit
-    except ZenodoError as e:
+
+    except (ZenodoError,
+            DescriptorValidationError,
+            InvocationValidationError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
             print(e)
-            return 1
-        raise e
-    except DescriptorValidationError as e:
-        # We don't want to raise an exception when function is called
-        # from CLI.'
-        if runs_as_cli():
-            print("Validation error in descriptor: " + e.message)
-            return 1
-        raise e
-    except InvocationValidationError as e:
-        # We don't want to raise an exception when function is called
-        # from CLI.'
-        if runs_as_cli():
-            print("Validation error in invocation: " + e.message)
             return 1
         raise e

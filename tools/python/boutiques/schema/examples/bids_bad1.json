@@ -19,7 +19,7 @@
     },{
 				"id" : "participant_level_analysis_dir",
 				"name" : "Participants dir",
-				"type" : "File",
+				"type" : "List",
 				"description": "Directory containing the output of the participants analysis.",
 				"value-key" : "OUTPUT_DIR",
 				"optional" : true
@@ -61,13 +61,6 @@
     }
 	],
     "output-files" : [
-		{
-        "id" : "bids_dir_out",
-        "name" : "Output directory",
-				"description": "The directory where the output files should be stored. If you are running a group level analysis, this folder should be prepopulated with the results of the participant level analysis.",
-				"path-template" : "BIDS_DIR",
-        "optional" : false
-    }
 	],
     "groups" : [
   ]
