@@ -37,7 +37,8 @@ class ZenodoError(Exception):
 class Publisher():
 
     def __init__(self, descriptor_file_name,
-                 creator, affiliation, verbose, sandbox, no_int):
+                 creator, affiliation, verbose, sandbox, no_int,
+                 auth_token):
         # Straightforward assignments
         self.verbose = verbose
         self.sandbox = sandbox
@@ -45,15 +46,17 @@ class Publisher():
         self.creator = creator
         self.affiliation = affiliation
         self.no_int = no_int
+        self.zenodo_access_token = auth_token
 
         # Validate and load descriptor
         validate_descriptor(descriptor_file_name)
         self.descriptor = json.loads(open(self.descriptor_file_name).read())
 
         # Fix Zenodo access token
-        self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
-        self.zenodo_access_token = self.get_zenodo_access_token()
-        self.save_zenodo_access_token()
+        if self.zenodo_access_token is None:
+            self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
+            self.zenodo_access_token = self.get_zenodo_access_token()
+            self.save_zenodo_access_token()
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
@@ -177,8 +180,8 @@ class Publisher():
                                    .format(r.json()['doi']), r)
 
     def raise_zenodo_error(self, message, r):
-        raise ZenodoError("Zenodo error ({0}): {1}. {2}"
-                          .format(r.status_code, message, r.json()))
+        raise ZenodoError("Zenodo error ({0}): {1}."
+                          .format(r.status_code, message))
 
     def print_zenodo_info(self, message, r):
         print("[ INFO ({1}) ] {0}".format(message, r.status_code))

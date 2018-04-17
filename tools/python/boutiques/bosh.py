@@ -211,6 +211,10 @@ def publish(*params):
                         help="Affiliation to use in Zenodo metadata.")
     parser.add_argument("--sandbox", action="store_true",
                         help="Publishes to Zenodo's sandbox.")
+    parser.add_argument("--zenodo-token", action="store",
+                        help="Zenodo API token to use for authentication."
+                        "If not used, token will be read from configuration "
+                        "file or requested interactively.")
     parser.add_argument("--no-int", '-y', action="store_true",
                         help="Disables interactive input.")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -224,7 +228,8 @@ def publish(*params):
                           results.affiliation,
                           results.verbose,
                           results.sandbox,
-                          results.no_int).publish()
+                          results.no_int,
+                          results.zenodo_token).publish()
 
 
 def invocation(*params):
