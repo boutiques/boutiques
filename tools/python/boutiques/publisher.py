@@ -52,11 +52,11 @@ class Publisher():
         validate_descriptor(descriptor_file_name)
         self.descriptor = json.loads(open(self.descriptor_file_name).read())
 
+        self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
         # Fix Zenodo access token
         if self.zenodo_access_token is None:
-            self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
             self.zenodo_access_token = self.get_zenodo_access_token()
-            self.save_zenodo_access_token()
+        self.save_zenodo_access_token()
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
