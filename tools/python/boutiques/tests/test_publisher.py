@@ -34,7 +34,7 @@ class TestPublisher(TestCase):
                   "Test author", "Test affiliation", "--sandbox",
                   "-y", "-v", "--zenodo-token", "12345"])
         print(e.exception)
-        self.assertTrue("Cannot authenticate to Zenodo" in e.exception.message)
+        self.assertTrue("Cannot authenticate to Zenodo" in str(e.exception))
 
     def test_publisher_auth_fail_cli(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
