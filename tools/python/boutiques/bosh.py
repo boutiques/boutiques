@@ -10,6 +10,7 @@ import pytest
 from argparse import ArgumentParser, RawTextHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
+from boutiques.publisher import ZenodoError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 
 
@@ -209,7 +210,9 @@ def publish(*params):
     parser.add_argument("affiliation", action="store",
                         help="Affiliation to use in Zenodo metadata.")
     parser.add_argument("--sandbox", action="store_true",
-                        help="Publishes to Zenodo's sandbox'.")
+                        help="Publishes to Zenodo's sandbox.")
+    parser.add_argument("--no-int", '-y', action="store_true",
+                        help="Disables interactive input.")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Prints information messages.")
 
@@ -220,7 +223,8 @@ def publish(*params):
                           results.creator,
                           results.affiliation,
                           results.verbose,
-                          results.sandbox).publish()
+                          results.sandbox,
+                          results.no_int).publish()
 
 
 def invocation(*params):
@@ -386,6 +390,13 @@ def bosh(args=None):
         else:
             parser.print_help()
             raise SystemExit
+    except ZenodoError as e:
+        # We don't want to raise an exception when function is called
+        # from CLI.'
+        if runs_as_cli():
+            print(e.message)
+            return 1
+        raise e
     except DescriptorValidationError as e:
         # We don't want to raise an exception when function is called
         # from CLI.'

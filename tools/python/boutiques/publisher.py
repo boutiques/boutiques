@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env pythonprint
 
 # Copyright 2015 - 2017:
 #   The Royal Institution for the Advancement of Learning McGill University,
@@ -30,16 +30,20 @@ import requests
 import os
 
 
+class ZenodoError(Exception):
+    pass
+
 class Publisher():
 
     def __init__(self, descriptor_file_name,
-                 creator, affiliation, verbose, sandbox=False):
+                 creator, affiliation, verbose, sandbox, no_int):
         # Straightforward assignments
         self.verbose = verbose
         self.sandbox = sandbox
         self.descriptor_file_name = descriptor_file_name
         self.creator = creator
         self.affiliation = affiliation
+        self.no_int = no_int
 
         # Validate and load descriptor
         validate_descriptor(descriptor_file_name)
@@ -48,20 +52,20 @@ class Publisher():
         # Fix Zenodo access token
         self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
         self.zenodo_access_token = self.get_zenodo_access_token()
-        if(self.verbose):
-            print("Zenodo access token is {}".format(self.zenodo_access_token))
         self.save_zenodo_access_token()
 
         # Set Zenodo endpoint
-        self.zenodo_endpoint = "http://sandbox.zenodo.org" if\
-            self.sandbox else "http://sandbox.zenodo.org."
+        self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
+            self.sandbox else "https://zenodo.org"
         if(self.verbose):
-            print("Using Zenodo endpoint {}".format(self.zenodo_endpoint))
+            print("[ INFO ] Using Zenodo endpoint {}".format(self.zenodo_endpoint))
 
     def get_zenodo_access_token(self):
         json_creds = self.read_credentials()
         if json_creds.get(self.config_token_property_name()):
             return json_creds.get(self.config_token_property_name())
+        if(self.no_int):
+            raise ZenodoError("Cannot find Zenodo credentials.")
         prompt = ("Please enter your Zenodo access token (it will be "
                   "saved in {} for future use): ".format(self.config_file))
         try:
@@ -75,7 +79,7 @@ class Publisher():
         with open(self.config_file, 'w') as f:
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
         if(self.verbose):
-            print("Zenodo access token saved in {}".format(self.config_file))
+            print("[ INFO ] Zenodo access token saved in {}".format(self.config_file))
 
     def config_token_property_name(self):
         if self.sandbox:
@@ -94,32 +98,52 @@ class Publisher():
 
     def zenodo_test_api(self):
         r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions')
-        assert(r.status_code == 401), "Cannot access Zenodo API."
+        if(r.status_code != 401):
+            self.raise_zenodo_error("Cannot access Zenodo", r)
         if(self.verbose):
-            print("Zenodo API is accessible.")
+            self.print_zenodo_info("Zenodo is accessible", r)
         r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions',
                          params={'access_token': self.zenodo_access_token})
         message = "Cannot authenticate to Zenodo API, check you access token"
-        assert(r.status_code == 200), message
+        if(r.status_code != 200):
+            self.raise_zenodo_error("Cannot authenticate to Zenodo", r)
         if(self.verbose):
-            print("Can authenticate to Zenodo API.")
+            self.print_zenodo_info("Authentication to Zenodo successful", r)
 
     def zenodo_deposit(self):
         headers = {"Content-Type": "application/json"}
+        data = {
+            'metadata': {
+                'title': self.descriptor['name'],
+                'upload_type': 'software',
+                'description': self.descriptor['description'] or "Boutiques "
+                               "descriptor for {}".format(
+                                                   self.descriptor['name']),
+                'creators': [{'name': self.creator,
+                              'affiliation': self.affiliation}],
+                'version': self.descriptor['tool-version'],
+                'keywords': ['Boutiques', 'schema-version:{}'.format(self.descriptor['schema-version'])]
+            }
+        }
+        for tag in self.descriptor.get('tags'):
+            data['metadata']['keywords'].append(tag+":"+self.descriptor['tags'][tag])
+        if self.descriptor.get('container-image'):
+            data['metadata']['keywords'].append(self.descriptor['container-image']['type'])
+            
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
                           params={'access_token': self.zenodo_access_token},
                           json={},
+                          data = json.dumps(data),
                           headers=headers)
-        assert(r.status_code == 200),\
-            self.print_zenodo_error("Cannot create deposit:")
-        # Not sure why [0] is required, this is inconsistend with API docs
-        zid = r.json()[0]['id']
+        if(r.status_code != 201):
+            self.raise_zenodo_error("Deposition failed", r)
+        zid = r.json()['id']
         if(self.verbose):
-            print("Descriptor deposited on Zenodo, id is {}.".format(zid))
+            self.print_zenodo_info("Deposition succeeded, id is {}".format(zid), r)
         return zid
 
     def zenodo_upload_descriptor(self, deposition_id):
-        data = {'filename': self.descriptor_file_name}
+        data = {'filename': os.path.basename(self.descriptor_file_name)}
         files = {'file': open(self.descriptor_file_name, 'rb')}
         r = requests.post(self.zenodo_endpoint +
                           '/api/deposit/depositions/%s/files'
@@ -128,51 +152,38 @@ class Publisher():
                           data=data,
                           files=files)
         # Status code is inconsistent with Zenodo documentation
-        assert(r.status_code == 200),\
-            self.print_zenodo_error("Cannot upload descriptor")
+        
+        if(r.status_code != 201):
+            self.raise_zenodo_error("Cannot upload descriptor", r)
         if(self.verbose):
-            print("Descriptor uploaded to Zenodo.")
-
-    def zenodo_add_metadata(self, deposition_id):
-        headers = {"Content-Type": "application/json"}
-        data = {
-            'metadata': {
-                'title': self.descriptor['name'],
-                'upload_type': 'software',
-                'description': self.descriptor['description'] or "Boutiques "
-                               "descriptor for {}".format(
-                                                    self.descriptor['name']),
-                'creators': [{'name': self.creator,
-                              'affiliation': self.affiliation}],
-                'keywords': ["Boutiques descriptor"]
-            }
-        }
-        r = requests.put(self.zenodo_endpoint+'/api/deposit/depositions/%s'
-                         % deposition_id,
-                         params={'access_token': self.zenodo_access_token},
-                         data=json.dumps(data),
-                         headers=headers)
-        assert(r.status_code == 200),\
-            self.print_zenodo_error("Cannot add metadata to descriptor", r)
-        if(self.verbose):
-            print("Zenodo metadata added to descriptor.")
+            self.print_zenodo_info("Descriptor uploaded to Zenodo", r)
 
     def zenodo_publish(self, deposition_id):
         r = requests.post(self.zenodo_endpoint +
                           '/api/deposit/depositions/%s/actions/publish'
                           % deposition_id,
                           params={'access_token': self.zenodo_access_token})
-        assert(r.status_code == 202),\
-            self.print_zenodo_error("Cannot publish descriptor")
+        if(r.status_code != 202):
+            self.raise_zenodo_error("Cannot publish descriptor", r)
         if(self.verbose):
-            print("Descriptor published to Zenodo.")
+            self.print_zenodo_info("Descriptor published to Zenodo, doi is {}".format(r.json()['doi']), r)
 
-    def print_zenodo_error(self, message, r):
-        print("{0}: {1}".format(message, r.json()))
+    def raise_zenodo_error(self, message, r):
+        raise ZenodoError("Zenodo error ({0}): {1}. {2}".format(r.status_code, message, r.json()))
+    
+    def print_zenodo_info(self, message, r):
+        print("[ INFO ({1}) ] {0}".format(message, r.status_code))
 
     def publish(self):
+        if(not self.no_int):
+            prompt = "The descriptor will be published to Zenodo, this cannot be undone. Are you sure? (Y/n) "
+            try:
+                ret = raw_input(prompt)  # Python 2
+            except NameError:
+                ret = input(prompt)  # Python 3
+            if ret != "Y":
+                return
         self.zenodo_test_api()
         deposition_id = self.zenodo_deposit()
         self.zenodo_upload_descriptor(deposition_id)
-        self.zenodo_add_metadata(deposition_id)
         self.zenodo_publish(deposition_id)
