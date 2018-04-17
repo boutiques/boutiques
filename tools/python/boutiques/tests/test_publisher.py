@@ -1,7 +1,8 @@
 from unittest import TestCase
-from boutiques.bosh import bosh
 from boutiques import __file__ as bfile
 from boutiques.publisher import ZenodoError
+from boutiques.bosh import bosh
+import subprocess
 import os
 
 
@@ -40,3 +41,24 @@ class TestPublisher(TestCase):
                                os.path.join(example1_dir, "example1.json"),
                                "Test author", "Test affiliation",
                                "--sandbox", "-y", "-v"]))
+
+    def test_publisher_auth_fail(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        with self.assertRaises(ZenodoError) as e:
+            bosh(["publish", os.path.join(example1_dir, "example1.json"),
+                  "Test author", "Test affiliation", "--sandbox",
+                  "-y", "-v", "--zenodo-token", "12345"])
+        print(e.exception)
+        self.assertTrue("Cannot authenticate to Zenodo" in str(e.exception))
+
+    def test_publisher_auth_fail_cli(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        command = ("bosh publish " + os.path.join(example1_dir,
+                                                  "example1.json") +
+                   "'Test author' 'Test affiliation' --sandbox -y -v "
+                   "--zenodo-token 12345")
+        process = subprocess.Popen(command, shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        process.communicate()
+        self.assertTrue(process.returncode)

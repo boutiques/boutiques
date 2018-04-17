@@ -341,7 +341,7 @@ def bosh(args=None):
                         "descriptor for a BIDS app or updates a descriptor "
                         "from an older version of the schema. Export: exports a"
                         "descriptor to other formats. Publish: creates"
-                        "an entry in NeuroLinks for the descriptor and tool."
+                        "an entry in Zenodo for the descriptor and tool."
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties."
