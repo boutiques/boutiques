@@ -33,6 +33,7 @@ import os
 class ZenodoError(Exception):
     pass
 
+
 class Publisher():
 
     def __init__(self, descriptor_file_name,
@@ -58,7 +59,8 @@ class Publisher():
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
             self.sandbox else "https://zenodo.org"
         if(self.verbose):
-            print("[ INFO ] Using Zenodo endpoint {}".format(self.zenodo_endpoint))
+            print("[ INFO ] Using Zenodo endpoint {}".
+                  format(self.zenodo_endpoint))
 
     def get_zenodo_access_token(self):
         json_creds = self.read_credentials()
@@ -79,7 +81,8 @@ class Publisher():
         with open(self.config_file, 'w') as f:
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
         if(self.verbose):
-            print("[ INFO ] Zenodo access token saved in {}".format(self.config_file))
+            print("[ INFO ] Zenodo access token saved in {}".
+                  format(self.config_file))
 
     def config_token_property_name(self):
         if self.sandbox:
@@ -122,24 +125,28 @@ class Publisher():
                 'creators': [{'name': self.creator,
                               'affiliation': self.affiliation}],
                 'version': self.descriptor['tool-version'],
-                'keywords': ['Boutiques', 'schema-version:{}'.format(self.descriptor['schema-version'])]
+                'keywords': ['Boutiques',
+                             'schema-version:{}'.
+                             format(self.descriptor['schema-version'])]
             }
         }
+        keywords = data['metadata']['keywords']
         for tag in self.descriptor.get('tags'):
-            data['metadata']['keywords'].append(tag+":"+self.descriptor['tags'][tag])
+            keywords.append(tag + ":" + self.descriptor['tags'][tag])
         if self.descriptor.get('container-image'):
-            data['metadata']['keywords'].append(self.descriptor['container-image']['type'])
-            
+            keywords.append(self.descriptor['container-image']['type'])
+
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
                           params={'access_token': self.zenodo_access_token},
                           json={},
-                          data = json.dumps(data),
+                          data=json.dumps(data),
                           headers=headers)
         if(r.status_code != 201):
             self.raise_zenodo_error("Deposition failed", r)
         zid = r.json()['id']
         if(self.verbose):
-            self.print_zenodo_info("Deposition succeeded, id is {}".format(zid), r)
+            self.print_zenodo_info("Deposition succeeded, id is {}".
+                                   format(zid), r)
         return zid
 
     def zenodo_upload_descriptor(self, deposition_id):
@@ -152,7 +159,7 @@ class Publisher():
                           data=data,
                           files=files)
         # Status code is inconsistent with Zenodo documentation
-        
+
         if(r.status_code != 201):
             self.raise_zenodo_error("Cannot upload descriptor", r)
         if(self.verbose):
@@ -166,17 +173,20 @@ class Publisher():
         if(r.status_code != 202):
             self.raise_zenodo_error("Cannot publish descriptor", r)
         if(self.verbose):
-            self.print_zenodo_info("Descriptor published to Zenodo, doi is {}".format(r.json()['doi']), r)
+            self.print_zenodo_info("Descriptor published to Zenodo, doi is {}"
+                                   .format(r.json()['doi']), r)
 
     def raise_zenodo_error(self, message, r):
-        raise ZenodoError("Zenodo error ({0}): {1}. {2}".format(r.status_code, message, r.json()))
-    
+        raise ZenodoError("Zenodo error ({0}): {1}. {2}"
+                          .format(r.status_code, message, r.json()))
+
     def print_zenodo_info(self, message, r):
         print("[ INFO ({1}) ] {0}".format(message, r.status_code))
 
     def publish(self):
         if(not self.no_int):
-            prompt = "The descriptor will be published to Zenodo, this cannot be undone. Are you sure? (Y/n) "
+            prompt = ("The descriptor will be published to Zenodo, "
+                      "this cannot be undone. Are you sure? (Y/n) ")
             try:
                 ret = raw_input(prompt)  # Python 2
             except NameError:
