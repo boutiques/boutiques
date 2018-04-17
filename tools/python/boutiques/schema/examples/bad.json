@@ -121,7 +121,6 @@
       "optional": false,
       "requires-inputs": ["key6"],
       "value-choices": [
-        "value1"
       ],
       "default-value": "value2"
     },
