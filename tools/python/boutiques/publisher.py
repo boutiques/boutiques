@@ -1,4 +1,4 @@
-#!/usr/bin/env pythonprint
+#!/usr/bin/env python
 
 # Copyright 2015 - 2017:
 #   The Royal Institution for the Advancement of Learning McGill University,
