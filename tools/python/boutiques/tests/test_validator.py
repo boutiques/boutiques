@@ -23,8 +23,12 @@ class TestValidator(TestCase):
         fil = op.join(op.split(bfile)[0], 'schema/examples/bad.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
 
-    def test_invalid(self):
+    def test_invalid_boutiques(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/invalid.json')
+        self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
+
+    def test_invalid_json(self):
+        fil = op.join(op.split(bfile)[0], 'schema/examples/invalid_json.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
 
     def test_invalid_cli(self):

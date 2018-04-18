@@ -50,7 +50,10 @@ def validate_descriptor(json_file, **kwargs):
 
     # Load descriptor
     with open(json_file) as fhandle:
-        descriptor = simplejson.load(fhandle)
+        try:
+            descriptor = simplejson.load(fhandle)
+        except simplejson.errors.JSONDecodeError as e:
+            raise DescriptorValidationError(e.message)
 
     # Validate basic JSON schema compliance for descriptor
     # Note: if it fails basic schema compliance we don"t do more checks

@@ -14,6 +14,10 @@ import pwd
 import os.path as op
 
 
+class ToolOutputNotFoundError(Exception):
+    pass
+
+
 # Executor class
 class LocalExecutor(object):
     """
@@ -247,12 +251,12 @@ class LocalExecutor(object):
                 isOptional = False
             s1 = 'Optional' if isOptional else 'Required'
             s2 = '' if exists else 'not '
-            err = ''
+            message = (s1 + " output file \'" + outfile['name'] +
+                       "\' was " + s2 + "found at " + outFileName)
             if (not isOptional and not exists):
-                err = "Error! "
-            # Add error warning when required file is missing
-            print("\t" + err + s1 + " output file \'" + outfile['name'] +
-                  "\' was " + s2 + "found at " + outFileName)
+                raise ToolOutputNotFoundError(message)
+            else:
+                print("\t {0}".format(message))
         desc_err = ''
         if 'error-codes' in list(self.desc_dict.keys()):
             for err_elem in self.desc_dict['error-codes']:
