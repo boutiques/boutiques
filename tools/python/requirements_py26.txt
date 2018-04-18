@@ -1,5 +1,5 @@
 argparse==1.4.0
-boutiques==0.5.7
+boutiques==0.5.8
 certifi==2018.4.16
 chardet==3.0.4
 idna==2.6
