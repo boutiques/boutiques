@@ -53,14 +53,14 @@ def validate_descriptor(json_file, **kwargs):
         try:
             descriptor = simplejson.load(fhandle)
         except simplejson.errors.JSONDecodeError as e:
-            raise DescriptorValidationError(e)
+            raise DescriptorValidationError(str(e))
 
     # Validate basic JSON schema compliance for descriptor
     # Note: if it fails basic schema compliance we don"t do more checks
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        raise DescriptorValidationError(e)
+        raise DescriptorValidationError(str(e))
 
     # Helper get functions
     def safeGet(desc, sec, targ):
