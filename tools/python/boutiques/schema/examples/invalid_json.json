@@ -1,0 +1,26 @@
+{
+    "name": "output",
+    "tool-version": "1.0",
+    "description": "A simple script to test output files",
+    "command-line": "output.sh [INPUT_FILE] [OUTPUT_FILE]",
+    "schema-version": "0.5",
+    "container-image": {
+	"type": "docker"
+	"image": "boutiques/examples"
+    },
+    "inputs": [{
+	"id": "input_file",
+	"name": "Input file",
+        "command-line-key": "[INPUT_FILE]",
+	"type": "File",
+	"optional": false
+    }],
+    "output-files": [{
+	"id": "output_file",
+	"name": "Output file",
+        "command-line-key": "[OUTPUT_FILE]",
+	"path-template": "[INPUT_FILE]-processed.log",
+	"path-template-striped-extensions": [".txt",".mnc",".cpp",".m",".j"]
+    }]
+
+}

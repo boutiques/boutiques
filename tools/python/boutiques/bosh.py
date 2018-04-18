@@ -12,6 +12,7 @@ from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
 from boutiques.invocationSchemaHandler import InvocationValidationError
+from boutiques.localExec import ToolOutputNotFoundError
 
 
 def validate(*params):
@@ -391,10 +392,11 @@ def bosh(args=None):
 
     except (ZenodoError,
             DescriptorValidationError,
-            InvocationValidationError) as e:
+            InvocationValidationError,
+            ToolOutputNotFoundError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
             print(e)
-            return 1
+            return 99  # Note: this conflicts with tool error codes.
         raise e

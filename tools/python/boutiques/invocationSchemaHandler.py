@@ -171,7 +171,7 @@ def validateSchema(s, d=None, **kwargs):
                 try:
                         jsonschema.validate(d, s)
                 except ValidationError as e:
-                        raise InvocationValidationError(e.message)
+                        raise InvocationValidationError(e)
                 if kwargs.get("verbose"):
                         print("Invocation Schema validation OK")
 
