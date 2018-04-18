@@ -398,5 +398,5 @@ def bosh(args=None):
         # from CLI.'
         if runs_as_cli():
             print(e)
-            return 99  # Problem: this conflicts with tool error codes.
+            return 99  # Note: this conflicts with tool error codes.
         raise e
