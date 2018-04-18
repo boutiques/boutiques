@@ -1,9 +1,13 @@
-from unittest import TestCase
 from boutiques import __file__ as bfile
 from boutiques.publisher import ZenodoError
 from boutiques.bosh import bosh
 import subprocess
 import os
+import sys
+if sys.version_info < (2, 7):
+    from unittest2 import TestCase
+else:
+    from unittest import TestCase
 
 
 class TestPublisher(TestCase):
