@@ -361,16 +361,6 @@
                             "type": {"enum": ["Number"]}
                         }
                     },
-                    "exclusive-minimum": {
-                        "properties": {
-                            "type": {"enum": ["Number"]}
-                        }
-                    },
-                    "exclusive-maximum": {
-                        "properties": {
-                            "type": {"enum": ["Number"]}
-                        }
-                    },
                     "uses-absolute-path": {
                         "properties": {
                             "type": {"enum": ["File"]}

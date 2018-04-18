@@ -31,6 +31,11 @@ class TestValidator(TestCase):
         fil = op.join(op.split(bfile)[0], 'schema/examples/invalid_json.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
 
+    def test_invalid_json(self):
+        fil = op.join(op.split(bfile)[0], 'schema/examples/test_exclusive_'
+                                          'minimum.json')
+        self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
+
     def test_invalid_cli(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/invalid.json')
         command = ("bosh validate " + fil)
