@@ -109,7 +109,10 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
                 disbs.append(m)
         # Handle requires-inputs (flags have to be true to satisfy it)
         if reqs:
-            reqMap = {r: {"enum": [True]} for r in reqs if isFlag(r)}
+            reqMap = {}
+            for r in reqs:
+                if isFlag(r):
+                    reqMap[r] = {"enum": [True]}
             if isFlag(id):
                 h[id] = {}
                 h[id]['anyOf'] = [

@@ -3,10 +3,14 @@
 import subprocess
 import pytest
 import os.path as op
-from unittest import TestCase
 from boutiques import __file__ as bfile
 from boutiques import bosh
 from jsonschema.exceptions import ValidationError
+import sys
+if sys.version_info < (2, 7):
+    from unittest2 import TestCase
+else:
+    from unittest import TestCase
 
 
 class TestTest(TestCase):

@@ -62,7 +62,7 @@ class Publisher():
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
             self.sandbox else "https://zenodo.org"
         if(self.verbose):
-            print("[ INFO ] Using Zenodo endpoint {}".
+            print("[ INFO ] Using Zenodo endpoint {0}".
                   format(self.zenodo_endpoint))
 
     def get_zenodo_access_token(self):
@@ -72,7 +72,7 @@ class Publisher():
         if(self.no_int):
             raise ZenodoError("Cannot find Zenodo credentials.")
         prompt = ("Please enter your Zenodo access token (it will be "
-                  "saved in {} for future use): ".format(self.config_file))
+                  "saved in {0} for future use): ".format(self.config_file))
         try:
             return raw_input(prompt)  # Python 2
         except NameError:
@@ -84,7 +84,7 @@ class Publisher():
         with open(self.config_file, 'w') as f:
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
         if(self.verbose):
-            print("[ INFO ] Zenodo access token saved in {}".
+            print("[ INFO ] Zenodo access token saved in {0}".
                   format(self.config_file))
 
     def config_token_property_name(self):
@@ -123,13 +123,13 @@ class Publisher():
                 'title': self.descriptor['name'],
                 'upload_type': 'software',
                 'description': self.descriptor['description'] or "Boutiques "
-                               "descriptor for {}".format(
+                               "descriptor for {0}".format(
                                                    self.descriptor['name']),
                 'creators': [{'name': self.creator,
                               'affiliation': self.affiliation}],
                 'version': self.descriptor['tool-version'],
                 'keywords': ['Boutiques',
-                             'schema-version:{}'.
+                             'schema-version:{0}'.
                              format(self.descriptor['schema-version'])]
             }
         }
@@ -148,7 +148,7 @@ class Publisher():
             self.raise_zenodo_error("Deposition failed", r)
         zid = r.json()['id']
         if(self.verbose):
-            self.print_zenodo_info("Deposition succeeded, id is {}".
+            self.print_zenodo_info("Deposition succeeded, id is {0}".
                                    format(zid), r)
         return zid
 
@@ -176,7 +176,7 @@ class Publisher():
         if(r.status_code != 202):
             self.raise_zenodo_error("Cannot publish descriptor", r)
         if(self.verbose):
-            self.print_zenodo_info("Descriptor published to Zenodo, doi is {}"
+            self.print_zenodo_info("Descriptor published to Zenodo, doi is {0}"
                                    .format(r.json()['doi']), r)
 
     def raise_zenodo_error(self, message, r):
