@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import os, subprocess
+import os
+import subprocess
 from unittest import TestCase
 from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
+
 
 class TestBosh(TestCase):
 
@@ -20,4 +22,3 @@ class TestBosh(TestCase):
         self.assertRaises(SystemExit, bosh, ["validate", "--help"])
         self.assertRaises(SystemExit, bosh, ["invocation", "--help"])
         self.assertRaises(SystemExit, bosh, ["evaluate", "--help"])
-

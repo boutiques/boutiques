@@ -6,6 +6,7 @@ services:
 - docker
 
 python:
+- 2.6
 - 2.7
 - 3.5
 - 3.5-dev
@@ -15,16 +16,22 @@ python:
 - nightly
 - pypy-5.3.1
 
+node_js:
+- 5
+
 before_install:
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
+- npm install jsonlint -g 
 
 install:
 - pip install --upgrade setuptools
-- pip install coveralls pytest pytest-runner
+- pip install coveralls pytest pytest-runner pycodestyle
 - pip install ./tools/python/
 
 script:
 - cd ./tools/python/
+- pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
+- jsonlint -q boutiques/schema/descriptor.schema.json
 - coverage run --source boutiques setup.py pytest
 
 after_success:

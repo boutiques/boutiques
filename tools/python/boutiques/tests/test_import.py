@@ -12,11 +12,13 @@ import os
 class TestImport(TestCase):
 
     def test_import_bids_good(self):
-        bids_app = op.join(op.split(bfile)[0], "schema/examples/bids-apps/example_good")
+        bids_app = op.join(op.split(bfile)[0],
+                           "schema/examples/bids-apps/example_good")
         self.assertFalse(bosh(["import", "bids", "test-import.json", bids_app]))
 
     def test_import_bids_bad(self):
-        bids_app = op.join(op.split(bfile)[0], "schema/examples/bids-apps/example_bad")
+        bids_app = op.join(op.split(bfile)[0],
+                           "schema/examples/bids-apps/example_bad")
         self.assertRaises(ValidationError, bosh, ["import", "bids",
                                                   "test-import.json",
                                                   bids_app])
@@ -30,4 +32,3 @@ class TestImport(TestCase):
         fout = op.join(op.split(bfile)[0], "schema/examples/upgraded05.json")
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
         os.remove(fout)
-

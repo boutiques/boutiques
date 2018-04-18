@@ -24,310 +24,179 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
-from git import Repo
-from github import Github
-import git, json, os, sys
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen, URLError
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen, URLError
+import json
+import requests
+import os
+
+
+class ZenodoError(Exception):
+    pass
+
 
 class Publisher():
 
-    def __init__(self, boutiques_dir, remote_name, tool_author, tool_url, inter,
-                 neurolinks_repo_url, neurolinks_dest_path, github_user, github_password, no_github):
-        self.boutiques_dir = os.path.abspath(boutiques_dir)
-        self.remote_name = remote_name if remote_name else 'origin'
+    def __init__(self, descriptor_file_name,
+                 creator, affiliation, verbose, sandbox, no_int,
+                 auth_token):
+        # Straightforward assignments
+        self.verbose = verbose
+        self.sandbox = sandbox
+        self.descriptor_file_name = descriptor_file_name
+        self.creator = creator
+        self.affiliation = affiliation
+        self.no_int = no_int
+        self.zenodo_access_token = auth_token
+
+        # Validate and load descriptor
+        validate_descriptor(descriptor_file_name)
+        self.descriptor = json.loads(open(self.descriptor_file_name).read())
+
+        self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
+        # Fix Zenodo access token
+        if self.zenodo_access_token is None:
+            self.zenodo_access_token = self.get_zenodo_access_token()
+        self.save_zenodo_access_token()
+
+        # Set Zenodo endpoint
+        self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
+            self.sandbox else "https://zenodo.org"
+        if(self.verbose):
+            print("[ INFO ] Using Zenodo endpoint {0}".
+                  format(self.zenodo_endpoint))
+
+    def get_zenodo_access_token(self):
+        json_creds = self.read_credentials()
+        if json_creds.get(self.config_token_property_name()):
+            return json_creds.get(self.config_token_property_name())
+        if(self.no_int):
+            raise ZenodoError("Cannot find Zenodo credentials.")
+        prompt = ("Please enter your Zenodo access token (it will be "
+                  "saved in {0} for future use): ".format(self.config_file))
         try:
-            self.boutiques_repo = Repo(self.boutiques_dir)
-        except git.exc.InvalidGitRepositoryError as e:
-            # We won't publish a descriptor which is not in a Git repo!
-            sys.stderr.write('error: %s is not a Git repository.\n' % self.boutiques_dir)
-            sys.exit(1)
+            return raw_input(prompt)  # Python 2
+        except NameError:
+            return input(prompt)  # Python 3
 
-        for remote in self.boutiques_repo.remotes:
-            if remote.name == self.remote_name:
-                self.boutiques_remote = remote
+    def save_zenodo_access_token(self):
+        json_creds = self.read_credentials()
+        json_creds[self.config_token_property_name()] = self.zenodo_access_token
+        with open(self.config_file, 'w') as f:
+            f.write(json.dumps(json_creds, indent=4, sort_keys=True))
+        if(self.verbose):
+            print("[ INFO ] Zenodo access token saved in {0}".
+                  format(self.config_file))
 
-        url = self.boutiques_remote.url
-        # If remote URL is on Github, try to guess the URL of the Boutiques descriptor
-        if "github.com" in url: 
-            url = url.replace(".git","").replace("git@github.com:","https://github.com/")
-            url = url.replace("https://github.com/", "https://raw.githubusercontent.com/")
-            url = url.replace("http://github.com/", "https://raw.githubusercontent.com/")
-            url += "master"
-        self.base_url = url
+    def config_token_property_name(self):
+        if self.sandbox:
+            return "zenodo-access-token-test"
+        return "zenodo-access-token"
 
-        # Try to guess the tool author
-        self.tool_author = tool_author
-
-        self.tool_url = tool_url if tool_url else "http://example.com"
-        self.inter = inter
-        self.no_github = no_github
-
-        if self.no_github:
-            return
-
-        # Set github credentials
-        self.github_user = github_user
-        self.github_password = github_password
-        self.fix_github_credentials()
-        # Fork and clone the neurolinks repo
-        if neurolinks_repo_url.startswith("http"):
-            fork_url = self.fork_repo(neurolinks_repo_url) # won't do anything if fork already exists
-            neurolinks_local_url = self.clone_repo(fork_url, neurolinks_dest_path)
-            # Add base neurolinks repo as remote and pull from it, in case
-            # fork already existed and is outdated
-            self.neurolinks_repo = Repo(neurolinks_local_url)
-            base = self.neurolinks_repo.create_remote('base', neurolinks_repo_url)
-            neurolinks_repo_url = neurolinks_local_url
-        else:
-            self.neurolinks_repo = Repo(neurolinks_repo_url)
-        self.neurolinks_repo.remotes.base.pull('master')
-        
-        self.tools_file = os.path.abspath(os.path.join(neurolinks_repo_url,
-                                                       'jsons', 'tool.json'))
-        if not os.path.isfile(self.tools_file):
-            print("error: cannot find {0} (check neurolinks repo).".format(self.tools_file))
-            sys.exit(1)
-            
-    def fix_github_credentials(self):
-        pygithub_file = os.path.join(os.getenv("HOME"),".pygithub")
-        # Read saved credentials
+    def read_credentials(self):
         try:
-            with open(pygithub_file,"r") as f:
+            with open(self.config_file, "r") as f:
                 json_creds = json.load(f)
         except IOError:
             json_creds = {}
         except ValueError:
             json_creds = {}
-        # Credentials passed as parameters have precedence. Ask credentials if none
-        # can be found
-        username = self.github_user if self.github_user else json_creds.get('user')
-        if not username:
-            username = self.get_from_stdin("GitHub login")
-        password = self.github_password if self.github_password else json_creds.get('password')
-        if not password:
-            password = self.get_from_stdin("GitHub password (user: {0})".format(username))
-        # Save credentials
-        self.github_username = username
-        self.github_password = password
-        json_creds['user'] = self.github_username
-        json_creds['password'] = self.github_password
-        with open(pygithub_file,"w") as f:
-            f.write(json.dumps(json_creds, indent=4, sort_keys=True))
-        
-    def find_json_files(self, directory):
-        json_files = []
-        for root, dirs, files in os.walk(directory):
-            for file in files:
-                if file.endswith(".json"):
-                    json_files.append(os.path.join(root, file))
-        return json_files
-    
-    def get_json_string(self, identifier, label, description, tool_author, tool_url, boutiques_url, docker_container, singularity_container):
+        return json_creds
 
-        path, fil = os.path.split(__file__)
-        template_file = os.path.join(path, "neurolinks-template", "tool.json")
+    def zenodo_test_api(self):
+        r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions')
+        if(r.status_code != 401):
+            self.raise_zenodo_error("Cannot access Zenodo", r)
+        if(self.verbose):
+            self.print_zenodo_info("Zenodo is accessible", r)
+        r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions',
+                         params={'access_token': self.zenodo_access_token})
+        message = "Cannot authenticate to Zenodo API, check you access token"
+        if(r.status_code != 200):
+            self.raise_zenodo_error("Cannot authenticate to Zenodo", r)
+        if(self.verbose):
+            self.print_zenodo_info("Authentication to Zenodo successful", r)
 
-        with open(template_file) as f:
-            template_string = f.read()
+    def zenodo_deposit(self):
+        headers = {"Content-Type": "application/json"}
+        data = {
+            'metadata': {
+                'title': self.descriptor['name'],
+                'upload_type': 'software',
+                'description': self.descriptor['description'] or "Boutiques "
+                               "descriptor for {0}".format(
+                                                   self.descriptor['name']),
+                'creators': [{'name': self.creator,
+                              'affiliation': self.affiliation}],
+                'version': self.descriptor['tool-version'],
+                'keywords': ['Boutiques',
+                             'schema-version:{0}'.
+                             format(self.descriptor['schema-version'])]
+            }
+        }
+        keywords = data['metadata']['keywords']
+        for tag in self.descriptor.get('tags'):
+            keywords.append(tag + ":" + self.descriptor['tags'][tag])
+        if self.descriptor.get('container-image'):
+            keywords.append(self.descriptor['container-image']['type'])
 
-        template_string = template_string.replace("@@__ID__@@", identifier)
-        template_string = template_string.replace("@@__LABEL__@@", label)
-        template_string = template_string.replace("@@__DESCRIPTION__@@", description)
-        template_string = template_string.replace("@@__TOOL_AUTHOR__@@", tool_author)
-        template_string = template_string.replace("@@__TOOL_URL__@@", tool_url)
-        template_string = template_string.replace("@@__BOUTIQUES_URL__@@", boutiques_url)
+        r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
+                          params={'access_token': self.zenodo_access_token},
+                          json={},
+                          data=json.dumps(data),
+                          headers=headers)
+        if(r.status_code != 201):
+            self.raise_zenodo_error("Deposition failed", r)
+        zid = r.json()['id']
+        if(self.verbose):
+            self.print_zenodo_info("Deposition succeeded, id is {0}".
+                                   format(zid), r)
+        return zid
 
-        json_string = json.loads(template_string)
-        if docker_container:
-            json_string['dockercontainer'] = docker_container
-        if singularity_container:
-            json_string['singularitycontainer'] = singularity_container
-            
-        return json_string
+    def zenodo_upload_descriptor(self, deposition_id):
+        data = {'filename': os.path.basename(self.descriptor_file_name)}
+        files = {'file': open(self.descriptor_file_name, 'rb')}
+        r = requests.post(self.zenodo_endpoint +
+                          '/api/deposit/depositions/%s/files'
+                          % deposition_id,
+                          params={'access_token': self.zenodo_access_token},
+                          data=data,
+                          files=files)
+        # Status code is inconsistent with Zenodo documentation
 
-    def is_boutiques_descriptor(self, json_file):
-        try:
-            validate_descriptor(json_file)
-            return True
-        except:
-            return False
+        if(r.status_code != 201):
+            self.raise_zenodo_error("Cannot upload descriptor", r)
+        if(self.verbose):
+            self.print_zenodo_info("Descriptor uploaded to Zenodo", r)
 
-    def get_from_stdin(self, question, default_value=None, input_type=None):
-        if not self.inter:
-            return default_value
-        prompt = question+" ("+default_value+"): " if default_value else question+": "
-        try:
-            answer = raw_input(prompt) # Python 2
-        except NameError:
-            answer = input(prompt) # Python 3
-        answer = answer if answer else default_value
-        if input_type == "URL":
-            while not self.check_url(answer):
-                answer = self.get_from_stdin(question, default_value, input_type)
-        return answer
+    def zenodo_publish(self, deposition_id):
+        r = requests.post(self.zenodo_endpoint +
+                          '/api/deposit/depositions/%s/actions/publish'
+                          % deposition_id,
+                          params={'access_token': self.zenodo_access_token})
+        if(r.status_code != 202):
+            self.raise_zenodo_error("Cannot publish descriptor", r)
+        if(self.verbose):
+            self.print_zenodo_info("Descriptor published to Zenodo, doi is {0}"
+                                   .format(r.json()['doi']), r)
 
-    def check_url(self, url):
-        try:
-            code = urlopen(url).getcode()
-        except ValueError as e:
-            print("error: {0}".format(e.message))
-            return False
-        except URLError as e:
-            print("error: {0}".format(e.message))
-            return False
-        if code != 200:
-            print("warning: URL is not accessible (status: {0})".format(code))
-            return False
-        else:
-            print("  ... URL is accessible.")
-            return True
-            
-    
-    def print_banner(self, descriptor):
-        name = descriptor['name']
-        text = "Found Boutiques tool {0}".format(name,"")
-        line = ""
-        for i in range(0, len(text)):
-            line = line + "="
-        print("")
-        print(line)
-        print(text)
-        print(line)
-        
-    def get_descriptors(self):
-        json_strings = []
-        json_files = self.find_json_files(self.boutiques_dir)
-        descriptors = [ x for x in json_files if self.is_boutiques_descriptor(x) ]
-        return descriptors
+    def raise_zenodo_error(self, message, r):
+        raise ZenodoError("Zenodo error ({0}): {1}."
+                          .format(r.status_code, message))
 
-    def get_neurolinks_json(self, descriptor_file_name, tools):
-        entities = tools.get('entities')
-        with open(descriptor_file_name, "r") as f:
-            descriptor = json.load(f)
-        self.print_banner(descriptor)
-        if self.inter:
-            if(self.get_from_stdin("Publish Y/n?","Y") != "Y"):
-                return None
-        if(self.contains(descriptor['name'],entities)):
-            if not self.inter:
-                print('Not overwriting existing entry - use interactive mode to override')
-                return None
-            if(self.get_from_stdin("{0} is already published, overwrite Y/n?".format(
-                    descriptor['name']),"n") != "Y"):
-                return None
-            tools['entities'] = self.remove(descriptor['name'], entities)
-        label = descriptor['name']
-        description = descriptor.get('description')
-        docker_container = None
-        singularity_container = None
-        container_image = descriptor.get('container-image')
-        if container_image:
-            if container_image.get('type') == "docker":
-                index = container_image.get('index') if container_image.get('index') else 'http://index.docker.io'
-                if "index.docker.io" in index:
-                    index = "https://hub.docker.com/r/"
-                elif "quay.io" in index:
-                    index = "https://quay.io/repository"
-                docker_container = os.path.join(index,container_image.get("image").split(':')[0])
-            if container_image.get('type') == "singularity":
-                index = container_image.get('index') if container_image.get('index') else 'shub://'
-                if index == "docker://":
-                    singularity_container = os.path.join("https://hub.docker.com",container_image.get("image").split(':')[0]) 
-                else:
-                    singularity_container = os.path.join(index,container_image.get("image")) 
-        identifier = label.replace(" ","_")
-        boutiques_url = self.get_url(descriptor_file_name)
-        if self.inter:
-            self.tool_author = self.get_from_stdin("Tool author",
-                                                   self.tool_author)
-            self.tool_url = self.get_from_stdin("Tool URL", self.tool_url, "URL")
-            boutiques_url = self.get_from_stdin("Boutiques descriptor URL",
-                                                boutiques_url, "URL")
-        return self.get_json_string(identifier, label, description,
-                                                 self.tool_author, self.tool_url,
-                                                 boutiques_url, docker_container, singularity_container)
-    def get_url(self, file_path):
-        file_path = file_path.replace(self.boutiques_dir,"")
-        url = self.base_url + file_path
-        return url
+    def print_zenodo_info(self, message, r):
+        print("[ INFO ({1}) ] {0}".format(message, r.status_code))
 
-    def contains(self, label, tools):
-        if not tools:
-            return
-        for tool in tools:
-            if tool['label'] == label:
-                return True
-        return False
-
-    def remove(self, label, tools):
-        new_tools = [ x for x in tools if x['label'] != label ]
-        return new_tools
-    
     def publish(self):
-        json_tools = []
-        existing_tools = {}
-        if not self.no_github:
-            # Load existing tools
-            with open(self.tools_file, "r") as json_file:
-                existing_tools = json.load(json_file)
-        # Get new tools from boutiques repo
-        descriptors = self.get_descriptors()
-        for descriptor_file_name in descriptors:
-            # Build neurolinks string
-            neurolinks_json = self.get_neurolinks_json(descriptor_file_name, existing_tools)
-            # Have user review before commit
-            if not self.inter and neurolinks_json:
-                print("Tool summary:")
-                print(json.dumps(neurolinks_json, indent=4, sort_keys=True))
-                if(self.get_from_stdin("Publish Y/n?","n") != "Y"):
-                    neurolinks_json = None
-            # Publish json string unless user didn't want to
-            if neurolinks_json:
-                json_tools.append(neurolinks_json)
-        if len(json_tools) == 0:
-            print("Nothing to publish, bye!")
-            return
-        if self.no_github:
-            for tool in json_tools:
-                print(json.dumps(tool, indent=4, sort_keys=True))
-            return
-        # Add new tools to existing tools
-        for tool in json_tools:
-            existing_tools['entities'].append(tool)
-        # Write updated tools
-        json_file = open(self.tools_file, "w")
-        json_file.write(json.dumps(existing_tools, indent=4, sort_keys=True))
-        json_file.close()
-        # Commit tools file
-        self.neurolinks_repo.index.add([self.tools_file])
-        self.neurolinks_repo.index.commit("Added tool {0} with bosh-publish".format(tool['label']))
-        # Push to fork
-        self.neurolinks_repo.remotes.origin.push()
-        # Make PR
-        self.pr(self.neurolinks_repo.remotes.origin.url,
-                self.neurolinks_repo.remotes.base.url)
-            
-    def clone_repo(self, repo_url, dest_path):
-        print("Cloning {0} to {1}...".format(repo_url,dest_path))
-        Repo.clone_from(repo_url, dest_path)
-        return os.path.abspath(dest_path)
-
-    def fork_repo(self, repo_url):
-        print("Forking {0} to {1}...".format(repo_url, self.github_username))
-        g = Github(self.github_username, self.github_password)
-        github_user = g.get_user()
-        repo = g.get_repo("brainhack101/neurolinks")
-        myfork = github_user.create_fork(repo)
-        return myfork.ssh_url        
-
-    def pr(self, fork_url, base_url):
-        print("Create a pull request from {0} to {1} to finalize publication. This cannot be done automatically.".format(fork_url,base_url))
-
+        if(not self.no_int):
+            prompt = ("The descriptor will be published to Zenodo, "
+                      "this cannot be undone. Are you sure? (Y/n) ")
+            try:
+                ret = raw_input(prompt)  # Python 2
+            except NameError:
+                ret = input(prompt)  # Python 3
+            if ret != "Y":
+                return
+        self.zenodo_test_api()
+        deposition_id = self.zenodo_deposit()
+        self.zenodo_upload_descriptor(deposition_id)
+        self.zenodo_publish(deposition_id)

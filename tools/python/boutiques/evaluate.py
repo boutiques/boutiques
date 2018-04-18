@@ -27,7 +27,7 @@
 
 def evaluateEngine(executor, query):
     try:
-        #TODO: improve splitting to not fail in valid situations
+        # TODO: improve splitting to not fail in valid situations
         layers = query.split("/")[:-1] if "/" in query else [query]
         conditions = query.split("/")[-1] if "/" in query else []
         if len(conditions) > 0:
@@ -64,12 +64,12 @@ def evaluateEngine(executor, query):
                     # print(obj)
                     query_result[obj["id"]] = executor.in_dict.get(obj["id"])
                 elif "groups" in layers:
-                    query_result[obj["id"]] = {mem : executor.in_dict.get(mem)
-                                               for mem in obj['members']}
+                    query_result[obj["id"]] = {}
+                    for mem in obj['members']:
+                        query_result[obj["id"]][mem] = executor.in_dict.get(mem)
 
         return query_result
 
-    except:
-        print("Invalid query ({}). See --help.".format(query))
+    except Exception:
+        print("Invalid query ({0}). See --help.".format(query))
         return {}
-
