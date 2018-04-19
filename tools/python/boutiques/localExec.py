@@ -152,7 +152,7 @@ class LocalExecutor(object):
                     conIndex = "shub://"
                 elif not conIndex.endswith("://"):
                     conIndex = conIndex + "://"
-                conName = conImage.replace("/", "-").replace(":","-") + ".simg"
+                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
 
                 if conName not in os.listdir('./'):
                     print(os.listdir('./'))
@@ -170,8 +170,6 @@ class LocalExecutor(object):
                 else:
                     print("Using local container image: {}".format(conName))
                 conName = op.abspath(conName)
-                print(conName)
-                print(self._localExecute("ls " + conName))
             else:
                 print('Unrecognized container type: \"%s\"' % conType)
                 sys.exit(1)
