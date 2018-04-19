@@ -18,38 +18,38 @@ class TestPublisher(TestCase):
 
     def test_publisher(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        print(os.path.join(example1_dir, "example1.json"))
+        print(os.path.join(example1_dir, "example1_docker.json"))
         self.assertRaises(ZenodoError, bosh, ["publish",
                                               os.path.join(example1_dir,
-                                                           "example1.json"),
+                                                           "example1_docker.json"),
                                               "Test author",
                                               "Test affiliation",
                                               "--sandbox", "-y", "-v"])
 
         self.assertRaises(ZenodoError, bosh, ["publish",
                                               os.path.join(example1_dir,
-                                                           "example1.json"),
+                                                           "example1_docker.json"),
                                               "Test author",
                                               "Test affiliation",
                                               "--sandbox", "-y", "-v",
                                               "--zenodo-token", "badtoken"])
 
         self.assertFalse(bosh(["publish",
-                               os.path.join(example1_dir, "example1.json"),
+                               os.path.join(example1_dir, "example1_docker.json"),
                                "Test author", "Test affiliation",
                                "--sandbox", "-y", "-v",
                                "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"]))
 
         self.assertFalse(bosh(["publish",
-                               os.path.join(example1_dir, "example1.json"),
+                               os.path.join(example1_dir, "example1_docker.json"),
                                "Test author", "Test affiliation",
                                "--sandbox", "-y", "-v"]))
 
     def test_publisher_auth_fail(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         with self.assertRaises(ZenodoError) as e:
-            bosh(["publish", os.path.join(example1_dir, "example1.json"),
+            bosh(["publish", os.path.join(example1_dir, "example1_docker.json"),
                   "Test author", "Test affiliation", "--sandbox",
                   "-y", "-v", "--zenodo-token", "12345"])
         print(e.exception)
@@ -58,7 +58,7 @@ class TestPublisher(TestCase):
     def test_publisher_auth_fail_cli(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         command = ("bosh publish " + os.path.join(example1_dir,
-                                                  "example1.json") +
+                                                  "example1_docker.json") +
                    "'Test author' 'Test affiliation' --sandbox -y -v "
                    "--zenodo-token 12345")
         process = subprocess.Popen(command, shell=True,

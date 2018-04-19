@@ -18,34 +18,51 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir,
-                                                   "example1.json"),
+                                                   "example1_docker.json"),
                                       "-i",
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
 
-    def test_example1_exec(self):
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_exec_docker(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.assertFalse(bosh.execute("launch",
                                       os.path.join(example1_dir,
-                                                   "example1.json"),
+                                                   "example1_docker.json"),
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
         self.assertFalse(bosh.execute("launch",
                                       os.path.join(example1_dir,
-                                                   "example1.json"),
+                                                   "example1_docker.json"),
+                                      "-x",
+                                      os.path.join(example1_dir,
+                                                   "invocation.json"))[2])
+
+    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_exec_singularity(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.assertFalse(bosh.execute("launch",
+                                      os.path.join(example1_dir,
+                                                   "example1_sing.json"),
+                                      os.path.join(example1_dir,
+                                                   "invocation.json"))[2])
+        self.assertFalse(bosh.execute("launch",
+                                      os.path.join(example1_dir,
+                                                   "example1_sing.json"),
                                       "-x",
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
-
     def test_example1_exec_missing_script(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         sout, serr, ecode, emsg = bosh.execute(
                                    "launch",
                                    os.path.join(example1_dir,
-                                                "example1.json"),
+                                                "example1_docker.json"),
                                    os.path.join(example1_dir,
                                                 "invocation_missing_script.json"
                                                 ))
@@ -56,5 +73,5 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir,
-                                                   "example1.json"),
+                                                   "example1_docker.json"),
                                       "-r", "3")[2])
