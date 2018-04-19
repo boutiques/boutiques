@@ -40,7 +40,7 @@ class TestExample1(TestCase):
                                                    "invocation.json"))[2])
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
-                        reason="Docker not installed")
+                        reason="Singularity not installed")
     def test_example1_exec_singularity(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.assertFalse(bosh.execute("launch",

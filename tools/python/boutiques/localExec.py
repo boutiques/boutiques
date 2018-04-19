@@ -168,7 +168,7 @@ class LocalExecutor(object):
                         print("Could not pull image.")
                         sys.exit(1)
                 else:
-                    print("Using local container image: {}", conName)
+                    print("Using local container image: {}".format(conName))
                 conName = op.abspath(conName)
             else:
                 print('Unrecognized container type: \"%s\"' % conType)
@@ -222,6 +222,8 @@ class LocalExecutor(object):
                 sys.exit(1)
             print('Executing via: ' + dcmd)
             (stdout, stderr), exit_code = self._localExecute(dcmd)
+            print(stdout)
+            print(stderr)
         # Otherwise, just run command locally
         else:
             (stdout, stderr), exit_code = self._localExecute(command)
