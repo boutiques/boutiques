@@ -36,7 +36,7 @@ before_install:
 - make
 - sudo make install
 - singularity --version
-- cd ${HOME}/boutiques/boutiques/tools/python/
+- cd ${$TRAVIS_BUILD_DIR}/boutiques/boutiques/tools/python/
 - mv ${HOME}/${IMGNAME}.img ./boutiques-example1:test.simg
 
 install:
