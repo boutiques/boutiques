@@ -157,8 +157,8 @@ class LocalExecutor(object):
                 if conName not in os.listdir('./'):
                     print(os.listdir('./'))
                     pull_location = "\"{0}\" {1}{2}".format(conName,
-                                                         conIndex,
-                                                         conImage)
+                                                            conIndex,
+                                                            conImage)
                     print("Container image ({0}) not found in current"
                           " working directory,"
                           " pulling from {1}".format(conName, pull_location))
