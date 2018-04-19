@@ -193,10 +193,10 @@ class LocalExecutor(object):
             # Ensure the script is executable
             self._localExecute("chmod 755 " + dsname)
             # Prepare extra environment variables
-            envString = " "
+            envString = ""
             if envVars:
                 for (key, val) in list(envVars.items()):
-                    envString += "-e " + str(key) + "=\'" + str(val) + '\' '
+                    envString += "SINGULARITYENV_{0}='{1}' ".format(key, val)
             # Change launch (working) directory if desired
             launchDir = self.launchDir
             if launchDir is None:
@@ -216,7 +216,7 @@ class LocalExecutor(object):
             elif conType == 'singularity':
                 singularity_mounts = " -B ".join(m for m in mount_strings)
                 # TODO: Test singularity runtime on cluster
-                dcmd = ('singularity exec' + envString + ' -B ' +
+                dcmd = (envString + 'singularity exec --cleanenv -B ' +
                         singularity_mounts + ' -W ' + launchDir + ' ' +
                         str(conName) + ' ' + dsname)
             else:
