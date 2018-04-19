@@ -152,7 +152,7 @@ class LocalExecutor(object):
                     conIndex = "shub://"
                 elif not conIndex.endswith("://"):
                     conIndex = conIndex + "://"
-                conName = conImage.replace("/", "-") + ".simg"
+                conName = conImage.replace("/", "-").replace(":","-") + ".simg"
 
                 if conName not in os.listdir('./'):
                     print(os.listdir('./'))

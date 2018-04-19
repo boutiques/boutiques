@@ -37,7 +37,7 @@ before_install:
 - sudo make install
 - singularity --version
 - cd ${TRAVIS_BUILD_DIR}/tools/python/
-- mv ${HOME}/${IMGNAME}.img ./boutiques-example1:test.simg
+- mv ${HOME}/${IMGNAME}.img ./boutiques-example1-test.simg
 
 install:
 - pip install --upgrade setuptools
