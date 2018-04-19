@@ -155,7 +155,6 @@ class LocalExecutor(object):
                 conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
 
                 if conName not in os.listdir('./'):
-                    print(os.listdir('./'))
                     pull_location = "\"{0}\" {1}{2}".format(conName,
                                                             conIndex,
                                                             conImage)
@@ -235,12 +234,24 @@ class LocalExecutor(object):
                               "/etc/localtime", "/etc/hosts",
                               op.realpath(op.expanduser('~')),
                               op.expanduser('~')]
+
+		# Ensures the set of paths provided has no overlap
+		compaths = list()
+		for idxm, m in enumerate(mount_strings):
+		    for n in mount_strings[idxm:]:
+			if n != m:
+			    tmp = op.dirname(op.commonprefix([n,m]))
+			    if tmp != '/':
+				compaths += [tmp]
+		    if not any(m.startswith(c) for c in compaths):
+			compaths += [m]
+		mount_strings = set(compaths)
+
+		# Only adds mount points for those not already included
                 singularity_mounts = ""
                 for m in mount_strings:
                     if not any(d in m for d in def_mounts):
                         singularity_mounts += "-B {0} ".format(m)
-                print(mount_strings)
-                print(singularity_mounts)
 
                 dcmd = (envString + 'singularity exec --cleanenv ' +
                         singularity_mounts + ' -W ' + launchDir + ' ' +
@@ -250,8 +261,6 @@ class LocalExecutor(object):
                 sys.exit(1)
             print('Executing via: ' + dcmd)
             (stdout, stderr), exit_code = self._localExecute(dcmd)
-            print(stdout)
-            print(stderr)
         # Otherwise, just run command locally
         else:
             (stdout, stderr), exit_code = self._localExecute(command)

@@ -34,11 +34,13 @@ class TestExample1(TestCase):
                         reason="Docker not installed")
     def test_example1_exec_docker(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
         self.assertFalse(bosh.execute("launch",
                                       os.path.join(example1_dir,
                                                    "example1_docker.json"),
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
+        self.clean_up()
         self.assertFalse(bosh.execute("launch",
                                       os.path.join(example1_dir,
                                                    "example1_docker.json"),
@@ -68,6 +70,7 @@ class TestExample1(TestCase):
                         reason="Docker not installed")
     def test_example1_exec_missing_script(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
         sout, serr, ecode, emsg = bosh.execute(
                                    "launch",
                                    os.path.join(example1_dir,
