@@ -206,12 +206,21 @@ class LocalExecutor(object):
                              for m in mount_strings]
             mount_strings.append(op.realpath('./') + ':' + launchDir)
             if conType == 'docker':
+                envString = " "
+                if envVars:
+                    for (key, val) in list(envVars.items()):
+                        envString += " -e {0}='{1}' ".format(key, val)
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
                 dcmd = ('docker run --entrypoint=/bin/sh --rm' + envString +
                         ' -v ' + docker_mounts + ' -w ' + launchDir + ' ' +
                         str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
+                envString = ""
+                if envVars:
+                    for (key, val) in list(envVars.items()):
+                        envString += "SINGULARITYENV_{0}='{1}' ".format(key,
+                                                                        val)
                 singularity_mounts = " -B ".join(m for m in mount_strings)
                 # TODO: Test singularity runtime on cluster
                 dcmd = (envString + 'singularity exec --cleanenv -B ' +
