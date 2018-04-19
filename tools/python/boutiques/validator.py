@@ -123,10 +123,11 @@ def validate_descriptor(json_file, **kwargs):
             if clkeys[jdx] == key:
                 mids = [inById(mid)["id"] for mid in inIds
                         if inById(mid)["value-key"] == key]
-                for idx, grp in enumerate(descriptor["groups"]):
-                    mutex = grp.get("mutually-exclusive")
-                    if set(grp["members"]) == set(mids) and not mutex:
-                        errors += [msg_template.format(key)]
+                if len(grpIds) > 0:
+                    for idx, grp in enumerate(descriptor["groups"]):
+                        mutex = grp.get("mutually-exclusive")
+                        if set(grp["members"]) == set(mids) and not mutex:
+                            errors += [msg_template.format(key)]
 
     # Verify that output files have unique path-templates
     msg_template = ("OutputError: \"{0}\" and \"{1}\" have the same "
