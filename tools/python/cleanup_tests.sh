@@ -8,7 +8,7 @@
 rm -r temp-*.sh log*.txt config*.txt file.txt .pytest_cache/
 git checkout boutiques/schema/examples/good.json
 git checkout boutiques/schema/examples/example1/example1_docker.json
-git checkout boutiques/schema/examples/example1/example1_singularity.json
+git checkout boutiques/schema/examples/example1/example1_sing.json
 git checkout boutiques/schema/examples/tests_good.json
 git checkout boutiques/schema/examples/tests_failure_reference.json
 git checkout boutiques/schema/examples/tests_failure_output_id.json
