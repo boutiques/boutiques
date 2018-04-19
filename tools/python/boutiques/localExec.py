@@ -237,7 +237,7 @@ class LocalExecutor(object):
                               op.expanduser('~')]
                 singularity_mounts = ""
                 for m in mount_strings:
-                    if any(d in m for d in def_mounts):
+                    if not any(d in m for d in def_mounts):
                         singularity_mounts += "-B {} ".format(m)
                 print(mount_strings)
                 print(singularity_mounts)
