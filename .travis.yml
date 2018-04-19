@@ -1,6 +1,6 @@
-language: python
-
+dist: trusty
 sudo: required
+language: python
 
 services:
 - docker
@@ -19,9 +19,24 @@ python:
 node_js:
 - 5
 
+env:
+- SINGVER=2.4.6
+
 before_install:
-- docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
+- sudo apt-get update -qq
+- sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential
 - npm install jsonlint -g 
+- docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
+- docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity boutiques/example1:test  1> ${HOME}/convert_log.txt
+- IMGNAME=$(cat ${HOME}/convert_log.txt  | grep "Done. Image can be found at:" | awk '{ print $7 }' | cut -d / -f 3 | cut -d . -f 1)
+- wget https://github.com/singularityware/singularity/releases/download/$VER/singularity-$SINGVER.tar.gz
+- tar xvf singularity-$SINGVER.tar.gz
+- cd singularity-$SINGVER
+- ./configure --prefix=/usr/local --sysconfdir=/etc
+- make
+- sudo make install
+- singularity --version
+- cd ${HOME}
 
 install:
 - pip install --upgrade setuptools
@@ -30,6 +45,7 @@ install:
 
 script:
 - cd ./tools/python/
+- mv ${HOME}/${IMGNAME}.img ./boutiques-example1:test.simg
 - pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
 - jsonlint -q boutiques/schema/descriptor.schema.json
 - coverage run --source boutiques setup.py pytest
