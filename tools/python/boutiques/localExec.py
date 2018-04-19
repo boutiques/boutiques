@@ -170,6 +170,8 @@ class LocalExecutor(object):
                 else:
                     print("Using local container image: {}".format(conName))
                 conName = op.abspath(conName)
+                print(conName)
+                print(self._localExecute("ls " + conName))
             else:
                 print('Unrecognized container type: \"%s\"' % conType)
                 sys.exit(1)
