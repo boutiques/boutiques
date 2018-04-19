@@ -36,16 +36,15 @@ before_install:
 - make
 - sudo make install
 - singularity --version
-- cd ${HOME}
+- cd ${HOME}/boutiques/boutiques/tools/python/
+- mv ${HOME}/${IMGNAME}.img ./boutiques-example1:test.simg
 
 install:
 - pip install --upgrade setuptools
 - pip install coveralls pytest pytest-runner pycodestyle
-- pip install ./tools/python/
+- pip install .
 
 script:
-- cd ./tools/python/
-- mv ${HOME}/${IMGNAME}.img ./boutiques-example1:test.simg
 - pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
 - jsonlint -q boutiques/schema/descriptor.schema.json
 - coverage run --source boutiques setup.py pytest
