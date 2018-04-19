@@ -73,7 +73,7 @@ class LocalExecutor(object):
         # Container Implementation check
         conEngines = ['docker', 'singularity']
         if (self.con is not None) and self.con['type'] not in conEngines:
-                msg = "Other container types than {} (e.g. {})"\
+                msg = "Other container types than {0} (e.g. {1})"\
                       " are not yet supported"
                 raise ValueError(msg.format(", ".join(conEngines),
                                             self.con['type']))
@@ -156,7 +156,7 @@ class LocalExecutor(object):
 
                 if conName not in os.listdir('./'):
                     print(os.listdir('./'))
-                    pull_location = "\"{}\" {}{}".format(conName,
+                    pull_location = "\"{0}\" {1}{2}".format(conName,
                                                          conIndex,
                                                          conImage)
                     print("Container image ({0}) not found in current"
@@ -168,7 +168,7 @@ class LocalExecutor(object):
                         print("Could not pull image.")
                         sys.exit(1)
                 else:
-                    print("Using local container image: {}".format(conName))
+                    print("Using local container image: {0}".format(conName))
                 conName = op.abspath(conName)
             else:
                 print('Unrecognized container type: \"%s\"' % conType)
@@ -238,7 +238,7 @@ class LocalExecutor(object):
                 singularity_mounts = ""
                 for m in mount_strings:
                     if not any(d in m for d in def_mounts):
-                        singularity_mounts += "-B {} ".format(m)
+                        singularity_mounts += "-B {0} ".format(m)
                 print(mount_strings)
                 print(singularity_mounts)
 
