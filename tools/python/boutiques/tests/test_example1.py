@@ -14,6 +14,11 @@ class TestExample1(TestCase):
         return os.path.join(os.path.dirname(bfile),
                             "schema", "examples")
 
+    def clean_up(self):
+        os.remove('./log*.txt')
+        os.remove('./config.txt')
+        return 0
+
     def test_example1_no_exec(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.assertFalse(bosh.execute("simulate",
@@ -32,12 +37,14 @@ class TestExample1(TestCase):
                                                    "example1_docker.json"),
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
+        clean_up()
         self.assertFalse(bosh.execute("launch",
                                       os.path.join(example1_dir,
                                                    "example1_docker.json"),
                                       "-x",
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
+        clean_up()
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -48,12 +55,14 @@ class TestExample1(TestCase):
                                                    "example1_sing.json"),
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
+        clean_up()
         self.assertFalse(bosh.execute("launch",
                                       os.path.join(example1_dir,
                                                    "example1_sing.json"),
                                       "-x",
                                       os.path.join(example1_dir,
                                                    "invocation.json"))[2])
+        clean_up()
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
@@ -68,6 +77,7 @@ class TestExample1(TestCase):
                                                 ))
         self.assertTrue('Example Boutiques Tool ERR (2):'
                         ' File does not exist!' in emsg)
+        clean_up()
 
     def test_example1_no_exec_random(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
