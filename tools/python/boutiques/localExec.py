@@ -221,9 +221,28 @@ class LocalExecutor(object):
                     for (key, val) in list(envVars.items()):
                         envString += "SINGULARITYENV_{0}='{1}' ".format(key,
                                                                         val)
-                singularity_mounts = " -B ".join(m for m in mount_strings)
-                # TODO: Test singularity runtime on cluster
-                dcmd = (envString + 'singularity exec --cleanenv -B ' +
+                # TODO: Singularity 2.4.6 default configuration binds: /proc,
+                # /sys, /dev, ${HOME}, /tmp, /var/tmp, /etc/localtime, and
+                # /etc/hosts. This means that any path down-stream shouldn't
+                # be bound on the command-line, as this will currently raise
+                # an exception. See:
+                #   https://github.com/singularityware/singularity/issues/1469
+                #
+                # Previous bind string:
+                #   singularity_mounts = " -B ".join(m for m in mount_strings)
+
+                def_mounts = ["/proc", "/sys", "/dev", "/tmp", "/var/tmp",
+                              "/etc/localtime", "/etc/hosts",
+                              op.realpath(op.expanduser('~')),
+                              op.expanduser('~')]
+                singularity_mounts = ""
+                for m in mount_strings:
+                    if any(d in m for d in def_mounts):
+                        singularity_mounts += "-B {} ".format(m)
+                print(mount_strings)
+                print(singularity_mounts)
+
+                dcmd = (envString + 'singularity exec --cleanenv ' +
                         singularity_mounts + ' -W ' + launchDir + ' ' +
                         str(conName) + ' ' + dsname)
             else:
