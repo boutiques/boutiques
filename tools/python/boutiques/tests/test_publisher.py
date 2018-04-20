@@ -45,11 +45,11 @@ class TestPublisher(TestCase):
 
         # Test publication of a descriptor that already has a DOI
         with self.assertRaises(ZenodoError) as e:
-          bosh(["publish",
-                temp_descriptor.name,
-                "--sandbox", "-y", "-v",
-                "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
+            bosh(["publish",
+                  temp_descriptor.name,
+                  "--sandbox", "-y", "-v",
+                  "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                  "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertTrue("Desriptor already has a DOI" in str(e.exception))
 
     def test_publisher_auth(self):
@@ -65,7 +65,7 @@ class TestPublisher(TestCase):
 
         # No token should fail
         with self.assertRaises(ZenodoError) as e:
-          bosh(["publish",
+            bosh(["publish",
                  op.join(example1_dir,
                          "example1_docker.json"),
                  "--sandbox", "-y", "-v"])

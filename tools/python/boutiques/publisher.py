@@ -164,7 +164,7 @@ class Publisher():
             data['metadata']['related_identifiers'].append({
                 'identifier': self.tool_doi,
                 'relation': 'hasPart'
-        })
+            })
 
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
                           params={'access_token': self.zenodo_access_token},

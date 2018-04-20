@@ -28,7 +28,6 @@ def validate(*params):
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
-    return 0
 
 
 def execute(*params):
@@ -221,6 +220,7 @@ def publish(*params):
     publisher.publish()
     return publisher.doi
 
+
 def invocation(*params):
     parser = ArgumentParser("Creates invocation schema and validates"
                             " invocations. Uses descriptor's invocation"
@@ -357,31 +357,37 @@ def bosh(args=None):
     def runs_as_cli():
         return os.path.basename(sys.argv[0]) == "bosh"
 
+    def bosh_return(val):
+        if runs_as_cli():
+            print(val)
+            return 0  # everything went well
+        return val  # calling function wants this value
+
     try:
         if func == "validate":
             out = validate(*params)
-            return out
+            return bosh_return(out)
         elif func == "exec":
             out = execute(*params)
             return out[2]
         elif func == "import":
             out = importer(*params)
-            return out
+            return bosh_return(out)
         elif func == "export":
             out = exporter(*params)
-            return out
+            return bosh_return(out)
         elif func == "publish":
             out = publish(*params)
-            return out
+            return bosh_return(out)
         elif func == "invocation":
             out = invocation(*params)
-            return out
+            return bosh_return(out)
         elif func == "evaluate":
             out = evaluate(*params)
-            return out
+            return bosh_return(out)
         elif func == "test":
             out = test(*params)
-            return out
+            return bosh_return(out)
         else:
             parser.print_help()
             raise SystemExit
