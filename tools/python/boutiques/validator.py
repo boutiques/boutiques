@@ -123,7 +123,7 @@ def validate_descriptor(json_file, **kwargs):
             if clkeys[jdx] == key:
                 mids = [inById(mid)["id"] for mid in inIds
                         if inById(mid)["value-key"] == key]
-                for idx, grp in enumerate(descriptor["groups"]):
+                for idx, grp in enumerate(descriptor.get("groups")):
                     mutex = grp.get("mutually-exclusive")
                     if set(grp["members"]) == set(mids) and not mutex:
                         errors += [msg_template.format(key)]

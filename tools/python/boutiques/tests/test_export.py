@@ -13,7 +13,7 @@ class TestImport(TestCase):
 
     def test_export(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        example1_desc = os.path.join(example1_dir, "example1.json")
+        example1_desc = os.path.join(example1_dir, "example1_docker.json")
         fout = "test-example1-carmin.json"
         self.assertFalse(bosh(["export", "carmin", example1_desc, fout]))
         os.remove(fout)

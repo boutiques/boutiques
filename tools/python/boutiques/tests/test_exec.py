@@ -18,21 +18,21 @@ class TestExec(TestCase):
                                                      os.path.join(example1_dir,
                                                                   "fake.json"),
                                                      os.path.join(
-                                                          example1_dir,
-                                                          "invocation.json")])
+                                                       example1_dir,
+                                                       "invocation.json")])
         self.assertRaises(SystemExit, bosh.execute, ["launch",
                                                      os.path.join(
-                                                          example1_dir,
-                                                          "example1.json"),
+                                                       example1_dir,
+                                                       "example1_docker.json"),
                                                      os.path.join(example1_dir,
                                                                   "fake.json")])
         self.assertRaises(SystemExit, bosh.execute, ["launch",
                                                      os.path.join(
-                                                          example1_dir,
-                                                          "example1.json"),
+                                                       example1_dir,
+                                                       "example1_docker.json"),
                                                      os.path.join(
-                                                          example1_dir,
-                                                          "exampleTool1.py")])
+                                                       example1_dir,
+                                                       "exampleTool1.py")])
 
     def test_failing_simulate(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
@@ -42,41 +42,41 @@ class TestExec(TestCase):
                                                                   "fake.json"),
                                                      "-i",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "invocation.json")])
+                                                       example1_dir,
+                                                       "invocation.json")])
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "example1.json"),
+                                                       example1_dir,
+                                                       "example1_docker.json"),
                                                      "-i",
                                                      os.path.join(example1_dir,
                                                                   "fake.json")])
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "example1.json"),
+                                                       example1_dir,
+                                                       "example1_docker.json"),
                                                      "-i",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "exampleTool1.py")])
+                                                       example1_dir,
+                                                       "exampleTool1.py")])
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "example1.json"),
+                                                       example1_dir,
+                                                       "example1_docker.json"),
                                                      "-r", "-2"])
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir,
-                                                   "example1.json"),
+                                                   "example1_docker.json"),
                                       "-r", "1")[2])
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "example1.json"),
+                                                       example1_dir,
+                                                       "example1_docker.json"),
                                                      "-r", "1", "-i",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "invocation.json")])
+                                                       example1_dir,
+                                                       "invocation.json")])
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(
-                                                        example1_dir,
-                                                        "example1.json")])
+                                                       example1_dir,
+                                                       "example1_docker.json")])

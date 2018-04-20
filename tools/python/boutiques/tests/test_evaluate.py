@@ -11,7 +11,7 @@ class TestEvaluate(TestCase):
     def set_examples(self):
         example1_dir = os.path.join(os.path.dirname(bfile), "schema",
                                     "examples", "example1")
-        self.desc = os.path.join(example1_dir, "example1.json")
+        self.desc = os.path.join(example1_dir, "example1_docker.json")
         self.invo = os.path.join(example1_dir, "invocation.json")
 
     def test_evaloutput(self):

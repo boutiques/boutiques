@@ -73,7 +73,7 @@ class LocalExecutor(object):
         # Container Implementation check
         conEngines = ['docker', 'singularity']
         if (self.con is not None) and self.con['type'] not in conEngines:
-                msg = "Other container types than {} (e.g. {})"\
+                msg = "Other container types than {0} (e.g. {1})"\
                       " are not yet supported"
                 raise ValueError(msg.format(", ".join(conEngines),
                                             self.con['type']))
@@ -152,13 +152,12 @@ class LocalExecutor(object):
                     conIndex = "shub://"
                 elif not conIndex.endswith("://"):
                     conIndex = conIndex + "://"
-                conName = conImage.replace("/", "-") + ".simg"
+                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
 
                 if conName not in os.listdir('./'):
-                    print(os.listdir('./'))
-                    pull_location = "\"{}\" {}{}".format(conName,
-                                                         conIndex,
-                                                         conImage)
+                    pull_location = "\"{0}\" {1}{2}".format(conName,
+                                                            conIndex,
+                                                            conImage)
                     print("Container image ({0}) not found in current"
                           " working directory,"
                           " pulling from {1}".format(conName, pull_location))
@@ -168,7 +167,7 @@ class LocalExecutor(object):
                         print("Could not pull image.")
                         sys.exit(1)
                 else:
-                    print("Using local container image: {}", conName)
+                    print("Using local container image: {0}".format(conName))
                 conName = op.abspath(conName)
             else:
                 print('Unrecognized container type: \"%s\"' % conType)
@@ -191,10 +190,10 @@ class LocalExecutor(object):
             # Ensure the script is executable
             self._localExecute("chmod 755 " + dsname)
             # Prepare extra environment variables
-            envString = " "
+            envString = ""
             if envVars:
                 for (key, val) in list(envVars.items()):
-                    envString += "-e " + str(key) + "=\'" + str(val) + '\' '
+                    envString += "SINGULARITYENV_{0}='{1}' ".format(key, val)
             # Change launch (working) directory if desired
             launchDir = self.launchDir
             if launchDir is None:
@@ -206,15 +205,55 @@ class LocalExecutor(object):
                              for m in mount_strings]
             mount_strings.append(op.realpath('./') + ':' + launchDir)
             if conType == 'docker':
+                envString = " "
+                if envVars:
+                    for (key, val) in list(envVars.items()):
+                        envString += " -e {0}='{1}' ".format(key, val)
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
                 dcmd = ('docker run --entrypoint=/bin/sh --rm' + envString +
                         ' -v ' + docker_mounts + ' -w ' + launchDir + ' ' +
                         str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
-                singularity_mounts = " -B ".join(m for m in mount_strings)
-                # TODO: Test singularity runtime on cluster
-                dcmd = ('singularity exec' + envString + ' -B ' +
+                envString = ""
+                if envVars:
+                    for (key, val) in list(envVars.items()):
+                        envString += "SINGULARITYENV_{0}='{1}' ".format(key,
+                                                                        val)
+                # TODO: Singularity 2.4.6 default configuration binds: /proc,
+                # /sys, /dev, ${HOME}, /tmp, /var/tmp, /etc/localtime, and
+                # /etc/hosts. This means that any path down-stream shouldn't
+                # be bound on the command-line, as this will currently raise
+                # an exception. See:
+                #   https://github.com/singularityware/singularity/issues/1469
+                #
+                # Previous bind string:
+                #   singularity_mounts = " -B ".join(m for m in mount_strings)
+
+                def_mounts = ["/proc", "/sys", "/dev", "/tmp", "/var/tmp",
+                              "/etc/localtime", "/etc/hosts",
+                              op.realpath(op.expanduser('~')),
+                              op.expanduser('~')]
+
+                # Ensures the set of paths provided has no overlap
+                compaths = list()
+                for idxm, m in enumerate(mount_strings):
+                    for n in mount_strings[idxm:]:
+                        if n != m:
+                            tmp = op.dirname(op.commonprefix([n, m]))
+                            if tmp != '/':
+                                compaths += [tmp]
+                    if not any(m.startswith(c) for c in compaths):
+                        compaths += [m]
+                mount_strings = set(compaths)
+
+                # Only adds mount points for those not already included
+                singularity_mounts = ""
+                for m in mount_strings:
+                    if not any(d in m for d in def_mounts):
+                        singularity_mounts += "-B {0} ".format(m)
+
+                dcmd = (envString + 'singularity exec --cleanenv ' +
                         singularity_mounts + ' -W ' + launchDir + ' ' +
                         str(conName) + ' ' + dsname)
             else:
