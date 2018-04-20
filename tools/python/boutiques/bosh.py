@@ -198,10 +198,6 @@ def publish(*params):
     parser.add_argument("boutiques_descriptor", action="store",
                         help="local path of the "
                         " Boutiques descriptor to publish.")
-    parser.add_argument("creator", action="store",
-                        help="creator to use in Zenodo metadata.")
-    parser.add_argument("affiliation", action="store",
-                        help="affiliation to use in Zenodo metadata.")
     parser.add_argument("--sandbox", action="store_true",
                         help="publish to Zenodo's sandbox instead of "
                         "production server. Recommended for tests.")
@@ -218,13 +214,12 @@ def publish(*params):
 
     from boutiques.publisher import Publisher
     publisher = Publisher(results.boutiques_descriptor,
-                          results.creator,
-                          results.affiliation,
                           results.verbose,
                           results.sandbox,
                           results.no_int,
-                          results.zenodo_token).publish()
-
+                          results.zenodo_token)
+    publisher.publish()
+    return publisher.doi
 
 def invocation(*params):
     parser = ArgumentParser("Creates invocation schema and validates"
@@ -342,7 +337,8 @@ def bosh(args=None):
                         "descriptor for a BIDS app or updates a descriptor "
                         "from an older version of the schema. Export: exports a"
                         "descriptor to other formats. Publish: creates"
-                        "an entry in Zenodo for the descriptor and tool."
+                        "an entry in Zenodo for the descriptor and "
+                        "adds the DOI created by Zenodo to the descriptor."
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties."

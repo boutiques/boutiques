@@ -37,20 +37,34 @@ class ZenodoError(Exception):
 class Publisher():
 
     def __init__(self, descriptor_file_name,
-                 creator, affiliation, verbose, sandbox, no_int,
+                 verbose, sandbox, no_int,
                  auth_token):
         # Straightforward assignments
         self.verbose = verbose
         self.sandbox = sandbox
         self.descriptor_file_name = descriptor_file_name
-        self.creator = creator
-        self.affiliation = affiliation
         self.no_int = no_int
         self.zenodo_access_token = auth_token
 
         # Validate and load descriptor
         validate_descriptor(descriptor_file_name)
         self.descriptor = json.loads(open(self.descriptor_file_name).read())
+
+        # Get relevant descriptor propertis
+        self.url = self.descriptor.get('url')
+        self.tool_doi = self.descriptor.get('tool-doi')
+
+        # Get tool author and check that it's defined
+        if self.descriptor.get("author") is None:
+            raise ZenodoError("Tool must have an author to be publised. "
+                              "Add an 'author' property to your descriptor.")
+        self.creator = self.descriptor['author']
+
+        # Get descriptor doi and check that it's not defined
+        if self.descriptor.get('doi') is not None:
+            raise ZenodoError("Desriptor already has a DOI. Please remove it"
+                              " from the descriptor before publishing it again."
+                              " A new DOI will be generated.")
 
         self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
         # Fix Zenodo access token
@@ -125,8 +139,7 @@ class Publisher():
                 'description': self.descriptor['description'] or "Boutiques "
                                "descriptor for {0}".format(
                                                    self.descriptor['name']),
-                'creators': [{'name': self.creator,
-                              'affiliation': self.affiliation}],
+                'creators': [{'name': self.creator}],
                 'version': self.descriptor['tool-version'],
                 'keywords': ['Boutiques',
                              'schema-version:{0}'.
@@ -138,6 +151,20 @@ class Publisher():
             keywords.append(tag + ":" + self.descriptor['tags'][tag])
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
+        if self.url is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': self.url,
+                'relation': 'hasPart'
+            })
+        if self.tool_doi is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': self.tool_doi,
+                'relation': 'hasPart'
+        })
 
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
                           params={'access_token': self.zenodo_access_token},
@@ -178,6 +205,7 @@ class Publisher():
         if(self.verbose):
             self.print_zenodo_info("Descriptor published to Zenodo, doi is {0}"
                                    .format(r.json()['doi']), r)
+        return r.json()['doi']
 
     def raise_zenodo_error(self, message, r):
         raise ZenodoError("Zenodo error ({0}): {1}."
@@ -199,4 +227,7 @@ class Publisher():
         self.zenodo_test_api()
         deposition_id = self.zenodo_deposit()
         self.zenodo_upload_descriptor(deposition_id)
-        self.zenodo_publish(deposition_id)
+        self.doi = self.zenodo_publish(deposition_id)
+        self.descriptor['doi'] = self.doi
+        with open(self.descriptor_file_name, "w") as f:
+                f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
