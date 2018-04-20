@@ -239,12 +239,12 @@ class LocalExecutor(object):
                 compaths = list()
                 for idxm, m in enumerate(mount_strings):
                     for n in mount_strings[idxm:]:
-                   if n != m:
-                       tmp = op.dirname(op.commonprefix([n,m]))
-                       if tmp != '/':
-                      compaths += [tmp]
+                        if n != m:
+                            tmp = op.dirname(op.commonprefix([n, m]))
+                            if tmp != '/':
+                                compaths += [tmp]
                     if not any(m.startswith(c) for c in compaths):
-                   compaths += [m]
+                        compaths += [m]
                 mount_strings = set(compaths)
 
                 # Only adds mount points for those not already included
