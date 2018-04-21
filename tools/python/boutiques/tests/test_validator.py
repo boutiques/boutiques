@@ -17,7 +17,16 @@ class TestValidator(TestCase):
 
     def test_success(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
-        assert bosh(['validate', fil]) is not None
+        assert bosh(['validate', fil]) is None
+
+    def test_success_cli(self):
+        fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
+        command = ("bosh validate " + fil)
+        process = subprocess.Popen(command, shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        process.communicate()
+        self.assertFalse(process.returncode)
 
     def test_fail(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/bad.json')
