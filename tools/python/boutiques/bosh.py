@@ -12,7 +12,7 @@ from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
 from boutiques.invocationSchemaHandler import InvocationValidationError
-from boutiques.localExec import ToolOutputNotFoundError
+from boutiques.localExec import ExecutorOutput
 
 
 def validate(*params):
@@ -92,8 +92,7 @@ def execute(*params):
                                   "changeUser": results.user})
         executor.readInput(inp)
         # Execute it
-        stdout, stderr, exit_code, err_msg = executor.execute(results.volumes)
-        return stdout, stderr, exit_code, err_msg
+        return executor.execute(results.volumes)
 
     if mode == "simulate":
         parser = ArgumentParser("Simulates an invocation.")
@@ -142,7 +141,7 @@ def execute(*params):
             executor.readInput(inp)
             executor.printCmdLine()
 
-        return "", "", 0, ""  # for consistency with execute
+        return ExecutorOutput("", "", 0, "", [])  # for consistency with execute
 
 
 def importer(*params):
@@ -357,10 +356,11 @@ def bosh(args=None):
     def runs_as_cli():
         return os.path.basename(sys.argv[0]) == "bosh"
 
-    def bosh_return(val):
+    def bosh_return(val, code=0):
         if runs_as_cli():
-            print(val)
-            return 0  # everything went well
+            if val is not None:
+                print(val)
+            return code  # everything went well
         return val  # calling function wants this value
 
     try:
@@ -369,7 +369,7 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "exec":
             out = execute(*params)
-            return out[2]
+            bosh_return(out, out.exit_code)  # return tool exit code
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)
@@ -394,8 +394,7 @@ def bosh(args=None):
 
     except (ZenodoError,
             DescriptorValidationError,
-            InvocationValidationError,
-            ToolOutputNotFoundError) as e:
+            InvocationValidationError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():

@@ -14,8 +14,14 @@ import pwd
 import os.path as op
 
 
-class ToolOutputNotFoundError(Exception):
-    pass
+class ExecutorOutput():
+
+    def __init__(self, stdout, stderr, exit_code, desc_err, missing_files):
+        self.stdout = stdout
+        self.stderr = stderr
+        self.exit_code = exit_code
+        self.error_message = desc_err
+        self.missing_files = missing_files
 
 
 # Executor class
@@ -268,6 +274,8 @@ class LocalExecutor(object):
         print('---/* Begin program output */---')
         if stdout != '':
             print(stdout.decode('utf-8'))
+        if stderr != '':
+            print(stderr.decode('utf-8'))
         print('---/* End program output */---\nCompleted execution'
               ' (exit code: ' + str(exit_code) + ')')
         time.sleep(0.5)  # Give the OS a (half) second to finish writing
@@ -278,11 +286,12 @@ class LocalExecutor(object):
                 os.remove(dsname)
         # Check for output files (note: the path-template
         # can contain value-keys)
+        missing_files = []
         print('Looking for output files:')
         for outfile in self.desc_dict['output-files']:
-            outFileName = self.out_dict[outfile['id']]
+            out_file_name = self.out_dict[outfile['id']]
             # Look for the target file
-            exists = os.path.exists(outFileName)
+            exists = os.path.exists(out_file_name)
             # Note whether it could be found or not
             if 'optional' in list(outfile.keys()):
                 isOptional = outfile['optional']
@@ -291,28 +300,18 @@ class LocalExecutor(object):
             s1 = 'Optional' if isOptional else 'Required'
             s2 = '' if exists else 'not '
             message = (s1 + " output file \'" + outfile['name'] +
-                       "\' was " + s2 + "found at " + outFileName)
+                       "\' was " + s2 + "found at " + out_file_name)
+            print("\t {0}".format(message))
             if (not isOptional and not exists):
-                raise ToolOutputNotFoundError(message)
-            else:
-                print("\t {0}".format(message))
+                missing_files.append(out_file_name)
         desc_err = ''
         if 'error-codes' in list(self.desc_dict.keys()):
             for err_elem in self.desc_dict['error-codes']:
                 if err_elem['code'] == exit_code:
                         desc_err = err_elem['description']
                         break
-        error_msg = ''
-        if stderr != b'':
-            error_msg = 'Execution ERR ({0}): {1}'.format(exit_code, stderr)
-        if desc_err != '':
-            error_msg += '{0}{1} ERR ({2}): {3}'.format('\n' if
-                                                        error_msg != '' else
-                                                        '',
-                                                        self.desc_dict['name'],
-                                                        exit_code, desc_err)
 
-        return stdout, stderr, exit_code, error_msg
+        return ExecutorOutput(stdout, stderr, exit_code, desc_err, missing_files)
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.

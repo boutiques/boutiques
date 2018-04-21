@@ -10,7 +10,7 @@ import os.path as op
 import json
 import os
 
-
+# not sure about these tests, why are they ere? They're just testing schema validation, not bids import. Bids import is tested in importer.
 class TestBIDS(TestCase):
 
     def test_bids_good(self):
