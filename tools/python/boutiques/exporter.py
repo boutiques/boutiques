@@ -31,8 +31,9 @@ import uuid
 
 class Exporter():
 
-    def __init__(self, descriptor):
+    def __init__(self, descriptor, identifier):
         self.descriptor = descriptor
+        self.identifier = identifier
 
     def convert_type(self, boutiques_type, is_integer=False, is_list=False):
         if is_list:
@@ -68,7 +69,7 @@ class Exporter():
         with open(self.descriptor, 'r') as fhandle:
             descriptor = json.load(fhandle)
 
-        carmin_desc['identifier'] = str(uuid.uuid4())
+        carmin_desc['identifier'] = self.identifier
         carmin_desc['name'] = descriptor.get('name')
         carmin_desc['version'] = descriptor.get('tool-version')
         carmin_desc['description'] = descriptor.get('description')
