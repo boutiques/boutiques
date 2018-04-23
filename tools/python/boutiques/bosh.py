@@ -169,11 +169,11 @@ def importer(*params):
 
 def exporter(*params):
     parser = ArgumentParser("Export Boutiques descriptor to other formats.")
-    parser.add_argument("type", help="Type of export we are performing."
-                        " For carmin, pipeline id is set to the output"
-                        " file name.",
+    parser.add_argument("type", help="Type of export we are performing.",
                         choices=["carmin"])
     parser.add_argument("descriptor", help="Boutiques descriptor to export.")
+    parser.add_argument("identifier", help="Identifier to use in"
+                                           "CARMIN export.")
     parser.add_argument("output", help="Output file where to write the"
                         " converted descriptor.")
     results = parser.parse_args(params)
@@ -184,7 +184,7 @@ def exporter(*params):
     bosh(["validate", results.descriptor])
 
     from boutiques.exporter import Exporter
-    exporter = Exporter(descriptor)
+    exporter = Exporter(descriptor, results.identifier)
     if results.type == "carmin":
         exporter.carmin(output)
 

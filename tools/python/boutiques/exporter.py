@@ -63,12 +63,12 @@ class Exporter():
             param['description'] = input_or_output.get('description')
         return param
 
-    def carmin(self, output_file):
+    def carmin(self, identifier, output_file):
         carmin_desc = {}
         with open(self.descriptor, 'r') as fhandle:
             descriptor = json.load(fhandle)
 
-        carmin_desc['identifier'] = str(uuid.uuid4())
+        carmin_desc['identifier'] = identifier
         carmin_desc['name'] = descriptor.get('name')
         carmin_desc['version'] = descriptor.get('tool-version')
         carmin_desc['description'] = descriptor.get('description')
