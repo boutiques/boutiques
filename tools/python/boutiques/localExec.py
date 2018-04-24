@@ -13,6 +13,7 @@ import time
 import pwd
 import os.path as op
 from termcolor import colored
+from boutiques.evaluate import evaluateEngine
 
 
 class ExecutorOutput():
@@ -89,7 +90,9 @@ class FileDescription():
     def __init__(self, boutiques_name, file_name, optional):
         self.boutiques_name = boutiques_name
         self.file_name = file_name
-        self.optional = optional
+        self.optional = 'Optional'
+        if not optional:
+            self.optional = 'Required'
 
     def __str__(self):
         return "{0} ({1}, {2})".format(self.file_name, self.boutiques_name,
@@ -124,11 +127,12 @@ class LocalExecutor(object):
     """
 
     # Constructor
-    def __init__(self, desc, options={}):
+    def __init__(self, desc, invocation, options={}):
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
         self.debug = False  # debug mode (also use python -u)
+        self.invocation = invocation
         # Parse JSON descriptor
         with open(desc, 'r') as descriptor:
             self.desc_dict = json.loads(descriptor.read())
@@ -159,6 +163,10 @@ class LocalExecutor(object):
                       " are not yet supported"
                 raise ValueError(msg.format(", ".join(conEngines),
                                             self.con['type']))
+
+        # Generate the command line
+        if self.invocation:
+            self.readInput(self.invocation)
 
     # Retrieves the parameter corresponding to the given id
     def byId(self, n):
@@ -351,31 +359,29 @@ class LocalExecutor(object):
         else:
             (stdout, stderr), exit_code = self._localExecute(command)
         time.sleep(0.5)  # Give the OS a (half) second to finish writing
+
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
         if conIsPresent and self.destroyTempScripts:
             if os.path.isfile(dsname):
                 os.remove(dsname)
-        # Check for output files (note: the path-template
-        # can contain value-keys)
+
+        # Check for output files
         missing_files = []
         output_files = []
-        for outfile in self.desc_dict['output-files']:
-            out_file_name = self.out_dict[outfile['id']]
-            # Look for the target file
-            exists = os.path.exists(out_file_name)
-            # Note whether it could be found or not
-            if 'optional' in list(outfile.keys()):
-                isOptional = outfile['optional']
-            else:
-                isOptional = False
-            s1 = 'Optional' if isOptional else 'Required'
-            f = FileDescription(outfile['name'], out_file_name, s1)
-            if exists:
-                output_files.append(f)
-            else:
-                if not isOptional:
-                    missing_files.append(f)
+        all_files = evaluateEngine(self, "output-files")
+        required_files = evaluateEngine(self, "output-files/optional=False")
+        optional_files = evaluateEngine(self, "output-files/optional=True")
+        for f in all_files.keys():
+            file_name = all_files[f]
+            fd = FileDescription(f, file_name, False)
+            if op.exists(file_name):
+                output_files.append(fd)
+            else:  # file does not exist
+                if f in required_files.keys():
+                    missing_files.append(fd)
+
+        # Set error messages
         desc_err = ''
         if 'error-codes' in list(self.desc_dict.keys()):
             for err_elem in self.desc_dict['error-codes']:
@@ -583,7 +589,6 @@ class LocalExecutor(object):
         self.in_dict = {}
         # Fill in the required parameters
         for reqp in [r for r in self.inputs if not r.get('optional')]:
-            print(reqp['id'])
             self.in_dict[reqp['id']] = makeParam(reqp)
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups

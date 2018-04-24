@@ -88,11 +88,10 @@ def execute(*params):
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor,
+        executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "destroyTempScripts": not results.debug,
                                   "changeUser": results.user})
-        executor.readInput(inp)
         # Execute it
         return executor.execute(results.volumes)
 
@@ -132,7 +131,7 @@ def execute(*params):
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor,
+        executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "destroyTempScripts": True,
                                   "changeUser": True})
@@ -140,7 +139,6 @@ def execute(*params):
             executor.generateRandomParams(numb)
             executor.printCmdLine()
         else:
-            executor.readInput(inp)
             executor.printCmdLine()
 
         # for consistency with execute
@@ -277,11 +275,10 @@ def evaluate(*params):
 
     # Generate object that will parse the invocation and descriptor
     from boutiques.localExec import LocalExecutor
-    executor = LocalExecutor(result.descriptor,
+    executor = LocalExecutor(result.descriptor, result.invocation,
                              {"forcePathType": True,
                               "destroyTempScripts": True,
                               "changeUser": True})
-    executor.readInput(result.invocation)
 
     from boutiques.evaluate import evaluateEngine
     query_results = []

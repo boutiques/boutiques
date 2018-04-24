@@ -13,7 +13,7 @@ from os.path import join as opj
 class TestImport(TestCase):
 
     def test_import_bids_good(self):
-        bids_app = op.join(op.split(bfile)[0],
+        bids_app = opj(op.split(bfile)[0],
                            "schema/examples/bids-apps/example_good")
         outfile = "test-import.json"
         ref_name = "test-import-ref.json"
@@ -25,7 +25,7 @@ class TestImport(TestCase):
                                                          "r").read().strip())
 
     def test_import_bids_bad(self):
-        bids_app = op.join(op.split(bfile)[0],
+        bids_app = opj(op.split(bfile)[0],
                            "schema/examples/bids-apps/example_bad")
         self.assertRaises(ValidationError, bosh, ["import", "bids",
                                                   "test-import.json",
@@ -36,12 +36,12 @@ class TestImport(TestCase):
         os.remove("test-import.json")
 
     def test_upgrade_04(self):
-        fin = op.join(op.split(bfile)[0], "schema/examples/upgrade04.json")
-        fout = op.join(op.split(bfile)[0], "schema/examples/upgraded05.json")
+        fin = opj(op.split(bfile)[0], "schema/examples/upgrade04.json")
+        fout = opj(op.split(bfile)[0], "schema/examples/upgraded05.json")
         ref_name = "test-import-04-ref.json"
-        ref_file = op.join(op.split(bfile)[0], "schema/examples", ref_name)
+        ref_file = opj(op.split(bfile)[0], "schema/examples", ref_name)
         ref_name_p2 = "test-import-04-ref-python2.json"
-        ref_file_p2 = op.join(op.split(bfile)[0], "schema/examples",
+        ref_file_p2 = opj(op.split(bfile)[0], "schema/examples",
                               ref_name_p2)
         if op.isfile(fout):
                 os.remove(fout)
