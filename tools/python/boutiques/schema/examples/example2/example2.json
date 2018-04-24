@@ -1,5 +1,5 @@
 {
-    "command-line": "/usr/bin/printf '[STRING_INPUT]\n' &> [LOG]",
+    "command-line": "/usr/bin/printf '[STRING_INPUT]' &> [LOG]",
     "description": "This property describes the tool or application",
     "inputs": [
         {
