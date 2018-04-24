@@ -14,7 +14,7 @@ class TestImport(TestCase):
 
     def test_import_bids_good(self):
         bids_app = opj(op.split(bfile)[0],
-                           "schema/examples/bids-apps/example_good")
+                       "schema/examples/bids-apps/example_good")
         outfile = "test-import.json"
         ref_name = "test-import-ref.json"
         if op.isfile(outfile):
@@ -26,7 +26,7 @@ class TestImport(TestCase):
 
     def test_import_bids_bad(self):
         bids_app = opj(op.split(bfile)[0],
-                           "schema/examples/bids-apps/example_bad")
+                       "schema/examples/bids-apps/example_bad")
         self.assertRaises(ValidationError, bosh, ["import", "bids",
                                                   "test-import.json",
                                                   bids_app])
@@ -42,7 +42,7 @@ class TestImport(TestCase):
         ref_file = opj(op.split(bfile)[0], "schema/examples", ref_name)
         ref_name_p2 = "test-import-04-ref-python2.json"
         ref_file_p2 = opj(op.split(bfile)[0], "schema/examples",
-                              ref_name_p2)
+                          ref_name_p2)
         if op.isfile(fout):
                 os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
