@@ -25,14 +25,17 @@ class TestImport(TestCase):
                                          "example1_docker_with_doi.json")
         fout = "test-example1-carmin.json"
         ref_name = "example1_docker_exported.json"
+        ref_file = opj(example1_dir, ref_name)
+        ref_name_p2 = "example1_docker_exported_python2.json"
+        ref_file_p2 = opj(example1_dir, ref_name_p2)
         # Identifier is passed, descriptor has no DOI
         self.assertFalse(bosh(["export",
                                "carmin",
                                example1_desc,
                                "--identifier", "123", fout]))
-        assert(open(fout, "r").read().strip() == open(opj(example1_dir,
-                                                          ref_name),
-                                                      "r").read().strip())
+        result = open(fout, "r").read().strip()
+        assert(result == open(ref_file, "r").read().strip() or
+               result == open(ref_file_p2, "r").read().strip())
         # Identifier is not passed, descriptor has no DOI
         with self.assertRaises(ExportError) as e:
                 bosh(["export",
@@ -44,8 +47,11 @@ class TestImport(TestCase):
         self.assertRaises(ExportError, )
         # Identifier is not passed, descriptor has a DOI
         ref_name = "example1_docker_exported_doi.json"
+        ref_file = opj(example1_dir, ref_name)
+        ref_name_p2 = "example1_docker_exported_doi_python2.json"
+        ref_file_p2 = opj(example1_dir, ref_name_p2)
         self.assertFalse(bosh(["export", "carmin", example1_desc_doi, fout]))
-        assert(open(fout, "r").read().strip() == open(opj(example1_dir,
-                                                          ref_name),
-                                                      "r").read().strip())
+        result = open(fout, "r").read().strip()
+        assert(result == open(ref_file, "r").read().strip() or
+               result == open(ref_file_p2, "r").read().strip())
         os.remove(fout)
