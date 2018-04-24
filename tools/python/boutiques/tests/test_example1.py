@@ -44,8 +44,8 @@ class TestExample1(TestCase):
                                         "invocation.json"))
 
         print(ret)
-        assert("This is stdout" in ret.stdout.decode("utf-8"))
-        assert("This is stderr" in ret.stderr.decode("utf-8"))
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
@@ -61,8 +61,8 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "invocation.json"))
         print(ret)
-        assert("This is stdout" in ret.stdout.decode("utf-8"))
-        assert("This is stderr" in ret.stderr.decode("utf-8"))
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
@@ -81,8 +81,8 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "invocation.json"))
         print(ret)
-        assert("This is stdout" in ret.stdout.decode("utf-8"))
-        assert("This is stderr" in ret.stderr.decode("utf-8"))
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
@@ -98,8 +98,8 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "invocation.json"))
         print(ret)
-        assert("This is stdout" in ret.stdout.decode("utf-8"))
-        assert("This is stderr" in ret.stderr.decode("utf-8"))
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])

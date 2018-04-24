@@ -21,8 +21,13 @@ class ExecutorOutput():
                  output_files, missing_files, shell_command,
                  container_command,
                  container_location):
-        self.stdout = stdout
-        self.stderr = stderr
+        try:
+            self.stdout = stdout.decode("utf=8")
+        except AttributeError e:
+            self.stdout = stdout
+        self.stderr = stderr.decode("utf=8")
+        except AttributeError e:
+            self.stderr = stderr
         self.exit_code = exit_code
         self.error_message = desc_err
         self.output_files = output_files
@@ -70,8 +75,8 @@ class ExecutorOutput():
                                   self.container_location,
                                   self.container_command,
                                   self.exit_code,
-                                  self.stdout.decode("utf-8"),
-                                  self.stderr.decode("utf-8"),
+                                  self.stdout,
+                                  self.stderr,
                                   self.error_message,
                                   formatted_output_files,
                                   formatted_missing_files)
