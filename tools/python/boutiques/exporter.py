@@ -29,6 +29,10 @@ import os
 import uuid
 
 
+class ExportError(Exception):
+    pass
+
+
 class Exporter():
 
     def __init__(self, descriptor, identifier):
@@ -68,6 +72,13 @@ class Exporter():
         carmin_desc = {}
         with open(self.descriptor, 'r') as fhandle:
             descriptor = json.load(fhandle)
+
+        if descriptor.get('doi'):
+            self.identifier = descriptor.get('doi')
+
+        if self.identifier is None:
+            raise ExportError('Descriptor must have a DOI, or identifier '
+                              ' must be specified with --identifier.')
 
         carmin_desc['identifier'] = self.identifier
         carmin_desc['name'] = descriptor.get('name')

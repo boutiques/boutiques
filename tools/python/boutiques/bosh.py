@@ -13,6 +13,7 @@ from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ToolOutputNotFoundError
+from boutiques.exporter import ExportError
 
 
 def validate(*params):
@@ -172,8 +173,8 @@ def exporter(*params):
     parser.add_argument("type", help="Type of export we are performing.",
                         choices=["carmin"])
     parser.add_argument("descriptor", help="Boutiques descriptor to export.")
-    parser.add_argument("identifier", help="Identifier to use in"
-                                           "CARMIN export.")
+    parser.add_argument("--identifier", help="Identifier to use in"
+                                             "CARMIN export.")
     parser.add_argument("output", help="Output file where to write the"
                         " converted descriptor.")
     results = parser.parse_args(params)
@@ -393,7 +394,8 @@ def bosh(args=None):
     except (ZenodoError,
             DescriptorValidationError,
             InvocationValidationError,
-            ToolOutputNotFoundError) as e:
+            ToolOutputNotFoundError,
+            ExportError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
