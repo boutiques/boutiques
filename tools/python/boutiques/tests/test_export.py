@@ -5,6 +5,10 @@ from unittest import TestCase
 from boutiques import bosh
 from boutiques import __file__ as bfile
 from boutiques.exporter import ExportError
+if sys.version_info < (2, 7):
+    from unittest2 import TestCase
+else:
+    from unittest import TestCase
 
 
 class TestImport(TestCase):
