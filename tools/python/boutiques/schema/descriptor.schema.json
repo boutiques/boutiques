@@ -22,6 +22,30 @@
             "description": "Tool description.",
             "type": "string"
         },
+        "author": {
+            "id": "http://github.com/boutiques/boutiques-schema/author",
+            "minLength": 1,
+            "description": "Tool author name(s).",
+            "type": "string"
+        },
+        "url": {
+            "id": "http://github.com/boutiques/boutiques-schema/url",
+            "minLength": 1,
+            "description": "Tool URL.",
+            "type": "string"
+        },
+        "doi": {
+            "id": "http://github.com/boutiques/boutiques-schema/doi",
+            "minLength": 1,
+            "description": "DOI of the descriptor (not of the tool itself).",
+            "type": "string"
+        },
+        "tool-doi": {
+            "id": "http://github.com/boutiques/boutiques-schema/tool-doi",
+            "minLength": 1,
+            "description": "DOI of the tool (not of the descriptor).",
+            "type": "string"
+        },
         "command-line": {
             "id": "http://github.com/boutiques/boutiques-schema/command-line",
             "minLength": 1,
