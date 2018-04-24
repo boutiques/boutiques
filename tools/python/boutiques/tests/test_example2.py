@@ -31,6 +31,7 @@ class TestExample2(TestCase):
         ret = bosh.execute("launch",
                            os.path.join(example2_dir, "example2.json"),
                            os.path.join(example2_dir, "invocation.json"))
+        print(ret)
         assert(ret.stdout == ""
                and ret.stderr == ""
                and ret.exit_code == 0
