@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 from unittest import TestCase
 from boutiques import bosh
 from boutiques import __file__ as bfile
