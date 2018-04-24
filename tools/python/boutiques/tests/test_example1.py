@@ -43,13 +43,13 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "invocation.json"))
 
-        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
-        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert("This is stdout" in ret.stdout.decode("utf-8"))
+        assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or 
+        assert(ret.output_files[0].file_name == "log-4.txt" or
                ret.output_files[1].file_name == "log-4.txt")
 
         self.clean_up()
@@ -59,13 +59,13 @@ class TestExample1(TestCase):
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))
-        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
-        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert("This is stdout" in ret.stdout.decode("utf-8"))
+        assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or 
+        assert(ret.output_files[0].file_name == "log-4.txt" or
                ret.output_files[1].file_name == "log-4.txt")
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
@@ -78,13 +78,13 @@ class TestExample1(TestCase):
                                         "example1_sing.json"),
                            os.path.join(example1_dir,
                                         "invocation.json"))
-        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
-        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert("This is stdout" in ret.stdout.decode("utf-8"))
+        assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or 
+        assert(ret.output_files[0].file_name == "log-4.txt" or
                ret.output_files[1].file_name == "log-4.txt")
 
         self.clean_up()
@@ -94,13 +94,13 @@ class TestExample1(TestCase):
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))
-        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
-        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert("This is stdout" in ret.stdout.decode("utf-8"))
+        assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or 
+        assert(ret.output_files[0].file_name == "log-4.txt" or
                ret.output_files[1].file_name == "log-4.txt")
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
