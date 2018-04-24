@@ -43,11 +43,14 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "invocation.json"))
 
-        assert(ret.stdout == b"This is stdout"
-               and ret.stderr == b"This is stderr"
-               and ret.exit_code == 0
-               and ret.error_message == ""
-               and ret.missing_files == [])
+        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
+        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4.txt" or 
+               ret.output_files[1].file_name == "log-4.txt")
 
         self.clean_up()
         ret = bosh.execute("launch",
@@ -56,11 +59,14 @@ class TestExample1(TestCase):
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))
-        assert(ret.stdout == b"This is stdout"
-               and ret.stderr == b"This is stderr"
-               and ret.exit_code == 0
-               and ret.error_message == ""
-               and ret.missing_files == [])
+        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
+        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4.txt" or 
+               ret.output_files[1].file_name == "log-4.txt")
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -72,11 +78,14 @@ class TestExample1(TestCase):
                                         "example1_sing.json"),
                            os.path.join(example1_dir,
                                         "invocation.json"))
-        assert(ret.stdout == b"This is stdout"
-               and ret.stderr == b"This is stderr"
-               and ret.exit_code == 0
-               and ret.error_message == ""
-               and ret.missing_files == [])
+        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
+        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4.txt" or 
+               ret.output_files[1].file_name == "log-4.txt")
 
         self.clean_up()
         ret = bosh.execute("launch",
@@ -85,11 +94,14 @@ class TestExample1(TestCase):
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))
-        assert(ret.stdout == b"This is stdout"
-               and ret.stderr == b"This is stderr"
-               and ret.exit_code == 0
-               and ret.error_message == ""
-               and ret.missing_files == [])
+        assert(ret.stdout.decode("utf-8").startswith("This is stdout"))
+        assert(ret.stderr.decode("utf-8") == "This is stderr")
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4.txt" or 
+               ret.output_files[1].file_name == "log-4.txt")
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
