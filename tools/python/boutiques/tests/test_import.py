@@ -40,9 +40,13 @@ class TestImport(TestCase):
         fout = op.join(op.split(bfile)[0], "schema/examples/upgraded05.json")
         ref_name = "test-import-04-ref.json"
         ref_file = op.join(op.split(bfile)[0], "schema/examples", ref_name)
+        ref_name_p2 = "test-import-04-ref-python2.json"
+        ref_file_p2 = op.join(op.split(bfile)[0], "schema/examples",
+                              ref_name_p2)
         if op.isfile(fout):
                 os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        assert(open(fout, "r").read().strip() == open(ref_file,
-                                                      "r").read().strip())
+        result = open(fout, "r").read().strip()
+        assert(result == open(ref_file, "r").read().strip() or
+               result == open(ref_file_p2, "r").read().strip())
         os.remove(fout)
