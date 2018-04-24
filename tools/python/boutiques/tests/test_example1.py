@@ -43,6 +43,7 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "invocation.json"))
 
+        print(ret)
         assert("This is stdout" in ret.stdout.decode("utf-8"))
         assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
@@ -59,6 +60,7 @@ class TestExample1(TestCase):
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))
+        print(ret)
         assert("This is stdout" in ret.stdout.decode("utf-8"))
         assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
@@ -78,6 +80,7 @@ class TestExample1(TestCase):
                                         "example1_sing.json"),
                            os.path.join(example1_dir,
                                         "invocation.json"))
+        print(ret)
         assert("This is stdout" in ret.stdout.decode("utf-8"))
         assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
@@ -94,6 +97,7 @@ class TestExample1(TestCase):
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))
+        print(ret)
         assert("This is stdout" in ret.stdout.decode("utf-8"))
         assert("This is stderr" in ret.stderr.decode("utf-8"))
         assert(ret.exit_code == 0)
@@ -113,6 +117,7 @@ class TestExample1(TestCase):
                                         "example1_docker.json"),
                            os.path.join(example1_dir,
                                         "invocation_missing_script.json"))
+        print(ret)
         assert(ret.exit_code == 2)
         assert(ret.error_message == "File does not exist!")
         assert(len(ret.missing_files) == 1)
@@ -124,6 +129,7 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "example1_docker.json"),
                            "-r", "3")
+        print(ret)
         assert(ret.stdout == ""
                and ret.stderr == ""
                and ret.exit_code == 0

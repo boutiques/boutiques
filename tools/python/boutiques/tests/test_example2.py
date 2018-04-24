@@ -40,8 +40,9 @@ class TestExample2(TestCase):
                            os.path.join(example2_dir, "example2.json"),
                            "-x",
                            os.path.join(example2_dir, "invocation.json"))
-        assert(ret.stdout == b""
-               and ret.stderr == b""
+        print(ret)
+        assert(ret.stdout.decode("utf-8") == ""
+               and ret.stderr.decode("utf-8") == ""
                and ret.exit_code == 0
                and ret.error_message == "")
 
