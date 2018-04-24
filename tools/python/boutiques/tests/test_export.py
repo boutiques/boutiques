@@ -43,5 +43,9 @@ class TestImport(TestCase):
                         "must be specified" in str(e.exception))
         self.assertRaises(ExportError, )
         # Identifier is not passed, descriptor has a DOI
+        ref_name = "example1_docker_exported_doi.json"
         self.assertFalse(bosh(["export", "carmin", example1_desc_doi, fout]))
+        assert(open(fout, "r").read().strip() == open(opj(example1_dir,
+                                                          ref_name),
+                                                      "r").read().strip())
         os.remove(fout)
