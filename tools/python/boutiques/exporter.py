@@ -29,10 +29,15 @@ import os
 import uuid
 
 
+class ExportError(Exception):
+    pass
+
+
 class Exporter():
 
-    def __init__(self, descriptor):
+    def __init__(self, descriptor, identifier):
         self.descriptor = descriptor
+        self.identifier = identifier
 
     def convert_type(self, boutiques_type, is_integer=False, is_list=False):
         if is_list:
@@ -68,7 +73,14 @@ class Exporter():
         with open(self.descriptor, 'r') as fhandle:
             descriptor = json.load(fhandle)
 
-        carmin_desc['identifier'] = str(uuid.uuid4())
+        if descriptor.get('doi'):
+            self.identifier = descriptor.get('doi')
+
+        if self.identifier is None:
+            raise ExportError('Descriptor must have a DOI, or identifier '
+                              'must be specified with --identifier.')
+
+        carmin_desc['identifier'] = self.identifier
         carmin_desc['name'] = descriptor.get('name')
         carmin_desc['version'] = descriptor.get('tool-version')
         carmin_desc['description'] = descriptor.get('description')
