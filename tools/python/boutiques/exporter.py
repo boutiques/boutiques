@@ -78,7 +78,7 @@ class Exporter():
 
         if self.identifier is None:
             raise ExportError('Descriptor must have a DOI, or identifier '
-                              ' must be specified with --identifier.')
+                              'must be specified with --identifier.')
 
         carmin_desc['identifier'] = self.identifier
         carmin_desc['name'] = descriptor.get('name')

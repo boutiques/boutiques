@@ -6,6 +6,7 @@ from boutiques import bosh
 from boutiques import __file__ as bfile
 from boutiques.exporter import ExportError
 
+
 class TestImport(TestCase):
     def get_examples_dir(self):
         return os.path.join(os.path.dirname(bfile),
@@ -18,12 +19,19 @@ class TestImport(TestCase):
                                          "example1_docker_with_doi.json")
         fout = "test-example1-carmin.json"
         # Identifier is passed, descriptor has no DOI
-        self.assertFalse(bosh(["export", "carmin", example1_desc, "--identifier", "123", fout]))
+        self.assertFalse(bosh(["export",
+                               "carmin",
+                               example1_desc,
+                               "--identifier", "123", fout]))
         # Identifier is not passed, descriptor has no DOI
-       # self.assertRaises(ExportError, bosh(["export",
-       #                                      "carmin",
-       #                                      example1_desc,
-       #                                      fout]))
+        with self.assertRaises(ExportError) as e:
+                bosh(["export",
+                      "carmin",
+                      example1_desc,
+                      fout])
+        self.assertTrue("Descriptor must have a DOI, or identifier "
+                        "must be specified" in str(e.exception))
+        self.assertRaises(ExportError, )
         # Identifier is not passed, descriptor has no DOI
         self.assertFalse(bosh(["export", "carmin", example1_desc_doi, fout]))
         os.remove(fout)
