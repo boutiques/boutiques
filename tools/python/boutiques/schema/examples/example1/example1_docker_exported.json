@@ -1,83 +1,88 @@
 {
+    "canExecute": true,
+    "description": "This property describes the tool or application",
+    "errorCodesAndMessages": [
+        {
+            "errorCode": 2,
+            "errorMessage": "File does not exist!"
+        }
+    ],
     "identifier": "123",
     "name": "Example Boutiques Tool",
-    "version": "0.0.1",
-    "description": "This property describes the tool or application",
-    "canExecute": true,
     "parameters": [
         {
-            "name": "A string input",
-            "id": "str_input",
-            "type": "List",
-            "isOptional": false,
-            "isReturnedValue": false,
             "defaultValue": "aStringValue",
-            "description": "Describe the use and meaning of the parameter"
-        },
-        {
-            "name": "A list of ints",
-            "id": "list_int_input",
-            "type": "List",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "str_input",
             "isOptional": false,
             "isReturnedValue": false,
-            "description": "Describe the use and meaning of the parameter"
+            "name": "A string input",
+            "type": "List"
         },
         {
-            "name": "A number put in the configuration file",
-            "id": "config_num",
-            "type": "Double",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "list_int_input",
             "isOptional": false,
-            "isReturnedValue": false
+            "isReturnedValue": false,
+            "name": "A list of ints",
+            "type": "List"
         },
         {
-            "name": "A number input",
+            "id": "config_num",
+            "isOptional": false,
+            "isReturnedValue": false,
+            "name": "A number put in the configuration file",
+            "type": "Double"
+        },
+        {
             "id": "num_input",
-            "type": "Double",
             "isOptional": true,
-            "isReturnedValue": false
+            "isReturnedValue": false,
+            "name": "A number input",
+            "type": "Double"
         },
         {
-            "name": "A file input",
             "id": "file_input",
-            "type": "File",
             "isOptional": true,
-            "isReturnedValue": false
+            "isReturnedValue": false,
+            "name": "A file input",
+            "type": "File"
         },
         {
-            "name": "An enum input",
             "id": "enum_input",
-            "type": "String",
             "isOptional": true,
-            "isReturnedValue": false
+            "isReturnedValue": false,
+            "name": "An enum input",
+            "type": "String"
         },
         {
-            "name": "A flag input",
             "id": "flag_input",
-            "type": "Boolean",
             "isOptional": true,
-            "isReturnedValue": false
+            "isReturnedValue": false,
+            "name": "A flag input",
+            "type": "Boolean"
         },
         {
-            "name": "Log file",
+            "description": "The output log file from the example tool",
             "id": "logfile",
-            "type": "File",
             "isOptional": false,
             "isReturnedValue": true,
-            "description": "The output log file from the example tool"
+            "name": "Log file",
+            "type": "File"
         },
         {
-            "name": "outfiles",
             "id": "output_files",
-            "type": "File",
             "isOptional": true,
-            "isReturnedValue": true
+            "isReturnedValue": true,
+            "name": "outfiles",
+            "type": "File"
         },
         {
-            "name": "Configuration file",
             "id": "config_file",
-            "type": "File",
             "isOptional": false,
-            "isReturnedValue": true
+            "isReturnedValue": true,
+            "name": "Configuration file",
+            "type": "File"
         }
     ],
     "properties": {
@@ -86,10 +91,5 @@
         "foo": "bar",
         "programming-language": "Python"
     },
-    "errorCodesAndMessages": [
-        {
-            "errorCode": 2,
-            "errorMessage": "File does not exist!"
-        }
-    ]
+    "version": "0.0.1"
 }
