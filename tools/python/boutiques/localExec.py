@@ -12,16 +12,86 @@ import subprocess
 import time
 import pwd
 import os.path as op
+from termcolor import colored
 
 
 class ExecutorOutput():
 
-    def __init__(self, stdout, stderr, exit_code, desc_err, missing_files):
+    def __init__(self, stdout, stderr, exit_code, desc_err,
+                 output_files, missing_files, shell_command,
+                 container_command,
+                 container_location):
         self.stdout = stdout
         self.stderr = stderr
         self.exit_code = exit_code
         self.error_message = desc_err
+        self.output_files = output_files
         self.missing_files = missing_files
+        self.shell_command = shell_command
+        self.container_command = container_command
+        self.container_location = container_location
+
+    def __str__(self):
+
+        formatted_output_files = ""
+        for f in self.output_files:
+            if formatted_output_files != "":
+                formatted_output_files += os.linesep
+            formatted_output_files += ("\t- "+str(f))
+
+        formatted_missing_files = ""
+        for f in self.missing_files:
+            if formatted_missing_files != "":
+                formatted_missing_files += os.linesep
+            formatted_missing_files += ("\t- "+str(f))
+
+        def title(s):
+            return colored(s + os.linesep, 'green')
+
+        out = (title("Shell command") +
+               "{0}" + os.linesep +
+               title("Container location") +
+               "{1}" + os.linesep +
+               title("Container command") +
+               "{2}" + os.linesep +
+               title("Exit code") +
+               "{3}" + os.linesep +
+               title("Std out") +
+               "{4}" + os.linesep +
+               title("Std err") +
+               colored("{5}", 'red') + os.linesep +
+               title("Error message") +
+               colored("{6}", 'red') + os.linesep +
+               title("Output files") +
+               "{7}" + os.linesep +
+               title("Missing files") +
+               colored("{8}", 'red') +
+               os.linesep).format(self.shell_command,
+                                  self.container_location,
+                                  self.container_command,
+                                  self.exit_code,
+                                  self.stdout.decode("utf-8"),
+                                  self.stderr.decode("utf-8"),
+                                  self.error_message,
+                                  formatted_output_files,
+                                  formatted_missing_files)
+        return out
+
+
+class FileDescription():
+
+    def __init__(self, boutiques_name, file_name, optional):
+        self.boutiques_name = boutiques_name
+        self.file_name = file_name
+        self.optional = optional
+
+    def __str__(self):
+        return "{0} ({1}, {2})".format(self.file_name, self.boutiques_name,
+                                       self.optional)
+
+
+class ExecutorError(Exception):
+    pass
 
 
 # Executor class
@@ -126,7 +196,6 @@ class LocalExecutor(object):
         After execution, it checks for output file existence.
         '''
         command, exit_code, con = self.cmdLine[0], None, self.con or {}
-        print('Attempting execution of command:\n\t' + command)
         # Check for Container image
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
@@ -148,11 +217,13 @@ class LocalExecutor(object):
                   "-" + str(millitime) + '.localExec.boshjob.sh')
         dsname = op.realpath(dsname)
         # If container is present, alter the command template accordingly
+        container_location = ""
+        container_command = ""
         if conIsPresent:
             if conType == 'docker':
                 # Pull the docker image
                 if self._localExecute("docker pull " + str(conImage))[1]:
-                    print("Container not found online,  trying local copy")
+                    container_location = "Local copy"
             elif conType == 'singularity':
                 if not conIndex:
                     conIndex = "shub://"
@@ -161,23 +232,23 @@ class LocalExecutor(object):
                 conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
 
                 if conName not in os.listdir('./'):
-                    pull_location = "\"{0}\" {1}{2}".format(conName,
-                                                            conIndex,
-                                                            conImage)
-                    print("Container image ({0}) not found in current"
-                          " working directory,"
-                          " pulling from {1}".format(conName, pull_location))
+                    pull_loc = "\"{0}\" {1}{2}".format(conName,
+                                                       conIndex,
+                                                       conImage)
+                    container_location = ("Pulled from {1} ({0} not found "
+                                          "in current"
+                                          "working director").format(conName,
+                                                                     pull_loc)
                     # Pull the singularity image
                     if self._localExecute("singularity pull --name " +
-                                          pull_location)[1]:
-                        print("Could not pull image.")
-                        sys.exit(1)
+                                          pull_loc)[1]:
+                        raise ExecutorError("Could not pull Singularity image")
                 else:
-                    print("Using local container image: {0}".format(conName))
+                    container_location = "Local ({0})".format(conName)
                 conName = op.abspath(conName)
             else:
-                print('Unrecognized container type: \"%s\"' % conType)
-                sys.exit(1)
+                raise ExecutorError('Unrecognized container'
+                                    ' type: \"%s\"' % conType)
             # Generate command script
             uname, uid = pwd.getpwuid(os.getuid())[0], str(os.getuid())
             # Adds the user to the container before executing
@@ -217,9 +288,11 @@ class LocalExecutor(object):
                         envString += " -e {0}='{1}' ".format(key, val)
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
-                dcmd = ('docker run --entrypoint=/bin/sh --rm' + envString +
-                        ' -v ' + docker_mounts + ' -w ' + launchDir + ' ' +
-                        str(conImage) + ' ' + dsname)
+                container_command = ('docker run --entrypoint=/bin/sh '
+                                     '--rm' + envString +
+                                     ' -v ' + docker_mounts +
+                                     ' -w ' + launchDir + ' ' +
+                                     str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
                 envString = ""
                 if envVars:
@@ -259,25 +332,18 @@ class LocalExecutor(object):
                     if not any(d in m for d in def_mounts):
                         singularity_mounts += "-B {0} ".format(m)
 
-                dcmd = (envString + 'singularity exec --cleanenv ' +
-                        singularity_mounts + ' -W ' + launchDir + ' ' +
-                        str(conName) + ' ' + dsname)
+                container_command = (envString + 'singularity exec '
+                                     '--cleanenv ' +
+                                     singularity_mounts +
+                                     ' -W ' + launchDir + ' ' +
+                                     str(conName) + ' ' + dsname)
             else:
-                print('Unrecognized container type: \"%s\"' % conType)
-                sys.exit(1)
-            print('Executing via: ' + dcmd)
-            (stdout, stderr), exit_code = self._localExecute(dcmd)
+                raise ExecutorError('Unrecognized container type: '
+                                    '\"%s\"' % conType)
+            (stdout, stderr), exit_code = self._localExecute(container_command)
         # Otherwise, just run command locally
         else:
             (stdout, stderr), exit_code = self._localExecute(command)
-        # Report exit status
-        print('---/* Begin program output */---')
-        if stdout != '':
-            print(stdout.decode('utf-8'))
-        if stderr != '':
-            print(stderr.decode('utf-8'))
-        print('---/* End program output */---\nCompleted execution'
-              ' (exit code: ' + str(exit_code) + ')')
         time.sleep(0.5)  # Give the OS a (half) second to finish writing
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
@@ -287,7 +353,7 @@ class LocalExecutor(object):
         # Check for output files (note: the path-template
         # can contain value-keys)
         missing_files = []
-        print('Looking for output files:')
+        output_files = []
         for outfile in self.desc_dict['output-files']:
             out_file_name = self.out_dict[outfile['id']]
             # Look for the target file
@@ -298,12 +364,12 @@ class LocalExecutor(object):
             else:
                 isOptional = False
             s1 = 'Optional' if isOptional else 'Required'
-            s2 = '' if exists else 'not '
-            message = (s1 + " output file \'" + outfile['name'] +
-                       "\' was " + s2 + "found at " + out_file_name)
-            print("\t {0}".format(message))
-            if (not isOptional and not exists):
-                missing_files.append(out_file_name)
+            f = FileDescription(outfile['name'], out_file_name, s1)
+            if exists:
+                output_files.append(f)
+            else:
+                if not isOptional:
+                    missing_files.append(f)
         desc_err = ''
         if 'error-codes' in list(self.desc_dict.keys()):
             for err_elem in self.desc_dict['error-codes']:
@@ -311,7 +377,14 @@ class LocalExecutor(object):
                         desc_err = err_elem['description']
                         break
 
-        return ExecutorOutput(stdout, stderr, exit_code, desc_err, missing_files)
+        return ExecutorOutput(stdout,
+                              stderr,
+                              exit_code,
+                              desc_err,
+                              output_files,
+                              missing_files,
+                              command,
+                              container_command, container_location)
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
@@ -922,7 +995,7 @@ class LocalExecutor(object):
                                          ' requires one member to be present')
         # Fast-fail if there was a problem with the input parameters
         if len(self.errs) != 0:
-            sys.stderr.write("Problems found with prospective input:\n")
+            message = "Problems found with prospective input:\n"
             for err in self.errs:
-                sys.stderr.write("\t" + err + "\n")
-            sys.exit(1)
+                message += ("\t" + err + "\n")
+            raise ExecutorError(message)

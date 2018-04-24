@@ -101,9 +101,10 @@ class TestExample1(TestCase):
                                         "example1_docker.json"),
                            os.path.join(example1_dir,
                                         "invocation_missing_script.json"))
-        assert(ret.exit_code == 2
-               and ret.error_message == "File does not exist!"
-               and ret.missing_files == ["log-4.txt"])
+        assert(ret.exit_code == 2)
+        assert(ret.error_message == "File does not exist!")
+        assert(len(ret.missing_files) == 1)
+        assert(ret.missing_files[0].file_name == "log-4.txt")
 
     def test_example1_no_exec_random(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")

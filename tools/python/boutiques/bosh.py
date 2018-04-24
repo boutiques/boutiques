@@ -13,6 +13,7 @@ from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorOutput
+from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 
 
@@ -142,7 +143,8 @@ def execute(*params):
             executor.readInput(inp)
             executor.printCmdLine()
 
-        return ExecutorOutput("", "", 0, "", [])  # for consistency with execute
+        # for consistency with execute
+        return ExecutorOutput("", "", 0, "", [], [], "", "", "")
 
 
 def importer(*params):
@@ -396,7 +398,8 @@ def bosh(args=None):
     except (ZenodoError,
             DescriptorValidationError,
             InvocationValidationError,
-            ExportError) as e:
+            ExportError,
+            ExecutorError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
