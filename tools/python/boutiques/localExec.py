@@ -23,10 +23,11 @@ class ExecutorOutput():
                  container_location):
         try:
             self.stdout = stdout.decode("utf=8")
-        except AttributeError e:
+        except AttributeError as e:
             self.stdout = stdout
-        self.stderr = stderr.decode("utf=8")
-        except AttributeError e:
+        try:
+            self.stderr = stderr.decode("utf=8")
+        except AttributeError as e:
             self.stderr = stderr
         self.exit_code = exit_code
         self.error_message = desc_err
