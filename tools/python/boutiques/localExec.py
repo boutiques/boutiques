@@ -132,6 +132,12 @@ class LocalExecutor(object):
         # Parse JSON descriptor
         with open(desc, 'r') as descriptor:
             self.desc_dict = json.loads(descriptor.read())
+
+        # Set the shell
+        self.shell = self.desc_dict.get("shell")
+        if self.shell is None:
+            self.shell = "/bin/sh"
+
         # Helpers Functions
         # The set of input parameters from the json descriptor
         self.inputs = self.desc_dict['inputs']  # Struct: [{id:}..,{id:}]
@@ -267,7 +273,7 @@ class LocalExecutor(object):
             # Get the supported shell by the docker or singularity
             if self.changeUser:
                 command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
-            cmdString = "#!/bin/sh -l\n" + userchange + str(command)
+            cmdString = "#!"+self.shell+" -l\n" + userchange + str(command)
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
@@ -294,8 +300,8 @@ class LocalExecutor(object):
                         envString += " -e {0}='{1}' ".format(key, val)
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
-                container_command = ('docker run --entrypoint=/bin/sh '
-                                     '--rm' + envString +
+                container_command = ('docker run --entrypoint=' + self.shell +
+                                     ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
                                      str(conImage) + ' ' + dsname)
