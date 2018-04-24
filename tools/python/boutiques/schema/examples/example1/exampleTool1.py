@@ -26,6 +26,9 @@ def main(args=None):
     parser.add_argument('-e', '--enum_input',
                         type=lambda x: is_valid_enum_value(parser, x),
                         nargs=1, help='A string in {"val1", "val2", "val3"}.')
+    parser.add_argument('output_file',
+                         help='The output file.')
+   
 
     results=parser.parse_args() if args is None else parser.parse_args(args)
 
@@ -48,7 +51,10 @@ def main(args=None):
             sys.stderr.write("error: invalid configuration file:\n %s\n" % config_string)
             sys.exit(1)
         
-    print("It works!")
+    sys.stdout.write("This is stdout")
+    sys.stderr.write("This is stderr")
+    with open(results.output_file, 'w') as f:
+        f.write("File content")
 
 if  __name__ == "__main__":
     main()

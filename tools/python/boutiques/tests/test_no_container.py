@@ -20,4 +20,4 @@ class TestExample1(TestCase):
                                                    "no_container.json"),
                                       os.path.join(self.get_examples_dir(),
                                                    "no_container_invocation."
-                                                   + "json"))[2])
+                                                   + "json")).exit_code)

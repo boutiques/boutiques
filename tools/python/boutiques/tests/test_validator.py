@@ -11,10 +11,6 @@ import os
 
 class TestValidator(TestCase):
 
-    def test_runtime(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
-        self.assertFalse(bosh(['validate', fil]))
-
     def test_success(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
         assert bosh(['validate', fil]) is None

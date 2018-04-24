@@ -12,14 +12,14 @@ def compute_md5(filename):
 
 def test(descriptor, test, invocation):
     # Run pipeline.
-    stdout, stderr, exit_code, err_msg = bosh.execute("launch",
-                                                      descriptor,
-                                                      invocation.name)
+    ret = bosh.execute("launch",
+                       descriptor,
+                       invocation.name)
 
     # Choose appropriate assertion scenario
     assertions = test["assertions"]
     if "exit-code" in assertions:
-        assert exit_code == assertions["exit-code"]
+        assert ret.exit_code == assertions["exit-code"]
 
     if "output-files" in assertions:
 

@@ -12,9 +12,94 @@ import subprocess
 import time
 import pwd
 import os.path as op
+from termcolor import colored
+from boutiques.evaluate import evaluateEngine
 
 
-class ToolOutputNotFoundError(Exception):
+class ExecutorOutput():
+
+    def __init__(self, stdout, stderr, exit_code, desc_err,
+                 output_files, missing_files, shell_command,
+                 container_command,
+                 container_location):
+        try:
+            self.stdout = stdout.decode("utf=8")
+        except AttributeError as e:
+            self.stdout = stdout
+        try:
+            self.stderr = stderr.decode("utf=8")
+        except AttributeError as e:
+            self.stderr = stderr
+        self.exit_code = exit_code
+        self.error_message = desc_err
+        self.output_files = output_files
+        self.missing_files = missing_files
+        self.shell_command = shell_command
+        self.container_command = container_command
+        self.container_location = container_location
+
+    def __str__(self):
+
+        formatted_output_files = ""
+        for f in self.output_files:
+            if formatted_output_files != "":
+                formatted_output_files += os.linesep
+            formatted_output_files += ("\t- "+str(f))
+
+        formatted_missing_files = ""
+        for f in self.missing_files:
+            if formatted_missing_files != "":
+                formatted_missing_files += os.linesep
+            formatted_missing_files += ("\t- "+str(f))
+
+        def title(s):
+            return colored(s + os.linesep, 'green')
+
+        out = (title("Shell command") +
+               "{0}" + os.linesep +
+               title("Container location") +
+               "{1}" + os.linesep +
+               title("Container command") +
+               "{2}" + os.linesep +
+               title("Exit code") +
+               "{3}" + os.linesep +
+               title("Std out") +
+               "{4}" + os.linesep +
+               title("Std err") +
+               colored("{5}", 'red') + os.linesep +
+               title("Error message") +
+               colored("{6}", 'red') + os.linesep +
+               title("Output files") +
+               "{7}" + os.linesep +
+               title("Missing files") +
+               colored("{8}", 'red') +
+               os.linesep).format(self.shell_command,
+                                  self.container_location,
+                                  self.container_command,
+                                  self.exit_code,
+                                  self.stdout,
+                                  self.stderr,
+                                  self.error_message,
+                                  formatted_output_files,
+                                  formatted_missing_files)
+        return out
+
+
+class FileDescription():
+
+    def __init__(self, boutiques_name, file_name, optional):
+        self.boutiques_name = boutiques_name
+        self.file_name = file_name
+        self.optional = 'Optional'
+        if not optional:
+            self.optional = 'Required'
+
+    def __str__(self):
+        return "{0} ({1}, {2})".format(self.file_name, self.boutiques_name,
+                                       self.optional)
+
+
+class ExecutorError(Exception):
     pass
 
 
@@ -42,11 +127,12 @@ class LocalExecutor(object):
     """
 
     # Constructor
-    def __init__(self, desc, options={}):
+    def __init__(self, desc, invocation, options={}):
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
         self.debug = False  # debug mode (also use python -u)
+        self.invocation = invocation
         # Parse JSON descriptor
         with open(desc, 'r') as descriptor:
             self.desc_dict = json.loads(descriptor.read())
@@ -77,6 +163,10 @@ class LocalExecutor(object):
                       " are not yet supported"
                 raise ValueError(msg.format(", ".join(conEngines),
                                             self.con['type']))
+
+        # Generate the command line
+        if self.invocation:
+            self.readInput(self.invocation)
 
     # Retrieves the parameter corresponding to the given id
     def byId(self, n):
@@ -120,7 +210,6 @@ class LocalExecutor(object):
         After execution, it checks for output file existence.
         '''
         command, exit_code, con = self.cmdLine[0], None, self.con or {}
-        print('Attempting execution of command:\n\t' + command)
         # Check for Container image
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
@@ -142,11 +231,13 @@ class LocalExecutor(object):
                   "-" + str(millitime) + '.localExec.boshjob.sh')
         dsname = op.realpath(dsname)
         # If container is present, alter the command template accordingly
+        container_location = ""
+        container_command = ""
         if conIsPresent:
             if conType == 'docker':
                 # Pull the docker image
                 if self._localExecute("docker pull " + str(conImage))[1]:
-                    print("Container not found online,  trying local copy")
+                    container_location = "Local copy"
             elif conType == 'singularity':
                 if not conIndex:
                     conIndex = "shub://"
@@ -155,23 +246,23 @@ class LocalExecutor(object):
                 conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
 
                 if conName not in os.listdir('./'):
-                    pull_location = "\"{0}\" {1}{2}".format(conName,
-                                                            conIndex,
-                                                            conImage)
-                    print("Container image ({0}) not found in current"
-                          " working directory,"
-                          " pulling from {1}".format(conName, pull_location))
+                    pull_loc = "\"{0}\" {1}{2}".format(conName,
+                                                       conIndex,
+                                                       conImage)
+                    container_location = ("Pulled from {1} ({0} not found "
+                                          "in current"
+                                          "working director").format(conName,
+                                                                     pull_loc)
                     # Pull the singularity image
                     if self._localExecute("singularity pull --name " +
-                                          pull_location)[1]:
-                        print("Could not pull image.")
-                        sys.exit(1)
+                                          pull_loc)[1]:
+                        raise ExecutorError("Could not pull Singularity image")
                 else:
-                    print("Using local container image: {0}".format(conName))
+                    container_location = "Local ({0})".format(conName)
                 conName = op.abspath(conName)
             else:
-                print('Unrecognized container type: \"%s\"' % conType)
-                sys.exit(1)
+                raise ExecutorError('Unrecognized container'
+                                    ' type: \"%s\"' % conType)
             # Generate command script
             uname, uid = pwd.getpwuid(os.getuid())[0], str(os.getuid())
             # Adds the user to the container before executing
@@ -211,9 +302,11 @@ class LocalExecutor(object):
                         envString += " -e {0}='{1}' ".format(key, val)
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
-                dcmd = ('docker run --entrypoint=/bin/sh --rm' + envString +
-                        ' -v ' + docker_mounts + ' -w ' + launchDir + ' ' +
-                        str(conImage) + ' ' + dsname)
+                container_command = ('docker run --entrypoint=/bin/sh '
+                                     '--rm' + envString +
+                                     ' -v ' + docker_mounts +
+                                     ' -w ' + launchDir + ' ' +
+                                     str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
                 envString = ""
                 if envVars:
@@ -253,66 +346,57 @@ class LocalExecutor(object):
                     if not any(d in m for d in def_mounts):
                         singularity_mounts += "-B {0} ".format(m)
 
-                dcmd = (envString + 'singularity exec --cleanenv ' +
-                        singularity_mounts + ' -W ' + launchDir + ' ' +
-                        str(conName) + ' ' + dsname)
+                container_command = (envString + 'singularity exec '
+                                     '--cleanenv ' +
+                                     singularity_mounts +
+                                     ' -W ' + launchDir + ' ' +
+                                     str(conName) + ' ' + dsname)
             else:
-                print('Unrecognized container type: \"%s\"' % conType)
-                sys.exit(1)
-            print('Executing via: ' + dcmd)
-            (stdout, stderr), exit_code = self._localExecute(dcmd)
+                raise ExecutorError('Unrecognized container type: '
+                                    '\"%s\"' % conType)
+            (stdout, stderr), exit_code = self._localExecute(container_command)
         # Otherwise, just run command locally
         else:
             (stdout, stderr), exit_code = self._localExecute(command)
-        # Report exit status
-        print('---/* Begin program output */---')
-        if stdout != '':
-            print(stdout.decode('utf-8'))
-        print('---/* End program output */---\nCompleted execution'
-              ' (exit code: ' + str(exit_code) + ')')
         time.sleep(0.5)  # Give the OS a (half) second to finish writing
+
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
         if conIsPresent and self.destroyTempScripts:
             if os.path.isfile(dsname):
                 os.remove(dsname)
-        # Check for output files (note: the path-template
-        # can contain value-keys)
-        print('Looking for output files:')
-        for outfile in self.desc_dict['output-files']:
-            outFileName = self.out_dict[outfile['id']]
-            # Look for the target file
-            exists = os.path.exists(outFileName)
-            # Note whether it could be found or not
-            if 'optional' in list(outfile.keys()):
-                isOptional = outfile['optional']
-            else:
-                isOptional = False
-            s1 = 'Optional' if isOptional else 'Required'
-            s2 = '' if exists else 'not '
-            message = (s1 + " output file \'" + outfile['name'] +
-                       "\' was " + s2 + "found at " + outFileName)
-            if (not isOptional and not exists):
-                raise ToolOutputNotFoundError(message)
-            else:
-                print("\t {0}".format(message))
+
+        # Check for output files
+        missing_files = []
+        output_files = []
+        all_files = evaluateEngine(self, "output-files")
+        required_files = evaluateEngine(self, "output-files/optional=False")
+        optional_files = evaluateEngine(self, "output-files/optional=True")
+        for f in all_files.keys():
+            file_name = all_files[f]
+            fd = FileDescription(f, file_name, False)
+            if op.exists(file_name):
+                output_files.append(fd)
+            else:  # file does not exist
+                if f in required_files.keys():
+                    missing_files.append(fd)
+
+        # Set error messages
         desc_err = ''
         if 'error-codes' in list(self.desc_dict.keys()):
             for err_elem in self.desc_dict['error-codes']:
                 if err_elem['code'] == exit_code:
                         desc_err = err_elem['description']
                         break
-        error_msg = ''
-        if stderr != b'':
-            error_msg = 'Execution ERR ({0}): {1}'.format(exit_code, stderr)
-        if desc_err != '':
-            error_msg += '{0}{1} ERR ({2}): {3}'.format('\n' if
-                                                        error_msg != '' else
-                                                        '',
-                                                        self.desc_dict['name'],
-                                                        exit_code, desc_err)
 
-        return stdout, stderr, exit_code, error_msg
+        return ExecutorOutput(stdout,
+                              stderr,
+                              exit_code,
+                              desc_err,
+                              output_files,
+                              missing_files,
+                              command,
+                              container_command, container_location)
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
@@ -505,7 +589,6 @@ class LocalExecutor(object):
         self.in_dict = {}
         # Fill in the required parameters
         for reqp in [r for r in self.inputs if not r.get('optional')]:
-            print(reqp['id'])
             self.in_dict[reqp['id']] = makeParam(reqp)
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
@@ -923,7 +1006,7 @@ class LocalExecutor(object):
                                          ' requires one member to be present')
         # Fast-fail if there was a problem with the input parameters
         if len(self.errs) != 0:
-            sys.stderr.write("Problems found with prospective input:\n")
+            message = "Problems found with prospective input:\n"
             for err in self.errs:
-                sys.stderr.write("\t" + err + "\n")
-            sys.exit(1)
+                message += ("\t" + err + "\n")
+            raise ExecutorError(message)

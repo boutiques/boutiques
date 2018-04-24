@@ -67,7 +67,7 @@ class TestExec(TestCase):
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir,
                                                    "example1_docker.json"),
-                                      "-r", "1")[2])
+                                      "-r", "1").exit_code)
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(
                                                        example1_dir,
