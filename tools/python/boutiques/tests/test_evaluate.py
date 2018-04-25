@@ -17,13 +17,13 @@ class TestEvaluate(TestCase):
     def test_evaloutput(self):
         self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
-        expect = {'logfile': 'log-4.txt',
+        expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './config.txt'}
         assert(query == expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=logfile")
-        expect = {'logfile': 'log-4.txt'}
+        expect = {'logfile': 'log-4-coin;plop.txt'}
         assert(query == expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=log-file")
@@ -33,7 +33,8 @@ class TestEvaluate(TestCase):
     def test_evalinput(self):
         self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "inputs/")
-        expect = {'str_input': ['foo', 'bar'],
+        expect = {'str_input_list': ["fo '; echo FAIL", 'bar'],
+                  'str_input': 'coin;plop',
                   'config_num': 4,
                   'num_input': None,
                   'file_input': './setup.py',

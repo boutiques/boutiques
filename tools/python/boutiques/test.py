@@ -15,6 +15,7 @@ def test(descriptor, test, invocation):
     ret = bosh.execute("launch",
                        descriptor,
                        invocation.name)
+    print(ret)
 
     # Choose appropriate assertion scenario
     assertions = test["assertions"]
