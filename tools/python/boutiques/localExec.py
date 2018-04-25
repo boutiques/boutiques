@@ -740,7 +740,11 @@ class LocalExecutor(object):
                                escapeSpecialCharsInStrings=True):
 
             def escape_string(s):
-                return "'"+s+"'"
+                try:
+                    from shlex import quote
+                except ImportError as e:
+                    from pipes import quote
+                return quote(s)
 
             # Concatenate input and output dictionaries
             in_out_dict = dict(self.in_dict)
@@ -748,9 +752,9 @@ class LocalExecutor(object):
             # Go through all the keys
             for paramId in [x['id'] for x in self.inputs + self.outputs]:
                 escape = (escapeSpecialCharsInStrings and
-                          (self.safeGet(paramId, 'type') == 'String' or 
-                           self.safeGet(paramId, 'type') == 'File') or 
-                           paramId in self.out_dict.keys())
+                          (self.safeGet(paramId, 'type') == 'String' or
+                           self.safeGet(paramId, 'type') == 'File') or
+                          paramId in self.out_dict.keys())
                 clk = self.safeGet(paramId, 'value-key')
                 if clk is None:
                     continue
@@ -861,7 +865,8 @@ class LocalExecutor(object):
         template = self.desc_dict['command-line']
         # Substitute every given value into the template
         # (incl. flags, flag-seps, ...)
-        template = self._replaceKeysInTemplate(template, True, "remove", [], True)
+        template = self._replaceKeysInTemplate(template, True,
+                                               "remove", [], True)
         # Return substituted command line
         return template
 

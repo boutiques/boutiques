@@ -33,8 +33,8 @@ class TestEvaluate(TestCase):
     def test_evalinput(self):
         self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "inputs/")
-        expect = {'str_input_list': ['fo ; echo FAIL', 'bar'],
-                  'str_input' : 'coin;plop',
+        expect = {'str_input_list': ["fo '; echo FAIL", 'bar'],
+                  'str_input': 'coin;plop',
                   'config_num': 4,
                   'num_input': None,
                   'file_input': './setup.py',
