@@ -395,11 +395,15 @@ def bosh(args=None):
     except (ZenodoError,
             DescriptorValidationError,
             InvocationValidationError,
+            ValidationError,
             ExportError,
             ExecutorError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
-            print(e)
+            try:
+                print(e.message)
+            except Exception as e:
+                print(e)
             return 99  # Note: this conflicts with tool error codes.
         raise e

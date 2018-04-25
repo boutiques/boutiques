@@ -1,5 +1,5 @@
 {
-    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
+    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
     "container-image": {
         "image": "boutiques/example1:test",
         "type": "docker"
@@ -35,10 +35,19 @@
             "command-line-flag": "-i",
             "default-value": "aStringValue",
             "description": "Describe the use and meaning of the parameter",
-            "id": "str_input",
+            "id": "str_input_list",
             "list": true,
             "max-list-entries": 3,
             "min-list-entries": 1,
+            "name": "A string input list",
+            "type": "String",
+            "value-key": "[STRING_INPUT_LIST]"
+        },
+        {
+            "command-line-flag": "-s",
+            "default-value": "aStringValue",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "str_input",
             "name": "A string input",
             "type": "String",
             "value-key": "[STRING_INPUT]"
@@ -110,121 +119,13 @@
             "value-key": "[FLAG_INPUT]"
         }
     ],
-    "invocation-schema": {
-        "$schema": "http://json-schema.org/draft-04/schema#",
-        "additionalProperties": false,
-        "allOf": [
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "num_input"
-                        ]
-                    },
-                    {
-                        "required": [
-                            "enum_input"
-                        ]
-                    }
-                ]
-            }
-        ],
-        "dependencies": {
-            "enum_input": {
-                "properties": {
-                    "num_input": {
-                        "not": {}
-                    }
-                }
-            },
-            "flag_input": {
-                "anyOf": [
-                    {
-                        "properties": {
-                            "num_input": {
-                                "not": {}
-                            }
-                        },
-                        "required": [
-                            "file_input"
-                        ]
-                    },
-                    {
-                        "properties": {
-                            "flag_input": {
-                                "enum": [
-                                    false
-                                ]
-                            }
-                        }
-                    }
-                ]
-            },
-            "num_input": {
-                "properties": {
-                    "enum_input": {
-                        "not": {}
-                    }
-                }
-            }
-        },
-        "description": "Invocation schema for example boutiques tool.",
-        "properties": {
-            "config_num": {
-                "enum": [
-                    4
-                ]
-            },
-            "enum_input": {
-                "enum": [
-                    "val1",
-                    "val2",
-                    "val3"
-                ]
-            },
-            "file_input": {
-                "type": "string"
-            },
-            "flag_input": {
-                "type": "boolean"
-            },
-            "list_int_input": {
-                "items": {
-                    "type": "integer"
-                },
-                "minItems": 1,
-                "type": "array"
-            },
-            "num_input": {
-                "exclusiveMinimum": true,
-                "maximum": 1,
-                "minimum": 0,
-                "type": "number"
-            },
-            "str_input": {
-                "items": {
-                    "type": "string"
-                },
-                "maxItems": 3,
-                "minItems": 1,
-                "type": "array"
-            }
-        },
-        "required": [
-            "str_input",
-            "list_int_input",
-            "config_num"
-        ],
-        "title": "Example Boutiques Tool.invocationSchema",
-        "type": "object"
-    },
     "name": "Example Boutiques Tool",
     "output-files": [
         {
             "description": "The output log file from the example tool",
             "id": "logfile",
             "name": "Log file",
-            "path-template": "log-[CONFIG_NUMBER].txt",
+            "path-template": "log-[CONFIG_NUMBER]-[STRING_INPUT].txt",
             "path-template-stripped-extensions": [
                 ".txt",
                 ".csv"
@@ -242,7 +143,8 @@
             "command-line-flag": "-c",
             "file-template": [
                 "# This is a demo configuration file",
-                "numInput=[CONFIG_NUMBER]"
+                "numInput=[CONFIG_NUMBER]",
+                "strInput=[STRING_INPUT]"
             ],
             "id": "config_file",
             "name": "Configuration file",
@@ -276,10 +178,11 @@
                     2,
                     3
                 ],
-                "str_input": [
+                "str_input_list": [
                     "foo",
                     "bar"
-                ]
+                ],
+                "str_input": "coin;plop"
             },
             "name": "test1"
         },
@@ -296,10 +199,11 @@
                     2,
                     3
                 ],
-                "str_input": [
+                "str_input_list": [
                     "foo",
                     "bar"
-                ]
+                ],
+                "str_input": "coin;plop"
             },
             "name": "test2"
         },
@@ -323,10 +227,11 @@
                     2,
                     3
                 ],
-                "str_input": [
+                "str_input_list": [
                     "foo",
                     "bar"
-                ]
+                ],
+                "str_input": "coin;plop"
             },
             "name": "test3"
         }

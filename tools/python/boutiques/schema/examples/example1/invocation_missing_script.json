@@ -1,5 +1,6 @@
 {
-    "str_input" : [ "foo", "bar" ],
+    "str_input_list" : [ "foo", "bar" ],
+    "str_input" : "pwet",
     "file_input" : "./nonexistentscript.py",
     "list_int_input": [1, 2, 3],
     "config_num" : 4,

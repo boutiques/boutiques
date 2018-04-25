@@ -1,6 +1,6 @@
 {
     "author": "Test author",
-    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
+    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
     "container-image": {
         "image": "boutiques/example1:test",
         "type": "docker"
@@ -38,10 +38,19 @@
             "command-line-flag": "-i",
             "default-value": "aStringValue",
             "description": "Describe the use and meaning of the parameter",
-            "id": "str_input",
+            "id": "str_input_list",
             "list": true,
             "max-list-entries": 3,
             "min-list-entries": 1,
+            "name": "A list of string inputs",
+            "type": "String",
+            "value-key": "[STRING_INPUT_LIST]"
+        },
+        {
+            "command-line-flag": "-s",
+            "default-value": "aStringValue",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "str_input",
             "name": "A string input",
             "type": "String",
             "value-key": "[STRING_INPUT]"
@@ -119,7 +128,7 @@
             "description": "The output log file from the example tool",
             "id": "logfile",
             "name": "Log file",
-            "path-template": "log-[CONFIG_NUMBER].txt",
+            "path-template": "log-[CONFIG_NUMBER]-[STRING_INPUT].txt",
             "path-template-stripped-extensions": [
                 ".txt",
                 ".csv"
@@ -137,7 +146,8 @@
             "command-line-flag": "-c",
             "file-template": [
                 "# This is a demo configuration file",
-                "numInput=[CONFIG_NUMBER]"
+                "numInput=[CONFIG_NUMBER]",
+                "strInput=[STRING_INPUT]"
             ],
             "id": "config_file",
             "name": "Configuration file",

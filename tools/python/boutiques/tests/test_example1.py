@@ -50,8 +50,8 @@ class TestExample1(TestCase):
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or
-               ret.output_files[1].file_name == "log-4.txt")
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
 
         self.clean_up()
         ret = bosh.execute("launch",
@@ -67,8 +67,8 @@ class TestExample1(TestCase):
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or
-               ret.output_files[1].file_name == "log-4.txt")
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -79,7 +79,7 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "example1_sing.json"),
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation_sing.json"))
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -87,8 +87,8 @@ class TestExample1(TestCase):
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or
-               ret.output_files[1].file_name == "log-4.txt")
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
 
         self.clean_up()
         ret = bosh.execute("launch",
@@ -104,8 +104,8 @@ class TestExample1(TestCase):
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or
-               ret.output_files[1].file_name == "log-4.txt")
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
@@ -121,7 +121,7 @@ class TestExample1(TestCase):
         assert(ret.exit_code == 2)
         assert(ret.error_message == "File does not exist!")
         assert(len(ret.missing_files) == 1)
-        assert(ret.missing_files[0].file_name == "log-4.txt")
+        assert(ret.missing_files[0].file_name == "log-4-pwet.txt")
 
     def test_example1_no_exec_random(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
