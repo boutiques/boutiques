@@ -129,7 +129,8 @@
             "command-line-flag": "-c", 
             "file-template": [
                 "# This is a demo configuration file", 
-                "numInput=[CONFIG_NUMBER]"
+                "numInput=[CONFIG_NUMBER]",
+                "strInput='coin;plop'"
             ], 
             "id": "config_file", 
             "name": "Configuration file", 
