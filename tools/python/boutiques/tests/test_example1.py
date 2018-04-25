@@ -96,7 +96,7 @@ class TestExample1(TestCase):
                                         "example1_sing.json"),
                            "-x",
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation_sing.json"))
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
