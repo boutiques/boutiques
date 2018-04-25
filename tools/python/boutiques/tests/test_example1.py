@@ -87,8 +87,8 @@ class TestExample1(TestCase):
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        assert(ret.output_files[0].file_name == "log-4.txt" or
+               ret.output_files[1].file_name == "log-4.txt")
 
         self.clean_up()
         ret = bosh.execute("launch",
@@ -104,8 +104,8 @@ class TestExample1(TestCase):
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        assert(ret.output_files[0].file_name == "log-4.txt" or
+               ret.output_files[1].file_name == "log-4.txt")
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
