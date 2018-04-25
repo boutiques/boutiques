@@ -136,6 +136,12 @@ class LocalExecutor(object):
         # Parse JSON descriptor
         with open(desc, 'r') as descriptor:
             self.desc_dict = json.loads(descriptor.read())
+
+        # Set the shell
+        self.shell = self.desc_dict.get("shell")
+        if self.shell is None:
+            self.shell = "/bin/sh"
+
         # Helpers Functions
         # The set of input parameters from the json descriptor
         self.inputs = self.desc_dict['inputs']  # Struct: [{id:}..,{id:}]
@@ -275,7 +281,7 @@ class LocalExecutor(object):
             # Get the supported shell by the docker or singularity
             if self.changeUser:
                 command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
-            cmdString = "#!/bin/sh -l\n" + userchange + str(command)
+            cmdString = "#!"+self.shell+" -l\n" + userchange + str(command)
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
@@ -302,8 +308,8 @@ class LocalExecutor(object):
                         envString += " -e {0}='{1}' ".format(key, val)
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
-                container_command = ('docker run --entrypoint=/bin/sh '
-                                     '--rm' + envString +
+                container_command = ('docker run --entrypoint=' + self.shell +
+                                     ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
                                      str(conImage) + ' ' + dsname)
@@ -736,12 +742,25 @@ class LocalExecutor(object):
     #    the strings in strippedExtensions
     def _replaceKeysInTemplate(self, template,
                                useFlags=False, unfoundKeys="remove",
-                               strippedExtensions=[]):
+                               strippedExtensions=[],
+                               escapeSpecialCharsInStrings=True):
+
+            def escape_string(s):
+                try:
+                    from shlex import quote
+                except ImportError as e:
+                    from pipes import quote
+                return quote(s)
+
             # Concatenate input and output dictionaries
             in_out_dict = dict(self.in_dict)
             in_out_dict.update(self.out_dict)
             # Go through all the keys
             for paramId in [x['id'] for x in self.inputs + self.outputs]:
+                escape = (escapeSpecialCharsInStrings and
+                          (self.safeGet(paramId, 'type') == 'String' or
+                           self.safeGet(paramId, 'type') == 'File') or
+                          paramId in self.out_dict.keys())
                 clk = self.safeGet(paramId, 'value-key')
                 if clk is None:
                     continue
@@ -750,10 +769,15 @@ class LocalExecutor(object):
                     if type(val) is list:
                         s_val = ""
                         for x in val:
-                            s_val += str(x) + " "
+                            s = str(x)
+                            if escape:
+                                s = escape_string(str(x))
+                            s_val += s + " "
                         val = s_val
                     else:
-                            val = str(val)
+                        val = str(val)
+                        if escape:
+                            val = escape_string(val)
                     # Add flags and separator if necessary
                     if useFlags:
                         flag = self.safeGet(paramId, 'command-line-flag') or ''
@@ -798,7 +822,8 @@ class LocalExecutor(object):
             outputFileName = self._replaceKeysInTemplate(outputFileName,
                                                          False,
                                                          "keep",
-                                                         strippedExtensions)
+                                                         strippedExtensions,
+                                                         False)
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
@@ -823,7 +848,8 @@ class LocalExecutor(object):
                 newTemplate.append(self._replaceKeysInTemplate(
                                                 line,
                                                 False, "clear",
-                                                strippedExtensions))
+                                                strippedExtensions,
+                                                True))
             template = "\n".join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
@@ -845,7 +871,8 @@ class LocalExecutor(object):
         template = self.desc_dict['command-line']
         # Substitute every given value into the template
         # (incl. flags, flag-seps, ...)
-        template = self._replaceKeysInTemplate(template, True, "remove")
+        template = self._replaceKeysInTemplate(template, True,
+                                               "remove", [], True)
         # Return substituted command line
         return template
 

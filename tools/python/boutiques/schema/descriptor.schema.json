@@ -40,6 +40,12 @@
             "description": "DOI of the descriptor (not of the tool itself).",
             "type": "string"
         },
+        "shell": {
+            "id": "http://github.com/boutiques/boutiques-schema/shell",
+            "minLength": 1,
+            "description": "Absolute path of the shell interpreter to use in the container (defaults to /bin/sh).",
+            "type": "string"
+        },
         "tool-doi": {
             "id": "http://github.com/boutiques/boutiques-schema/tool-doi",
             "minLength": 1,
