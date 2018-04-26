@@ -27,6 +27,7 @@
 | [name](#name) | `string` | **Required** | Tool (this schema) |
 | [output-files](#output-files) | `object[]` | **Required** | Tool (this schema) |
 | [schema-version](#schema-version) | `enum` | **Required** | Tool (this schema) |
+| [shell](#shell) | `string` | Optional | Tool (this schema) |
 | [suggested-resources](#suggested-resources) | `object` | Optional | Tool (this schema) |
 | [tags](#tags) | `object` | Optional | Tool (this schema) |
 | [tests](#tests) | `object[]` | Optional | Tool (this schema) |
@@ -1391,6 +1392,25 @@ The value of this property **must** be equal to one of the [known values below](
 | Value | Description |
 |-------|-------------|
 | `0.5` |  |
+
+
+
+
+## shell
+
+Absolute path of the shell interpreter to use in the container (defaults to /bin/sh).
+
+`shell`
+* is optional
+* type: `string`
+* defined in this schema
+
+### shell Type
+
+
+`string`
+* minimum length: 1 characters
+
 
 
 
