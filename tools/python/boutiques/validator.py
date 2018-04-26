@@ -234,7 +234,7 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify mutually exclusive groups cannot have required members
         # nor requiring members
-        if "mutually-exclusive" in grp.keys():
+        if grp.get("mutually-exclusive"):
             msg_template = (" GroupError: \"{0}\" is mutually-exclusive"
                             " and cannot have required members, "
                             "such as \"{1}\"")
@@ -252,7 +252,7 @@ def validate_descriptor(json_file, **kwargs):
                                if req in set(grp["members"])]
 
         # Verify one-is-required groups should never have required members
-        if "one-is-required" in grp.keys():
+        if grp.get("one-is-required"):
             msg_template = (" GroupError: \"{0}\" is a one-is-required"
                             " group and contains a required member, \"{1}\"")
             errors += [msg_template.format(grp["id"], member)
@@ -260,12 +260,11 @@ def validate_descriptor(json_file, **kwargs):
                        if member in inIds and not inById(member)["optional"]]
 
         # Verify one-is-required groups should never have required members
-        if "all-or-none" in grp.keys():
+        if grp.get("all-or-none"):
             msg_template = (" GroupError: \"{0}\" is an all-or-none group"
                             " and cannot be paired with one-is-required"
                             " or mutually-exclusive groups")
-            if ("one-is-required" in grp.keys()
-               or "mutually-exclusive" in grp.keys()):
+            if grp.get("one-is-required") or grp.get("mutually-exclusive"):
                     errors += [msg_template.format(grp["id"])]
 
             msg_template = (" GroupError: \"{0}\" is an all-or-none"

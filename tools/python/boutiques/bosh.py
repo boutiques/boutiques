@@ -17,6 +17,23 @@ from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 
 
+def create(*params):
+    parser = ArgumentParser("Boutiques descriptor creator")
+    parser.add_argument("descriptor", action="store",
+                        help="Output file to store descriptor in.")
+    parser.add_argument("--argparse", "-a", action="store",
+                        help="The file containing a Pthon argparse.ArgumentPar"
+                        "ser that you wish to parse for generating a Boutiques"
+                        " descriptor.",
+    results = parser.parse_args(params)
+    from boutiques.creator import createDescriptor
+
+    descriptorObject = createDescriptor(**vars(results))
+    with open(results.descriptor, "w") as f:
+        f.write(json.dumps(descriptorObject, indent=4, sort_keys=True))
+    return descriptorObject
+
+
 def validate(*params):
     parser = ArgumentParser("Boutiques descriptor validator")
     parser.add_argument("descriptor", action="store",
@@ -330,6 +347,7 @@ def bosh(args=None):
                             add_help=False)
     parser.add_argument("function", action="store", nargs="?",
                         help="The tool within boutiques/bosh you wish to run. "
+                        "Create: creates an Boutiques descriptor from scratch."
                         "Validate: validates an existing boutiques descriptor."
                         "Exec: launches or simulates an execution given a "
                         "descriptor and a set of inputs. Import: creates a "
@@ -342,8 +360,9 @@ def bosh(args=None):
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties."
                         "Test: run pytest on a descriptor detailing tests",
-                        choices=["validate", "exec", "import", "export",
-                                 "publish", "invocation", "evaluate", "test"])
+                        choices=["create", "validate", "exec", "import",
+                                 "export", "publish", "invocation", "evaluate",
+                                 "test"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -364,7 +383,10 @@ def bosh(args=None):
         return val  # calling function wants this value
 
     try:
-        if func == "validate":
+        if func == "create":
+            out = create(*params)
+            return bosh_return(out)
+        elif func == "validate":
             out = validate(*params)
             return bosh_return(out)
         elif func == "exec":
