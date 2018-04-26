@@ -24,7 +24,7 @@ def create(*params):
     parser.add_argument("--argparse", "-a", action="store",
                         help="The file containing a Pthon argparse.ArgumentPar"
                         "ser that you wish to parse for generating a Boutiques"
-                        " descriptor.",
+                        " descriptor.")
     results = parser.parse_args(params)
     from boutiques.creator import createDescriptor
 
