@@ -1,6 +1,11 @@
 {
-    "command-line": "/usr/bin/printf '[STRING_INPUT]\n' > [LOG]",
+    "command-line": "echo '[STRING_INPUT]' &> [LOG]",
     "description": "This property describes the tool or application",
+    "container-image": {
+        "image": "ubuntu:latest", 
+        "type": "docker"
+    },
+    "shell": "/bin/bash",
     "inputs": [
         {
             "default-value": "aStringValue",

@@ -1,29 +1,5 @@
 #!/usr/bin/env python
 
-# Copyright 2015 - 2017:
-#   The Royal Institution for the Advancement of Learning McGill University,
-#   Centre National de la Recherche Scientifique,
-#   University of Southern California,
-#   Concordia University
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 import simplejson
 import os.path as op
 from jsonschema import validate, ValidationError
@@ -123,7 +99,7 @@ def validate_descriptor(json_file, **kwargs):
             if clkeys[jdx] == key:
                 mids = [inById(mid)["id"] for mid in inIds
                         if inById(mid)["value-key"] == key]
-                for idx, grp in enumerate(descriptor["groups"]):
+                for idx, grp in enumerate(descriptor.get("groups")):
                     mutex = grp.get("mutually-exclusive")
                     if set(grp["members"]) == set(mids) and not mutex:
                         errors += [msg_template.format(key)]

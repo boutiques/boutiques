@@ -2,11 +2,12 @@ import sys
 from setuptools import setup
 import sys
 
-VERSION = "0.5.8"
+VERSION = "0.5.10"
 DEPS = [
          "simplejson",
          "requests",
          "pytest",
+         "termcolor"
        ]
 
 # jsonschema 2.6 doesn't support Python 2.6
@@ -29,6 +30,7 @@ setup(name="boutiques",
                 "Programming Language :: Python :: 3",
                 "Programming Language :: Python :: 2.6",
                 "Programming Language :: Python :: 2.7",
+                "Programming Language :: Python :: 3.4",
                 "Programming Language :: Python :: 3.5",
                 "Programming Language :: Python :: 3.6",
                 "Programming Language :: Python :: 3.7",

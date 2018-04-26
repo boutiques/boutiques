@@ -12,7 +12,9 @@ from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
 from boutiques.invocationSchemaHandler import InvocationValidationError
-from boutiques.localExec import ToolOutputNotFoundError
+from boutiques.localExec import ExecutorOutput
+from boutiques.localExec import ExecutorError
+from boutiques.exporter import ExportError
 
 
 def validate(*params):
@@ -28,7 +30,6 @@ def validate(*params):
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
-    return 0
 
 
 def execute(*params):
@@ -87,14 +88,12 @@ def execute(*params):
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor,
+        executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "destroyTempScripts": not results.debug,
                                   "changeUser": results.user})
-        executor.readInput(inp)
         # Execute it
-        stdout, stderr, exit_code, err_msg = executor.execute(results.volumes)
-        return stdout, stderr, exit_code, err_msg
+        return executor.execute(results.volumes)
 
     if mode == "simulate":
         parser = ArgumentParser("Simulates an invocation.")
@@ -132,7 +131,7 @@ def execute(*params):
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor,
+        executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "destroyTempScripts": True,
                                   "changeUser": True})
@@ -140,10 +139,10 @@ def execute(*params):
             executor.generateRandomParams(numb)
             executor.printCmdLine()
         else:
-            executor.readInput(inp)
             executor.printCmdLine()
 
-        return "", "", 0, ""  # for consistency with execute
+        # for consistency with execute
+        return ExecutorOutput("", "", 0, "", [], [], "", "", "")
 
 
 def importer(*params):
@@ -169,11 +168,11 @@ def importer(*params):
 
 def exporter(*params):
     parser = ArgumentParser("Export Boutiques descriptor to other formats.")
-    parser.add_argument("type", help="Type of export we are performing."
-                        " For carmin, pipeline id is set to the output"
-                        " file name.",
+    parser.add_argument("type", help="Type of export we are performing.",
                         choices=["carmin"])
     parser.add_argument("descriptor", help="Boutiques descriptor to export.")
+    parser.add_argument("--identifier", help="Identifier to use in"
+                                             "CARMIN export.")
     parser.add_argument("output", help="Output file where to write the"
                         " converted descriptor.")
     results = parser.parse_args(params)
@@ -184,7 +183,7 @@ def exporter(*params):
     bosh(["validate", results.descriptor])
 
     from boutiques.exporter import Exporter
-    exporter = Exporter(descriptor)
+    exporter = Exporter(descriptor, results.identifier)
     if results.type == "carmin":
         exporter.carmin(output)
 
@@ -198,10 +197,6 @@ def publish(*params):
     parser.add_argument("boutiques_descriptor", action="store",
                         help="local path of the "
                         " Boutiques descriptor to publish.")
-    parser.add_argument("creator", action="store",
-                        help="creator to use in Zenodo metadata.")
-    parser.add_argument("affiliation", action="store",
-                        help="affiliation to use in Zenodo metadata.")
     parser.add_argument("--sandbox", action="store_true",
                         help="publish to Zenodo's sandbox instead of "
                         "production server. Recommended for tests.")
@@ -218,12 +213,12 @@ def publish(*params):
 
     from boutiques.publisher import Publisher
     publisher = Publisher(results.boutiques_descriptor,
-                          results.creator,
-                          results.affiliation,
                           results.verbose,
                           results.sandbox,
                           results.no_int,
-                          results.zenodo_token).publish()
+                          results.zenodo_token)
+    publisher.publish()
+    return publisher.doi
 
 
 def invocation(*params):
@@ -280,11 +275,10 @@ def evaluate(*params):
 
     # Generate object that will parse the invocation and descriptor
     from boutiques.localExec import LocalExecutor
-    executor = LocalExecutor(result.descriptor,
+    executor = LocalExecutor(result.descriptor, result.invocation,
                              {"forcePathType": True,
                               "destroyTempScripts": True,
                               "changeUser": True})
-    executor.readInput(result.invocation)
 
     from boutiques.evaluate import evaluateEngine
     query_results = []
@@ -342,7 +336,8 @@ def bosh(args=None):
                         "descriptor for a BIDS app or updates a descriptor "
                         "from an older version of the schema. Export: exports a"
                         "descriptor to other formats. Publish: creates"
-                        "an entry in Zenodo for the descriptor and tool."
+                        "an entry in Zenodo for the descriptor and "
+                        "adds the DOI created by Zenodo to the descriptor."
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties."
@@ -361,31 +356,38 @@ def bosh(args=None):
     def runs_as_cli():
         return os.path.basename(sys.argv[0]) == "bosh"
 
+    def bosh_return(val, code=0):
+        if runs_as_cli():
+            if val is not None:
+                print(val)
+            return code  # everything went well
+        return val  # calling function wants this value
+
     try:
         if func == "validate":
             out = validate(*params)
-            return out
+            return bosh_return(out)
         elif func == "exec":
             out = execute(*params)
-            return out[2]
+            bosh_return(out, out.exit_code)  # return tool exit code
         elif func == "import":
             out = importer(*params)
-            return out
+            return bosh_return(out)
         elif func == "export":
             out = exporter(*params)
-            return out
+            return bosh_return(out)
         elif func == "publish":
             out = publish(*params)
-            return out
+            return bosh_return(out)
         elif func == "invocation":
             out = invocation(*params)
-            return out
+            return bosh_return(out)
         elif func == "evaluate":
             out = evaluate(*params)
-            return out
+            return bosh_return(out)
         elif func == "test":
             out = test(*params)
-            return out
+            return bosh_return(out)
         else:
             parser.print_help()
             raise SystemExit
@@ -393,10 +395,15 @@ def bosh(args=None):
     except (ZenodoError,
             DescriptorValidationError,
             InvocationValidationError,
-            ToolOutputNotFoundError) as e:
+            ValidationError,
+            ExportError,
+            ExecutorError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
-            print(e)
+            try:
+                print(e.message)
+            except Exception as e:
+                print(e)
             return 99  # Note: this conflicts with tool error codes.
         raise e

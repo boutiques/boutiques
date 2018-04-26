@@ -11,19 +11,19 @@ class TestEvaluate(TestCase):
     def set_examples(self):
         example1_dir = os.path.join(os.path.dirname(bfile), "schema",
                                     "examples", "example1")
-        self.desc = os.path.join(example1_dir, "example1.json")
+        self.desc = os.path.join(example1_dir, "example1_docker.json")
         self.invo = os.path.join(example1_dir, "invocation.json")
 
     def test_evaloutput(self):
         self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
-        expect = {'logfile': 'log-4.txt',
+        expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './config.txt'}
         assert(query == expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=logfile")
-        expect = {'logfile': 'log-4.txt'}
+        expect = {'logfile': 'log-4-coin;plop.txt'}
         assert(query == expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=log-file")
@@ -33,7 +33,8 @@ class TestEvaluate(TestCase):
     def test_evalinput(self):
         self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "inputs/")
-        expect = {'str_input': ['foo', 'bar'],
+        expect = {'str_input_list': ["fo '; echo FAIL", 'bar'],
+                  'str_input': 'coin;plop',
                   'config_num': 4,
                   'num_input': None,
                   'file_input': './setup.py',

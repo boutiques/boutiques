@@ -1,0 +1,95 @@
+{
+    "canExecute": true, 
+    "description": "This property describes the tool or application", 
+    "errorCodesAndMessages": [
+        {
+            "errorCode": 2, 
+            "errorMessage": "File does not exist!"
+        }
+    ], 
+    "identifier": "fakedoi", 
+    "name": "Example Boutiques Tool", 
+    "parameters": [
+        {
+            "defaultValue": "aStringValue", 
+            "description": "Describe the use and meaning of the parameter", 
+            "id": "str_input", 
+            "isOptional": false, 
+            "isReturnedValue": false, 
+            "name": "A string input", 
+            "type": "List"
+        }, 
+        {
+            "description": "Describe the use and meaning of the parameter", 
+            "id": "list_int_input", 
+            "isOptional": false, 
+            "isReturnedValue": false, 
+            "name": "A list of ints", 
+            "type": "List"
+        }, 
+        {
+            "id": "config_num", 
+            "isOptional": false, 
+            "isReturnedValue": false, 
+            "name": "A number put in the configuration file", 
+            "type": "Double"
+        }, 
+        {
+            "id": "num_input", 
+            "isOptional": true, 
+            "isReturnedValue": false, 
+            "name": "A number input", 
+            "type": "Double"
+        }, 
+        {
+            "id": "file_input", 
+            "isOptional": true, 
+            "isReturnedValue": false, 
+            "name": "A file input", 
+            "type": "File"
+        }, 
+        {
+            "id": "enum_input", 
+            "isOptional": true, 
+            "isReturnedValue": false, 
+            "name": "An enum input", 
+            "type": "String"
+        }, 
+        {
+            "id": "flag_input", 
+            "isOptional": true, 
+            "isReturnedValue": false, 
+            "name": "A flag input", 
+            "type": "Boolean"
+        }, 
+        {
+            "description": "The output log file from the example tool", 
+            "id": "logfile", 
+            "isOptional": false, 
+            "isReturnedValue": true, 
+            "name": "Log file", 
+            "type": "File"
+        }, 
+        {
+            "id": "output_files", 
+            "isOptional": true, 
+            "isReturnedValue": true, 
+            "name": "outfiles", 
+            "type": "File"
+        }, 
+        {
+            "id": "config_file", 
+            "isOptional": false, 
+            "isReturnedValue": true, 
+            "name": "Configuration file", 
+            "type": "File"
+        }
+    ], 
+    "properties": {
+        "boutiques": true, 
+        "domain": "testing", 
+        "foo": "bar", 
+        "programming-language": "Python"
+    }, 
+    "version": "0.0.1"
+}
