@@ -45,18 +45,18 @@ def createDescriptor(argparser=None, **kwargs):
                 "id": "param1",
                 "name": "The first parameter",
                 "optional": True,
-                "type": "File", 
+                "type": "File",
                 "value-key": "[PARAM1]"
             },
             {
                 "id": "param2",
                 "name": "The second parameter",
                 "optional": False,
-                "type": "String", 
+                "type": "String",
                 "value-choices": [
                     "mychoice1.log",
                     "mychoice2.log"
-                ], 
+                ],
                 "value-key": "[PARAM2]"
             },
             {
