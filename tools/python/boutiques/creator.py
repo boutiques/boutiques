@@ -99,6 +99,7 @@ class CreateDescriptor(object):
             "tool-version": "v0.1.0"
         }
 
+        self.count = 0
         if parser is None:
             return self.descriptor
         else:
@@ -107,6 +108,10 @@ class CreateDescriptor(object):
                 raise CreatorError(msg="Invalid argument parser")
 
             self.parseParser(**kwargs)
+
+    def counter(self):
+        self.count += 1
+        return self.count
 
     def parseParser(self, **kwargs):
         self.descriptor["command-line"] = kwargs.get("execname")
@@ -126,46 +131,50 @@ class CreateDescriptor(object):
                 print("(interpreting _SubParsersAction)")
             # print("subbyyyyy")
             subparser = self.parseAction(action, addParser=True)
-            bigdelta = {}
+            inpts = {}
             for act in action.choices:
-                delta = {}
+                inpts[act] = {}
                 for subact in action.choices[act]._actions:
                     # input relies on sub action selection
-                    delta.update(self.parseAction(subact, subparser=act))
+                    inpts[act].update(self.parseAction(subact, subparser=act))
                 # act enables all the subacts in delta
                 # "value-disables": {
                 #     "mychoice1.log": [],
                 #     "mychoice2.log": []
-                # },
-                bigdelta.update(delta)
+            # Set "value-disables" based on overlap
+            self.descriptor["inputs"] += [subparser]
             # acts in bigdelta are mutually exclusive
-            return bigdelta
+            return subparser.update(inpts)
         else:
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
-                import random
-                import string
-                def id_generator(size=3, chars=string.digits):
-                    return ''.join(random.choice(chars) for _ in range(size))
-                adest = "subparser{0}".format(id_generator())
-
+                adest = "subparser-{0}".format(self.counter())
             else:
                 adest = action.dest
 
-            self.descriptor["command-line"] += " [{0}]".format(adest.upper())
+            print(action)
             newinput = {
                 "id": adest,
                 "name": adest,
                 "description": action.help,
                 "optional": not action.required,
                 "type": action.type or "String",
-                "value-key": "[{0}]".format(adest.upper())
+                "value-key": "{0}".format(adest.upper())
             }
             if action.default:
                 newinput["default-value"] = action.default
             if action.choices:
                 newinput["value-choices"] = action.choices
+            if len(action.option_strings):
+                newinput["command-line-flag"] = action.option_strings[0]
+            if type(action) is argparse._StoreTrueAction: 
+                newinput["type"] = "Flag"
 
-            self.descriptor["inputs"] += [newinput]
+            if any(newinput["id"] == it["id"]
+                   for it in self.descriptor["inputs"]):
+                print("duplicate; rename or ignore, ID won't be added twice")
+            else:
+                self.descriptor["command-line"] += " {0}".format(adest.upper())
+                self.descriptor["inputs"] += [newinput]
             return newinput
 
