@@ -10,6 +10,7 @@ subparser = parser.add_subparsers(help="the choices you will make")
                                   # dest="choicer")
 
 sb1 = subparser.add_parser("option1", help="the first value")
+sb1.add_argument("suboption1", help="the first sub option option")
 sb1.add_argument("suboption2", help="the first sub option option")
 
 sb1 = subparser.add_parser("option2", help="the second value")

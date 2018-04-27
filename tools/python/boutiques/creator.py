@@ -129,22 +129,34 @@ class CreateDescriptor(object):
               not kwargs.get("addParser")):
             if kwargs.get("verbose"):
                 print("(interpreting _SubParsersAction)")
-            # print("subbyyyyy")
             subparser = self.parseAction(action, addParser=True)
             inpts = {}
-            for act in action.choices:
-                inpts[act] = {}
+            for act in subparser["value-choices"]:
+                inpts[act] = []
                 for subact in action.choices[act]._actions:
                     # input relies on sub action selection
-                    inpts[act].update(self.parseAction(subact, subparser=act))
-                # act enables all the subacts in delta
-                # "value-disables": {
-                #     "mychoice1.log": [],
-                #     "mychoice2.log": []
+                    tmpinput = self.parseAction(subact, subparser=act)
+                    if tmpinput != {}:
+                        inpts[act] += [tmpinput["id"]]
+                        self.descriptor["inputs"] += [tmpinput]
+
+            inpt_ids = set([inp
+                            for iact in inpts
+                            for inp in inpts[iact]])
+
+            # action disables all the other subactions' args
+            subparser["value-disables"] = {}
+            for act in subparser["value-choices"]:
+                subparser["value-disables"].update({
+                    act:[ckey
+                         for ckey in inpt_ids
+                         if ckey not in inpts[act]]
+                })
+            print(subparser["value-disables"])
             # Set "value-disables" based on overlap
             self.descriptor["inputs"] += [subparser]
             # acts in bigdelta are mutually exclusive
-            return subparser.update(inpts)
+            return subparser
         else:
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
@@ -152,7 +164,6 @@ class CreateDescriptor(object):
             else:
                 adest = action.dest
 
-            print(action)
             newinput = {
                 "id": adest,
                 "name": adest,
@@ -175,5 +186,4 @@ class CreateDescriptor(object):
                 print("duplicate; rename or ignore, ID won't be added twice")
             else:
                 self.descriptor["command-line"] += " {0}".format(adest.upper())
-                self.descriptor["inputs"] += [newinput]
             return newinput
