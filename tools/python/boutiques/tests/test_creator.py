@@ -12,5 +12,5 @@ class TestCreator(TestCase):
 
     def test_success(self):
         fil = 'creator_output.json'
-        bosh(['create', fil])
+        descriptor = bosh(['create', fil])
         assert bosh(['validate', fil]) is None

@@ -101,7 +101,7 @@ class CreateDescriptor(object):
 
         self.count = 0
         if parser is None:
-            return self.descriptor
+            pass
         else:
             self.parser = parser
             if type(parser) is not argparse.ArgumentParser:
@@ -167,7 +167,7 @@ class CreateDescriptor(object):
                 newinput["value-choices"] = action.choices
             if len(action.option_strings):
                 newinput["command-line-flag"] = action.option_strings[0]
-            if type(action) is argparse._StoreTrueAction: 
+            if type(action) is argparse._StoreTrueAction:
                 newinput["type"] = "Flag"
 
             if any(newinput["id"] == it["id"]
@@ -177,4 +177,3 @@ class CreateDescriptor(object):
                 self.descriptor["command-line"] += " {0}".format(adest.upper())
                 self.descriptor["inputs"] += [newinput]
             return newinput
-

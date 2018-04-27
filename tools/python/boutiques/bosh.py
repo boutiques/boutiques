@@ -26,12 +26,13 @@ def create(*params):
                         "ser that you wish to parse for generating a Boutiques"
                         " descriptor.")
     results = parser.parse_args(params)
-    from boutiques.creator import createDescriptor
+    from boutiques.creator import CreateDescriptor
 
-    descriptorObject = createDescriptor(**vars(results))
+    new = CreateDescriptor(**vars(results))
+    descriptor = new.descriptor
     with open(results.descriptor, "w") as f:
-        f.write(json.dumps(descriptorObject, indent=4, sort_keys=True))
-    return descriptorObject
+        f.write(json.dumps(descriptor, indent=4, sort_keys=True))
+    return descriptor
 
 
 def validate(*params):
