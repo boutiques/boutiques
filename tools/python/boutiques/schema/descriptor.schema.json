@@ -450,7 +450,7 @@
                             "output-files": {
                                 "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files",
                                 "type": "array",
-                                "minItems": 1,
+                                "minItems": 0,
                                 "items": {
                                     "id": "http://github.com/boutiques/boutiques-schema/test-case/assertions/out-files/output",
                                     "type": "object",
@@ -598,7 +598,7 @@
                 },
                 "additionalProperties": false
             },
-        "minItems": 1,
+        "minItems": 0,
         "uniqueItems": true
         },
         "invocation-schema": {
