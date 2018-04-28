@@ -221,9 +221,9 @@ def validate_descriptor(json_file, **kwargs):
             for param in ["value-requires", "value-disables"]:
                 if param in inp.keys():
                     # Verify disables/requires keys are the same as choices
-                    msg_template = (" InputError: \"{0}\" list {1} is not the "
+                    msg_template = (" InputError: \"{0}\" {1} list is not the"
                                     " same as the value-choices")
-                    if list(inp[param].keys()) != inp["value-choices"]:
+                    if set(inp[param].keys()) != set(inp["value-choices"]):
                         errors += [msg_template.format(inp["id"], param)]
 
                     # Verify all required or disabled IDs are valid
