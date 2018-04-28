@@ -104,10 +104,21 @@ class CreateDescriptor(object):
             pass
         else:
             self.parser = parser
+            self.descriptor["inputs"] = []
+            self.descriptor["output-files"] = []
+            self.descriptor["tags"] = kwargs.get("tags") or {}
+            del self.descriptor["groups"]
+            del self.descriptor["container-image"]
+            del self.descriptor["error-codes"]
             if type(parser) is not argparse.ArgumentParser:
-                raise CreatorError(msg="Invalid argument parser")
+                raise CreatorError("Invalid argument parser")
 
             self.parseParser(**kwargs)
+
+    def save(self, filename):
+        import json
+        with open(filename, "w") as f:
+            f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
 
     def counter(self):
         self.count += 1
@@ -116,26 +127,29 @@ class CreateDescriptor(object):
     def parseParser(self, **kwargs):
         self.descriptor["command-line"] = kwargs.get("execname")
         for act in self.parser._actions:
-            delta = self.parseAction(act)
+            tmp = self.parseAction(act, **kwargs)
+            if bool(tmp):
+                self.descriptor["inputs"] += [tmp]
+
         print(self.descriptor["command-line"])
 
     def parseAction(self, action, **kwargs):
         if type(action) is argparse._HelpAction:
             if kwargs.get("verbose"):
-                print("(skipping _HelpAction)")
+                print("_HelpAction: Skipping")
             return {}
 
         elif (type(action) is argparse._SubParsersAction and
               not kwargs.get("addParser")):
             if kwargs.get("verbose"):
-                print("(interpreting _SubParsersAction)")
+                print("_SubParsersAction: Interpretting & Adding")
             subparser = self.parseAction(action, addParser=True)
             inpts = {}
             for act in subparser["value-choices"]:
                 inpts[act] = []
                 for subact in action.choices[act]._actions:
                     # input relies on sub action selection
-                    tmpinput = self.parseAction(subact, subparser=act)
+                    tmpinput = self.parseAction(subact, **kwargs)
                     if tmpinput != {}:
                         inpts[act] += [tmpinput["id"]]
                         self.descriptor["inputs"] += [tmpinput]
@@ -148,19 +162,20 @@ class CreateDescriptor(object):
             subparser["value-disables"] = {}
             for act in subparser["value-choices"]:
                 subparser["value-disables"].update({
-                    act:[ckey
-                         for ckey in inpt_ids
-                         if ckey not in inpts[act]]
+                    act: [ckey
+                          for ckey in inpt_ids
+                          if ckey not in inpts[act]]
                 })
-            print(subparser["value-disables"])
-            # Set "value-disables" based on overlap
-            self.descriptor["inputs"] += [subparser]
-            # acts in bigdelta are mutually exclusive
             return subparser
+
         else:
+            if kwargs.get("verbose"):
+                actstring = str(type(action))
+                actstring = actstring.split("'")[1].split(".")[-1]
+                print("{}: Adding".format(actstring))
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
-                adest = "subparser-{0}".format(self.counter())
+                adest = "subparser_{0}".format(self.counter())
             else:
                 adest = action.dest
 
@@ -169,13 +184,22 @@ class CreateDescriptor(object):
                 "name": adest,
                 "description": action.help,
                 "optional": not action.required,
-                "type": action.type or "String",
+                "type": "String",
                 "value-key": "{0}".format(adest.upper())
             }
+            if action.type:
+                if action.type in [int, float]:
+                    newinput["type"] = "Number"
+                elif action.type == list:
+                    newinput["list"] = True
             if action.default:
                 newinput["default-value"] = action.default
             if action.choices:
-                newinput["value-choices"] = action.choices
+                try:
+                    # Subparsers have choices in the form of OrderedDicts
+                    newinput["value-choices"] = list(action.choices.keys())
+                except AttributeError as e:
+                    newinput["value-choices"] = action.choices
             if len(action.option_strings):
                 newinput["command-line-flag"] = action.option_strings[0]
             if type(action) is argparse._StoreTrueAction:
@@ -183,7 +207,10 @@ class CreateDescriptor(object):
 
             if any(newinput["id"] == it["id"]
                    for it in self.descriptor["inputs"]):
-                print("duplicate; rename or ignore, ID won't be added twice")
+                if kwargs.get("verbose"):
+                    print("Duplicate: Argument won't be added multiple times"
+                          " ({})".format(newinput["id"]))
+                return {}
             else:
                 self.descriptor["command-line"] += " {0}".format(adest.upper())
             return newinput

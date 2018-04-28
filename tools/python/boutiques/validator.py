@@ -210,6 +210,25 @@ def validate_descriptor(json_file, **kwargs):
             if not inp["optional"]:
                 errors += [msg_template.format(inp["id"])]
 
+        if (("value-disables" in inp.keys() or
+             "value-requires" in inp.keys()) and
+           "value-choices" not in inp.keys()):
+            msg_template = (" InputError: \"{0}\" cannot have have value-opts"
+                            " without value-choices defined.")
+            errors += [msg_template.format(inp["id"])]
+
+        if "value-choices" in inp.keys():
+            for param in ["value-requires", "value-disables"]:
+                if param in inp.keys():
+                    # Verify disables/requires keys are the same as choices
+                    msg_template = (" InputError: \"{0}\" list {1} is not the "
+                                    " same as the value-choices")
+                    if list(inp[param].keys()) != inp["value-choices"]:
+                        errors += [msg_template.format(inp["id"], param)]
+
+                    # Verify all required or disabled IDs are valid
+                    # Verify not requiring or disabling required inputs
+
     # Verify groups
     for idx, grpid in enumerate(grpIds):
         grp = descriptor['groups'][idx]
