@@ -172,7 +172,7 @@ class CreateDescriptor(object):
             if kwargs.get("verbose"):
                 actstring = str(type(action))
                 actstring = actstring.split("'")[1].split(".")[-1]
-                print("{}: Adding".format(actstring))
+                print("{0}: Adding".format(actstring))
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
                 adest = "subparser_{0}".format(self.counter())
