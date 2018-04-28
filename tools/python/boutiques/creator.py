@@ -209,7 +209,7 @@ class CreateDescriptor(object):
                    for it in self.descriptor["inputs"]):
                 if kwargs.get("verbose"):
                     print("Duplicate: Argument won't be added multiple times"
-                          " ({})".format(newinput["id"]))
+                          " ({0})".format(newinput["id"]))
                 return {}
             else:
                 self.descriptor["command-line"] += " {0}".format(adest.upper())
