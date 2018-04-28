@@ -21,18 +21,12 @@ def create(*params):
     parser = ArgumentParser("Boutiques descriptor creator")
     parser.add_argument("descriptor", action="store",
                         help="Output file to store descriptor in.")
-    parser.add_argument("--argparse", "-a", action="store",
-                        help="The file containing a Pthon argparse.ArgumentPar"
-                        "ser that you wish to parse for generating a Boutiques"
-                        " descriptor.")
     results = parser.parse_args(params)
-    from boutiques.creator import CreateDescriptor
 
-    new = CreateDescriptor(**vars(results))
-    descriptor = new.descriptor
-    with open(results.descriptor, "w") as f:
-        f.write(json.dumps(descriptor, indent=4, sort_keys=True))
-    return descriptor
+    from boutiques.creator import CreateDescriptor
+    new = CreateDescriptor()
+    new.save(results.descriptor)
+    return new.descriptor
 
 
 def validate(*params):
