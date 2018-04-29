@@ -137,21 +137,29 @@ class CreateDescriptor(object):
         if type(action) is argparse._HelpAction:
             if kwargs.get("verbose"):
                 print("_HelpAction: Skipping")
-            return {}
+            if kwargs.get("subaction"):
+                return {}, False
+            else:
+                return {}
 
         elif (type(action) is argparse._SubParsersAction and
               not kwargs.get("addParser")):
             if kwargs.get("verbose"):
                 print("_SubParsersAction: Interpretting & Adding")
             subparser = self.parseAction(action, addParser=True)
+            subparser["value-requires"] = {}
             inpts = {}
             for act in subparser["value-choices"]:
                 inpts[act] = []
+                subparser["value-requires"][act] = []
                 for subact in action.choices[act]._actions:
                     # input relies on sub action selection
-                    tmpinput = self.parseAction(subact, **kwargs)
+                    tmpinput, reqd = self.parseAction(subact, subaction=True,
+                                                      **kwargs)
                     if tmpinput != {}:
                         inpts[act] += [tmpinput["id"]]
+                        if reqd:
+                            subparser["value-requires"][act] += [tmpinput["id"]]
                         self.descriptor["inputs"] += [tmpinput]
 
             inpt_ids = set([inp
@@ -166,6 +174,7 @@ class CreateDescriptor(object):
                           for ckey in inpt_ids
                           if ckey not in inpts[act]]
                 })
+
             return subparser
 
         else:
@@ -183,7 +192,7 @@ class CreateDescriptor(object):
                 "id": adest,
                 "name": adest,
                 "description": action.help,
-                "optional": not action.required,
+                "optional": kwargs.get("subaction") or not action.required,
                 "type": "String",
                 "value-key": "{0}".format(adest.upper())
             }
@@ -210,7 +219,13 @@ class CreateDescriptor(object):
                 if kwargs.get("verbose"):
                     print("Duplicate: Argument won't be added multiple times"
                           " ({0})".format(newinput["id"]))
-                return {}
+                if kwargs.get("subaction"):
+                    return {}, False
+                else:
+                    return {}
             else:
                 self.descriptor["command-line"] += " {0}".format(adest.upper())
-            return newinput
+            if kwargs.get("subaction"):
+                return newinput, action.required
+            else:
+                return newinput
