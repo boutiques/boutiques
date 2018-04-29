@@ -210,6 +210,7 @@ def validate_descriptor(json_file, **kwargs):
             if not inp["optional"]:
                 errors += [msg_template.format(inp["id"])]
 
+        # Verify value-disables/requires fields accompany value-choices
         if (("value-disables" in inp.keys() or
              "value-requires" in inp.keys()) and
            "value-choices" not in inp.keys()):
@@ -218,6 +219,16 @@ def validate_descriptor(json_file, **kwargs):
             errors += [msg_template.format(inp["id"])]
 
         if "value-choices" in inp.keys():
+            # Verify not value not requiring and disabling input
+            if ("value-requires" in inp.keys() and
+               "value-disables" in inp.keys()):
+                msg_template = (" InputError: \"{0}\" choice \"{1}\" requires"
+                                " and disables \"{2}\"")
+                errors += [msg_template.format(inp["id"], choice, ids1)
+                           for choice in inp["value-choices"]
+                           for ids1 in inp["value-disables"][choice]
+                           if ids1 in inp["value-requires"][choice]]
+
             for param in ["value-requires", "value-disables"]:
                 if param in inp.keys():
                     # Verify disables/requires keys are the same as choices
@@ -227,7 +238,20 @@ def validate_descriptor(json_file, **kwargs):
                         errors += [msg_template.format(inp["id"], param)]
 
                     # Verify all required or disabled IDs are valid
+                    msg_template = (" InputError: \"{0}\" {1} id \"{2}\" not"
+                                    " found")
+                    errors += [msg_template.format(inp["id"], param, ids)
+                               for ids in inp[param].values()
+                               for item in ids
+                               if item not in inIds]
+
                     # Verify not requiring or disabling required inputs
+                    msg_template = (" InputError: \"{0}\" {1} cannot be used "
+                                    "with required input \"{2}\"")
+                    errors += [msg_template.format(inp["id"], param, member)
+                               for ids in inp[param].keys()
+                               for member in inp[param][ids]
+                               if not inById(member)["optional"]]
 
     # Verify groups
     for idx, grpid in enumerate(grpIds):

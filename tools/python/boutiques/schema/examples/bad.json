@@ -111,7 +111,16 @@
       "requires-inputs": ["key8"],
       "value-choices": [
         "value1", "value2"
-      ]
+      ],
+      "value-requires": {
+        "value0": [],
+        "value1": ["key1_mod"],
+        "value2": ["key3"]
+      },
+      "value-disables": {
+        "value1": ["key1_mod"],
+        "value2": []
+      }
     },
     {
       "id": "key5",
