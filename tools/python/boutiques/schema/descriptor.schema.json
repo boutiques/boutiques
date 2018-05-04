@@ -312,15 +312,15 @@
                         }
                     },
                     "value-requires": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/value-disables",
-                        "description": "Ids of the inputs that are disabled when values of this input are active.",
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-requires",
+                        "description": "Ids of the inputs that are required when the corresponding value choice is selected.",
                         "type": "object",
                         "properties": {},
                         "additionalProperties": true
                     },
                     "value-disables": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/value-disables",
-                        "description": "Ids of the inputs that are disabled when values of this input are active.",
+                        "description": "Ids of the inputs that are disabled when the corresponding value choice is selected.",
                         "type": "object",
                         "properties": {},
                         "additionalProperties": true
@@ -450,7 +450,7 @@
                             "output-files": {
                                 "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files",
                                 "type": "array",
-                                "minItems": 0,
+                                "minItems": 1,
                                 "items": {
                                     "id": "http://github.com/boutiques/boutiques-schema/test-case/assertions/out-files/output",
                                     "type": "object",
@@ -598,7 +598,7 @@
                 },
                 "additionalProperties": false
             },
-        "minItems": 0,
+        "minItems": 1,
         "uniqueItems": true
         },
         "invocation-schema": {
@@ -689,7 +689,6 @@
         "command-line",
         "schema-version",
         "inputs",
-        "output-files",
         "tool-version"
     ],
     "additionalProperties": false

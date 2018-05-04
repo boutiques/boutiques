@@ -40,8 +40,10 @@ def validate_descriptor(json_file, **kwargs):
 
     # Helper get functions
     def safeGet(desc, sec, targ):
-        return [item[targ] for item in desc[sec]
-                if list(item.keys()).count(targ)]
+        if desc.get(sec):
+            return [item.get(targ) for item in desc[sec]
+                    if list(item.keys()).count(targ)]
+        return []
 
     def inputGet(s):
         return safeGet(descriptor, "inputs", s)
@@ -107,10 +109,10 @@ def validate_descriptor(json_file, **kwargs):
     # Verify that output files have unique path-templates
     msg_template = ("OutputError: \"{0}\" and \"{1}\" have the same "
                     "path-template")
-    for idx, out1 in enumerate(descriptor["output-files"]):
-        for jdx, out2 in enumerate(descriptor["output-files"]):
-            if out1["path-template"] == out2["path-template"] and jdx > idx:
-                errors += [msg_template.format(out1["id"], out2["id"])]
+    for ix, o1 in zip(outputGet("id"), outputGet("path-template")):
+        for jx, o2 in zip(outputGet("id"), outputGet("path-template")):
+            if o1 == o2 and jx != ix:
+                errors += [msg_template.format(ix, jx)]
             else:
                 errors += []
 
