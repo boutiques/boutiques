@@ -26,7 +26,7 @@ def create(*params):
     from boutiques.creator import CreateDescriptor
     new = CreateDescriptor()
     new.save(results.descriptor)
-    return new.descriptor
+    return None
 
 
 def validate(*params):
