@@ -42,6 +42,25 @@ say you have a BIDS app at `/awesome/app/`, you would run:
 Very exciting, you now have a Boutiques descriptor for your app! If you aren't in one of those unique cases, unfortunately you'll
 still need to generate your descriptor by hand according to the [schema](./tools/python/boutiques/schema/descriptor.schema.json).
 
+### Create a New Descriptor
+
+There are two additional ways to get you started with creating Boutiques descriptors, both wrapped up in the "create" module
+of Boutiques. First, if you just want an example descriptor that shows many of the properties you can later set in Boutiques, you
+should use the command line interface:
+
+    $ bosh create my-new-descriptor.json
+
+However, if you want a bit more of a head start and your tool is built in Python using the `argparse` library, we can help more!
+In the Python script with your argparser defined, simply add the following lines to get yourself a minimal corresponding descriptor:
+
+    import boutiques.creator as bc
+    newDescriptor = bc.CreateDescriptor(myparser, execname="/command/to/run/exec")
+    newDescriptor.save("my-new-descriptor.json")
+
+There are additional custom arguments which can be supplied to this script, such as tags for your tool. It is also worth noting that
+no interpretation of output files is attempted by this tool, so your descriptor could certainly be enhanced by addind these and other
+features available through Boutiques, such as tests, tags, error codes, groups, and container images.
+
 ### Validation
 
 You just created a Boutiques descriptor (compliant with the [schema](./tools/python/boutiques/schema/descriptor.schema.json), of course)

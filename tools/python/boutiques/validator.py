@@ -40,8 +40,10 @@ def validate_descriptor(json_file, **kwargs):
 
     # Helper get functions
     def safeGet(desc, sec, targ):
-        return [item[targ] for item in desc[sec]
-                if list(item.keys()).count(targ)]
+        if desc.get(sec):
+            return [item.get(targ) for item in desc[sec]
+                    if list(item.keys()).count(targ)]
+        return []
 
     def inputGet(s):
         return safeGet(descriptor, "inputs", s)
@@ -107,10 +109,10 @@ def validate_descriptor(json_file, **kwargs):
     # Verify that output files have unique path-templates
     msg_template = ("OutputError: \"{0}\" and \"{1}\" have the same "
                     "path-template")
-    for idx, out1 in enumerate(descriptor["output-files"]):
-        for jdx, out2 in enumerate(descriptor["output-files"]):
-            if out1["path-template"] == out2["path-template"] and jdx > idx:
-                errors += [msg_template.format(out1["id"], out2["id"])]
+    for ix, o1 in zip(outputGet("id"), outputGet("path-template")):
+        for jx, o2 in zip(outputGet("id"), outputGet("path-template")):
+            if o1 == o2 and jx != ix:
+                errors += [msg_template.format(ix, jx)]
             else:
                 errors += []
 
@@ -210,6 +212,49 @@ def validate_descriptor(json_file, **kwargs):
             if not inp["optional"]:
                 errors += [msg_template.format(inp["id"])]
 
+        # Verify value-disables/requires fields accompany value-choices
+        if (("value-disables" in inp.keys() or
+             "value-requires" in inp.keys()) and
+           "value-choices" not in inp.keys()):
+            msg_template = (" InputError: \"{0}\" cannot have have value-opts"
+                            " without value-choices defined.")
+            errors += [msg_template.format(inp["id"])]
+
+        if "value-choices" in inp.keys():
+            # Verify not value not requiring and disabling input
+            if ("value-requires" in inp.keys() and
+               "value-disables" in inp.keys()):
+                msg_template = (" InputError: \"{0}\" choice \"{1}\" requires"
+                                " and disables \"{2}\"")
+                errors += [msg_template.format(inp["id"], choice, ids1)
+                           for choice in inp["value-choices"]
+                           for ids1 in inp["value-disables"][choice]
+                           if ids1 in inp["value-requires"][choice]]
+
+            for param in ["value-requires", "value-disables"]:
+                if param in inp.keys():
+                    # Verify disables/requires keys are the same as choices
+                    msg_template = (" InputError: \"{0}\" {1} list is not the"
+                                    " same as the value-choices")
+                    if set(inp[param].keys()) != set(inp["value-choices"]):
+                        errors += [msg_template.format(inp["id"], param)]
+
+                    # Verify all required or disabled IDs are valid
+                    msg_template = (" InputError: \"{0}\" {1} id \"{2}\" not"
+                                    " found")
+                    errors += [msg_template.format(inp["id"], param, ids)
+                               for ids in inp[param].values()
+                               for item in ids
+                               if item not in inIds]
+
+                    # Verify not requiring or disabling required inputs
+                    msg_template = (" InputError: \"{0}\" {1} cannot be used "
+                                    "with required input \"{2}\"")
+                    errors += [msg_template.format(inp["id"], param, member)
+                               for ids in inp[param].keys()
+                               for member in inp[param][ids]
+                               if not inById(member)["optional"]]
+
     # Verify groups
     for idx, grpid in enumerate(grpIds):
         grp = descriptor['groups'][idx]
@@ -234,7 +279,7 @@ def validate_descriptor(json_file, **kwargs):
 
         # Verify mutually exclusive groups cannot have required members
         # nor requiring members
-        if "mutually-exclusive" in grp.keys():
+        if grp.get("mutually-exclusive"):
             msg_template = (" GroupError: \"{0}\" is mutually-exclusive"
                             " and cannot have required members, "
                             "such as \"{1}\"")
@@ -252,7 +297,7 @@ def validate_descriptor(json_file, **kwargs):
                                if req in set(grp["members"])]
 
         # Verify one-is-required groups should never have required members
-        if "one-is-required" in grp.keys():
+        if grp.get("one-is-required"):
             msg_template = (" GroupError: \"{0}\" is a one-is-required"
                             " group and contains a required member, \"{1}\"")
             errors += [msg_template.format(grp["id"], member)
@@ -260,12 +305,11 @@ def validate_descriptor(json_file, **kwargs):
                        if member in inIds and not inById(member)["optional"]]
 
         # Verify one-is-required groups should never have required members
-        if "all-or-none" in grp.keys():
+        if grp.get("all-or-none"):
             msg_template = (" GroupError: \"{0}\" is an all-or-none group"
                             " and cannot be paired with one-is-required"
                             " or mutually-exclusive groups")
-            if ("one-is-required" in grp.keys()
-               or "mutually-exclusive" in grp.keys()):
+            if grp.get("one-is-required") or grp.get("mutually-exclusive"):
                     errors += [msg_template.format(grp["id"])]
 
             msg_template = (" GroupError: \"{0}\" is an all-or-none"

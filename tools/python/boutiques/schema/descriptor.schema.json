@@ -311,6 +311,20 @@
                             ]
                         }
                     },
+                    "value-requires": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-requires",
+                        "description": "Ids of the inputs that are required when the corresponding value choice is selected.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": true
+                    },
+                    "value-disables": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/value-disables",
+                        "description": "Ids of the inputs that are disabled when the corresponding value choice is selected.",
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": true
+                    },
                     "integer": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/integer",
                         "description": "Specify whether the input should be an integer. May only be used with Number type inputs.",
@@ -397,7 +411,9 @@
                         }
                     },
                     "exclusive-minimum": ["minimum"],
-                    "exclusive-maximum": ["maximum"]
+                    "exclusive-maximum": ["maximum"],
+                    "value-disables": ["value-choices"],
+                    "value-enables": ["value-choices"]
                 },
                 "additionalProperties": false
             },
@@ -673,7 +689,6 @@
         "command-line",
         "schema-version",
         "inputs",
-        "output-files",
         "tool-version"
     ],
     "additionalProperties": false
