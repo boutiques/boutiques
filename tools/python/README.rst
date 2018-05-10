@@ -1,11 +1,17 @@
 Boutiques
 =========
 
-`DOI <https://zenodo.org/badge/latestdoi/32616811>`__
-`PyPI <https://pypi.python.org/pypi/boutiques>`__
-`PyPI <https://pypi.python.org/pypi/boutiques>`__ `Build
-Status <https://travis-ci.org/boutiques/boutiques>`__ `Coverage
-Status <https://coveralls.io/github/boutiques/boutiques?branch=develop>`__
+.. image:: https://zenodo.org/badge/32616811.svg
+    :target: https://zenodo.org/badge/latestdoi/32616811
+.. image:: https://img.shields.io/pypi/v/boutiques.svg
+    :target: https://pypi.python.org/pypi/boutiques
+.. image:: https://img.shields.io/pypi/pyversions/boutiques.svg
+    :target: https://pypi.python.org/pypi/boutiques
+.. image:: https://travis-ci.org/boutiques/boutiques.svg?branch=develop 
+    :target: https://travis-ci.org/boutiques/boutiques
+.. image:: https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop
+    :target: https://coveralls.io/github/boutiques/boutiques?branch=develop
+
 
 Boutiques is a cross-platform descriptive command-line framework for
 applications.
