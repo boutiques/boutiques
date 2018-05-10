@@ -22,7 +22,7 @@ Simple! Just open your favourite terminal and type:
     $ pip install boutiques
 
 Alongside installing the Boutiques package, this will also ensure the dependencies are installed: `simplejson`, `jsonschema`,
-`gitpython`, and `pygithub`. 
+`requests`, and `pytest`. 
 
 
 ## Command-Line API
