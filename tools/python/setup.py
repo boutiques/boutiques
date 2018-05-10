@@ -2,7 +2,7 @@ import sys
 from setuptools import setup
 import sys
 
-VERSION = "0.5.11"
+VERSION = "0.5.11.post1"
 DEPS = [
          "simplejson",
          "requests",
@@ -21,6 +21,7 @@ else:
 setup(name="boutiques",
       version=VERSION,
       description="Schema for describing bash command-line tools",
+      long_description=open("../../README.md").read(),
       url="http://github.com/boutiques/boutiques",
       author="Tristan Glatard, Gregory Kiar",
       author_email="tristan.glatard@concordia.ca, gkiar07@gmail.com",
