@@ -2,7 +2,7 @@ import sys
 from setuptools import setup
 import sys
 
-VERSION = "0.5.11.post2"
+VERSION = "0.5.12"
 DEPS = [
          "simplejson",
          "requests",
