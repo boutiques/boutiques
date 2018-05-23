@@ -43,7 +43,6 @@ def validate(*params):
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
 
-
 def execute(*params):
     parser = ArgumentParser("Boutiques local executor", add_help=False)
     parser.add_argument("mode", action="store",
@@ -267,7 +266,6 @@ def invocation(*params):
         from boutiques.invocationSchemaHandler import validateSchema
         validateSchema(invSchema, data)
 
-
 def evaluate(*params):
     parser = ArgumentParser("Evaluates parameter values for a descriptor"
                             " and invocation")
@@ -374,6 +372,11 @@ def bosh(args=None):
         if runs_as_cli():
             if val is not None:
                 print(val)
+            else:
+                if code == 0:
+                    print("OK")
+                else:
+                    print("Failed")
             return code  # everything went well
         return val  # calling function wants this value
 
