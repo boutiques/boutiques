@@ -267,6 +267,7 @@ def invocation(*params):
         from boutiques.invocationSchemaHandler import validateSchema
         validateSchema(invSchema, data)
 
+
 def evaluate(*params):
     parser = ArgumentParser("Evaluates parameter values for a descriptor"
                             " and invocation")
