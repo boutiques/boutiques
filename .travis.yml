@@ -43,7 +43,8 @@ before_install:
 
 install:
 - pip install --upgrade setuptools
-- pip install coveralls pytest pytest-runner pycodestyle
+- pip install pytest pytest-runner pycodestyle
+- ./install_coveralls.sh
 - pip install .
 - pip freeze
 
