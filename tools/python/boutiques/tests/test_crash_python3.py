@@ -16,11 +16,12 @@ class TestCrashPython3(TestCase):
                             "schema", "examples")
 
     def test_no_container(self):
-        command = ("bosh exec launch {} {}".format(opj(self.get_examples_dir(),
-                                                       "crash3.json"),
-                                                   opj(self.get_examples_dir(),
-                                                       "crash3_invocation."
-                                                       + "json")))
+        command = ("bosh exec launch "
+                   "{0} {1}".format(opj(self.get_examples_dir(),
+                                        "crash3.json"),
+                                    opj(self.get_examples_dir(),
+                                        "crash3_invocation."
+                                        + "json")))
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
