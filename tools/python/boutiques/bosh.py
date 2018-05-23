@@ -420,7 +420,7 @@ def bosh(args=None):
         if runs_as_cli():
             try:
                 print(e.message)
-            except Exception as e:
+            except Exception as ex:
                 print(e)
             return 99  # Note: this conflicts with tool error codes.
         raise e
