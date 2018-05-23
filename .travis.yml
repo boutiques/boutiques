@@ -45,6 +45,7 @@ install:
 - pip install --upgrade setuptools
 - pip install coveralls pytest pytest-runner pycodestyle
 - pip install .
+- pip freeze
 
 script:
 - pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
