@@ -84,7 +84,7 @@ class Importer():
 
     def import_bids(self, app_dir):
         path, fil = os.path.split(__file__)
-        template_file = os.path.join(path, "bids-app-template", "template.json")
+        template_file = os.path.join(path, "templates", "bids-app.json")
 
         with open(template_file) as f:
             template_string = f.read()

@@ -1,0 +1,81 @@
+{
+    "command-line": "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]",
+    "container-image": {
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
+    },
+    "description": "tool description",
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "Crashed"
+        }
+    ],
+    "groups": [
+        {
+            "all-or-none": true,
+            "id": "group1",
+            "members": [
+                "param1",
+                "flag1"
+            ],
+            "mutually-exclusive": false,
+            "name": "the param group",
+            "one-is-required": false
+        }
+    ],
+    "inputs": [
+        {
+            "id": "param1",
+            "name": "The first parameter",
+            "optional": true,
+            "type": "File",
+            "value-key": "[PARAM1]"
+        },
+        {
+            "id": "param2",
+            "name": "The second parameter",
+            "optional": false,
+            "type": "String",
+            "value-choices": [
+                "mychoice1.log",
+                "mychoice2.log"
+            ],
+            "value-key": "[PARAM2]"
+        },
+        {
+            "command-line-flag": "-f",
+            "id": "flag1",
+            "name": "The first flag",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[FLAG1]"
+        }
+    ],
+    "name": "tool name",
+    "output-files": [
+        {
+            "id": "output1",
+            "name": "The first output",
+            "optional": false,
+            "path-template": "[PARAM2].txt",
+            "path-template-stripped-extensions": [
+                ".log"
+            ],
+            "value-key": "[OUTPUT1]"
+        }
+    ],
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "tags": {
+        "foo": "bar",
+        "purpose": "testing",
+        "status": "example"
+    },
+    "tool-version": "v0.1.0"
+}
