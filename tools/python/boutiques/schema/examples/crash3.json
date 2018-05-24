@@ -1,0 +1,28 @@
+{
+    "command-line": "echo [INPUT] > file.txt", 
+    "description": "a tool with no container image", 
+    "inputs": [
+        {
+            "id": "param", 
+            "name": "param", 
+            "type": "String", 
+            "value-key": "[INPUT]"
+        }
+    ],
+    "name": "cat", 
+    "output-files": [
+        {
+            "id": "output_file", 
+            "name": "output file", 
+            "path-template": "file.txt"
+        }
+    ], 
+    "schema-version": "0.5", 
+    "tool-version": "0.1",
+    "container-image": {
+        "entrypoint": false, 
+        "image": "crashcrashcrash", 
+        "index": "index.docker.io", 
+        "type": "singularity"
+    }
+}

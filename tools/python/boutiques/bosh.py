@@ -374,6 +374,11 @@ def bosh(args=None):
         if runs_as_cli():
             if val is not None:
                 print(val)
+            else:
+                if code == 0:
+                    print("OK")
+                else:
+                    print("Failed")
             return code  # everything went well
         return val  # calling function wants this value
 
@@ -420,7 +425,7 @@ def bosh(args=None):
         if runs_as_cli():
             try:
                 print(e.message)
-            except Exception as e:
+            except Exception as ex:
                 print(e)
             return 99  # Note: this conflicts with tool error codes.
         raise e
