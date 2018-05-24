@@ -21,7 +21,9 @@ class TestValidator(TestCase):
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
-        process.communicate()
+        stdout = process.stdout.read().decode("utf-8").strip()
+        print(stdout)
+        self.assertTrue(stdout == "OK")
         self.assertFalse(process.returncode)
 
     def test_fail(self):
