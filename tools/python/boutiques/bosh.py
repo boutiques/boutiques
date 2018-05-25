@@ -424,7 +424,7 @@ def bosh(args=None):
         # from CLI.'
         if runs_as_cli():
             try:
-                print(e.message)
+                print(e.message)  # Python 2 only
             except Exception as ex:
                 print(e)
             return 99  # Note: this conflicts with tool error codes.
