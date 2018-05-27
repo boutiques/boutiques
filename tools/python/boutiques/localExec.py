@@ -281,7 +281,10 @@ class LocalExecutor(object):
             # Get the supported shell by the docker or singularity
             if self.changeUser:
                 command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
-            cmdString = "#!"+self.shell+" -l\n" + userchange + str(command)
+            # trap is required by Docker to properly kill
+            # process running in container
+            trapQuit = 'trap "exit 1" QUIT\n'
+            cmdString = "#!"+self.shell+" -l\n" + userchange + str(trapQuit + command)
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
