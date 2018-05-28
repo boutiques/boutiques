@@ -78,7 +78,8 @@ def execute(*params):
                             "container directory /b.", nargs="*")
         parser.add_argument("-x", "--debug", action="store_true",
                             help="Keeps temporary scripts used during "
-                            "execution.")
+                            "execution, and prints additional debug "
+                            "messages.")
         parser.add_argument("-u", "--user", action="store_true",
                             help="Runs the container as local user ({0})"
                             " instead of root.".format(os.getenv("USER")))
@@ -102,7 +103,7 @@ def execute(*params):
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
-                                  "destroyTempScripts": not results.debug,
+                                  "debug": results.debug,
                                   "changeUser": results.user})
         # Execute it
         return executor.execute(results.volumes)

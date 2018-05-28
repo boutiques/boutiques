@@ -159,7 +159,7 @@ class LocalExecutor(object):
             self.con.get('working-directory')
 
         # Extra Options
-        # Include: forcePathType and destroyTempScripts
+        # Include: forcePathType and debug
         for option in list(options.keys()):
             setattr(self, option, options.get(option))
         # Container Implementation check
@@ -242,7 +242,7 @@ class LocalExecutor(object):
         if conIsPresent:
             if conType == 'docker':
                 # Pull the docker image
-                if self._localExecute("docker pull " + str(conImage))[1]:
+                if self._localExecute("docker pull " + str(conImage), debug)[1]:
                     container_location = "Local copy"
             elif conType == 'singularity':
                 if not conIndex:
@@ -261,7 +261,7 @@ class LocalExecutor(object):
                                                                      pull_loc)
                     # Pull the singularity image
                     if self._localExecute("singularity pull --name " +
-                                          pull_loc)[1]:
+                                          pull_loc, debug)[1]:
                         raise ExecutorError("Could not pull Singularity image")
                 else:
                     container_location = "Local ({0})".format(conName)
@@ -285,7 +285,7 @@ class LocalExecutor(object):
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
-            self._localExecute("chmod 755 " + dsname)
+            self._localExecute("chmod 755 " + dsname, debug)
             # Prepare extra environment variables
             envString = ""
             if envVars:
@@ -360,15 +360,16 @@ class LocalExecutor(object):
             else:
                 raise ExecutorError('Unrecognized container type: '
                                     '\"%s\"' % conType)
-            (stdout, stderr), exit_code = self._localExecute(container_command)
+            (stdout, stderr), exit_code = self._localExecute(container_command,
+                                                             debug)
         # Otherwise, just run command locally
         else:
-            (stdout, stderr), exit_code = self._localExecute(command)
+            (stdout, stderr), exit_code = self._localExecute(command, debug)
         time.sleep(0.5)  # Give the OS a (half) second to finish writing
 
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
-        if conIsPresent and self.destroyTempScripts:
+        if conIsPresent and not self.debug:
             if os.path.isfile(dsname):
                 os.remove(dsname)
 
@@ -406,9 +407,11 @@ class LocalExecutor(object):
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
-    def _localExecute(self, command):
+    def _localExecute(self, command, debug):
         # Note: invokes the command through the shell
         # (potential injection dangers)
+        if debug:
+            print("Running: {}".format(command))
         try:
             process = subprocess.Popen(command, shell=True,
                                        stdout=subprocess.PIPE,
