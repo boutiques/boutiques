@@ -255,10 +255,11 @@ class LocalExecutor(object):
                     pull_loc = "\"{0}\" {1}{2}".format(conName,
                                                        conIndex,
                                                        conImage)
-                    container_location = ("Pulled from {1} ({0} not found "
-                                          "in current"
-                                          "working director").format(conName,
-                                                                     pull_loc)
+                    container_location = ("Pulled from {1}{2} ({0} not found "
+                                          "in current "
+                                          "working directory)").format(conName,
+                                                                       conIndex,
+                                                                       conImage)
                     # Pull the singularity image
                     sing_command = "singularity pull --name " + pull_loc
                     (stdout, stderr), return_code = self._localExecute(
