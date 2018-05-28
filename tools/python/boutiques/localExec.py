@@ -159,6 +159,7 @@ class LocalExecutor(object):
 
         # Extra Options
         # Include: forcePathType and debug
+        self.debug = False
         for option in list(options.keys()):
             setattr(self, option, options.get(option))
         # Container Implementation check
