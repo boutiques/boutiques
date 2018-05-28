@@ -417,7 +417,7 @@ class LocalExecutor(object):
         # Note: invokes the command through the shell
         # (potential injection dangers)
         if self.debug:
-            print("Running: {}".format(command))
+            print("Running: {0}".format(command))
         try:
             process = subprocess.Popen(command, shell=True,
                                        stdout=subprocess.PIPE,
