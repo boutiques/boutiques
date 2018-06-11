@@ -6,6 +6,7 @@ import pytest
 from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
+from boutiques.localExec import ExecutorError
 
 
 class TestExample1(TestCase):
