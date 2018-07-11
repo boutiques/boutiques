@@ -113,7 +113,7 @@ class TestExample1(TestCase):
     def test_example1_crash_pull_singularity(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        with pytest.raises(ExecutionError) as e:
+        with pytest.raises(ExecutorError) as e:
                 bosh.execute("launch",
                              os.path.join(example1_dir,
                                           "example1_sing_crash_pull.json"),
