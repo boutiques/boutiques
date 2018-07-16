@@ -131,7 +131,6 @@ class LocalExecutor(object):
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
-        self.debug = False  # debug mode (also use python -u)
         self.invocation = invocation
         # Parse JSON descriptor
         with open(desc, 'r') as descriptor:
@@ -159,7 +158,8 @@ class LocalExecutor(object):
             self.con.get('working-directory')
 
         # Extra Options
-        # Include: forcePathType and destroyTempScripts
+        # Include: forcePathType and debug
+        self.debug = False
         for option in list(options.keys()):
             setattr(self, option, options.get(option))
         # Container Implementation check
@@ -255,14 +255,21 @@ class LocalExecutor(object):
                     pull_loc = "\"{0}\" {1}{2}".format(conName,
                                                        conIndex,
                                                        conImage)
-                    container_location = ("Pulled from {1} ({0} not found "
-                                          "in current"
-                                          "working director").format(conName,
-                                                                     pull_loc)
+                    container_location = ("Pulled from {1}{2} ({0} not found "
+                                          "in current "
+                                          "working directory)").format(conName,
+                                                                       conIndex,
+                                                                       conImage)
                     # Pull the singularity image
-                    if self._localExecute("singularity pull --name " +
-                                          pull_loc)[1]:
-                        raise ExecutorError("Could not pull Singularity image")
+                    sing_command = "singularity pull --name " + pull_loc
+                    (stdout, stderr), return_code = self._localExecute(
+                                                            sing_command)
+                    if return_code:
+                        message = ("Could not pull Singularity"
+                                   " image: " + os.linesep + " * Pull command: "
+                                   + sing_command + os.linesep + " * Error: "
+                                   + stderr.decode("utf-8"))
+                        raise ExecutorError(message)
                 else:
                     container_location = "Local ({0})".format(conName)
                 conName = op.abspath(conName)
@@ -368,7 +375,7 @@ class LocalExecutor(object):
 
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
-        if conIsPresent and self.destroyTempScripts:
+        if conIsPresent and not self.debug:
             if os.path.isfile(dsname):
                 os.remove(dsname)
 
@@ -409,6 +416,8 @@ class LocalExecutor(object):
     def _localExecute(self, command):
         # Note: invokes the command through the shell
         # (potential injection dangers)
+        if self.debug:
+            print("Running: {0}".format(command))
         try:
             process = subprocess.Popen(command, shell=True,
                                        stdout=subprocess.PIPE,

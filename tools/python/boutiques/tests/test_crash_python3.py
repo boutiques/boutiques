@@ -27,4 +27,4 @@ class TestCrashPython3(TestCase):
                                    stderr=subprocess.PIPE)
         stdout = process.stdout.read().decode("utf-8").strip()
         print(stdout)
-        self.assertTrue(stdout == "Could not pull Singularity image")
+        self.assertTrue("Could not pull Singularity image" in stdout)
