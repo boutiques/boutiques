@@ -22,7 +22,7 @@ Simple! Just open your favourite terminal and type:
     $ pip install boutiques
 
 Alongside installing the Boutiques package, this will also ensure the dependencies are installed: `simplejson`, `jsonschema`,
-`gitpython`, and `pygithub`. 
+`requests`, and `pytest`. 
 
 
 ## Command-Line API
@@ -41,6 +41,25 @@ say you have a BIDS app at `/awesome/app/`, you would run:
 
 Very exciting, you now have a Boutiques descriptor for your app! If you aren't in one of those unique cases, unfortunately you'll
 still need to generate your descriptor by hand according to the [schema](./tools/python/boutiques/schema/descriptor.schema.json).
+
+### Create a New Descriptor
+
+There are two additional ways to get you started with creating Boutiques descriptors, both wrapped up in the "create" module
+of Boutiques. First, if you just want an example descriptor that shows many of the properties you can later set in Boutiques, you
+should use the command line interface:
+
+    $ bosh create my-new-descriptor.json
+
+However, if you want a bit more of a head start and your tool is built in Python using the `argparse` library, we can help more!
+In the Python script with your argparser defined, simply add the following lines to get yourself a minimal corresponding descriptor:
+
+    import boutiques.creator as bc
+    newDescriptor = bc.CreateDescriptor(myparser, execname="/command/to/run/exec")
+    newDescriptor.save("my-new-descriptor.json")
+
+There are additional custom arguments which can be supplied to this script, such as tags for your tool. It is also worth noting that
+no interpretation of output files is attempted by this tool, so your descriptor could certainly be enhanced by addind these and other
+features available through Boutiques, such as tests, tags, error codes, groups, and container images.
 
 ### Validation
 
@@ -79,6 +98,47 @@ assumption, nowadays? We hope so:
 You just launched your tool! You should be seeing outputs to your terminal, and by default your current working directory will be mounted to the
 container. You can mount more volumes with `-v` (consistent with Docker), and see what other options are available, such as switching users in
 the container, through the usual help menu, `bosh exec launch -h`.
+
+### Test Your Tool
+
+You may now want to write a test for your descriptor, so that everyone
+using it could check that it produces correct results. This can be
+done by extending the tool descriptor with a `tests` property. For
+instance, the description below would test if the execution of the specified invocation returns with exit code 0 and produces a file in output `logfile` with
+the right MD5 hash.
+```
+"tests": [
+        {
+	     "name": "test1",
+	     "invocation": {
+                "config_num": 4,
+                "enum_input": "val1",
+                "file_input": "/tests/image.nii.gz",
+                "list_int_input": [
+                    1,
+                    2,
+                    3
+                ],
+                "str_input": [
+                    "foo",
+                    "bar"
+                ]
+            },
+            "assertions": {
+                "exit-code": 0,
+                "output-files": [
+                    {
+                        "id": "logfile",
+                        "md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
+                    }
+                ]
+            }
+    }
+]
+```
+You can then test your descriptor by simply typing:
+
+    $ bosh test descriptor.json
 
 ### Evaluate Your Usage
 

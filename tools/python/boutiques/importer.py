@@ -1,29 +1,5 @@
 #!/usr/bin/env python
 
-# Copyright 2015 - 2017:
-#   The Royal Institution for the Advancement of Learning McGill University,
-#   Centre National de la Recherche Scientifique,
-#   University of Southern California,
-#   Concordia University
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from argparse import ArgumentParser
 from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
@@ -35,20 +11,20 @@ class Importer():
 
     def __init__(self, output_file):
         self.output_file = output_file
-    
+
     def upgrade_04(self, input_file):
         """
          Differences between 0.4 and current (0.5):
            -schema version (obv)
            -singularity should now be represented same as docker
            -walltime should be part of suggested_resources structure
-        
+
         I.e.
         "schema-version": "0.4",
                     ...... becomes.....
         "schema-version": "0.5",
-        
-        I.e.  
+
+        I.e.
         "container-image": {
           "type": "singularity",
           "url": "shub://gkiar/ndmg-cbrain:master"
@@ -60,7 +36,7 @@ class Importer():
           "index": "shub://",
         },
 
-        I.e. 
+        I.e.
         "walltime-estimate": 3600,
                     ...... becomes.....
         "suggested-resources": {
@@ -82,37 +58,40 @@ class Importer():
                     descriptor["container-image"]["image"] = img[1]
                     descriptor["container-image"]["index"] = img[0] + "://"
                 del descriptor["container-image"]["url"]
-            elif "docker" == descriptor["container-image"]["type"] and descriptor["container-image"].get("index"):
-                url = descriptor["container-image"]["index"] = descriptor["container-image"]["index"].split("://")[-1]
+            elif ("docker" == descriptor["container-image"]["type"] and
+                  descriptor["container-image"].get("index")):
+                url = descriptor["container-image"]["index"].split("://")[-1]
+                descriptor["container-image"]["index"] = url
 
         if "walltime-estimate" in descriptor.keys():
-            descriptor["suggested-resources"] = {"walltime-estimate": descriptor["walltime-estimate"]}
+            descriptor["suggested-resources"] =\
+              {"walltime-estimate": descriptor["walltime-estimate"]}
             del descriptor["walltime-estimate"]
 
         with open(self.output_file, 'w') as fhandle:
-            fhandle.write(json.dumps(descriptor, indent=4))
+            fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
         validate_descriptor(self.output_file)
 
     def get_entry_point(self, app_dir):
         entrypoint = None
-        with open(os.path.join(app_dir,"Dockerfile")) as f:
+        with open(os.path.join(app_dir, "Dockerfile")) as f:
             content = f.readlines()
         for line in content:
             split = line.split()
-            if len(split) >=2 and split[0] == "ENTRYPOINT":
+            if len(split) >= 2 and split[0] == "ENTRYPOINT":
                 entrypoint = split[1].strip("[]\"")
         return entrypoint
-            
+
     def import_bids(self, app_dir):
         path, fil = os.path.split(__file__)
-        template_file = os.path.join(path, "bids-app-template", "template.json")
+        template_file = os.path.join(path, "templates", "bids-app.json")
 
         with open(template_file) as f:
             template_string = f.read()
 
         errors = []
         app_name = os.path.basename(os.path.abspath(app_dir))
-        with open(os.path.join(app_dir,"version"),"r") as f:
+        with open(os.path.join(app_dir, "version"), "r") as f:
             version = f.read().strip()
         git_repo = "https://github.com/BIDS-Apps/"+app_name
         entrypoint = self.get_entry_point(app_dir)
@@ -120,18 +99,20 @@ class Importer():
         analysis_types = "participant\", \"group\", \"session"
 
         if not entrypoint:
-            errors.append("No entrypoint found in container.") 
-        
+            errors.append("No entrypoint found in container.")
+
         if len(errors):
             raise ValidationError("Invalid descriptor:\n"+"\n".join(errors))
 
-        template_string = template_string.replace("@@APP_NAME@@",app_name)
-        template_string = template_string.replace("@@VERSION@@",version)
-        template_string = template_string.replace("@@GIT_REPO_URL@@",git_repo)
-        template_string = template_string.replace("@@DOCKER_ENTRYPOINT@@",entrypoint)
-        template_string = template_string.replace("@@CONTAINER_IMAGE@@",container_image)
-        template_string = template_string.replace("@@ANALYSIS_TYPES@@",analysis_types)
+        template_string = template_string.replace("@@APP_NAME@@", app_name)
+        template_string = template_string.replace("@@VERSION@@", version)
+        template_string = template_string.replace("@@GIT_REPO_URL@@", git_repo)
+        template_string = template_string.replace("@@DOCKER_ENTRYPOINT@@",
+                                                  entrypoint)
+        template_string = template_string.replace("@@CONTAINER_IMAGE@@",
+                                                  container_image)
+        template_string = template_string.replace("@@ANALYSIS_TYPES@@",
+                                                  analysis_types)
 
-        with open(self.output_file,"w") as f:
+        with open(self.output_file, "w") as f:
             f.write(template_string)
-

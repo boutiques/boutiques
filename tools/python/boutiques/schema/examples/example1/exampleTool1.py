@@ -23,9 +23,13 @@ def main(args=None):
                         nargs=1, help='Any existing file.')
     parser.add_argument('-f', '--flag', action='store_true', help='A flag.')
     parser.add_argument('-n', '--number', type=int, help='A number. Cannot be used when enum_input is used')
+    parser.add_argument('-s', '--string', help='A string')
     parser.add_argument('-e', '--enum_input',
                         type=lambda x: is_valid_enum_value(parser, x),
                         nargs=1, help='A string in {"val1", "val2", "val3"}.')
+    parser.add_argument('output_file',
+                         help='The output file.')
+   
 
     results=parser.parse_args() if args is None else parser.parse_args(args)
 
@@ -44,11 +48,14 @@ def main(args=None):
 
     with(open(results.config_file,'r')) as co:
         config_string = co.read()
-        if config_string != "# This is a demo configuration file\nnumInput=4":
+        if config_string != "# This is a demo configuration file\nnumInput=4\nstrInput='coin;plop'":
             sys.stderr.write("error: invalid configuration file:\n %s\n" % config_string)
             sys.exit(1)
         
-    print("It works!")
+    sys.stdout.write("This is stdout")
+    sys.stderr.write("This is stderr")
+    with open(results.output_file, 'w') as f:
+        f.write("File content")
 
 if  __name__ == "__main__":
     main()

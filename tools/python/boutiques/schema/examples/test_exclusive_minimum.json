@@ -1,0 +1,334 @@
+{
+    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [INT_LIST_INPUT] &> [LOG]",
+    "container-image": {
+        "image": "boutiques/example1:test",
+        "type": "docker"
+    },
+    "description": "This property describes the tool or application",
+    "environment-variables": [
+        {
+            "name": "ENVAR",
+            "value": "theValue"
+        }
+    ],
+    "error-codes": [
+        {
+            "code": 2,
+            "description": "File does not exist!"
+        }
+    ],
+    "groups": [
+        {
+            "description": "This group forces us to choose exactly one of the file or the enum input to use.",
+            "id": "an_example_group",
+            "members": [
+                "num_input",
+                "enum_input"
+            ],
+            "mutually-exclusive": true,
+            "name": "Example group 1",
+            "one-is-required": true
+        }
+    ],
+    "inputs": [
+        {
+            "command-line-flag": "-i",
+            "default-value": "aStringValue",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "str_input",
+            "list": true,
+            "max-list-entries": 3,
+            "min-list-entries": 1,
+            "name": "A string input",
+            "type": "String",
+            "value-key": "[STRING_INPUT]"
+        },
+        {
+            "command-line-flag": "-l",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "list_int_input",
+            "integer": true,
+            "list": true,
+            "min-list-entries": 1,
+            "name": "A list of ints",
+            "type": "Number",
+            "value-key": "[INT_LIST_INPUT]"
+        },
+        {
+            "id": "config_num",
+            "name": "A number put in the configuration file",
+            "type": "Number",
+            "value-choices": [
+                4
+            ],
+            "value-key": "[CONFIG_NUMBER]"
+        },
+        {
+            "command-line-flag": "-n",
+            "command-line-flag-separator": "=",
+            "exclusive-minimum": true,
+            "id": "num_input",
+            "maximum": 1,
+            "name": "A number input",
+            "optional": true,
+            "type": "Number",
+            "value-key": "[NUMBER_INPUT]"
+        },
+        {
+            "id": "file_input",
+            "name": "A file input",
+            "optional": true,
+            "type": "File",
+            "value-key": "[FILE_INPUT]"
+        },
+        {
+            "command-line-flag": "-e",
+            "id": "enum_input",
+            "name": "An enum input",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "val1",
+                "val2",
+                "val3"
+            ],
+            "value-key": "[ENUM_INPUT]"
+        },
+        {
+            "command-line-flag": "-f",
+            "disables-inputs": [
+                "num_input"
+            ],
+            "id": "flag_input",
+            "name": "A flag input",
+            "optional": true,
+            "requires-inputs": [
+                "file_input"
+            ],
+            "type": "Flag",
+            "value-key": "[FLAG_INPUT]"
+        }
+    ],
+    "invocation-schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "additionalProperties": false,
+        "allOf": [
+            {
+                "anyOf": [
+                    {
+                        "required": [
+                            "num_input"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "enum_input"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "dependencies": {
+            "enum_input": {
+                "properties": {
+                    "num_input": {
+                        "not": {}
+                    }
+                }
+            },
+            "flag_input": {
+                "anyOf": [
+                    {
+                        "properties": {
+                            "num_input": {
+                                "not": {}
+                            }
+                        },
+                        "required": [
+                            "file_input"
+                        ]
+                    },
+                    {
+                        "properties": {
+                            "flag_input": {
+                                "enum": [
+                                    false
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            "num_input": {
+                "properties": {
+                    "enum_input": {
+                        "not": {}
+                    }
+                }
+            }
+        },
+        "description": "Invocation schema for example boutiques tool.",
+        "properties": {
+            "config_num": {
+                "enum": [
+                    4
+                ]
+            },
+            "enum_input": {
+                "enum": [
+                    "val1",
+                    "val2",
+                    "val3"
+                ]
+            },
+            "file_input": {
+                "type": "string"
+            },
+            "flag_input": {
+                "type": "boolean"
+            },
+            "list_int_input": {
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 1,
+                "type": "array"
+            },
+            "num_input": {
+                "exclusiveMinimum": true,
+                "maximum": 1,
+                "minimum": 0,
+                "type": "number"
+            },
+            "str_input": {
+                "items": {
+                    "type": "string"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "type": "array"
+            }
+        },
+        "required": [
+            "str_input",
+            "list_int_input",
+            "config_num"
+        ],
+        "title": "Example Boutiques Tool.invocationSchema",
+        "type": "object"
+    },
+    "name": "Example Boutiques Tool",
+    "output-files": [
+        {
+            "description": "The output log file from the example tool",
+            "id": "logfile",
+            "name": "Log file",
+            "path-template": "log-[CONFIG_NUMBER].txt",
+            "path-template-stripped-extensions": [
+                ".txt",
+                ".csv"
+            ],
+            "value-key": "[LOG]"
+        },
+        {
+            "id": "output_files",
+            "list": true,
+            "name": "outfiles",
+            "optional": true,
+            "path-template": "output/*_exampleOutputTag.resultType"
+        },
+        {
+            "command-line-flag": "-c",
+            "file-template": [
+                "# This is a demo configuration file",
+                "numInput=[CONFIG_NUMBER]"
+            ],
+            "id": "config_file",
+            "name": "Configuration file",
+            "path-template": "./config.txt",
+            "value-key": "[CONFIG_FILE]"
+        }
+    ],
+    "schema-version": "0.5",
+    "tags": {
+        "domain": "testing",
+        "foo": "bar",
+        "programming-language": "Python"
+    },
+    "tests": [
+        {
+            "assertions": {
+                "exit-code": 0,
+                "output-files": [
+                    {
+                        "id": "logfile",
+                        "md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
+                    }
+                ]
+            },
+            "invocation": {
+                "config_num": 4,
+                "enum_input": "val1",
+                "file_input": "./setup.py",
+                "list_int_input": [
+                    1,
+                    2,
+                    3
+                ],
+                "str_input": [
+                    "foo",
+                    "bar"
+                ]
+            },
+            "name": "test1"
+        },
+        {
+            "assertions": {
+                "exit-code": 0
+            },
+            "invocation": {
+                "config_num": 4,
+                "enum_input": "val1",
+                "file_input": "./setup.py",
+                "list_int_input": [
+                    1,
+                    2,
+                    3
+                ],
+                "str_input": [
+                    "foo",
+                    "bar"
+                ]
+            },
+            "name": "test2"
+        },
+        {
+            "assertions": {
+                "output-files": [
+                    {
+                        "id": "logfile"
+                    },
+                    {
+                        "id": "config_file"
+                    }
+                ]
+            },
+            "invocation": {
+                "config_num": 4,
+                "enum_input": "val1",
+                "file_input": "./setup.py",
+                "list_int_input": [
+                    1,
+                    2,
+                    3
+                ],
+                "str_input": [
+                    "foo",
+                    "bar"
+                ]
+            },
+            "name": "test3"
+        }
+    ],
+    "tool-version": "0.0.1"
+}

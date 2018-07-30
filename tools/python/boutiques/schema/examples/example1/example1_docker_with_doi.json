@@ -3,7 +3,8 @@
     "container-image": {
         "image": "boutiques/example1:test", 
         "type": "docker"
-    }, 
+    },
+    "doi": "fakedoi", 
     "description": "This property describes the tool or application", 
     "environment-variables": [
         {
