@@ -309,8 +309,10 @@ class LocalExecutor(object):
                 # If --changeUser was desired, provides the current user id
                 # and its group id as the user and group to be used instead
                 # of the default root within the container.
-                userchange = '' if not self.changeUser else (' -u $(id -u):$(id -g)')
-                container_command = ('docker run' + userchange + ' --entrypoint=' + self.shell +
+                userchange = '' if not self.changeUser 
+                                else (' -u $(id -u):$(id -g)')
+                container_command = ('docker run' + userchange + 
+                                     ' --entrypoint=' + self.shell +
                                      ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
