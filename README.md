@@ -65,7 +65,7 @@ features available through Boutiques, such as tests, tags, error codes, groups, 
 
 You just created a Boutiques descriptor (compliant with the [schema](./tools/python/boutiques/schema/descriptor.schema.json), of course)
 named `descriptor.json` - Congratulations! Now, you need to quickly validate it to make sure that you didn't accidentally break any rules
-in this defintion (like requiring a "flag" input). You can validate your schema like this:
+in this definition (like requiring a "flag" input). You can validate your schema like this:
 
     $ bosh validate descriptor.json
 

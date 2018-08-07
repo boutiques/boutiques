@@ -93,7 +93,7 @@ class CreateDescriptor(object):
                             subparser["value-requires"][act] += [tmpinput["id"]]
                         self.descriptor["inputs"] += [tmpinput]
 
-            # Once all subparsers are processed, idenfity which inputs need to
+            # Once all subparsers are processed, identify which inputs need to
             # be disabled by which subparsers.
             inpt_ids = set([inp
                             for iact in inpts
