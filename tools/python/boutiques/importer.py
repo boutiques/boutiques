@@ -133,14 +133,13 @@ class Importer():
         # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
             cwl_desc = yaml.load(f)
-        d_file = self.input_descriptor
 
         # validate yaml descriptor?
 
         bout_desc = {}
         # Command line
         if cwl_desc.get('baseCommand') is None:
-            raise ImportError(d_file + ': Cannot find baseCommand attribute, '
+            raise ImportError('Cannot find baseCommand attribute, '
                               'perhaps you passed a workflow document, '
                               'this is not supported')
         if type(cwl_desc['baseCommand']) is list:
@@ -152,10 +151,9 @@ class Importer():
         if cwl_desc.get('arguments'):
             for i in cwl_desc['arguments']:
                 if type(i) is dict:
-                    raise ImportError(d_file + ': '
-                                      ' Dict arguments not supported.')
+                    raise ImportError('Dict arguments not supported.')
                 if "$(runtime." in i:
-                    raise ImportError(d_file + ': Runtime parameters '
+                    raise ImportError('Runtime parameters '
                                       ' are not supported:'
                                       " "+i)
                 command_line += i+" "
@@ -199,18 +197,18 @@ class Importer():
                 cwl_type = 'string'
             if type(cwl_type) is dict:  # It must be an array
                 if cwl_type['type'] != "array":
-                    raise ImportError(d_file + ": Only 1-level nested "
+                    raise ImportError("Only 1-level nested "
                                       "types of type"
                                       " 'array' are supported (CWL input: {0})".
                                       format(cwl_input))
                 if cwl_type.get('inputBinding') is not None:
-                    raise ImportError(d_file + ": Input bindings of "
+                    raise ImportError("Input bindings of "
                                       "array elements "
                                       "are not supported (CWL input: {0})".
                                       format(cwl_input))
                 cwl_type = cwl_type['items']
-                if type(cwl_type) != string:
-                    raise ImportError(d_file + ": Unknown type:"
+                if type(cwl_type) != str:
+                    raise ImportError("Unknown type:"
                                       " {0}".format(str(cwl_type)))
                 bout_input['list'] = True
             boutiques_type = boutiques_types[cwl_type.replace("[]", "")
@@ -238,7 +236,7 @@ class Importer():
                 bout_input['list'] = True
                 if cwl_input_binding.get("itemSeparator"):
                     if cwl_input_binding['itemSeparator'] != ' ':
-                        raise ImportError(d_file + ': Array separators wont be '
+                        raise ImportError('Array separators wont be '
                                           'supported until #76 is implemented')
 
         # Outputs
@@ -247,12 +245,12 @@ class Importer():
             if not glob.startswith("$"):
                 return glob
             if not glob.startswith("$(inputs."):
-                raise ImportError(d_file + ": Unsupported reference: "+glob)
+                raise ImportError("Unsupported reference: "+glob)
             input_id = glob.replace("$(inputs.", "").replace(")", "")
             for i in boutiques_inputs:
                 if i['id'] == input_id:
                     return i['value-key']
-            raise ImportError(d_file + ": Unresolved reference"
+            raise ImportError("Unresolved reference"
                               " in glob: " + glob)
 
         boutiques_outputs = []
@@ -278,7 +276,7 @@ class Importer():
                        and cwl_out_obj['type']['type'] == 'array'):
                             bout_output['list'] = True
                     else:
-                        raise ImportError(d_file + ': Unsupported output type: '
+                        raise ImportError('Unsupported output type: '
                                           + cwl_output['type'])
                 boutiques_outputs.append(bout_output)
         # Boutiques descriptors have to have at least 1 output file
@@ -333,7 +331,7 @@ class Importer():
                     suggeseted_resources['cpu-cores'] = req['coresMin']
                 bout_desc['suggested-resources'] = suggested_resources
                 return
-            raise ImportError(d_file + ': Unsupported requirement: '+str(req))
+            raise ImportError('Unsupported requirement: '+str(req))
 
         for key in ['requirements', 'hints']:
             if(cwl_desc.get(key)):

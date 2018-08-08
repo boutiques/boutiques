@@ -10,6 +10,8 @@ import os.path as op
 from os.path import join as opj
 import pytest
 from boutiques.importer import ImportError
+import boutiques
+import tarfile
 
 
 class TestImport(TestCase):
@@ -53,7 +55,7 @@ class TestImport(TestCase):
                result == open(ref_file_p2, "r").read().strip())
         os.remove(fout)
 
-    def test_import_cwl(self):
+    def test_import_cwl_valid(self):
         ex_dir = opj(op.split(bfile)[0], "tests/cwl")
         # These ones are supposed to crash
         bad_dirs = ["1st-workflow", "record", "array-inputs",
@@ -71,9 +73,9 @@ class TestImport(TestCase):
                         if op.basename(f).endswith(".yml"):
                                 cwl_invocation = op.abspath(opj(ex_dir, d, f))
                 assert(cwl_descriptor is not None)
-                print(d)  # to help with debugging
                 out_desc = "./cwl_out.json"
                 out_inv = "./cwl_inv_out.json"
+                run = False
                 if cwl_invocation is not None:
                         args = ["import",
                                 "cwl",
@@ -81,6 +83,7 @@ class TestImport(TestCase):
                                 cwl_descriptor,
                                 "-i", cwl_invocation,
                                 "-o", out_inv]
+                        run = True
                 else:
                         args = ["import",
                                 "cwl",
@@ -90,4 +93,19 @@ class TestImport(TestCase):
                         with pytest.raises(ImportError):
                                 bosh(args)
                 else:
-                        self.assertFalse(bosh(args))
+                        self.assertFalse(bosh(args), cwl_descriptor)
+                        if run:
+                                # write files required by cwl tools
+                                with open('hello.js', 'w') as f:
+                                        f.write("'hello'")
+                                with open('goodbye.txt', 'w') as f:
+                                        f.write("goodbye")
+                                with tarfile.open('hello.tar', "w") as tar:
+                                        tar.add('goodbye.txt')
+                                ret = boutiques.execute(
+                                        "launch",
+                                        out_desc,
+                                        out_inv
+                                      )
+                                self.assertFalse(ret.exit_code,
+                                                 cwl_descriptor)
