@@ -212,10 +212,10 @@ class Importer():
                                       "are not supported (CWL input: {0})".
                                       format(cwl_input))
                 cwl_type = cwl_type['items']
-                if type(cwl_type) != str:
+                bout_input['list'] = True
+            if type(cwl_type) != str:
                     raise ImportError("Unknown type:"
                                       " {0}".format(str(cwl_type)))
-                bout_input['list'] = True
             boutiques_type = boutiques_types[cwl_type.replace("[]", "")
                                                      .replace("?", "")]
             bout_input['type'] = boutiques_type
