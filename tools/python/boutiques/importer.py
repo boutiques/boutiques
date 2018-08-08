@@ -129,16 +129,15 @@ class Importer():
             f.write(template_string)
 
     def import_cwl(self):
-        ''' Known limitations:
-        * CWL complex types are not supported.
-        '''
+
+        # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
             cwl_desc = yaml.load(f)
         d_file = self.input_descriptor
 
         # validate yaml descriptor?
-        bout_desc = {}
 
+        bout_desc = {}
         # Command line
         if cwl_desc.get('baseCommand') is None:
             raise ImportError(d_file + ': Cannot find baseCommand attribute, '
@@ -189,7 +188,7 @@ class Importer():
                 bout_input['name'] = cwl_in_obj['name']
             else:
                 bout_input['name'] = cwl_input
-            value_key = "[{}]".format(cwl_input.upper())
+            value_key = "[{0}]".format(cwl_input.upper())
             command_line += " "+value_key
             bout_input['value-key'] = value_key
 
@@ -202,12 +201,12 @@ class Importer():
                 if cwl_type['type'] != "array":
                     raise ImportError(d_file + ": Only 1-level nested "
                                       "types of type"
-                                      " 'array' are supported (CWL input: {})".
+                                      " 'array' are supported (CWL input: {0})".
                                       format(cwl_input))
                 if cwl_type.get('inputBinding') is not None:
                     raise ImportError(d_file + ": Input bindings of "
                                       "array elements "
-                                      "are not supported (CWL input: {})".
+                                      "are not supported (CWL input: {0})".
                                       format(cwl_input))
                 cwl_type = cwl_type['items']
                 bout_input['list'] = True
