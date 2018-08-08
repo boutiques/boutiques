@@ -14,7 +14,7 @@ class DescriptorValidationError(ValidationError):
 
 
 # Main validation module
-def validate_descriptor(json_file, format_output):
+def validate_descriptor(json_file, format_output=False):
     """
     Validates the Boutiques descriptor against the schema.
     """
