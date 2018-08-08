@@ -353,7 +353,6 @@ def validate_descriptor(json_file, format_output=False):
 
     errors = None if errors == [] else errors
     if errors is None:
-        print("Boutiques validation OK")
         if format_output:
             with open(json_file, 'w') as fhandle:
                 fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
