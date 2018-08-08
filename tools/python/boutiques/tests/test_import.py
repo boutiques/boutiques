@@ -12,6 +12,7 @@ import pytest
 from boutiques.importer import ImportError
 import boutiques
 import tarfile
+from contextlib import closing
 
 
 class TestImport(TestCase):
@@ -99,7 +100,9 @@ class TestImport(TestCase):
                                         f.write("'hello'")
                                 with open('goodbye.txt', 'w') as f:
                                         f.write("goodbye")
-                                with tarfile.open('hello.tar', "w") as tar:
+                                # closing required for Python 2.6...
+                                with closing(tarfile.open('hello.tar',
+                                                          "w")) as tar:
                                         tar.add('goodbye.txt')
                                 ret = boutiques.execute(
                                         "launch",
