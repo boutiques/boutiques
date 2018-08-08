@@ -57,6 +57,9 @@ class Importer():
         with open(self.input_descriptor, 'r') as fhandle:
             descriptor = json.load(fhandle)
 
+        if descriptor["schema-version"] != "0.4":
+            raise ImportError("The input descriptor must have 'schema-version'"
+                              "=0.4")
         descriptor["schema-version"] = "0.5"
 
         if "container-image" in descriptor.keys():
@@ -187,7 +190,9 @@ class Importer():
             else:
                 bout_input['name'] = cwl_input
             value_key = "[{0}]".format(cwl_input.upper())
-            command_line += " "+value_key
+            if (type(cwl_in_obj) is dict and
+                    cwl_in_obj.get('inputBinding') is not None):
+                command_line += " "+value_key
             bout_input['value-key'] = value_key
 
             # CWL type parsing
@@ -293,8 +298,11 @@ class Importer():
 
         # Mandatory boutiques fields
         bout_desc['command-line'] = command_line
-        bout_desc['description'] = (cwl_desc.get("doc") or
-                                    "Tool imported from CWL.")
+        if cwl_desc.get("doc"):
+            bout_desc['description'] = (cwl_desc.get("doc").
+                                        replace(os.linesep, ''))
+        else:
+            bout_desc['description'] = "Tool imported from CWL."
         bout_desc['inputs'] = boutiques_inputs
         # This may not be a great idea but not sure if CWL tools have names
         bout_desc['name'] = op.splitext(op.basename(self.input_descriptor))[0]
@@ -330,6 +338,27 @@ class Importer():
                 if req.get('coresMin'):
                     suggeseted_resources['cpu-cores'] = req['coresMin']
                 bout_desc['suggested-resources'] = suggested_resources
+                return
+            if req_type == 'InitialWorkDirRequirement':
+                listing = req.get('listing')
+                for entry in listing:
+                    file_name = entry.get('entryname')
+                    assert(file_name is not None)
+                    template = entry.get('entry')
+                    for i in boutiques_inputs:
+                        if i.get("value-key"):
+                            template = template.replace("$(inputs."+i['id']+")",
+                                                        i.get("value-key"))
+                    template = template.split(os.linesep)
+                    assert(template is not None)
+                    name = op.splitext(file_name)[0]
+                    boutiques_outputs.append(
+                        {
+                            'id': name,
+                            'name': name,
+                            'path-template': file_name,
+                            'file-template': template
+                        })
                 return
             raise ImportError('Unsupported requirement: '+str(req))
 

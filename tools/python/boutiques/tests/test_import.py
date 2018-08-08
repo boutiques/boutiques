@@ -59,8 +59,7 @@ class TestImport(TestCase):
         ex_dir = opj(op.split(bfile)[0], "tests/cwl")
         # These ones are supposed to crash
         bad_dirs = ["1st-workflow", "record", "array-inputs",
-                    "createfile", "expression", "nestedworkflows",
-                    "arguments"]
+                    "expression", "nestedworkflows", "arguments"]
         for d in os.listdir(ex_dir):
                 if d == "README.md":
                         continue
