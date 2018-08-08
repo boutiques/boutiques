@@ -59,8 +59,12 @@ class TestImport(TestCase):
     def test_import_cwl_valid(self):
         ex_dir = opj(op.split(bfile)[0], "tests/cwl")
         # These ones are supposed to crash
-        bad_dirs = ["1st-workflow", "record", "array-inputs",
-                    "expression", "nestedworkflows", "arguments"]
+        bad_dirs = ["1st-workflow",  # workflow
+                    "record",  # complex type
+                    "array-inputs",  # input bindings specific to array element
+                    "expression",  # Javascript expression
+                    "nestedworkflows"  # workflow
+                    ]
         for d in os.listdir(ex_dir):
                 if d == "README.md":
                         continue
