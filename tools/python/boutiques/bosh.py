@@ -35,10 +35,14 @@ def validate(*params):
                         help="The Boutiques descriptor.")
     parser.add_argument("--bids", "-b", action="store_true",
                         help="Flag indicating if descriptor is a BIDS app")
+    parser.add_argument("--format", "-f", action="store_true",
+                        help="If descriptor is valid, rewrite it with sorted"
+                        " keys.")
     results = parser.parse_args(params)
 
     from boutiques.validator import validate_descriptor
-    descriptor = validate_descriptor(results.descriptor)
+    descriptor = validate_descriptor(results.descriptor,
+                                     results.format)
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
