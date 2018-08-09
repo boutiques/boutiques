@@ -24,6 +24,11 @@ class TestCreator(TestCase):
         descriptor = bosh(['create', '-d', 'mysql:latest', fil])
         assert bosh(['validate', fil]) is None
 
+    def test_success_docker_sing_import(self):
+        fil = 'creator_output.json'
+        descriptor = bosh(['create', '-d', 'mysql:latest', '-u', fil])
+        assert bosh(['validate', fil]) is None
+
     def test_fail_image_(self):
         fil = 'creator_output.json'
         self.assertRaises(CreatorError,
