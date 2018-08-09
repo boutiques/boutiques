@@ -14,7 +14,7 @@ class DescriptorValidationError(ValidationError):
 
 
 # Main validation module
-def validate_descriptor(json_file, format_output=False):
+def validate_descriptor(json_file, **kwargs):
     """
     Validates the Boutiques descriptor against the schema.
     """
@@ -353,7 +353,7 @@ def validate_descriptor(json_file, format_output=False):
 
     errors = None if errors == [] else errors
     if errors is None:
-        if format_output:
+        if kwargs.get('format_output'):
             with open(json_file, 'w') as fhandle:
                 fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
         return descriptor

@@ -42,7 +42,7 @@ def validate(*params):
 
     from boutiques.validator import validate_descriptor
     descriptor = validate_descriptor(results.descriptor,
-                                     results.format)
+                                     format_output=results.format)
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
