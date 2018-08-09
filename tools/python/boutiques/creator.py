@@ -21,10 +21,13 @@ class CreateDescriptor(object):
         with open(template) as f:
             self.descriptor = simplejson.load(f)
 
+        if(kwargs.get('docker_image')):
+            self.parse_docker(self.descriptor,
+                              kwargs.get('docker_image'),
+                              kwargs.get('use_singularity'))
+
         self.count = 0
-        if parser is None:
-            pass
-        else:
+        if parser is not None:
             self.parser = parser
             self.descriptor["inputs"] = []
             self.descriptor["tags"] = kwargs.get("tags") or {}
@@ -34,13 +37,61 @@ class CreateDescriptor(object):
             del self.descriptor["error-codes"]
             if type(parser) is not argparse.ArgumentParser:
                 raise CreatorError("Invalid argument parser")
-
             self.parseParser(**kwargs)
 
     def save(self, filename):
         import json
         with open(filename, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+
+    def parse_docker(self, descriptor, image_name, use_singularity):
+        cont_image = {}
+
+        # Basic image config
+        if use_singularity:
+            cont_image['type'] = 'singularity'
+            cont_image['index'] = 'docker://'
+            cont_image['image'] = image_name
+        else:
+            cont_image['type'] = 'docker'
+            cont_image['image'] = image_name
+
+        # Properties found in the image metadata
+        import docker
+        client = docker.from_env()
+        try:
+            image = client.images.get(image_name)
+        except docker.errors.ImageNotFound as e:
+            try:
+                print("Pulling Docker image: "+image_name)
+                client.images.pull(image_name)
+                image = client.images.get(image_name)
+            except docker.errors.NotFound as e:
+                raise CreatorError("Docker image not found: "+image_name)
+
+        if (image.attrs.get('ContainerConfig')):
+            container_config = image.attrs['ContainerConfig']
+            entrypoint = container_config.get('Entrypoint')
+            if entrypoint:
+                cont_image['entrypoint'] = True
+                tokens = descriptor['command-line'].split(" ")
+                # Replace the first token in the command line template,
+                # presumably the executable, by the entry point
+                descriptor['command-line'] = (" ".join(entrypoint +
+                                              tokens[1:])
+                                              )
+                descriptor['name'] = entrypoint[0]
+            workingDir = container_config.get('WorkingDir')
+            if workingDir:
+                raise CreatorError("The container image has a working dir, "
+                                   " this is currently not supported.")
+        if image.attrs.get('Author'):
+            descriptor['author'] = image.attrs.get('Author')
+        if image.attrs.get('RepoTags'):
+            descriptor['tool-version'] = " ".join(image.attrs.get('RepoTags'))
+        if image.attrs.get('Comment'):
+            descriptor['description'] = image.attrs.get('Comment')
+        descriptor['container-image'] = cont_image
 
     def parseParser(self, **kwargs):
         self.descriptor["command-line"] = kwargs.get("execname")

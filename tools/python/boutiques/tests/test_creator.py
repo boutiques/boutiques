@@ -19,6 +19,18 @@ class TestCreator(TestCase):
         descriptor = bosh(['create', fil])
         assert bosh(['validate', fil]) is None
 
+    def test_success_docker(self):
+        fil = 'creator_output.json'
+        descriptor = bosh(['create', '-d', 'mysql:latest', fil])
+        assert bosh(['validate', fil]) is None
+
+    def test_fail_image_(self):
+        fil = 'creator_output.json'
+        self.assertRaises(CreatorError,
+                          bosh,
+                          ['create', '-d', 'ihopethisdoesntexists', fil]
+                          )
+
     def test_not_an_argparser(self):
         self.assertRaises(CreatorError, bc.CreateDescriptor, "notaparser")
 

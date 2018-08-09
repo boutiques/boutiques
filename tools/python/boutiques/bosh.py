@@ -21,10 +21,17 @@ def create(*params):
     parser = ArgumentParser("Boutiques descriptor creator")
     parser.add_argument("descriptor", action="store",
                         help="Output file to store descriptor in.")
+    parser.add_argument("--docker-image", '-d', action="store",
+                        help="Name of Docker image on DockerHub.")
+    parser.add_argument("--use-singularity", '-u', action="store_true",
+                        help="When --docker-image is used. Specify to "
+                             "use singularity to run it.")
     results = parser.parse_args(params)
 
     from boutiques.creator import CreateDescriptor
-    new = CreateDescriptor()
+    new = CreateDescriptor(parser=None,
+                           docker_image=results.docker_image,
+                           use_singularity=results.use_singularity)
     new.save(results.descriptor)
     return None
 
