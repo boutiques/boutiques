@@ -57,7 +57,22 @@ class CreateDescriptor(object):
             cont_image['image'] = image_name
 
         # Properties found in the image metadata
+
+        # Set default logging handler to avoid "No handler found" error
+        # when importing docker in Python 2.6
+        # Thanks https://stackoverflow.com/questions/33175763/how-to-use-
+        # logging-nullhandler-in-python-2-6, goddammit 2.6
+        import logging
+        try:
+            from logging import NullHandler
+        except ImportError:
+            class NullHandler(logging.Handler):
+                def emit(self, record):
+                    pass
+        logging.getLogger(__name__).addHandler(NullHandler())
+        logging.NullHandler = NullHandler
         import docker
+
         client = docker.from_env()
         try:
             image = client.images.get(image_name)
