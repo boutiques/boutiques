@@ -4,10 +4,13 @@ import simplejson
 import tempfile
 import argparse
 import sys
+import os
+import json
 import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
+import subprocess
 
 
 # An exception class specific to creating descriptors.
@@ -58,34 +61,21 @@ class CreateDescriptor(object):
 
         # Properties found in the image metadata
 
-        # Set default logging handler to avoid "No handler found" error
-        # when importing docker in Python 2.6
-        # Thanks https://stackoverflow.com/questions/33175763/how-to-use-
-        # logging-nullhandler-in-python-2-6, goddammit 2.6
-        import logging
-        try:
-            from logging import NullHandler
-        except ImportError:
-            class NullHandler(logging.Handler):
-                def emit(self, record):
-                    pass
-        logging.getLogger(__name__).addHandler(NullHandler())
-        logging.NullHandler = NullHandler
-        import docker
-
-        client = docker.from_env()
-        try:
-            image = client.images.get(image_name)
-        except docker.errors.ImageNotFound as e:
-            try:
-                print("Pulling Docker image: "+image_name)
-                client.images.pull(image_name)
-                image = client.images.get(image_name)
-            except docker.errors.NotFound as e:
-                raise CreatorError("Docker image not found: "+image_name)
-
-        if (image.attrs.get('ContainerConfig')):
-            container_config = image.attrs['ContainerConfig']
+        ((stdout, stderr),
+         returncode) = self.executor("docker pull "+image_name)
+        if returncode:
+            raise CreatorError("Cannot pull Docker image {0}: {1} "
+                               "{2} {3}".format(image_name, stdout,
+                                                os.linesep, stderr))
+        ((stdout, stderr),
+         returncode) = self.executor("docker inspect "+image_name)
+        if returncode:
+            raise CreatorError("Cannot inspect Docker image {0}: {1} "
+                               "{2} {3}".format(image_name, stdout,
+                                                os.linesep, stderr))
+        image_attrs = json.loads(stdout)[0]
+        if (image_attrs.get('ContainerConfig')):
+            container_config = image_attrs['ContainerConfig']
             entrypoint = container_config.get('Entrypoint')
             if entrypoint:
                 cont_image['entrypoint'] = True
@@ -100,12 +90,12 @@ class CreateDescriptor(object):
             if workingDir:
                 raise CreatorError("The container image has a working dir, "
                                    " this is currently not supported.")
-        if image.attrs.get('Author'):
-            descriptor['author'] = image.attrs.get('Author')
-        if image.attrs.get('RepoTags'):
-            descriptor['tool-version'] = " ".join(image.attrs.get('RepoTags'))
-        if image.attrs.get('Comment'):
-            descriptor['description'] = image.attrs.get('Comment')
+        if image_attrs.get('Author'):
+            descriptor['author'] = image_attrs.get('Author')
+        if image_attrs.get('RepoTags'):
+            descriptor['tool-version'] = " ".join(image_attrs.get('RepoTags'))
+        if image_attrs.get('Comment'):
+            descriptor['description'] = image_attrs.get('Comment')
         descriptor['container-image'] = cont_image
 
     def parseParser(self, **kwargs):
@@ -239,3 +229,17 @@ class CreateDescriptor(object):
             if kwargs.get("subaction"):
                 return newinput, action.required
             return newinput
+
+    def executor(self, command):
+        try:
+            process = subprocess.Popen(command, shell=True,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+        except OSError as e:
+            sys.stderr.write('OS Error during attempted execution!')
+            raise e
+        except ValueError as e:
+            sys.stderr.write('Input Value Error during attempted execution!')
+            raise e
+        else:
+            return process.communicate(), process.returncode
