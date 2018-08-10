@@ -68,12 +68,19 @@ def validate_descriptor(json_file, **kwargs):
 
     cmdline = descriptor["command-line"]
 
-    # Verify that all command-line key appear in the command-line
-    msg_template = "   KeyError: \"{0}\" not in command-line or file template"
+    # Verify that all command-line key appear in the command-line, in
+    # a file template or in an environment variable value
+    msg_template = ("   KeyError: \"{0}\" not in command-line or file template"
+                    " or environment variables")
+    envValues = ""
+    if descriptor.get('environment-variables'):
+        for env in descriptor.get('environment-variables'):
+            envValues += "||"+env['value']
     errors += [msg_template.format(k)
                for k in clkeys
-               if (cmdline.count(k) +
-                   " ".join(configFileTemplates).count(k)) < 1]
+               if ((cmdline +
+                    ".".join(configFileTemplates) +
+                    envValues).count(k)) < 1]
 
     # Verify that no key contains another key
     msg_template = "   KeyError: \"{0}\" contains \"{1}\""

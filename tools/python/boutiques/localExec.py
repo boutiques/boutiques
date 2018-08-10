@@ -790,7 +790,9 @@ class LocalExecutor(object):
                     if useFlags:
                         flag = self.safeGet(paramId, 'command-line-flag') or ''
                         sep = self.safeGet(paramId,
-                                           'command-line-flag-separator') or ' '
+                                           'command-line-flag-separator')
+                        if sep is None:
+                            sep = ' '
                         val = flag + sep + val
                         # special case for flag-type inputs
                         if self.safeGet(paramId, 'type') == 'Flag':

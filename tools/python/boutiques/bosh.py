@@ -15,6 +15,7 @@ from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
+from boutiques.importer import ImportError
 
 
 def create(*params):
@@ -159,24 +160,34 @@ def execute(*params):
 
 
 def importer(*params):
-    parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
+    parser = ArgumentParser("Imports old descriptor or BIDS app or CWL "
+                            " descriptor to spec.")
     parser.add_argument("type", help="Type of import we are performing",
-                        choices=["bids", "0.4"])
-    parser.add_argument("descriptor", help="Where the Boutiques"
+                        choices=["bids", "0.4", "cwl"])
+    parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
-    parser.add_argument("input", help="Input to be convered. For '0.4'"
+    parser.add_argument("input_descriptor", help="Input descriptor to be "
+                        "converted. For '0.4'"
                         ", is JSON descriptor,"
-                        " for 'bids' is base directory of BIDS app.")
+                        " for 'bids' is base directory of BIDS app, "
+                        "for 'cwl' is YAML descriptor.")
+    parser.add_argument("-o", "--output-invocation", help="Where to write "
+                        "the invocation if any.")
+    parser.add_argument("-i", "--input-invocation", help="Input invocation "
+                        " for CWL if any.")
     results = parser.parse_args(params)
 
-    descriptor = results.descriptor
-    inp = results.input
     from boutiques.importer import Importer
-    importer = Importer(descriptor)
+    importer = Importer(results.input_descriptor,
+                        results.output_descriptor,
+                        results.input_invocation,
+                        results.output_invocation)
     if results.type == "0.4":
-        importer.upgrade_04(inp)
+        importer.upgrade_04()
     elif results.type == "bids":
-        importer.import_bids(inp)
+        importer.import_bids()
+    elif results.type == "cwl":
+        importer.import_cwl()
 
 
 def exporter(*params):
@@ -420,6 +431,7 @@ def bosh(args=None):
             InvocationValidationError,
             ValidationError,
             ExportError,
+            ImportError,
             ExecutorError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'

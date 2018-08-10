@@ -7,7 +7,8 @@ DEPS = [
          "simplejson",
          "requests",
          "pytest",
-         "termcolor"
+         "termcolor",
+         "pyyaml"
        ]
 
 # jsonschema 2.6 doesn't support Python 2.6
