@@ -2,6 +2,7 @@
 
 import simplejson
 import os.path as op
+import json
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
@@ -359,8 +360,9 @@ def validate_descriptor(json_file, **kwargs):
 
     errors = None if errors == [] else errors
     if errors is None:
-        if kwargs.get("verbose"):
-            print("Boutiques validation OK")
+        if kwargs.get('format_output'):
+            with open(json_file, 'w') as fhandle:
+                fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
         return descriptor
     else:
         raise DescriptorValidationError("\n".join(errors))
