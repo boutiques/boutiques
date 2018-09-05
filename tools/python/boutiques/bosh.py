@@ -408,7 +408,7 @@ def bosh(args=None):
         elif func == "exec":
             out = execute(*params)
             # If executed through CLI, print 'out' and return exit_code
-            # Otherwise, return out 
+            # Otherwise, return out
             return bosh_return(out, out.exit_code)
         elif func == "import":
             out = importer(*params)
