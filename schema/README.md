@@ -5,9 +5,9 @@
 ```
 
 
-| Abstract | Extensible | Status | Custom Properties | Additional Properties | Defined In |
-|----------|------------|--------|-------------------|-----------------------|------------|
-| Can be instantiated | No | Experimental | Forbidden | Forbidden |  |
+| Abstract | Extensible | Status | Identifiable | Custom Properties | Additional Properties | Defined In |
+|----------|------------|--------|--------------|-------------------|-----------------------|------------|
+| Can be instantiated | No | Experimental | No | Forbidden | Forbidden |  |
 
 # Tool Properties
 
@@ -25,7 +25,7 @@
 | [inputs](#inputs) | `object[]` | **Required** | Tool (this schema) |
 | [invocation-schema](#invocation-schema) | `object` | Optional | Tool (this schema) |
 | [name](#name) | `string` | **Required** | Tool (this schema) |
-| [output-files](#output-files) | `object[]` | **Required** | Tool (this schema) |
+| [output-files](#output-files) | `object[]` | Optional | Tool (this schema) |
 | [schema-version](#schema-version) | `enum` | **Required** | Tool (this schema) |
 | [shell](#shell) | `string` | Optional | Tool (this schema) |
 | [suggested-resources](#suggested-resources) | `object` | Optional | Tool (this schema) |
@@ -87,7 +87,7 @@ A string that describes the tool command line, where input and output values are
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
 
 
@@ -109,7 +109,7 @@ A string that describes the tool command line, where input and output values are
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
 
 
@@ -174,11 +174,11 @@ All items must be of the type:
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
-| `description`| string | Optional | 
-| `name`| string | **Required** | 
-| `value`| string | **Required** | 
+| `description`| string | Optional |
+| `name`| string | **Required** |
+| `value`| string | **Required** |
 
 
 
@@ -274,10 +274,10 @@ All items must be of the type:
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
-| `code`| integer | **Required** | 
-| `description`| string | **Required** | 
+| `code`| integer | **Required** |
+| `description`| string | **Required** |
 
 
 
@@ -346,15 +346,15 @@ All items must be of the type:
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
-| `all-or-none`| boolean | Optional | 
-| `description`| string | Optional | 
-| `id`| string | **Required** | 
-| `members`| array | **Required** | 
-| `mutually-exclusive`| boolean | Optional | 
-| `name`| string | **Required** | 
-| `one-is-required`| boolean | Optional | 
+| `all-or-none`| boolean | Optional |
+| `description`| string | Optional |
+| `id`| string | **Required** |
+| `members`| array | **Required** |
+| `mutually-exclusive`| boolean | Optional |
+| `name`| string | **Required** |
+| `one-is-required`| boolean | Optional |
 
 
 
@@ -430,13 +430,13 @@ IDs of the inputs belonging to this group.
 
 `members`
 * is **required**
-* type: `array`
+* type: `string[]`
 
 
 ##### members Type
 
 
-Array type: `array`
+Array type: `string[]`
 
 All items must be of the type:
 `string`
@@ -539,29 +539,31 @@ All items must be of the type:
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
-| `command-line-flag`| string | Optional | 
-| `command-line-flag-separator`| string | Optional | 
-| `default-value`|  | Optional | 
-| `description`| string | Optional | 
-| `disables-inputs`| array | Optional | 
-| `exclusive-maximum`| boolean | Optional | 
-| `exclusive-minimum`| boolean | Optional | 
-| `id`| string | **Required** | 
-| `integer`| boolean | Optional | 
-| `list`| boolean | Optional | 
-| `max-list-entries`| number | Optional | 
-| `maximum`| number | Optional | 
-| `min-list-entries`| number | Optional | 
-| `minimum`| number | Optional | 
-| `name`| string | **Required** | 
-| `optional`| boolean | Optional | 
-| `requires-inputs`| array | Optional | 
-| `type`| string | **Required** | 
-| `uses-absolute-path`| boolean | Optional | 
-| `value-choices`| array | Optional | 
-| `value-key`| string | Optional | 
+| `command-line-flag`| string | Optional |
+| `command-line-flag-separator`| string | Optional |
+| `default-value`|  | Optional |
+| `description`| string | Optional |
+| `disables-inputs`| array | Optional |
+| `exclusive-maximum`| boolean | Optional |
+| `exclusive-minimum`| boolean | Optional |
+| `id`| string | **Required** |
+| `integer`| boolean | Optional |
+| `list`| boolean | Optional |
+| `max-list-entries`| number | Optional |
+| `maximum`| number | Optional |
+| `min-list-entries`| number | Optional |
+| `minimum`| number | Optional |
+| `name`| string | **Required** |
+| `optional`| boolean | Optional |
+| `requires-inputs`| array | Optional |
+| `type`| string | **Required** |
+| `uses-absolute-path`| boolean | Optional |
+| `value-choices`| array | Optional |
+| `value-disables`| object | Optional |
+| `value-key`| string | Optional |
+| `value-requires`| object | Optional |
 
 
 
@@ -611,7 +613,7 @@ Default value of the input, used by the tool when no option is specified.
 
 `default-value`
 * is optional
-* type: `undefined`
+* type: complex
 
 ##### default-value Type
 
@@ -621,7 +623,7 @@ Unknown type ``.
 {
   "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
   "description": "Default value of the input, used by the tool when no option is specified.",
-  "simpletype": "`undefined`"
+  "simpletype": "complex"
 }
 ```
 
@@ -657,13 +659,13 @@ Ids of the inputs that are disabled when this input is active.
 
 `disables-inputs`
 * is optional
-* type: `array`
+* type: `string[]`
 
 
 ##### disables-inputs Type
 
 
-Array type: `array`
+Array type: `string[]`
 
 All items must be of the type:
 `string`
@@ -906,13 +908,13 @@ Ids of the inputs which must be active for this input to be available.
 
 `requires-inputs`
 * is optional
-* type: `array`
+* type: `string[]`
 
 
 ##### requires-inputs Type
 
 
-Array type: `array`
+Array type: `string[]`
 
 All items must be of the type:
 `string`
@@ -933,13 +935,17 @@ Input type.
 
 `type`
 * is **required**
-* type: `string`
+* type: `enum`
 
-The value of this property **must** be equal to one of the [known values below](#type-known-values).
+The value of this property **must** be equal to one of the [known values below](#inputs-known-values).
 
 ##### type Known Values
 | Value | Description |
 |-------|-------------|
+| `String` |  |
+| `File` |  |
+| `Flag` |  |
+| `Number` |  |
 
 
 
@@ -995,7 +1001,8 @@ Unknown type ``.
       {
         "type": "number"
       }
-    ]
+    ],
+    "simpletype": "complex"
   },
   "simpletype": "`array`"
 }
@@ -1003,6 +1010,35 @@ Unknown type ``.
 
 
 
+
+
+
+
+
+
+
+#### value-disables
+
+Ids of the inputs that are disabled when the corresponding value choice is selected.
+
+`value-disables`
+* is optional
+* type: `object`
+
+##### value-disables Type
+
+Unknown type `object`.
+
+```json
+{
+  "id": "http://github.com/boutiques/boutiques-schema/input/value-disables",
+  "description": "Ids of the inputs that are disabled when the corresponding value choice is selected.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true,
+  "simpletype": "`object`"
+}
+```
 
 
 
@@ -1030,6 +1066,34 @@ A string contained in command-line, substituted by the input value and/or flag a
 
 
 
+#### value-requires
+
+Ids of the inputs that are required when the corresponding value choice is selected.
+
+`value-requires`
+* is optional
+* type: `object`
+
+##### value-requires Type
+
+Unknown type `object`.
+
+```json
+{
+  "id": "http://github.com/boutiques/boutiques-schema/input/value-requires",
+  "description": "Ids of the inputs that are required when the corresponding value choice is selected.",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": true,
+  "simpletype": "`object`"
+}
+```
+
+
+
+
+
+
 
 
 
@@ -1050,7 +1114,7 @@ A string contained in command-line, substituted by the input value and/or flag a
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
 
 
@@ -1081,7 +1145,7 @@ Tool name.
 
 
 `output-files`
-* is **required**
+* is optional
 * type: `object[]`
 * at least `1` items in the array
 * defined in this schema
@@ -1095,20 +1159,20 @@ All items must be of the type:
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
-| `command-line-flag`| string | Optional | 
-| `command-line-flag-separator`| string | Optional | 
-| `description`| string | Optional | 
-| `file-template`| array | Optional | 
-| `id`| string | **Required** | 
-| `list`| boolean | Optional | 
-| `name`| string | **Required** | 
-| `optional`| boolean | Optional | 
-| `path-template`| string | **Required** | 
-| `path-template-stripped-extensions`| array | Optional | 
-| `uses-absolute-path`| boolean | Optional | 
-| `value-key`| string | Optional | 
+| `command-line-flag`| string | Optional |
+| `command-line-flag-separator`| string | Optional |
+| `description`| string | Optional |
+| `file-template`| array | Optional |
+| `id`| string | **Required** |
+| `list`| boolean | Optional |
+| `name`| string | **Required** |
+| `optional`| boolean | Optional |
+| `path-template`| string | **Required** |
+| `path-template-stripped-extensions`| array | Optional |
+| `uses-absolute-path`| boolean | Optional |
+| `value-key`| string | Optional |
 
 
 
@@ -1178,14 +1242,14 @@ An array of strings that may contain value keys. Each item will be a line in the
 
 `file-template`
 * is optional
-* type: `array`
+* type: `string[]`
 * at least `1` items in the array
 
 
 ##### file-template Type
 
 
-Array type: `array`
+Array type: `string[]`
 
 All items must be of the type:
 `string`
@@ -1311,13 +1375,13 @@ List of file extensions that will be stripped from the input values before being
 
 `path-template-stripped-extensions`
 * is optional
-* type: `array`
+* type: `string[]`
 
 
 ##### path-template-stripped-extensions Type
 
 
-Array type: `array`
+Array type: `string[]`
 
 All items must be of the type:
 `string`
@@ -1429,13 +1493,13 @@ Absolute path of the shell interpreter to use in the container (defaults to /bin
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
-| `cpu-cores`| integer | Optional | 
-| `disk-space`| number | Optional | 
-| `nodes`| integer | Optional | 
-| `ram`| number | Optional | 
-| `walltime-estimate`| number | Optional | 
+| `cpu-cores`| integer | Optional |
+| `disk-space`| number | Optional |
+| `nodes`| integer | Optional |
+| `ram`| number | Optional |
+| `walltime-estimate`| number | Optional |
 
 
 
@@ -1562,7 +1626,7 @@ An set of key-value pairs specifying tags describing the pipeline. The tag names
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
 
 
@@ -1588,11 +1652,11 @@ All items must be of the type:
 `object` with following properties:
 
 
-| Property | Type | Required
+| Property | Type | Required |
 |----------|------|----------|
-| `assertions`| object | **Required** | 
-| `invocation`| object | **Required** | 
-| `name`| string | **Required** | 
+| `assertions`| object | **Required** |
+| `invocation`| object | **Required** |
+| `name`| string | **Required** |
 
 
 
