@@ -6,6 +6,7 @@ import pytest
 from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
+from boutiques.localExec import ExecutorError
 
 
 class TestExample1(TestCase):
@@ -107,6 +108,19 @@ class TestExample1(TestCase):
         assert(ret.output_files[0].file_name == "log-4.txt" or
                ret.output_files[1].file_name == "log-4.txt")
 
+    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
+                        reason="Singularity not installed")
+    def test_example1_crash_pull_singularity(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
+        with pytest.raises(ExecutorError) as e:
+                bosh.execute("launch",
+                             os.path.join(example1_dir,
+                                          "example1_sing_crash_pull.json"),
+                             os.path.join(example1_dir,
+                                          "invocation_sing.json"))
+        assert("Could not pull Singularity image" in str(e))
+
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_missing_script(self):
@@ -122,6 +136,20 @@ class TestExample1(TestCase):
         assert(ret.error_message == "File does not exist!")
         assert(len(ret.missing_files) == 1)
         assert(ret.missing_files[0].file_name == "log-4-pwet.txt")
+
+    def test_example1_exec_fail_cli(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
+        command = ("bosh exec launch " +
+                   os.path.join(example1_dir,
+                                "example1_docker.json") + " " +
+                   os.path.join(example1_dir,
+                                "invocation_missing_script.json"))
+        process = subprocess.Popen(command, shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        process.communicate()
+        assert(process.returncode == 2), command
 
     def test_example1_no_exec_random(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
