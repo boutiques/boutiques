@@ -2,6 +2,7 @@
 
 import simplejson
 import os.path as op
+import json
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
@@ -68,12 +69,19 @@ def validate_descriptor(json_file, **kwargs):
 
     cmdline = descriptor["command-line"]
 
-    # Verify that all command-line key appear in the command-line
-    msg_template = "   KeyError: \"{0}\" not in command-line or file template"
+    # Verify that all command-line key appear in the command-line, in
+    # a file template or in an environment variable value
+    msg_template = ("   KeyError: \"{0}\" not in command-line or file template"
+                    " or environment variables")
+    envValues = ""
+    if descriptor.get('environment-variables'):
+        for env in descriptor.get('environment-variables'):
+            envValues += "||"+env['value']
     errors += [msg_template.format(k)
                for k in clkeys
-               if (cmdline.count(k) +
-                   " ".join(configFileTemplates).count(k)) < 1]
+               if ((cmdline +
+                    ".".join(configFileTemplates) +
+                    envValues).count(k)) < 1]
 
     # Verify that no key contains another key
     msg_template = "   KeyError: \"{0}\" contains \"{1}\""
@@ -352,8 +360,9 @@ def validate_descriptor(json_file, **kwargs):
 
     errors = None if errors == [] else errors
     if errors is None:
-        if kwargs.get("verbose"):
-            print("Boutiques validation OK")
+        if kwargs.get('format_output'):
+            with open(json_file, 'w') as fhandle:
+                fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
         return descriptor
     else:
         raise DescriptorValidationError("\n".join(errors))

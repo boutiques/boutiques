@@ -131,7 +131,6 @@ class LocalExecutor(object):
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
-        self.debug = False  # debug mode (also use python -u)
         self.invocation = invocation
         # Parse JSON descriptor
         with open(desc, 'r') as descriptor:
@@ -159,7 +158,8 @@ class LocalExecutor(object):
             self.con.get('working-directory')
 
         # Extra Options
-        # Include: forcePathType and destroyTempScripts
+        # Include: forcePathType and debug
+        self.debug = False
         for option in list(options.keys()):
             setattr(self, option, options.get(option))
         # Container Implementation check
@@ -255,33 +255,31 @@ class LocalExecutor(object):
                     pull_loc = "\"{0}\" {1}{2}".format(conName,
                                                        conIndex,
                                                        conImage)
-                    container_location = ("Pulled from {1} ({0} not found "
-                                          "in current"
-                                          "working director").format(conName,
-                                                                     pull_loc)
+                    container_location = ("Pulled from {1}{2} ({0} not found "
+                                          "in current "
+                                          "working directory)").format(conName,
+                                                                       conIndex,
+                                                                       conImage)
                     # Pull the singularity image
-                    if self._localExecute("singularity pull --name " +
-                                          pull_loc)[1]:
-                        raise ExecutorError("Could not pull Singularity image")
+                    sing_command = "singularity pull --name " + pull_loc
+                    (stdout, stderr), return_code = self._localExecute(
+                                                            sing_command)
+                    if return_code:
+                        message = ("Could not pull Singularity"
+                                   " image: " + os.linesep + " * Pull command: "
+                                   + sing_command + os.linesep + " * Error: "
+                                   + stderr.decode("utf-8"))
+                        raise ExecutorError(message)
                 else:
                     container_location = "Local ({0})".format(conName)
                 conName = op.abspath(conName)
             else:
                 raise ExecutorError('Unrecognized container'
                                     ' type: \"%s\"' % conType)
+
             # Generate command script
-            uname, uid = pwd.getpwuid(os.getuid())[0], str(os.getuid())
-            # Adds the user to the container before executing
-            # the templated command line
-            userchange = '' if not self.changeUser else ("useradd --uid " +
-                                                         uid + ' ' + uname +
-                                                         "\n")
-            # If --changeUser was desired, run with su so that
-            # any output files are owned by the user instead of root
             # Get the supported shell by the docker or singularity
-            if self.changeUser:
-                command = 'su ' + uname + ' -c ' + "\"{0}\"".format(command)
-            cmdString = "#!"+self.shell+" -l\n" + userchange + str(command)
+            cmdString = "#!"+self.shell+" -l\n" + str(command)
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
@@ -308,7 +306,15 @@ class LocalExecutor(object):
                         envString += " -e {0}='{1}' ".format(key, val)
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
-                container_command = ('docker run --entrypoint=' + self.shell +
+                # If --changeUser was desired, provides the current user id
+                # and its group id as the user and group to be used instead
+                # of the default root within the container.
+                userchange = ''
+                if self.changeUser:
+                    userchange = ' -u $(id -u):$(id -g)'
+
+                container_command = ('docker run' + userchange +
+                                     ' --entrypoint=' + self.shell +
                                      ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
@@ -368,7 +374,7 @@ class LocalExecutor(object):
 
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
-        if conIsPresent and self.destroyTempScripts:
+        if conIsPresent and not self.debug:
             if os.path.isfile(dsname):
                 os.remove(dsname)
 
@@ -409,6 +415,8 @@ class LocalExecutor(object):
     def _localExecute(self, command):
         # Note: invokes the command through the shell
         # (potential injection dangers)
+        if self.debug:
+            print("Running: {0}".format(command))
         try:
             process = subprocess.Popen(command, shell=True,
                                        stdout=subprocess.PIPE,
@@ -782,7 +790,9 @@ class LocalExecutor(object):
                     if useFlags:
                         flag = self.safeGet(paramId, 'command-line-flag') or ''
                         sep = self.safeGet(paramId,
-                                           'command-line-flag-separator') or ' '
+                                           'command-line-flag-separator')
+                        if sep is None:
+                            sep = ' '
                         val = flag + sep + val
                         # special case for flag-type inputs
                         if self.safeGet(paramId, 'type') == 'Flag':

@@ -15,6 +15,7 @@ from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
+from boutiques.importer import ImportError
 
 
 def create(*params):
@@ -35,10 +36,14 @@ def validate(*params):
                         help="The Boutiques descriptor.")
     parser.add_argument("--bids", "-b", action="store_true",
                         help="Flag indicating if descriptor is a BIDS app")
+    parser.add_argument("--format", "-f", action="store_true",
+                        help="If descriptor is valid, rewrite it with sorted"
+                        " keys.")
     results = parser.parse_args(params)
 
     from boutiques.validator import validate_descriptor
-    descriptor = validate_descriptor(results.descriptor)
+    descriptor = validate_descriptor(results.descriptor,
+                                     format_output=results.format)
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
@@ -78,7 +83,8 @@ def execute(*params):
                             "container directory /b.", nargs="*")
         parser.add_argument("-x", "--debug", action="store_true",
                             help="Keeps temporary scripts used during "
-                            "execution.")
+                            "execution, and prints additional debug "
+                            "messages.")
         parser.add_argument("-u", "--user", action="store_true",
                             help="Runs the container as local user ({0})"
                             " instead of root.".format(os.getenv("USER")))
@@ -102,7 +108,7 @@ def execute(*params):
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
-                                  "destroyTempScripts": not results.debug,
+                                  "debug": results.debug,
                                   "changeUser": results.user})
         # Execute it
         return executor.execute(results.volumes)
@@ -158,24 +164,34 @@ def execute(*params):
 
 
 def importer(*params):
-    parser = ArgumentParser("Imports old descriptor or BIDS app to spec.")
+    parser = ArgumentParser("Imports old descriptor or BIDS app or CWL "
+                            " descriptor to spec.")
     parser.add_argument("type", help="Type of import we are performing",
-                        choices=["bids", "0.4"])
-    parser.add_argument("descriptor", help="Where the Boutiques"
+                        choices=["bids", "0.4", "cwl"])
+    parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
-    parser.add_argument("input", help="Input to be convered. For '0.4'"
+    parser.add_argument("input_descriptor", help="Input descriptor to be "
+                        "converted. For '0.4'"
                         ", is JSON descriptor,"
-                        " for 'bids' is base directory of BIDS app.")
+                        " for 'bids' is base directory of BIDS app, "
+                        "for 'cwl' is YAML descriptor.")
+    parser.add_argument("-o", "--output-invocation", help="Where to write "
+                        "the invocation if any.")
+    parser.add_argument("-i", "--input-invocation", help="Input invocation "
+                        " for CWL if any.")
     results = parser.parse_args(params)
 
-    descriptor = results.descriptor
-    inp = results.input
     from boutiques.importer import Importer
-    importer = Importer(descriptor)
+    importer = Importer(results.input_descriptor,
+                        results.output_descriptor,
+                        results.input_invocation,
+                        results.output_invocation)
     if results.type == "0.4":
-        importer.upgrade_04(inp)
+        importer.upgrade_04()
     elif results.type == "bids":
-        importer.import_bids(inp)
+        importer.import_bids()
+    elif results.type == "cwl":
+        importer.import_cwl()
 
 
 def exporter(*params):
@@ -391,7 +407,9 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "exec":
             out = execute(*params)
-            bosh_return(out, out.exit_code)  # return tool exit code
+            # If executed through CLI, print 'out' and return exit_code
+            # Otherwise, return out
+            return bosh_return(out, out.exit_code)
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)
@@ -419,12 +437,13 @@ def bosh(args=None):
             InvocationValidationError,
             ValidationError,
             ExportError,
+            ImportError,
             ExecutorError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
             try:
-                print(e.message)
+                print(e.message)  # Python 2 only
             except Exception as ex:
                 print(e)
             return 99  # Note: this conflicts with tool error codes.
