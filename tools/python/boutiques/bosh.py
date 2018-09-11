@@ -18,6 +18,19 @@ from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 
 
+def prettyprint(*params):
+    parser = ArgumentParser("Boutiques pretty-print for generating help text")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor.")
+    results = parser.parse_args(params)
+
+    from boutiques.prettyprint import pprint
+    with open(results.descriptor, 'r') as fhandle:
+        helpstring = pprint(json.load(fhandle))
+
+    return helpstring
+
+
 def create(*params):
     parser = ArgumentParser("Boutiques descriptor creator")
     parser.add_argument("descriptor", action="store",
@@ -372,10 +385,12 @@ def bosh(args=None):
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties."
-                        "Test: run pytest on a descriptor detailing tests",
+                        "Test: run pytest on a descriptor detailing tests. "
+                        "Pprint: generate pretty print help text from a tool "
+                        "descriptor.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test"])
+                                 "test", "pprint"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -432,6 +447,9 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "test":
             out = test(*params)
+            return bosh_return(out)
+        elif func == "pprint":
+            out = prettyprint(*params)
             return bosh_return(out)
         else:
             parser.print_help()
