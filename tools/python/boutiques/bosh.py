@@ -160,7 +160,9 @@ def execute(*params):
             executor.printCmdLine()
 
         # for consistency with execute
-        return ExecutorOutput("", "", 0, "", [], [], "", "", "")
+        # Adding simulate to "container location" field since it's an invalid
+        # value, and we can parse that to hide the summary print
+        return ExecutorOutput("", "", 0, "", [], [], "", "", "simulate")
 
 
 def importer(*params):
@@ -386,8 +388,10 @@ def bosh(args=None):
     def runs_as_cli():
         return os.path.basename(sys.argv[0]) == "bosh"
 
-    def bosh_return(val, code=0):
+    def bosh_return(val, code=0, hide=False):
         if runs_as_cli():
+            if hide:
+                return code
             if val is not None:
                 print(val)
             else:
@@ -409,7 +413,8 @@ def bosh(args=None):
             out = execute(*params)
             # If executed through CLI, print 'out' and return exit_code
             # Otherwise, return out
-            return bosh_return(out, out.exit_code)
+            return bosh_return(out, out.exit_code,
+                               hide=bool(out.container_location == 'simulate'))
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)
