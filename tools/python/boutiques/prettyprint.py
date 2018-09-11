@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
 import textwrap
 
 # Prints descriptor help text in a pretty format by first creating an argument
@@ -9,13 +9,19 @@ def pprint(descriptor):
     # Create parser description, including: ...
     #   - Main description
     sep = "".join(["="] * 80)
-    name = "Tool name: {0}".format(descriptor['name'])
+    name = "Tool name: {0} (ver: {1})".format(descriptor['name'],
+                                              descriptor.get("tool-version"))
     description = "Tool description: {0}".format(descriptor['description'])
+    tags = "Tags: {0}".format(", ".join(descriptor.get("tags")))
 
-    clkeys = {inp["value-key"]: inp["id"] for inp in descriptor["inputs"]}
+    clkeys_lut1 = {inp["id"]: inp["value-key"] for inp in descriptor["inputs"]}
+    clkeys_lut2 = {inp["value-key"]: [t
+                                      for t in clkeys_lut1.keys()
+                                      if clkeys_lut1[t] == inp['value-key']]
+                   for inp in descriptor["inputs"]}
     cline = descriptor['command-line']
     cend = len(cline)
-    for clkey in clkeys.keys():
+    for clkey in clkeys_lut2.keys():
         cend = cline.find(clkey) if cline.find(clkey) < cend else cend
     cline = textwrap.wrap("  " + descriptor['command-line'],
                           subsequent_indent='  ' + ' ' * cend)
@@ -34,12 +40,11 @@ def pprint(descriptor):
     #   - Output information
     outputs = descriptor.get("output-files")
     output_info = "Output Files:"
-    clkeys = {inp["value-key"]: inp["id"] for inp in descriptor["inputs"]}
     if outputs:
         for output in outputs:
             exts = ", ".join(output.get("path-template-stripped-extensions"))
-            depids = [clkeys[inp]
-                      for inp in clkeys.keys()
+            depids = ["/".join(clkeys_lut2[inp])
+                      for inp in clkeys_lut2.keys()
                       if inp in output["path-template"]]
             required = "Optional" if output.get("optional") else "Required"
             output_info += "\n\tName: {0} ({1})".format(output["name"],
@@ -66,32 +71,55 @@ def pprint(descriptor):
             group_info += "\n\tName: {0}".format(group["name"].title())
             group_info += "\n\tType: {0}\n".format(", ".join([gtypes[ind]
                                                             for ind in gtype]))
-            group_info += "\tInput IDs: {0}".format(", ".join(group["members"]))
+            group_info += ("\tGroup Member IDs: "
+                           "{0}".format(", ".join(group["members"])))
             group_info += "\n"
     else:
-        group_info += "\n\tNo input group information provided"
+        group_info += "\n\tNo input group information provided\n"
 
-    tool_description = """{0}\n
-{1}
-{2}
-{3}\n
-{0}\n
-{4}\n
-{0}\n
-{5}
-{0}\n
-{6}\n
-{0}
-""".format(sep, name, description, cline, container_info,
-           output_info, group_info)
+    #   - System requirements
+    #   - Error Codes
+
+    tool_description = """{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}\n
+{5}\n\n{0}\n\n{6}\n{0}\n\n{7}\n{0}""".format(sep, name, description, tags,
+                                             cline, container_info, output_info,
+                                             group_info)
 
     # For each input, create, including:
-    #   - Input id
+    #   - Input value-key
     #   - Input description
+    #   - Input ID (in description)
     #   - Input type (in description)
     #   - Limits (in description)
     #   - Input disables/requires (in description)
-    #   - Required/Optional status
-    #   - Command-line flag
-    prettystring = tool_description
+    #   - Required/Optional status (in description)
+    parser = ArgumentParser(description=tool_description,
+                            formatter_class=RawTextHelpFormatter,
+                            add_help=False)
+    inputs = descriptor["inputs"]
+    for clkey in clkeys_lut2.keys():
+        args = []
+        kwargs = {}
+        inp = [inp
+               for inp in inputs
+               if inp['value-key'] == clkey]
+        opt = bool(inp[0].get("optional"))
+        cflag = inp[0].get("command-line-flag")
+        if cflag:
+            args += [cflag]
+            kwargs['dest'] = clkey
+        else:
+            args += [clkey]
+        ilist = bool(inp[0].get("list"))
+        if ilist:
+            kwargs['nargs'] = '+'
+        itype = inp[0].get("type")
+        desc = ""
+        kwargs['help'] = desc
+        parser.add_argument(*args, **kwargs)
+        # print(inp)
+        pass
+
+    helptext = parser.format_help()
+    prettystring = "\n\n".join(helptext.split("\n\n")[1:])
     return prettystring
