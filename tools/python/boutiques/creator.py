@@ -167,7 +167,7 @@ class CreateDescriptor(object):
             if type(action) is argparse._StoreTrueAction:
                 newinput["type"] = "Flag"
 
-            self.descriptor["command-line"] += " {0}".format(adest.upper())
+            self.descriptor["command-line"] += " [{0}]".format(adest.upper())
             # If this action belongs to a subparser, return a flag along
             # with the object, indicating its required/not required status.
             if kwargs.get("subaction"):
