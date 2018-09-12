@@ -141,7 +141,7 @@ class CreateDescriptor(object):
                 "description": action.help,
                 "optional": kwargs.get("subaction") or not action.required,
                 "type": "String",
-                "value-key": "{0}".format(adest.upper())
+                "value-key": "[{0}]".format(adest.upper())
             }
 
             if action.type:
