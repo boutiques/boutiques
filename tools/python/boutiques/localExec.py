@@ -145,11 +145,9 @@ class LocalExecutor(object):
         # The set of input parameters from the json descriptor
         self.inputs = self.desc_dict['inputs']  # Struct: [{id:}..,{id:}]
         # The set of output parameters from the json descriptor
-        self.outputs = self.desc_dict['output-files']  # Struct: [{id:}..,{id:}]
+        self.outputs = self.desc_dict.get('output-files') or []
         # The set of parameter groups, according to the json descriptor
-        self.groups = []
-        if 'groups' in list(self.desc_dict.keys()):
-            self.groups = self.desc_dict['groups']
+        self.groups = self.desc_dict.get('groups') or []
 
         # Container-image Options
         self.con = self.desc_dict.get('container-image')
@@ -449,16 +447,16 @@ class LocalExecutor(object):
             return ''.join(rnd.choice(string.digits)
                            for _ in range(nd))
 
-        def randFile():
-            return ('f_' + randDigs() +
+        def randFile(id):
+            return ('f_' + id + '_' + randDigs() +
                     rnd.choice(['.csv', '.tex', '.j',
                                 '.cpp', '.m', '.mnc',
                                 '.nii.gz']))
 
-        def randStr():
-            return 'str_' + ''.join(rnd.choice(string.digits +
-                                    string.ascii_letters)
-                                    for _ in range(nd))
+        def randStr(id):
+            return 'str_' + id + '_' + ''.join(rnd.choice(string.digits +
+                                               string.ascii_letters)
+                                               for _ in range(nd))
 
         # A function for generating a number type parameter input
         # p is a dictionary object corresponding to a parameter
@@ -504,13 +502,13 @@ class LocalExecutor(object):
             if self.safeGet(prm['id'], 'value-choices'):
                 return rnd.choice(self.safeGet(prm['id'], 'value-choices'))
             if prm['type'] == 'String':
-                return randStr()
+                return randStr(prm['id'])
             if prm['type'] == 'Number':
                 return randNum(prm)
             if prm['type'] == 'Flag':
                 return rnd.choice(['true', 'false'])
             if prm['type'] == 'File':
-                return randFile()
+                return randFile(prm['id'])
 
         # For this function, given prm (a parameter description),
         # a parameter value is generated
