@@ -8,6 +8,7 @@ import boutiques.creator as bc
 import subprocess
 import os.path as op
 import os
+import pytest
 
 from boutiques.creator import CreatorError
 
@@ -29,6 +30,8 @@ class TestCreator(TestCase):
         descriptor = bosh(['create', '-d', 'mysql:latest', '-u', fil])
         assert bosh(['validate', fil]) is None
 
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
     def test_fail_image_(self):
         fil = 'creator_output.json'
         self.assertRaises(CreatorError,

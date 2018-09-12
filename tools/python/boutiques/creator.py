@@ -47,31 +47,37 @@ class CreateDescriptor(object):
         with open(filename, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
 
-    def parse_docker(self, descriptor, image_name, use_singularity):
+    def parse_docker(self, descriptor, docker_image_name, use_singularity):
         cont_image = {}
 
         # Basic image config
         if use_singularity:
             cont_image['type'] = 'singularity'
             cont_image['index'] = 'docker://'
-            cont_image['image'] = image_name
+            cont_image['image'] = docker_image_name
         else:
             cont_image['type'] = 'docker'
-            cont_image['image'] = image_name
+            cont_image['image'] = docker_image_name
 
+        descriptor['container-image'] = cont_image
+
+        # If Docker isn't installed, that's all we can do!
+        if subprocess.Popen("type docker", shell=True).wait():
+            return
+
+        # If Docker is here, let's fetch metadata from the image
         # Properties found in the image metadata
-
         ((stdout, stderr),
-         returncode) = self.executor("docker pull "+image_name)
+         returncode) = self.executor("docker pull "+docker_image_name)
         if returncode:
             raise CreatorError("Cannot pull Docker image {0}: {1} "
-                               "{2} {3}".format(image_name, stdout,
+                               "{2} {3}".format(docker_image_name, stdout,
                                                 os.linesep, stderr))
         ((stdout, stderr),
-         returncode) = self.executor("docker inspect "+image_name)
+         returncode) = self.executor("docker inspect "+docker_image_name)
         if returncode:
             raise CreatorError("Cannot inspect Docker image {0}: {1} "
-                               "{2} {3}".format(image_name, stdout,
+                               "{2} {3}".format(docker_image_name, stdout,
                                                 os.linesep, stderr))
         image_attrs = json.loads(stdout.decode("utf-8"))[0]
         if (image_attrs.get('ContainerConfig')):
@@ -96,7 +102,6 @@ class CreateDescriptor(object):
             descriptor['tool-version'] = " ".join(image_attrs.get('RepoTags'))
         if image_attrs.get('Comment'):
             descriptor['description'] = image_attrs.get('Comment')
-        descriptor['container-image'] = cont_image
 
     def parseParser(self, **kwargs):
         self.descriptor["command-line"] = kwargs.get("execname")
