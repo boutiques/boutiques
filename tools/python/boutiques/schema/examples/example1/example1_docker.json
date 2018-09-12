@@ -4,7 +4,7 @@
     "container-image": {
         "image": "boutiques/example1:test",
         "type": "docker",
-        "container-opts": ["--privileged", "--security-opt=seccomp:unconfined"]
+        "container-opts": ["--hostname testHost"]
     },
     "description": "This property describes the tool or application",
     "url": "http://example.com",

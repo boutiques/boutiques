@@ -40,10 +40,15 @@ def main(args=None):
     if (not results.number) and (not results.enum_input):
         sys.stderr.write("error: one of number or enum_input is required.\n")
         sys.exit(1)
-    
+   
     var = os.getenv("ENVAR")
     if var != "theValue":
         sys.stderr.write("error: ENVAR environment variable must be set to 'theValue'.\n")
+        sys.exit(1)
+
+    hostname = os.getenv("HOSTNAME")
+    if hostname != "testHost":
+        sys.stderr.write("error: hostname container option must be set to 'testHost'.\n")
         sys.exit(1)
 
     with(open(results.config_file,'r')) as co:

@@ -369,6 +369,7 @@ class LocalExecutor(object):
                                      '--cleanenv ' +
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
+                                     conOptsString + 
                                      str(conName) + ' ' + dsname)
             else:
                 raise ExecutorError('Unrecognized container type: '
