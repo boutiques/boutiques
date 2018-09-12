@@ -3,7 +3,8 @@
     "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
     "container-image": {
         "image": "boutiques/example1:test",
-        "type": "docker"
+        "type": "docker",
+        "container-opts": ["--privileged", "--security-opt=seccomp:unconfined"]
     },
     "description": "This property describes the tool or application",
     "url": "http://example.com",
