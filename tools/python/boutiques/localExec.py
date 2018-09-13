@@ -324,7 +324,7 @@ class LocalExecutor(object):
                                      ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
-                                     conOptsString + 
+                                     conOptsString +
                                      str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
                 envString = ""
@@ -369,7 +369,7 @@ class LocalExecutor(object):
                                      '--cleanenv ' +
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
-                                     conOptsString + 
+                                     conOptsString +
                                      str(conName) + ' ' + dsname)
             else:
                 raise ExecutorError('Unrecognized container type: '
