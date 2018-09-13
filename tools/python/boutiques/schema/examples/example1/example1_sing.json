@@ -3,8 +3,7 @@
     "container-image": {
         "image": "boutiques/example1:test", 
         "index": "docker://",
-        "type": "singularity",
-        "container-opts": ["--nv"]
+        "type": "singularity"
     }, 
     "description": "This property describes the tool or application", 
     "environment-variables": [
