@@ -420,7 +420,7 @@ def bosh(args=None):
     try:
         if func == "create":
             out = create(*params)
-            return bosh_return(out)
+            return bosh_return(out, hide=True)
         elif func == "validate":
             out = validate(*params)
             return bosh_return(out)
