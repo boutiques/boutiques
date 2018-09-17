@@ -172,7 +172,10 @@ class LocalExecutor(object):
 
         # Generate the command line
         if self.invocation:
-            self.readInput(self.invocation)
+            if os.path.isfile(self.invocation):
+                self.readInput(self.invocation, False)
+            else:
+                self.readInput(self.invocation, True)
 
     # Retrieves the parameter corresponding to the given id
     def byId(self, n):
@@ -682,7 +685,7 @@ class LocalExecutor(object):
             self.cmdLine.append(self._generateCmdLineFromInDict())
 
     # Read in parameter input file or string
-    def readInput(self, infile):
+    def readInput(self, infile, stringInput):
 
         '''
         The readInput method sets the in_dict field of the executor
@@ -697,8 +700,12 @@ class LocalExecutor(object):
 
         # Quick check that the descriptor has already been read in
         assert self.desc_dict is not None
-        with open(infile, 'r') as inparams:
-            self.in_dict = json.loads(inparams.read())
+
+        if stringInput:
+            self.in_dict = json.loads(infile)
+        else:
+            with open(infile, 'r') as inparams:
+                self.in_dict = json.loads(inparams.read())
         # Input dictionary
         if self.debug:
             print("Input: " + str(self.in_dict))

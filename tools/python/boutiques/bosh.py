@@ -93,10 +93,16 @@ def execute(*params):
         inp = results.invocation
 
         # Do some basic input scrubbing
-        if not os.path.isfile(inp):
-            raise SystemExit("Input file {} does not exist".format(inp))
+        jsonInput = False
         if not inp.endswith(".json"):
-            raise SystemExit("Input file {} must end in json".format(inp))
+            try:
+                json.loads(inp)
+                jsonInput = True
+            except ValueError:
+                raise SystemExit("Input {} must be a valid json object" +
+                                 " or file".format(inp))
+        if not jsonInput and not os.path.isfile(inp):
+            raise SystemExit("Input file {} does not exist".format(inp))
         if not os.path.isfile(descriptor):
             raise SystemExit("JSON descriptor {} does not exist".
                              format(descriptor))
@@ -267,7 +273,10 @@ def invocation(*params):
 
     validate(result.descriptor)
     if result.invocation:
-        data = json.loads(open(result.invocation).read())
+        if os.path.isfile(result.invocation):
+            data = json.loads(open(result.invocation).read())
+        else:
+            data = json.loads(result.invocation)
 
     descriptor = json.loads(open(result.descriptor).read())
     if descriptor.get("invocation-schema"):
