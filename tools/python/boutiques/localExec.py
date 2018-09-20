@@ -133,8 +133,11 @@ class LocalExecutor(object):
         self.errs = []        # Empty errors holder
         self.invocation = invocation
         # Parse JSON descriptor
-        with open(desc, 'r') as descriptor:
-            self.desc_dict = json.loads(descriptor.read())
+        if os.path.isfile(desc):
+            with open(desc, 'r') as descriptor:
+                self.desc_dict = json.loads(descriptor.read())
+        else:
+            self.desc_dict = json.loads(desc)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")

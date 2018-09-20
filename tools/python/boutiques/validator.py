@@ -26,9 +26,16 @@ def validate_descriptor(json_file, **kwargs):
         schema = simplejson.load(fhandle)
 
     # Load descriptor
-    with open(json_file) as fhandle:
+    json_object = kwargs.get('json_object')
+    if not json_object:
+        with open(json_file) as fhandle:
+            try:
+                descriptor = simplejson.load(fhandle)
+            except simplejson.errors.JSONDecodeError as e:
+                raise DescriptorValidationError(str(e))
+    else:
         try:
-            descriptor = simplejson.load(fhandle)
+            descriptor = json.loads(json_file)
         except simplejson.errors.JSONDecodeError as e:
             raise DescriptorValidationError(str(e))
 

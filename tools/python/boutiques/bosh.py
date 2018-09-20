@@ -42,8 +42,10 @@ def validate(*params):
     results = parser.parse_args(params)
 
     from boutiques.validator import validate_descriptor
+    descAsJsonObj = not os.path.isfile(results.descriptor)
     descriptor = validate_descriptor(results.descriptor,
-                                     format_output=results.format)
+                                     format_output=results.format,
+                                     json_object=descAsJsonObj)
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
@@ -93,17 +95,25 @@ def execute(*params):
         inp = results.invocation
 
         # Do some basic input scrubbing
-        jsonInput = False
+        descAsJsonObj = False
+        inpAsJsonObj = False
         if not inp.endswith(".json"):
             try:
                 json.loads(inp)
-                jsonInput = True
+                inpAsJsonObj = True
             except ValueError:
-                raise SystemExit("Input {} must be a valid json object" +
-                                 " or file".format(inp))
-        if not jsonInput and not os.path.isfile(inp):
+                raise SystemExit("Input {} must be a valid json object "
+                                 "or file".format(inp))
+        if not inpAsJsonObj and not os.path.isfile(inp):
             raise SystemExit("Input file {} does not exist".format(inp))
-        if not os.path.isfile(descriptor):
+        if not descriptor.endswith(".json"):
+            try:
+                json.loads(descriptor)
+                descAsJsonObj = True
+            except ValueError:
+                raise SystemExit("Descriptor must be a valid json object "
+                                 "or file".format(descriptor))
+        if not descAsJsonObj and not os.path.isfile(descriptor):
             raise SystemExit("JSON descriptor {} does not exist".
                              format(descriptor))
 
@@ -262,8 +272,8 @@ def invocation(*params):
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("-i", "--invocation", action="store",
-                        help="Input values in a JSON file to be"
-                        " validated against "
+                        help="Input values in a JSON file or as a JSON "
+                        "object to be validated against "
                         "the invocation schema.")
     parser.add_argument("-w", "--write-schema", action="store_true",
                         help="If descriptor doesn't have an invocation "
@@ -278,7 +288,11 @@ def invocation(*params):
         else:
             data = json.loads(result.invocation)
 
-    descriptor = json.loads(open(result.descriptor).read())
+    if os.path.isfile(result.descriptor):
+        descriptor = json.loads(open(result.descriptor).read())
+    else:
+        descriptor = json.loads(result.descriptor)
+
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:
