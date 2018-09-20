@@ -36,7 +36,7 @@ def validate_descriptor(json_file, **kwargs):
     else:
         try:
             descriptor = json.loads(json_file)
-        except simplejson.errors.JSONDecodeError as e:
+        except ValueError as e:
             raise DescriptorValidationError(str(e))
 
     # Validate basic JSON schema compliance for descriptor
