@@ -3,7 +3,7 @@
 To integrate a [BIDS
 app](http://bids-apps.neuroimaging.io) in Boutiques, import it with `bosh-import`:
 
-```bosh-import <bids_dir> <output_file.json>```.
+```bosh import bids <output_file.json> <bids_dir>```.
 
 The resulting Boutiques descriptor will contain only the inputs that
 are common to all BIDS apps, that is, `BIDS directory`, `output

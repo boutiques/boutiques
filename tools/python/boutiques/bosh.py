@@ -86,7 +86,7 @@ def execute(*params):
         parser.add_argument("-v", "--volumes", action="store", type=str,
                             help="Volumes to mount when launching the "
                             "container. Format consistently the following:"
-                            " /a:/b will mount local direcotry /a to "
+                            " /a:/b will mount local directory /a to "
                             "container directory /b.", nargs="*")
         parser.add_argument("-x", "--debug", action="store_true",
                             help="Keeps temporary scripts used during "
