@@ -46,9 +46,9 @@ def main(args=None):
         sys.stderr.write("error: ENVAR environment variable must be set to 'theValue'.\n")
         sys.exit(1)
 
-    hostname = os.getenv("HOSTNAME")
-    if hostname != "testHost":
-        sys.stderr.write("error: hostname container option must be set to 'testHost'.\n")
+    homeDir = os.getenv("HOME")
+    if homeDir != "/tmp/testDir/":
+        sys.stderr.write("error: HOME environment variable must be set to /tmp/testDir/.\n")
         sys.exit(1)
 
     with(open(results.config_file,'r')) as co:
