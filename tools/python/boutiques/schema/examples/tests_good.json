@@ -3,7 +3,7 @@
     "container-image": {
         "image": "boutiques/example1:test",
         "type": "docker",
-        "container-opts": ["--hostname testHost"]
+        "container-opts": ["-e", "HOME=/tmp/testDir/"]
     },
     "description": "This property describes the tool or application",
     "environment-variables": [
