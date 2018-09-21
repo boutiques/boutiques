@@ -16,6 +16,7 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
+from boutiques.localExec import loadJson
 
 
 def create(*params):
@@ -49,10 +50,8 @@ def validate(*params):
     results = parser.parse_args(params)
 
     from boutiques.validator import validate_descriptor
-    descAsJsonObj = not os.path.isfile(results.descriptor)
     descriptor = validate_descriptor(results.descriptor,
-                                     format_output=results.format,
-                                     json_object=descAsJsonObj)
+                                     format_output=results.format)
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
@@ -100,29 +99,6 @@ def execute(*params):
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
-
-        # Do some basic input scrubbing
-        descAsJsonObj = False
-        inpAsJsonObj = False
-        if not inp.endswith(".json"):
-            try:
-                json.loads(inp)
-                inpAsJsonObj = True
-            except ValueError:
-                raise SystemExit("Input {} must be a valid json object "
-                                 "or file".format(inp))
-        if not inpAsJsonObj and not os.path.isfile(inp):
-            raise SystemExit("Input file {} does not exist".format(inp))
-        if not descriptor.endswith(".json"):
-            try:
-                json.loads(descriptor)
-                descAsJsonObj = True
-            except ValueError:
-                raise SystemExit("Descriptor must be a valid json object "
-                                 "or file".format(descriptor))
-        if not descAsJsonObj and not os.path.isfile(descriptor):
-            raise SystemExit("JSON descriptor {} does not exist".
-                             format(descriptor))
 
         # Validate invocation and descriptor
         valid = invocation(descriptor, '-i', inp)
@@ -292,16 +268,8 @@ def invocation(*params):
 
     validate(result.descriptor)
     if result.invocation:
-        if os.path.isfile(result.invocation):
-            data = json.loads(open(result.invocation).read())
-        else:
-            data = json.loads(result.invocation)
-
-    if os.path.isfile(result.descriptor):
-        descriptor = json.loads(open(result.descriptor).read())
-    else:
-        descriptor = json.loads(result.descriptor)
-
+        data = loadJson(result.invocation)
+    descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:

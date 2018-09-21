@@ -6,6 +6,7 @@ import json
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
+from boutiques.localExec import loadJson
 
 
 # An exception class specific to descriptors
@@ -26,18 +27,7 @@ def validate_descriptor(json_file, **kwargs):
         schema = simplejson.load(fhandle)
 
     # Load descriptor
-    json_object = kwargs.get('json_object')
-    if not json_object:
-        with open(json_file) as fhandle:
-            try:
-                descriptor = simplejson.load(fhandle)
-            except simplejson.errors.JSONDecodeError as e:
-                raise DescriptorValidationError(str(e))
-    else:
-        try:
-            descriptor = json.loads(json_file)
-        except ValueError as e:
-            raise DescriptorValidationError(str(e))
+    descriptor = loadJson(json_file)
 
     # Validate basic JSON schema compliance for descriptor
     # Note: if it fails basic schema compliance we don"t do more checks

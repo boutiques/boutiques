@@ -133,11 +133,7 @@ class LocalExecutor(object):
         self.errs = []        # Empty errors holder
         self.invocation = invocation
         # Parse JSON descriptor
-        if os.path.isfile(desc):
-            with open(desc, 'r') as descriptor:
-                self.desc_dict = json.loads(descriptor.read())
-        else:
-            self.desc_dict = json.loads(desc)
+        self.desc_dict = loadJson(desc)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -173,10 +169,7 @@ class LocalExecutor(object):
 
         # Generate the command line
         if self.invocation:
-            if os.path.isfile(self.invocation):
-                self.readInput(self.invocation, False)
-            else:
-                self.readInput(self.invocation, True)
+            self.readInput(self.invocation)
 
     # Retrieves the parameter corresponding to the given id
     def byId(self, n):
@@ -686,7 +679,7 @@ class LocalExecutor(object):
             self.cmdLine.append(self._generateCmdLineFromInDict())
 
     # Read in parameter input file or string
-    def readInput(self, infile, stringInput):
+    def readInput(self, infile):
 
         '''
         The readInput method sets the in_dict field of the executor
@@ -701,12 +694,8 @@ class LocalExecutor(object):
 
         # Quick check that the descriptor has already been read in
         assert self.desc_dict is not None
+        self.in_dict = loadJson(infile)
 
-        if stringInput:
-            self.in_dict = json.loads(infile)
-        else:
-            with open(infile, 'r') as inparams:
-                self.in_dict = json.loads(inparams.read())
         # Input dictionary
         if self.debug:
             print("Input: " + str(self.in_dict))
@@ -1055,3 +1044,13 @@ class LocalExecutor(object):
             for err in self.errs:
                 message += ("\t" + err + "\n")
             raise ExecutorError(message)
+
+
+# Helper function that loads the JSON object coming from either a string
+# or a file
+def loadJson(jsonInput):
+    if os.path.isfile(jsonInput):
+        with open(jsonInput, 'r') as jsonFile:
+            return json.loads(jsonFile.read())
+    else:
+        return json.loads(jsonInput)
