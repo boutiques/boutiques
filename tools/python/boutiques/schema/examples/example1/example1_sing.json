@@ -4,7 +4,7 @@
         "image": "boutiques/example1:test", 
         "index": "docker://",
         "type": "singularity",
-        "container-opts": ["--home", "$HOME:/tmp/testDir/"]
+        "container-opts": ["--home", "$PWD:$PWD"]
     }, 
     "description": "This property describes the tool or application", 
     "environment-variables": [

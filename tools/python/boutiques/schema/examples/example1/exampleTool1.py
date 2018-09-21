@@ -47,8 +47,9 @@ def main(args=None):
         sys.exit(1)
 
     homeDir = os.getenv("HOME")
-    if homeDir != "/tmp/testDir/":
-        sys.stderr.write("error: HOME environment variable must be set to /tmp/testDir/.\n")
+    if homeDir != os.getenv("PWD"):
+        sys.stderr.write("error: HOME environment variable must be set to the current"
+                         " working directory.\n")
         sys.exit(1)
 
     with(open(results.config_file,'r')) as co:
