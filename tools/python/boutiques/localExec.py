@@ -451,7 +451,7 @@ class LocalExecutor(object):
             return ('f_' + id + '_' + randDigs() +
                     rnd.choice(['.csv', '.tex', '.j',
                                 '.cpp', '.m', '.mnc',
-                                '.nii.gz']))
+                                '.nii.gz', '']))
 
         def randStr(id):
             return 'str_' + id + '_' + ''.join(rnd.choice(string.digits +
@@ -518,9 +518,9 @@ class LocalExecutor(object):
             mn = self.safeGet(prm['id'], 'min-list-entries') or 2
             mx = self.safeGet(prm['id'], 'max-list-entries') or nl
             isList = self.safeGet(prm['id'], 'list') or False
-            return ' '.join(str(paramSingle(prm)) for _ in
-                            range(rnd.randint(mn, mx))
-                            ) if isList else paramSingle(prm)
+            return [str(paramSingle(prm)) for _ in
+                    range(rnd.randint(mn, mx))
+                   ] if isList else paramSingle(prm)
 
         # Returns a list of the ids of parameters that
         # disable the input parameter
@@ -602,6 +602,7 @@ class LocalExecutor(object):
         # Fill in the required parameters
         for reqp in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[reqp['id']] = makeParam(reqp)
+
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
                     if self.safeGrpGet(g['id'], 'one-is-required')]:
@@ -667,7 +668,10 @@ class LocalExecutor(object):
                 print("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
+                print(self.in_dict)
+                # TODO: fix validateDict to not reset in_dict
                 self._validateDict()
+                print(self.in_dict)
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception:  # Avoid catching BaseExceptions like SystemExit
@@ -675,7 +679,7 @@ class LocalExecutor(object):
                                  "Previously saved issues\n")
                 for err in self.errs:
                     sys.stderr.write("\t" + str(err) + "\n")
-                raise  # Pass on (throw) the caught exception
+                raise # Pass on (throw) the caught exception
             # Add new command line
             self.cmdLine.append(self._generateCmdLineFromInDict())
 
@@ -698,6 +702,7 @@ class LocalExecutor(object):
         with open(infile, 'r') as inparams:
             self.in_dict = json.loads(inparams.read())
         # Input dictionary
+        print(self.in_dict)
         if self.debug:
             print("Input: " + str(self.in_dict))
         # Fix special flag case: flags given the false value
@@ -949,7 +954,11 @@ class LocalExecutor(object):
                     check(None, lambda x, y: isNumber(x), "is not a number", v)
             elif self.safeGet(targ['id'], 'value-choices'):
                 # Value is in the list of allowed values
-                check('value-choices', lambda x, y: x in targ[y],
+                if isinstance(val, list):
+                    fn = lambda x, y: all([x1 in targ[y] for x1 in x])
+                else:
+                    fn = lambda x, y: x in targ[y]
+                check('value-choices', fn,
                       "is not a valid enum choice", val)
             elif targ["type"] == "Flag":
                 # Should be 'true' or 'false' when lower-cased
@@ -995,11 +1004,11 @@ class LocalExecutor(object):
             # List length constraints are satisfied
             if isList:
                 check('min-list-entries',
-                      lambda x, y: len(x.split()) >= targ[y],
+                      lambda x, y: len(x) >= targ[y],
                       "violates min size", val)
             if isList:
                 check('max-list-entries',
-                      lambda x, y: len(x.split()) <= targ[y],
+                      lambda x, y: len(x) <= targ[y],
                       "violates max size", val)
         # Required inputs are present
         for reqId in [v['id'] for v in self.inputs if not v.get('optional')]:
