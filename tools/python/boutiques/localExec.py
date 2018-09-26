@@ -440,8 +440,8 @@ class LocalExecutor(object):
                 stderrdata = ""
                 while True:
                     if process.poll() is None:
-                        outLine = process.stdout.readline()
-                        errLine = process.stderr.readline()
+                        outLine = process.stdout.readline().decode()
+                        errLine = process.stderr.readline().decode()
                         if outLine != '':
                             sys.stdout.write(outLine + "\n")
                             stdoutdata += outLine
