@@ -97,6 +97,14 @@
                             "description": "Optional index where the image is available, if not the standard location. Example: docker.io",
                             "type": "string"
                         },
+                        "container-opts": {
+                            "id": "http://github.com/boutiques/boutiques-schema/container/container-opts",
+                            "description": "Container-level arguments for the application. Example: --privileged",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
                         "working-directory": {},
                         "container-hash": {}
                     },
