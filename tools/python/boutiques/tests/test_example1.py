@@ -44,6 +44,12 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "invocation.json"))
 
+        # Make sure stdout and stderr are not printed on the fly
+        # for non-streaming mode
+        out, err = self.capfd.readouterr()
+        assert("This is stdout" not in out)
+        assert("This is stderr" not in err)
+
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -61,6 +67,34 @@ class TestExample1(TestCase):
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))
+        print(ret)
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_exec_docker_stream_output(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           os.path.join(example1_dir,
+                                        "example1_docker.json"),
+                           "-s",
+                           os.path.join(example1_dir,
+                                        "invocation.json"))
+
+        # Make sure stdout and stderr are printed on the fly for
+        # streaming mode
+        out, err = self.capfd.readouterr()
+        assert("This is stdout" in out)
+        assert("This is stderr" in err)
+
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -162,3 +196,7 @@ class TestExample1(TestCase):
                and ret.stderr == ""
                and ret.exit_code == 0
                and ret.error_message == "")
+
+    @pytest.fixture(autouse=True)
+    def capfd(self, capfd):
+        self.capfd = capfd

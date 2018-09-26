@@ -427,7 +427,24 @@ class LocalExecutor(object):
             sys.stderr.write('Input Value Error during attempted execution!')
             raise e
         else:
-            return process.communicate(), process.returncode
+            if self.stream:
+                stdoutdata = ""
+                stderrdata = ""
+                while True:
+                    if process.poll() is None:
+                        outLine = process.stdout.readline()
+                        errLine = process.stderr.readline()
+                        if outLine != '':
+                            sys.stdout.write(outLine + "\n")
+                            stdoutdata += outLine
+                        if errLine != '':
+                            sys.stderr.write(errLine + "\n")
+                            stderrdata += errLine
+                    else:
+                        break
+                return (stdoutdata, stderrdata), process.returncode
+            else:
+                return process.communicate(), process.returncode
 
     # Private method to generate a random input parameter set that follows
     # the constraints from the json descriptor

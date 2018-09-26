@@ -95,6 +95,9 @@ def execute(*params):
         parser.add_argument("-u", "--user", action="store_true",
                             help="Runs the container as local user ({0})"
                             " instead of root.".format(os.getenv("USER")))
+        parser.add_argument("-s", "--stream", action="store_true",
+                            help="Streams stdout and stderr in real time "
+                            "during execution.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -116,7 +119,8 @@ def execute(*params):
         executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "debug": results.debug,
-                                  "changeUser": results.user})
+                                  "changeUser": results.user,
+                                  "stream": results.stream})
         # Execute it
         return executor.execute(results.volumes)
 
