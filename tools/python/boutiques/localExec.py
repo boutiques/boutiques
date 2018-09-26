@@ -217,6 +217,7 @@ class LocalExecutor(object):
         # Check for Container image
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
+        conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
         # Export environment variables, if they are specified in the descriptor
         envVars = {}
@@ -292,6 +293,11 @@ class LocalExecutor(object):
             if launchDir is None:
                 launchDir = op.realpath('./')
             launchDir = op.realpath(launchDir)
+            # Get the container options
+            conOptsString = ""
+            if conOpts:
+                for opt in conOpts:
+                    conOptsString += opt + ' '
             # Run it in docker
             mount_strings = [] if not mount_strings else mount_strings
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
@@ -316,6 +322,7 @@ class LocalExecutor(object):
                                      ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
+                                     conOptsString +
                                      str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
                 envString = ""
@@ -360,6 +367,7 @@ class LocalExecutor(object):
                                      '--cleanenv ' +
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
+                                     conOptsString +
                                      str(conName) + ' ' + dsname)
             else:
                 raise ExecutorError('Unrecognized container type: '
