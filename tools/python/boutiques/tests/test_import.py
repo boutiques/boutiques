@@ -105,8 +105,8 @@ class TestImport(TestCase):
                                 with open('goodbye.txt', 'w') as f:
                                         f.write("goodbye")
                                 # closing required for Python 2.6...
-                                with closing(tarfile.open('hello.tar',
-                                                          "w")) as tar:
+                                with tarfile.open('hello.tar',
+                                                  'w') as tar:
                                         tar.add('goodbye.txt')
                                 ret = boutiques.execute(
                                         "launch",

@@ -8,16 +8,9 @@ DEPS = [
          "requests",
          "pytest",
          "termcolor",
-         "pyyaml"
+         "pyyaml",
+         "jsonschema"
        ]
-
-# jsonschema 2.6 doesn't support Python 2.6
-# and unittest2 is a backport of Python 2.7's 'unittest to 2.6
-if sys.version_info < (2, 7):
-    DEPS.append("unittest2")
-    DEPS.append("jsonschema==2.5.1")
-else:
-    DEPS.append("jsonschema")
 
 setup(name="boutiques",
       version=VERSION,
@@ -30,7 +23,6 @@ setup(name="boutiques",
                 "Programming Language :: Python",
                 "Programming Language :: Python :: 2",
                 "Programming Language :: Python :: 3",
-                "Programming Language :: Python :: 2.6",
                 "Programming Language :: Python :: 2.7",
                 "Programming Language :: Python :: 3.4",
                 "Programming Language :: Python :: 3.5",
