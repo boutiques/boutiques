@@ -1053,4 +1053,7 @@ def loadJson(jsonInput):
         with open(jsonInput, 'r') as jsonFile:
             return json.loads(jsonFile.read())
     else:
-        return json.loads(jsonInput)
+        try:
+            return json.loads(jsonInput)
+        except ValueError:
+            raise ExecutorError("Unable to decode JSON object")

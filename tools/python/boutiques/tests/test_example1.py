@@ -156,12 +156,12 @@ class TestExample1(TestCase):
         self.clean_up()
         invocationStr = open(os.path.join(example1_dir,
                                           "invocation_invalid.json")).read()
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ExecutorError) as e:
                 bosh.execute("launch",
                              os.path.join(example1_dir,
                                           "example1_docker.json"),
                              invocationStr)
-        assert("No JSON object could be decoded" in str(e))
+        assert("Unable to decode JSON object" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
