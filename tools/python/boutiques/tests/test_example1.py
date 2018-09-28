@@ -46,9 +46,9 @@ class TestExample1(TestCase):
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
-        out, err = self.capfd.readouterr()
-        assert("This is stdout" not in out)
-        assert("This is stderr" not in err)
+        capturedOutput = self.capfd.readouterr()
+        assert("This is stdout" not in capturedOutput.out)
+        assert("This is stderr" not in capturedOutput.out)
 
         print(ret)
         assert("This is stdout" in ret.stdout)
@@ -91,13 +91,13 @@ class TestExample1(TestCase):
 
         # Make sure stdout and stderr are printed on the fly for
         # streaming mode
-        out, err = self.capfd.readouterr()
-        assert("This is stdout" in out)
-        assert("This is stderr" in err)
+        capturedOutput = self.capfd.readouterr()
+        assert("This is stdout" in capturedOutput.out)
+        assert("This is stderr" in capturedOutput.out)
 
         print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
+        assert(ret.stdout is None)
+        assert(ret.stderr is None)
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
