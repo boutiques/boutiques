@@ -197,6 +197,8 @@ class TestExample1(TestCase):
                and ret.exit_code == 0
                and ret.error_message == "")
 
+    # Captures the stdout and stderr during test execution
+    # and returns them as a tuple in readouterr()
     @pytest.fixture(autouse=True)
     def capfd(self, capfd):
         self.capfd = capfd
