@@ -133,8 +133,7 @@ class LocalExecutor(object):
         self.errs = []        # Empty errors holder
         self.invocation = invocation
         # Parse JSON descriptor
-        with open(desc, 'r') as descriptor:
-            self.desc_dict = json.loads(descriptor.read())
+        self.desc_dict = loadJson(desc)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -703,8 +702,8 @@ class LocalExecutor(object):
 
         # Quick check that the descriptor has already been read in
         assert self.desc_dict is not None
-        with open(infile, 'r') as inparams:
-            self.in_dict = json.loads(inparams.read())
+        self.in_dict = loadJson(infile)
+
         # Input dictionary
         if self.debug:
             print("Input: " + str(self.in_dict))
@@ -1053,3 +1052,16 @@ class LocalExecutor(object):
             for err in self.errs:
                 message += ("\t" + err + "\n")
             raise ExecutorError(message)
+
+
+# Helper function that loads the JSON object coming from either a string
+# or a file
+def loadJson(jsonInput):
+    if os.path.isfile(jsonInput):
+        with open(jsonInput, 'r') as jsonFile:
+            return json.loads(jsonFile.read())
+    else:
+        try:
+            return json.loads(jsonInput)
+        except ValueError:
+            raise ExecutorError("Unable to decode JSON object")
