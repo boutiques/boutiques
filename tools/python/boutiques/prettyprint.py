@@ -3,6 +3,7 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 import textwrap
 
+
 # Prints descriptor help text in a pretty format by first creating an argument
 # parser, and then using their help text formatting.
 def pprint(descriptor):
@@ -48,7 +49,7 @@ def pprint(descriptor):
                       if inp in output["path-template"]]
             required = "Optional" if output.get("optional") else "Required"
             output_info += "\n\tName: {0} ({1})".format(output["name"],
-                                                    required)
+                                                        required)
             output_info += "\n\tFormat: {0}".format(output["path-template"])
             output_info += ("\n\tFilename depends on Input IDs: "
                             "{0}".format(", ".join(depids)))
@@ -70,7 +71,8 @@ def pprint(descriptor):
             gtype += [2] if bool(group.get("one-is-required")) else []
             group_info += "\n\tName: {0}".format(group["name"].title())
             group_info += "\n\tType: {0}\n".format(", ".join([gtypes[ind]
-                                                            for ind in gtype]))
+                                                              for ind
+                                                              in gtype]))
             group_info += ("\tGroup Member IDs: "
                            "{0}".format(", ".join(group["members"])))
             group_info += "\n"
