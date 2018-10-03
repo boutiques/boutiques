@@ -457,7 +457,7 @@
                                     "properties": {
                                         "id": {
                                             "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/id",
-                                            "description": "Id refering to an output-file",
+                                            "description": "Id referring to an output-file",
                                             "minLength": 1,
                                             "pattern": "^[0-9,_,a-z,A-Z]*$",
                                             "type": "string"

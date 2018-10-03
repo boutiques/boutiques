@@ -8,6 +8,7 @@ import boutiques.creator as bc
 import subprocess
 import os.path as op
 import os
+import pytest
 
 from boutiques.creator import CreatorError
 
@@ -18,6 +19,25 @@ class TestCreator(TestCase):
         fil = 'creator_output.json'
         descriptor = bosh(['create', fil])
         assert bosh(['validate', fil]) is None
+
+    def test_success_docker(self):
+        fil = 'creator_output.json'
+        descriptor = bosh(['create', '-d', 'mysql:latest', fil])
+        assert bosh(['validate', fil]) is None
+
+    def test_success_docker_sing_import(self):
+        fil = 'creator_output.json'
+        descriptor = bosh(['create', '-d', 'mysql:latest', '-u', fil])
+        assert bosh(['validate', fil]) is None
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_fail_image_(self):
+        fil = 'creator_output.json'
+        self.assertRaises(CreatorError,
+                          bosh,
+                          ['create', '-d', 'ihopethisdoesntexists', fil]
+                          )
 
     def test_not_an_argparser(self):
         self.assertRaises(CreatorError, bc.CreateDescriptor, "notaparser")

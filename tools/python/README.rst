@@ -101,7 +101,7 @@ You just created a Boutiques descriptor (compliant with the
 `schema <./tools/python/boutiques/schema/descriptor.schema.json>`__, of
 course) named ``descriptor.json`` - Congratulations! Now, you need to
 quickly validate it to make sure that you didn’t accidentally break any
-rules in this defintion (like requiring a “flag” input). You can
+rules in this definition (like requiring a “flag” input). You can
 validate your schema like this:
 
 ::

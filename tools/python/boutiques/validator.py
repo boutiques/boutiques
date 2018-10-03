@@ -344,7 +344,7 @@ def validate_descriptor(json_file, **kwargs):
                            if (output_id not in outIds)]
 
                 # Verify that we do not have multiple output
-                # references refering to the same id
+                # references referring to the same id
                 msg_template = ("TestError: \"{0}\" output id"
                                 " cannot appear more than once within"
                                 " same test, in test \"{1}\"")
