@@ -4,10 +4,13 @@ import simplejson
 import tempfile
 import argparse
 import sys
+import os
+import json
 import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
+import subprocess
 
 
 # An exception class specific to creating descriptors.
@@ -21,10 +24,13 @@ class CreateDescriptor(object):
         with open(template) as f:
             self.descriptor = simplejson.load(f)
 
+        if(kwargs.get('docker_image')):
+            self.parse_docker(self.descriptor,
+                              kwargs.get('docker_image'),
+                              kwargs.get('use_singularity'))
+
         self.count = 0
-        if parser is None:
-            pass
-        else:
+        if parser is not None:
             self.parser = parser
             self.descriptor["inputs"] = []
             self.descriptor["tags"] = kwargs.get("tags") or {}
@@ -34,13 +40,68 @@ class CreateDescriptor(object):
             del self.descriptor["error-codes"]
             if type(parser) is not argparse.ArgumentParser:
                 raise CreatorError("Invalid argument parser")
-
             self.parseParser(**kwargs)
 
     def save(self, filename):
         import json
         with open(filename, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+
+    def parse_docker(self, descriptor, docker_image_name, use_singularity):
+        cont_image = {}
+
+        # Basic image config
+        if use_singularity:
+            cont_image['type'] = 'singularity'
+            cont_image['index'] = 'docker://'
+            cont_image['image'] = docker_image_name
+        else:
+            cont_image['type'] = 'docker'
+            cont_image['image'] = docker_image_name
+
+        descriptor['container-image'] = cont_image
+
+        # If Docker isn't installed, that's all we can do!
+        if subprocess.Popen("type docker", shell=True).wait():
+            return
+
+        # If Docker is here, let's fetch metadata from the image
+        # Properties found in the image metadata
+        ((stdout, stderr),
+         returncode) = self.executor("docker pull "+docker_image_name)
+        if returncode:
+            raise CreatorError("Cannot pull Docker image {0}: {1} "
+                               "{2} {3}".format(docker_image_name, stdout,
+                                                os.linesep, stderr))
+        ((stdout, stderr),
+         returncode) = self.executor("docker inspect "+docker_image_name)
+        if returncode:
+            raise CreatorError("Cannot inspect Docker image {0}: {1} "
+                               "{2} {3}".format(docker_image_name, stdout,
+                                                os.linesep, stderr))
+        image_attrs = json.loads(stdout.decode("utf-8"))[0]
+        if (image_attrs.get('ContainerConfig')):
+            container_config = image_attrs['ContainerConfig']
+            entrypoint = container_config.get('Entrypoint')
+            if entrypoint:
+                cont_image['entrypoint'] = True
+                tokens = descriptor['command-line'].split(" ")
+                # Replace the first token in the command line template,
+                # presumably the executable, by the entry point
+                descriptor['command-line'] = (" ".join(entrypoint +
+                                              tokens[1:])
+                                              )
+                descriptor['name'] = entrypoint[0]
+            workingDir = container_config.get('WorkingDir')
+            if workingDir:
+                raise CreatorError("The container image has a working dir, "
+                                   " this is currently not supported.")
+        if image_attrs.get('Author'):
+            descriptor['author'] = image_attrs.get('Author')
+        if image_attrs.get('RepoTags'):
+            descriptor['tool-version'] = " ".join(image_attrs.get('RepoTags'))
+        if image_attrs.get('Comment'):
+            descriptor['description'] = image_attrs.get('Comment')
 
     def parseParser(self, **kwargs):
         self.descriptor["command-line"] = kwargs.get("execname")
@@ -93,7 +154,7 @@ class CreateDescriptor(object):
                             subparser["value-requires"][act] += [tmpinput["id"]]
                         self.descriptor["inputs"] += [tmpinput]
 
-            # Once all subparsers are processed, idenfity which inputs need to
+            # Once all subparsers are processed, identify which inputs need to
             # be disabled by which subparsers.
             inpt_ids = set([inp
                             for iact in inpts
@@ -141,7 +202,7 @@ class CreateDescriptor(object):
                 "description": action.help,
                 "optional": kwargs.get("subaction") or not action.required,
                 "type": "String",
-                "value-key": "{0}".format(adest.upper())
+                "value-key": "[{0}]".format(adest.upper())
             }
 
             if action.type:
@@ -167,9 +228,23 @@ class CreateDescriptor(object):
             if type(action) is argparse._StoreTrueAction:
                 newinput["type"] = "Flag"
 
-            self.descriptor["command-line"] += " {0}".format(adest.upper())
+            self.descriptor["command-line"] += " [{0}]".format(adest.upper())
             # If this action belongs to a subparser, return a flag along
             # with the object, indicating its required/not required status.
             if kwargs.get("subaction"):
                 return newinput, action.required
             return newinput
+
+    def executor(self, command):
+        try:
+            process = subprocess.Popen(command, shell=True,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+        except OSError as e:
+            sys.stderr.write('OS Error during attempted execution!')
+            raise e
+        except ValueError as e:
+            sys.stderr.write('Input Value Error during attempted execution!')
+            raise e
+        else:
+            return process.communicate(), process.returncode

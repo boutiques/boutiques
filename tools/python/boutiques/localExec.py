@@ -613,7 +613,7 @@ class LocalExecutor(object):
                 # see if it and its mutual requirements can be filled
                 res = checkMutualRequirements(choice)
                 if res is False:
-                    # Try again if the chosen group member is not permissable
+                    # Try again if the chosen group member is not permissible
                     continue
                 for r in res:
                     self.in_dict[r['id']] = makeParam(r)

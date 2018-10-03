@@ -66,4 +66,3 @@ class TestSimulate(TestCase):
                                                      os.path.join(
                                                        example1_dir,
                                                        "example1_docker.json")])
-
