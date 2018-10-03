@@ -668,10 +668,7 @@ class LocalExecutor(object):
                 print("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
-                print(self.in_dict)
-                # TODO: fix validateDict to not reset in_dict
                 self._validateDict()
-                print(self.in_dict)
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception:  # Avoid catching BaseExceptions like SystemExit
@@ -979,7 +976,7 @@ class LocalExecutor(object):
                     launchDir = os.getcwd()
                     if self.launchDir is not None:
                         launchDir = self.launchDir
-                    for ftarg in (str(val).split() if isList else [val]):
+                    for ftarg in (val if isList else [val]):
                         # Special case 1: launchdir is specified and we
                         # want to use absolute path
                         # Note: in this case, the pwd is mounted as the
@@ -999,6 +996,8 @@ class LocalExecutor(object):
                         # the path with its absolute version
                         elif targ.get('uses-absolute-path') is True:
                             replacementFiles.append(os.path.abspath(ftarg))
+                        else:
+                            replacementFiles.append(ftarg)
                     # Replace old val with the new one
                     self.in_dict[key] = " ".join(replacementFiles)
             # List length constraints are satisfied
