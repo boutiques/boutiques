@@ -489,9 +489,9 @@ class LocalExecutor(object):
                 minv, maxv = float(minv), float(maxv)
             # Apply exclusive boundary constraints, if any
             if self.safeGet(param_id, 'exclusive-minimum'):
-                minv += (1 if isInt else 0.0001)
+                minv += 1 if isInt else 0.001
             if self.safeGet(param_id, 'exclusive-maximum'):
-                maxv -= (1 if isInt else 0.0001)
+                maxv -= 1 if isInt else 0.001
             # Returns a random int or a random float, depending on the type of p
             return (rnd.randint(minv, maxv)
                     if isInt else round(rnd.uniform(minv, maxv), nd))
@@ -519,8 +519,7 @@ class LocalExecutor(object):
             mx = self.safeGet(prm['id'], 'max-list-entries') or nl
             isList = self.safeGet(prm['id'], 'list') or False
             return [str(paramSingle(prm)) for _ in
-                    range(rnd.randint(mn, mx))
-                   ] if isList else paramSingle(prm)
+                    range(rnd.randint(mn, mx))] if isList else paramSingle(prm)
 
         # Returns a list of the ids of parameters that
         # disable the input parameter
@@ -671,12 +670,12 @@ class LocalExecutor(object):
                 self._validateDict()
             # If an error occurs, print out the problems already
             # encountered before blowing up
-            except Exception:  # Avoid catching BaseExceptions like SystemExit
+            except Exception as e:  # Avoid BaseExceptions like SystemExit
                 sys.stderr.write("An error occurred in validation\n"
                                  "Previously saved issues\n")
                 for err in self.errs:
                     sys.stderr.write("\t" + str(err) + "\n")
-                raise # Pass on (throw) the caught exception
+                raise e  # Pass on (throw) the caught exception
             # Add new command line
             self.cmdLine.append(self._generateCmdLineFromInDict())
 
@@ -952,9 +951,9 @@ class LocalExecutor(object):
             elif self.safeGet(targ['id'], 'value-choices'):
                 # Value is in the list of allowed values
                 if isinstance(val, list):
-                    fn = lambda x, y: all([x1 in targ[y] for x1 in x])
+                    fn = (lambda x, y: all([x1 in targ[y] for x1 in x]))
                 else:
-                    fn = lambda x, y: x in targ[y]
+                    fn = (lambda x, y: x in targ[y])
                 check('value-choices', fn,
                       "is not a valid enum choice", val)
             elif targ["type"] == "Flag":
