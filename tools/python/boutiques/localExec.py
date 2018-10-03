@@ -938,7 +938,7 @@ class LocalExecutor(object):
             if targ["type"] == "Number":
                 # Number type and constraints are not violated
                 # (note the lambda safety checks)
-                for v in (str(val).split() if isList else [val]):
+                for v in (val if isList else [val]):
                     check('minimum', lambda x, y: float(x) >= targ[y],
                           "violates minimum value", v)
                     check('exclusive-minimum',
