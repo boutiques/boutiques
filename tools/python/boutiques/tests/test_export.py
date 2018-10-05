@@ -13,7 +13,7 @@ else:
     from unittest import TestCase
 
 
-class TestImport(TestCase):
+class TestExport(TestCase):
     def get_examples_dir(self):
         return opj(os.path.dirname(bfile),
                    "schema", "examples")
