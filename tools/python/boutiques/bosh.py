@@ -16,6 +16,7 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
+from boutiques.localExec import loadJson
 
 
 def create(*params):
@@ -98,15 +99,6 @@ def execute(*params):
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
-
-        # Do some basic input scrubbing
-        if not os.path.isfile(inp):
-            raise SystemExit("Input file {} does not exist".format(inp))
-        if not inp.endswith(".json"):
-            raise SystemExit("Input file {} must end in json".format(inp))
-        if not os.path.isfile(descriptor):
-            raise SystemExit("JSON descriptor {} does not exist".
-                             format(descriptor))
 
         # Validate invocation and descriptor
         valid = invocation(descriptor, '-i', inp)
@@ -265,8 +257,8 @@ def invocation(*params):
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("-i", "--invocation", action="store",
-                        help="Input values in a JSON file to be"
-                        " validated against "
+                        help="Input values in a JSON file or as a JSON "
+                        "object to be validated against "
                         "the invocation schema.")
     parser.add_argument("-w", "--write-schema", action="store_true",
                         help="If descriptor doesn't have an invocation "
@@ -276,9 +268,8 @@ def invocation(*params):
 
     validate(result.descriptor)
     if result.invocation:
-        data = json.loads(open(result.invocation).read())
-
-    descriptor = json.loads(open(result.descriptor).read())
+        data = loadJson(result.invocation)
+    descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:
