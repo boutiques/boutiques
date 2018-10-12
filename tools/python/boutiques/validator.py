@@ -263,7 +263,6 @@ def validate_descriptor(json_file, **kwargs):
     # Verify groups
     for idx, grpid in enumerate(grpIds):
         grp = descriptor['groups'][idx]
-        mutex_grps = []
         # Verify group members must (exist in inputs, show up
         # once, only belong to single group)
         msg_template = " GroupError: \"{0}\" member \"{1}\" does not exist"
