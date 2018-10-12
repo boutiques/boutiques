@@ -266,6 +266,7 @@ def validate_descriptor(json_file, **kwargs):
     # Verify groups
     for idx, grpid in enumerate(grpIds):
         grp = descriptor['groups'][idx]
+        mutex_grps = []
         # Verify group members must (exist in inputs, show up
         # once, only belong to single group)
         msg_template = " GroupError: \"{0}\" member \"{1}\" does not exist"
@@ -277,16 +278,9 @@ def validate_descriptor(json_file, **kwargs):
                    for member in set(grp["members"])
                    if grp["members"].count(member) > 1]
 
-        for jdx, grp2 in enumerate(descriptor["groups"]):
-            msg_template = (" GroupError: \"{0}\" and \"{1}\" both contain"
-                            " member \"{2}\"")
-            errors += [msg_template.format(grp["id"], grp2["id"], m1)
-                       for m1 in grp["members"]
-                       for m2 in grp2["members"]
-                       if m1 == m2 and idx > jdx]
-
         # Verify mutually exclusive groups cannot have required members
-        # nor requiring members
+        # nor requiring members, and that pairs of inputs cannot both be
+        # in an all-or-none group
         if grp.get("mutually-exclusive"):
             msg_template = (" GroupError: \"{0}\" is mutually-exclusive"
                             " and cannot have required members, "
@@ -304,7 +298,21 @@ def validate_descriptor(json_file, **kwargs):
                                for req in inById(member)["requires-inputs"]
                                if req in set(grp["members"])]
 
+            for jdx, grp2 in enumerate(descriptor["groups"]):
+                if grp2.get("all-or-none"):
+                    msg_template = (" GroupError: mutually-exclusive group"
+                                    " \"{0}\" and all-or-none group \"{1}\""
+                                    " cannot both contain input pairs \"{2}\""
+                                    " and \"{3}\"")
+                    errors += [msg_template.format(grp["id"], grp2["id"],
+                               m1, m2)
+                               for m1 in grp["members"]
+                               for m2 in grp["members"]
+                               if m1 != m2 and m1 in grp2["members"]
+                               and m2 in grp2["members"] and idx != jdx]
+
         # Verify one-is-required groups should never have required members
+        # and that the group is not a subset of an all-or-none group
         if grp.get("one-is-required"):
             msg_template = (" GroupError: \"{0}\" is a one-is-required"
                             " group and contains a required member, \"{1}\"")
@@ -312,7 +320,16 @@ def validate_descriptor(json_file, **kwargs):
                        for member in set(grp["members"])
                        if member in inIds and not inById(member)["optional"]]
 
-        # Verify one-is-required groups should never have required members
+            for jdx, grp2 in enumerate(descriptor["groups"]):
+                if grp2.get("all-or-none"):
+                    msg_template = (" GroupError: \"{0}\" is one-is-required"
+                                    " and cannot be a subset of the all-or-none"
+                                    " group \"{1}\"")
+                    if (set(grp["members"]).issubset(set(grp2["members"])) and
+                            idx != jdx):
+                        errors += [msg_template.format(grp["id"], grp2["id"])]
+
+        # Verify all-or-none groups should never have required members
         if grp.get("all-or-none"):
             msg_template = (" GroupError: \"{0}\" is an all-or-none group"
                             " and cannot be paired with one-is-required"

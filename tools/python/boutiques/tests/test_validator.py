@@ -51,3 +51,7 @@ class TestValidator(TestCase):
                                    stderr=subprocess.PIPE)
         process.communicate()
         self.assertTrue(process.returncode)
+
+    def test_invalid_groups(self):
+        fil = op.join(op.split(bfile)[0], 'schema/examples/invalid_groups.json')
+        self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
