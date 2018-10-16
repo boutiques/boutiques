@@ -445,7 +445,7 @@ class LocalExecutor(object):
         while True:
             if process.poll() is not None:
                 break
-            outLine = process.stdout.readline()
+            outLine = process.stdout.readline().decode()
             if outLine != '':
                 sys.stdout.write(outLine)
         # Return (stdout, stderr) as (None, None) since it was already
