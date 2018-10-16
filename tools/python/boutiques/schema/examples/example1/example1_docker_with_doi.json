@@ -138,9 +138,9 @@
         }
     ],
     "tags": {
-	"domain": "testing",
-	"programming-language": "Python",
-	"foo": "bar"
+    	"domain": "testing",
+    	"programming-language": "Python",
+    	"foo": ["bar1", "bar2"]
     },
     "schema-version": "0.5", 
     "tool-version": "0.0.1",

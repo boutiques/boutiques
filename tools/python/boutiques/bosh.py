@@ -251,7 +251,8 @@ def publish(*params):
                           results.no_int,
                           results.zenodo_token)
     publisher.publish()
-    return publisher.doi
+    if hasattr(publisher, 'doi'):
+        return publisher.doi
 
 
 def invocation(*params):
