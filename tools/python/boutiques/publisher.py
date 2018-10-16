@@ -29,6 +29,7 @@ class Publisher():
         # Get relevant descriptor propertis
         self.url = self.descriptor.get('url')
         self.tool_doi = self.descriptor.get('tool-doi')
+        self.descriptor_url = self.descriptor.get('descriptor-url')
 
         # Get tool author and check that it's defined
         if self.descriptor.get("author") is None:
@@ -139,6 +140,13 @@ class Publisher():
                 data['metadata']['related_identifiers'] = []
             data['metadata']['related_identifiers'].append({
                 'identifier': self.tool_doi,
+                'relation': 'hasPart'
+            })
+        if self.descriptor_url is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': self.descriptor_url,
                 'relation': 'hasPart'
             })
 
