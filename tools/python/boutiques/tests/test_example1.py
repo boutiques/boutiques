@@ -98,12 +98,96 @@ class TestExample1(TestCase):
         print(ret)
         assert(ret.stdout is None)
         assert(ret.stderr is None)
+
+    def test_example1_exec_docker_inv_as_json_obj(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
+        invocationStr = open(os.path.join(example1_dir,
+                                          "invocation.json")).read()
+        ret = bosh.execute("launch",
+                           os.path.join(example1_dir,
+                                        "example1_docker.json"),
+                           invocationStr)
+
+        print(ret)
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
         assert(ret.exit_code == 0)
         assert(ret.error_message == "")
         assert(ret.missing_files == [])
         assert(len(ret.output_files) == 2)
         assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
                ret.output_files[1].file_name == "log-4-coin;plop.txt")
+
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           os.path.join(example1_dir,
+                                        "example1_docker.json"),
+                           "-x",
+                           os.path.join(example1_dir,
+                                        "invocation.json"))
+        print(ret)
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_exec_docker_desc_as_json_obj(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
+        descStr = open(os.path.join(example1_dir,
+                                    "example1_docker.json")).read()
+        ret = bosh.execute("launch",
+                           descStr,
+                           os.path.join(example1_dir,
+                                        "invocation.json"))
+
+        print(ret)
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           os.path.join(example1_dir,
+                                        "example1_docker.json"),
+                           "-x",
+                           os.path.join(example1_dir,
+                                        "invocation.json"))
+        print(ret)
+        assert("This is stdout" in ret.stdout)
+        assert("This is stderr" in ret.stderr)
+        assert(ret.exit_code == 0)
+        assert(ret.error_message == "")
+        assert(ret.missing_files == [])
+        assert(len(ret.output_files) == 2)
+        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
+               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_exec_docker_json_string_invalid(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.clean_up()
+        invocationStr = open(os.path.join(example1_dir,
+                                          "invocation_invalid.json")).read()
+        with pytest.raises(ExecutorError) as e:
+                bosh.execute("launch",
+                             os.path.join(example1_dir,
+                                          "example1_docker.json"),
+                             invocationStr)
+        assert("Unable to decode JSON object" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
