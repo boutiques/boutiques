@@ -124,9 +124,9 @@ class Publisher():
         }
         keywords = data['metadata']['keywords']
         if self.descriptor.get('tags'):
-            for key, value in self.descriptor.get('tags').iteritems():
+            for key, value in self.descriptor.get('tags').items():
                 # Check if value is a string or a list of strings
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     keywords.append(key + ":" + value)
                 else:
                     keywords += [key + ":" + item for item in value]
