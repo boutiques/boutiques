@@ -99,6 +99,8 @@ class TestExample1(TestCase):
         assert(ret.stdout is None)
         assert(ret.stderr is None)
 
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
     def test_example1_exec_docker_inv_as_json_obj(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
