@@ -63,10 +63,10 @@ class ExecutorOutput():
                "{2}" + os.linesep +
                title("Exit code") +
                "{3}" + os.linesep +
-               title("Std out") +
-               "{4}" + os.linesep +
-               title("Std err") +
-               colored("{5}", 'red') + os.linesep +
+               (title("Std out") +
+                "{4}" + os.linesep if self.stdout else "") +
+               (title("Std err") +
+                colored("{5}", 'red') + os.linesep if self.stderr else "") +
                title("Error message") +
                colored("{6}", 'red') + os.linesep +
                title("Output files") +
@@ -423,9 +423,14 @@ class LocalExecutor(object):
         if self.debug:
             print("Running: {0}".format(command))
         try:
-            process = subprocess.Popen(command, shell=True,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+            if self.stream:
+                process = subprocess.Popen(command, shell=True,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT)
+            else:
+                process = subprocess.Popen(command, shell=True,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
 
         except OSError as e:
             sys.stderr.write('OS Error during attempted execution!')
@@ -433,8 +438,19 @@ class LocalExecutor(object):
         except ValueError as e:
             sys.stderr.write('Input Value Error during attempted execution!')
             raise e
-        else:
+
+        if not self.stream:
             return process.communicate(), process.returncode
+
+        while True:
+            if process.poll() is not None:
+                break
+            outLine = process.stdout.readline().decode()
+            if outLine != '':
+                sys.stdout.write(outLine)
+        # Return (stdout, stderr) as (None, None) since it was already
+        # printed in real time
+        return (None, None), process.returncode
 
     # Private method to generate a random input parameter set that follows
     # the constraints from the json descriptor
