@@ -28,8 +28,8 @@ before_install:
 - sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential
 - npm install jsonlint -g 
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
-- docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity boutiques/example1:test  1> ${HOME}/convert_log.txt
-- IMGNAME=$(cat ${HOME}/convert_log.txt  | grep "Done. Image can be found at:" | awk '{ print $7 }' | cut -d / -f 3 | cut -d . -f 1)
+- docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity boutiques/example1:test
+- IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
 - wget https://github.com/singularityware/singularity/releases/download/$SINGVER/singularity-$SINGVER.tar.gz
 - tar xvf singularity-$SINGVER.tar.gz
 - cd singularity-$SINGVER
