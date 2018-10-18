@@ -52,6 +52,25 @@ class TestPublisher(TestCase):
                   "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertTrue("Desriptor already has a DOI" in str(e.exception))
 
+        # Test publication of an updated version of the descriptor
+        deposition_id = doi.split(".")[-1]
+        example1_desc_new = op.join(example1_dir,
+                                    "example1_docker_updated.json")
+        temp_descriptor_new = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(example1_desc_new, temp_descriptor_new.name)
+
+        new_doi = bosh(["publish",
+                        temp_descriptor_new.name,
+                        "--sandbox", "-y", "-v", "--update", deposition_id,
+                        "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                        "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
+        assert(new_doi)
+
+        # Updated version of descriptor should have a new DOI
+        with open(temp_descriptor_new.name, 'r') as fhandle:
+            descriptor = json.load(fhandle)
+            assert(descriptor.get('doi') == new_doi)
+
     def test_publisher_auth(self):
         example1_dir = op.join(self.get_examples_dir(), "example1")
 

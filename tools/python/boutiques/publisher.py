@@ -109,51 +109,7 @@ class Publisher():
 
     def zenodo_deposit(self):
         headers = {"Content-Type": "application/json"}
-        data = {
-            'metadata': {
-                'title': self.descriptor['name'],
-                'upload_type': 'software',
-                'description': self.descriptor['description'] or "Boutiques "
-                               "descriptor for {0}".format(
-                                                   self.descriptor['name']),
-                'creators': [{'name': self.creator}],
-                'version': self.descriptor['tool-version'],
-                'keywords': ['Boutiques',
-                             'schema-version:{0}'.
-                             format(self.descriptor['schema-version'])]
-            }
-        }
-        keywords = data['metadata']['keywords']
-        if self.descriptor.get('tags'):
-            for key, value in self.descriptor.get('tags').items():
-                # Check if value is a string or a list of strings
-                if isinstance(value, str):
-                    keywords.append(key + ":" + value)
-                else:
-                    keywords += [key + ":" + item for item in value]
-        if self.descriptor.get('container-image'):
-            keywords.append(self.descriptor['container-image']['type'])
-        if self.url is not None:
-            if data['metadata'].get('related_identifiers') is None:
-                data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': self.url,
-                'relation': 'hasPart'
-            })
-        if self.tool_doi is not None:
-            if data['metadata'].get('related_identifiers') is None:
-                data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': self.tool_doi,
-                'relation': 'hasPart'
-            })
-        if self.descriptor_url is not None:
-            if data['metadata'].get('related_identifiers') is None:
-                data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': self.descriptor_url,
-                'relation': 'hasPart'
-            })
+        data = self.create_metadata()
 
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
                           params={'access_token': self.zenodo_access_token},
@@ -167,6 +123,19 @@ class Publisher():
             self.print_zenodo_info("Deposition succeeded, id is {0}".
                                    format(zid), r)
         return zid
+
+    def zenodo_deposit_updated_version(self, deposition_id):
+        r = requests.post(self.zenodo_endpoint +
+                          '/api/deposit/depositions/%s/actions/newversion'
+                          % deposition_id,
+                          params={'access_token': self.zenodo_access_token})
+        if(r.status_code != 201):
+            self.raise_zenodo_error("Deposition of new version failed", r)
+        if(self.verbose):
+            self.print_zenodo_info("Deposition of new version succeeded", r)
+        new_url = r.json()['links']['latest_draft']
+        new_zid = new_url.split("/")[-1]
+        return new_zid
 
     def zenodo_upload_descriptor(self, deposition_id):
         data = {'filename': os.path.basename(self.descriptor_file_name)}
@@ -196,6 +165,19 @@ class Publisher():
                                    .format(r.json()['doi']), r)
         return r.json()['doi']
 
+    def zenodo_update_metadata(self, deposition_id):
+        data = self.create_metadata()
+        headers = {"Content-Type": "application/json"}
+        r = requests.put(self.zenodo_endpoint+'/api/deposit/depositions/%s'
+                         % deposition_id,
+                         params={'access_token': self.zenodo_access_token},
+                         data=json.dumps(data),
+                         headers=headers)
+        if(r.status_code != 200):
+            self.raise_zenodo_error("Cannot update metadata of new version", r)
+        if(self.verbose):
+            self.print_zenodo_info("Updated metadata of new version", r)
+
     def raise_zenodo_error(self, message, r):
         raise ZenodoError("Zenodo error ({0}): {1}."
                           .format(r.status_code, message))
@@ -220,3 +202,70 @@ class Publisher():
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
                 f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+
+    def publish_updated_version(self, deposition_id):
+        if(not self.no_int):
+            prompt = ("The descriptor will be published to Zenodo, "
+                      "this cannot be undone. Are you sure? (Y/n) ")
+            try:
+                ret = raw_input(prompt)  # Python 2
+            except NameError:
+                ret = input(prompt)  # Python 3
+            if ret.upper() != "Y":
+                return
+        self.zenodo_test_api()
+        new_deposition_id = self.zenodo_deposit_updated_version(deposition_id)
+        self.zenodo_update_metadata(new_deposition_id)
+        self.zenodo_upload_descriptor(new_deposition_id)
+        self.doi = self.zenodo_publish(new_deposition_id)
+        self.descriptor['doi'] = self.doi
+        with open(self.descriptor_file_name, "w") as f:
+                f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+
+    def create_metadata(self):
+        data = {
+            'metadata': {
+                'title': self.descriptor['name'],
+                'upload_type': 'software',
+                'description': self.descriptor['description'] or "Boutiques "
+                               "descriptor for {0}".format(
+                                                   self.descriptor['name']),
+                'creators': [{'name': self.creator}],
+                'version': self.descriptor['tool-version'],
+                'keywords': ['Boutiques',
+                             'schema-version:{0}'.
+                             format(self.descriptor['schema-version'])]
+            }
+        }
+        keywords = data['metadata']['keywords']
+        if self.descriptor.get('tags'):
+            for key, value in self.descriptor.get('tags').iteritems():
+                # Check if value is a string or a list of strings
+                if isinstance(value, basestring):
+                    keywords.append(key + ":" + value)
+                else:
+                    keywords += [key + ":" + item for item in value]
+        if self.descriptor.get('container-image'):
+            keywords.append(self.descriptor['container-image']['type'])
+        if self.url is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': self.url,
+                'relation': 'hasPart'
+            })
+        if self.tool_doi is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': self.tool_doi,
+                'relation': 'hasPart'
+            })
+        if self.descriptor_url is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': self.descriptor_url,
+                'relation': 'hasPart'
+            })
+        return data

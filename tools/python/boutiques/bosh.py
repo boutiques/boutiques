@@ -241,6 +241,9 @@ def publish(*params):
                         help="disable interactive input.")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="print information messages.")
+    parser.add_argument("--update", action="store",
+                        help="deposition id of the record to update "
+                        "(e.g. 123456)")
 
     results = parser.parse_args(params)
 
@@ -250,7 +253,10 @@ def publish(*params):
                           results.sandbox,
                           results.no_int,
                           results.zenodo_token)
-    publisher.publish()
+    if results.update:
+        publisher.publish_updated_version(results.update)
+    else:
+        publisher.publish()
     if hasattr(publisher, 'doi'):
         return publisher.doi
 
