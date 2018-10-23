@@ -358,27 +358,46 @@ def test(*params):
     return pytest.main([test_path, "--descriptor", result.descriptor])
 
 
+def search(*params):
+    parser = ArgumentParser("Search Zenodo for Boutiques descriptors. "
+                            "When no term is supplied, will search for "
+                            "all descriptors.")
+
+    parser.add_argument("-q", "--query", action="store", help="Search query")
+
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print information messages")
+
+    result = parser.parse_args(params)
+
+    from boutiques.searcher import Searcher
+    searcher = Searcher(result.query, result.verbose)
+
+    return searcher.search()
+
+
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
                             add_help=False)
     parser.add_argument("function", action="store", nargs="?",
                         help="The tool within boutiques/bosh you wish to run. "
-                        "Create: creates an Boutiques descriptor from scratch."
-                        "Validate: validates an existing boutiques descriptor."
+                        "Create: creates an Boutiques descriptor from scratch. "
+                        "Validate: validates an existing boutiques descriptor. "
                         "Exec: launches or simulates an execution given a "
                         "descriptor and a set of inputs. Import: creates a "
                         "descriptor for a BIDS app or updates a descriptor "
                         "from an older version of the schema. Export: exports a"
                         "descriptor to other formats. Publish: creates"
                         "an entry in Zenodo for the descriptor and "
-                        "adds the DOI created by Zenodo to the descriptor."
+                        "adds the DOI created by Zenodo to the descriptor. "
                         "Invocation: generates the invocation schema for a "
                         "given descriptor. Eval: given an invocation and a "
-                        "descriptor, queries execution properties."
-                        "Test: run pytest on a descriptor detailing tests",
+                        "descriptor, queries execution properties. "
+                        "Test: run pytest on a descriptor detailing tests. "
+                        "Search: search Zenodo for descriptors.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test"])
+                                 "test", "search"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -435,6 +454,9 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "test":
             out = test(*params)
+            return bosh_return(out)
+        elif func == "search":
+            out = search(*params)
             return bosh_return(out)
         else:
             parser.print_help()
