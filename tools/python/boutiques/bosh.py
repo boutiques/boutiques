@@ -376,6 +376,22 @@ def search(*params):
     return searcher.search()
 
 
+def pull(*params):
+    parser = ArgumentParser("Download a descriptor from Zenodo.")
+
+    parser.add_argument("zid", action="store", help="Zenodo ID")
+
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print information messages")
+
+    result = parser.parse_args(params)
+
+    from boutiques.puller import Puller
+    puller = Puller(result.zid, result.verbose)
+
+    return puller.pull()
+
+
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
                             add_help=False)
@@ -394,10 +410,11 @@ def bosh(args=None):
                         "given descriptor. Eval: given an invocation and a "
                         "descriptor, queries execution properties. "
                         "Test: run pytest on a descriptor detailing tests. "
-                        "Search: search Zenodo for descriptors.",
+                        "Search: search Zenodo for descriptors. "
+                        "Pull: download a descriptor from Zenodo.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "search"])
+                                 "test", "search", "pull"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -457,6 +474,9 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "search":
             out = search(*params)
+            return bosh_return(out)
+        elif func == "pull":
+            out = pull(*params)
             return bosh_return(out)
         else:
             parser.print_help()
