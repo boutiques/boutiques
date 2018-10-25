@@ -132,8 +132,20 @@ class LocalExecutor(object):
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
         self.invocation = invocation
-        # Parse JSON descriptor
-        self.desc_dict = loadJson(desc)
+
+        # Extra Options
+        # Include: forcePathType and debug
+        self.debug = False
+        for option in list(options.keys()):
+            setattr(self, option, options.get(option))
+
+        if self.zenodo:
+            from boutiques.puller import Puller
+            puller = Puller(desc, self.debug, False)
+            self.desc_dict = json.loads(puller.pull().read())
+        else:
+            # Parse JSON descriptor
+            self.desc_dict = loadJson(desc)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -154,11 +166,6 @@ class LocalExecutor(object):
         if self.con is not None:
             self.con.get('working-directory')
 
-        # Extra Options
-        # Include: forcePathType and debug
-        self.debug = False
-        for option in list(options.keys()):
-            setattr(self, option, options.get(option))
         # Container Implementation check
         conEngines = ['docker', 'singularity']
         if (self.con is not None) and self.con['type'] not in conEngines:
