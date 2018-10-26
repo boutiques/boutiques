@@ -61,7 +61,7 @@ class TestPublisher(TestCase):
 
         new_doi = bosh(["publish",
                         temp_descriptor_new.name,
-                        "--sandbox", "-y", "-v", "--update", deposition_id,
+                        "--sandbox", "-y", "-v",
                         "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                         "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         assert(new_doi)

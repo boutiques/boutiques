@@ -196,6 +196,40 @@ class Publisher():
             if ret.upper() != "Y":
                 return
         self.zenodo_test_api()
+
+        # perform a search to check if descriptor is an updated version
+        # of an existing one
+        r = requests.get(self.zenodo_endpoint +
+                         '/api/records/?q=%s&'
+                         'keywords=boutiques&keywords=schema&'
+                         'keywords=version&file_type=json&type=software'
+                         % self.descriptor.get("name"))
+
+        if(r.status_code != 200):
+            self.raise_zenodo_error("Error searching Zenodo", r)
+
+        id_to_update = 0
+        for hit in r.json()["hits"]["hits"]:
+            title = hit["metadata"]["title"]
+            if title == self.descriptor.get("name"):
+                id_to_update = hit["id"]
+                break
+
+        if id_to_update:
+            if(not self.no_int):
+                prompt = ("Found an existing record with the same name, "
+                          "would you like to update it? (Y/n) ")
+                try:
+                    ret = raw_input(prompt)  # Python 2
+                except NameError:
+                    ret = input(prompt)  # Python 3
+                if ret.upper() != "Y":
+                    self.publish_new_entry()
+            self.publish_updated_version(id_to_update)
+        else:
+            self.publish_new_entry()
+
+    def publish_new_entry(self):
         deposition_id = self.zenodo_deposit()
         self.zenodo_upload_descriptor(deposition_id)
         self.doi = self.zenodo_publish(deposition_id)
@@ -204,16 +238,6 @@ class Publisher():
                 f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
 
     def publish_updated_version(self, deposition_id):
-        if(not self.no_int):
-            prompt = ("The descriptor will be published to Zenodo, "
-                      "this cannot be undone. Are you sure? (Y/n) ")
-            try:
-                ret = raw_input(prompt)  # Python 2
-            except NameError:
-                ret = input(prompt)  # Python 3
-            if ret.upper() != "Y":
-                return
-        self.zenodo_test_api()
         new_deposition_id = self.zenodo_deposit_updated_version(deposition_id)
         self.zenodo_update_metadata(new_deposition_id)
         self.zenodo_upload_descriptor(new_deposition_id)
@@ -241,7 +265,7 @@ class Publisher():
         if self.descriptor.get('tags'):
             for key, value in self.descriptor.get('tags').items():
                 # Check if value is a string or a list of strings
-                if isinstance(value, str):
+                if self.is_str(value):
                     keywords.append(key + ":" + value)
                 else:
                     keywords += [key + ":" + item for item in value]
@@ -269,3 +293,12 @@ class Publisher():
                 'relation': 'hasPart'
             })
         return data
+
+    # checks if value is a string
+    # try/except is needed for Python2/3 compatibility
+    def is_str(self, value):
+        try:
+            basestring
+        except NameError:
+            return isinstance(value, str)
+        return isinstance(value, basestring)
