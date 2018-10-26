@@ -9,7 +9,8 @@ class TestPull(TestCase):
     def test_pull_by_filename(self):
         # create a temporary directory to download the file
         tmp_dir = "test_pull_example1"
-        os.mkdir(tmp_dir)
+        if not os.path.isdir(tmp_dir):
+            os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
         bosh(["pull", "example1.json"])
 
@@ -21,7 +22,8 @@ class TestPull(TestCase):
     def test_pull_by_id(self):
         # create a temporary directory to download the file
         tmp_dir = "test_pull_example1"
-        os.mkdir(tmp_dir)
+        if not os.path.isdir(tmp_dir):
+            os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
         bosh(["pull", "1219701"])
 

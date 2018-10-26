@@ -1,6 +1,13 @@
 import requests
 import urllib
-import urllib2
+try:
+    # Python 3
+    from urllib.request import urlopen
+    from urllib.request import urlretrieve
+except ImportError:
+    # Python 2
+    from urllib2 import urlopen
+    from urllib import urlretrieve
 
 
 class ZenodoError(Exception):
@@ -37,11 +44,11 @@ class Puller():
                     if(self.verbose):
                         self.print_zenodo_info("Downloading descriptor %s"
                                                % file_name, r)
-                    return urllib.urlretrieve(file_path, file_name)
+                    return urlretrieve(file_path, file_name)
                 if(self.verbose):
                     self.print_zenodo_info("Opening descriptor %s"
                                            % file_name, r)
-                return urllib2.urlopen(file_path)
+                return urlopen(file_path)
 
         raise IOError("Descriptor not found")
 
@@ -54,11 +61,11 @@ class Puller():
                     if(self.verbose):
                         self.print_zenodo_info("Downloading descriptor %s"
                                                % file_name, r)
-                    return urllib.urlretrieve(file_path, file_name)
+                    return urlretrieve(file_path, file_name)
                 if(self.verbose):
                     self.print_zenodo_info("Opening descriptor %s"
                                            % file_name, r)
-                return urllib2.urlopen(file_path)
+                return urlopen(file_path)
 
         raise IOError("Descriptor not found")
 
