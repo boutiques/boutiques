@@ -136,6 +136,7 @@ class LocalExecutor(object):
         # Extra Options
         # Include: forcePathType and debug
         self.debug = False
+        self.zenodo = False
         for option in list(options.keys()):
             setattr(self, option, options.get(option))
 
@@ -728,7 +729,6 @@ class LocalExecutor(object):
         self.in_dict = loadJson(infile)
 
         # Input dictionary
-        print(self.in_dict)
         if self.debug:
             print("Input: " + str(self.in_dict))
         # Fix special flag case: flags given the false value

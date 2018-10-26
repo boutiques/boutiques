@@ -395,7 +395,7 @@ def pull(*params):
     from boutiques.puller import Puller
     puller = Puller(result.identifier, result.verbose, True)
 
-    return puller.pull()
+    puller.pull()
 
 
 def bosh(args=None):

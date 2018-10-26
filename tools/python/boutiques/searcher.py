@@ -36,7 +36,7 @@ class Searcher():
             table.append([hit["id"], hit["metadata"]["title"],
                          hit["metadata"]["description"]])
         return tabulate(table, headers=['ID', 'TITLE',
-                        'DESCRIPTION', 'FILENAME'], tablefmt='plain')
+                        'DESCRIPTION'], tablefmt='plain')
 
     def print_zenodo_info(self, message, r):
         print("[ INFO ({1}) ] {0}".format(message, r.status_code))

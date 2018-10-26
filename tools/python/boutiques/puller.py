@@ -34,11 +34,10 @@ class Puller():
             file_name = file_path.split("/")[-1]
             if hit["id"] == int(zid):
                 if self.download:
-                    urllib.urlretrieve(file_path, file_name)
                     if(self.verbose):
-                        self.print_zenodo_info("Downloaded descriptor %s"
+                        self.print_zenodo_info("Downloading descriptor %s"
                                                % file_name, r)
-                    return
+                    return urllib.urlretrieve(file_path, file_name)
                 if(self.verbose):
                     self.print_zenodo_info("Opening descriptor %s"
                                            % file_name, r)
@@ -52,11 +51,10 @@ class Puller():
             file_name = file_path.split("/")[-1]
             if file_name == filename:
                 if self.download:
-                    urllib.urlretrieve(file_path, file_name)
                     if(self.verbose):
-                        self.print_zenodo_info("Downloaded descriptor %s"
+                        self.print_zenodo_info("Downloading descriptor %s"
                                                % file_name, r)
-                    return
+                    return urllib.urlretrieve(file_path, file_name)
                 if(self.verbose):
                     self.print_zenodo_info("Opening descriptor %s"
                                            % file_name, r)
