@@ -9,7 +9,8 @@ DEPS = [
          "pytest",
          "termcolor",
          "pyyaml",
-         "jsonschema"
+         "jsonschema",
+	 "tabulate"
        ]
 
 setup(name="boutiques",
