@@ -197,7 +197,7 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         ret = bosh.execute("launch", "-z",
-                           "example1.json",
+                           "example1_docker.json",
                            os.path.join(example1_dir,
                                         "invocation.json"))
 

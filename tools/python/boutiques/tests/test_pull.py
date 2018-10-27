@@ -12,9 +12,9 @@ class TestPull(TestCase):
         if not os.path.isdir(tmp_dir):
             os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
-        bosh(["pull", "example1.json"])
+        bosh(["pull", "example1_docker.json"])
 
-        assert(os.path.exists("example1.json"))
+        assert(os.path.exists("example1_docker.json"))
 
         os.chdir("..")
         shutil.rmtree(tmp_dir)
@@ -25,9 +25,9 @@ class TestPull(TestCase):
         if not os.path.isdir(tmp_dir):
             os.mkdir(tmp_dir)
         os.chdir(tmp_dir)
-        bosh(["pull", "1219701"])
+        bosh(["pull", "1472823"])
 
-        assert(os.path.exists("example1.json"))
+        assert(os.path.exists("example1_docker.json"))
 
         os.chdir("..")
         shutil.rmtree(tmp_dir)
