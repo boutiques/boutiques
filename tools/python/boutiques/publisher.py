@@ -135,6 +135,8 @@ class Publisher():
             self.print_zenodo_info("Deposition of new version succeeded", r)
         new_url = r.json()['links']['latest_draft']
         new_zid = new_url.split("/")[-1]
+        self.zenodo_update_metadata(new_zid)
+        self.zenodo_delete_files(new_zid, r.json()["files"])
         return new_zid
 
     def zenodo_upload_descriptor(self, deposition_id):
@@ -177,6 +179,19 @@ class Publisher():
             self.raise_zenodo_error("Cannot update metadata of new version", r)
         if(self.verbose):
             self.print_zenodo_info("Updated metadata of new version", r)
+
+    def zenodo_delete_files(self, deposition_id, files):
+        for file in files:
+            file_id = file["id"]
+            r = requests.delete(self.zenodo_endpoint +
+                                '/api/deposit/depositions/%s/files/%s'
+                                % (deposition_id, file_id),
+                                params={'access_token':
+                                        self.zenodo_access_token})
+            if(r.status_code != 204):
+                self.raise_zenodo_error("Could not delete file", r)
+            if(self.verbose):
+                self.print_zenodo_info("Deleted file", r)
 
     def raise_zenodo_error(self, message, r):
         raise ZenodoError("Zenodo error ({0}): {1}."
@@ -239,7 +254,6 @@ class Publisher():
 
     def publish_updated_version(self, deposition_id):
         new_deposition_id = self.zenodo_deposit_updated_version(deposition_id)
-        self.zenodo_update_metadata(new_deposition_id)
         self.zenodo_upload_descriptor(new_deposition_id)
         self.doi = self.zenodo_publish(new_deposition_id)
         self.descriptor['doi'] = self.doi
