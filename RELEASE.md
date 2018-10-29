@@ -7,7 +7,7 @@
    cd jsonschema2md
    npm link
    cd ..
-   jsonschema2md -d ./tools/python/boutiques/schema/descriptor.schema.json
+   jsonschema2md -d ./tools/python/boutiques/schema/descriptor.schema.json -v 04
    cp out/descriptor.schema.md schema/README.md
    ```
 3. If the `README.md` at the root of this repository was updated, update `tools/python/README.rst` using [pandoc](https://pandoc.org/)

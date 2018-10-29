@@ -29,10 +29,11 @@ class Publisher():
         # Get relevant descriptor propertis
         self.url = self.descriptor.get('url')
         self.tool_doi = self.descriptor.get('tool-doi')
+        self.descriptor_url = self.descriptor.get('descriptor-url')
 
         # Get tool author and check that it's defined
         if self.descriptor.get("author") is None:
-            raise ZenodoError("Tool must have an author to be publised. "
+            raise ZenodoError("Tool must have an author to be published. "
                               "Add an 'author' property to your descriptor.")
         self.creator = self.descriptor['author']
 
@@ -123,8 +124,13 @@ class Publisher():
             }
         }
         keywords = data['metadata']['keywords']
-        for tag in self.descriptor.get('tags'):
-            keywords.append(tag + ":" + self.descriptor['tags'][tag])
+        if self.descriptor.get('tags'):
+            for key, value in self.descriptor.get('tags').items():
+                # Check if value is a string or a list of strings
+                if isinstance(value, str):
+                    keywords.append(key + ":" + value)
+                else:
+                    keywords += [key + ":" + item for item in value]
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
         if self.url is not None:
@@ -139,6 +145,13 @@ class Publisher():
                 data['metadata']['related_identifiers'] = []
             data['metadata']['related_identifiers'].append({
                 'identifier': self.tool_doi,
+                'relation': 'hasPart'
+            })
+        if self.descriptor_url is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': self.descriptor_url,
                 'relation': 'hasPart'
             })
 
@@ -198,7 +211,7 @@ class Publisher():
                 ret = raw_input(prompt)  # Python 2
             except NameError:
                 ret = input(prompt)  # Python 3
-            if ret != "Y":
+            if ret.upper() != "Y":
                 return
         self.zenodo_test_api()
         deposition_id = self.zenodo_deposit()

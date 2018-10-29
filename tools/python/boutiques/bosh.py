@@ -16,16 +16,24 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
+from boutiques.localExec import loadJson
 
 
 def create(*params):
     parser = ArgumentParser("Boutiques descriptor creator")
     parser.add_argument("descriptor", action="store",
                         help="Output file to store descriptor in.")
+    parser.add_argument("--docker-image", '-d', action="store",
+                        help="Name of Docker image on DockerHub.")
+    parser.add_argument("--use-singularity", '-u', action="store_true",
+                        help="When --docker-image is used. Specify to "
+                             "use singularity to run it.")
     results = parser.parse_args(params)
 
     from boutiques.creator import CreateDescriptor
-    new = CreateDescriptor()
+    new = CreateDescriptor(parser=None,
+                           docker_image=results.docker_image,
+                           use_singularity=results.use_singularity)
     new.save(results.descriptor)
     return None
 
@@ -88,18 +96,12 @@ def execute(*params):
         parser.add_argument("-u", "--user", action="store_true",
                             help="Runs the container as local user ({0})"
                             " instead of root.".format(os.getenv("USER")))
+        parser.add_argument("-s", "--stream", action="store_true",
+                            help="Streams stdout and stderr in real time "
+                            "during execution.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
-
-        # Do some basic input scrubbing
-        if not os.path.isfile(inp):
-            raise SystemExit("Input file {} does not exist".format(inp))
-        if not inp.endswith(".json"):
-            raise SystemExit("Input file {} must end in json".format(inp))
-        if not os.path.isfile(descriptor):
-            raise SystemExit("JSON descriptor {} does not exist".
-                             format(descriptor))
 
         # Validate invocation and descriptor
         valid = invocation(descriptor, '-i', inp)
@@ -109,7 +111,8 @@ def execute(*params):
         executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "debug": results.debug,
-                                  "changeUser": results.user})
+                                  "changeUser": results.user,
+                                  "stream": results.stream})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -160,7 +163,9 @@ def execute(*params):
             executor.printCmdLine()
 
         # for consistency with execute
-        return ExecutorOutput("", "", 0, "", [], [], "", "", "")
+        # Adding simulate to "container location" field since it's an invalid
+        # value, and we can parse that to hide the summary print
+        return ExecutorOutput("", "", 0, "", [], [], "", "", "simulate")
 
 
 def importer(*params):
@@ -246,7 +251,8 @@ def publish(*params):
                           results.no_int,
                           results.zenodo_token)
     publisher.publish()
-    return publisher.doi
+    if hasattr(publisher, 'doi'):
+        return publisher.doi
 
 
 def invocation(*params):
@@ -256,8 +262,8 @@ def invocation(*params):
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("-i", "--invocation", action="store",
-                        help="Input values in a JSON file to be"
-                        " validated against "
+                        help="Input values in a JSON file or as a JSON "
+                        "object to be validated against "
                         "the invocation schema.")
     parser.add_argument("-w", "--write-schema", action="store_true",
                         help="If descriptor doesn't have an invocation "
@@ -267,9 +273,8 @@ def invocation(*params):
 
     validate(result.descriptor)
     if result.invocation:
-        data = json.loads(open(result.invocation).read())
-
-    descriptor = json.loads(open(result.descriptor).read())
+        data = loadJson(result.invocation)
+    descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:
@@ -386,8 +391,10 @@ def bosh(args=None):
     def runs_as_cli():
         return os.path.basename(sys.argv[0]) == "bosh"
 
-    def bosh_return(val, code=0):
+    def bosh_return(val, code=0, hide=False):
         if runs_as_cli():
+            if hide:
+                return code
             if val is not None:
                 print(val)
             else:
@@ -409,7 +416,8 @@ def bosh(args=None):
             out = execute(*params)
             # If executed through CLI, print 'out' and return exit_code
             # Otherwise, return out
-            return bosh_return(out, out.exit_code)
+            return bosh_return(out, out.exit_code,
+                               hide=bool(out.container_location == 'simulate'))
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)

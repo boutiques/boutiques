@@ -63,10 +63,10 @@ class ExecutorOutput():
                "{2}" + os.linesep +
                title("Exit code") +
                "{3}" + os.linesep +
-               title("Std out") +
-               "{4}" + os.linesep +
-               title("Std err") +
-               colored("{5}", 'red') + os.linesep +
+               (title("Std out") +
+                "{4}" + os.linesep if self.stdout else "") +
+               (title("Std err") +
+                colored("{5}", 'red') + os.linesep if self.stderr else "") +
                title("Error message") +
                colored("{6}", 'red') + os.linesep +
                title("Output files") +
@@ -133,8 +133,7 @@ class LocalExecutor(object):
         self.errs = []        # Empty errors holder
         self.invocation = invocation
         # Parse JSON descriptor
-        with open(desc, 'r') as descriptor:
-            self.desc_dict = json.loads(descriptor.read())
+        self.desc_dict = loadJson(desc)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -145,11 +144,9 @@ class LocalExecutor(object):
         # The set of input parameters from the json descriptor
         self.inputs = self.desc_dict['inputs']  # Struct: [{id:}..,{id:}]
         # The set of output parameters from the json descriptor
-        self.outputs = self.desc_dict['output-files']  # Struct: [{id:}..,{id:}]
+        self.outputs = self.desc_dict.get('output-files') or []
         # The set of parameter groups, according to the json descriptor
-        self.groups = []
-        if 'groups' in list(self.desc_dict.keys()):
-            self.groups = self.desc_dict['groups']
+        self.groups = self.desc_dict.get('groups') or []
 
         # Container-image Options
         self.con = self.desc_dict.get('container-image')
@@ -219,6 +216,7 @@ class LocalExecutor(object):
         # Check for Container image
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
+        conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
         # Export environment variables, if they are specified in the descriptor
         envVars = {}
@@ -294,6 +292,11 @@ class LocalExecutor(object):
             if launchDir is None:
                 launchDir = op.realpath('./')
             launchDir = op.realpath(launchDir)
+            # Get the container options
+            conOptsString = ""
+            if conOpts:
+                for opt in conOpts:
+                    conOptsString += opt + ' '
             # Run it in docker
             mount_strings = [] if not mount_strings else mount_strings
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
@@ -318,6 +321,7 @@ class LocalExecutor(object):
                                      ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
+                                     conOptsString +
                                      str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
                 envString = ""
@@ -362,6 +366,7 @@ class LocalExecutor(object):
                                      '--cleanenv ' +
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
+                                     conOptsString +
                                      str(conName) + ' ' + dsname)
             else:
                 raise ExecutorError('Unrecognized container type: '
@@ -418,9 +423,14 @@ class LocalExecutor(object):
         if self.debug:
             print("Running: {0}".format(command))
         try:
-            process = subprocess.Popen(command, shell=True,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+            if self.stream:
+                process = subprocess.Popen(command, shell=True,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT)
+            else:
+                process = subprocess.Popen(command, shell=True,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
 
         except OSError as e:
             sys.stderr.write('OS Error during attempted execution!')
@@ -428,8 +438,19 @@ class LocalExecutor(object):
         except ValueError as e:
             sys.stderr.write('Input Value Error during attempted execution!')
             raise e
-        else:
+
+        if not self.stream:
             return process.communicate(), process.returncode
+
+        while True:
+            if process.poll() is not None:
+                break
+            outLine = process.stdout.readline().decode()
+            if outLine != '':
+                sys.stdout.write(outLine)
+        # Return (stdout, stderr) as (None, None) since it was already
+        # printed in real time
+        return (None, None), process.returncode
 
     # Private method to generate a random input parameter set that follows
     # the constraints from the json descriptor
@@ -449,16 +470,16 @@ class LocalExecutor(object):
             return ''.join(rnd.choice(string.digits)
                            for _ in range(nd))
 
-        def randFile():
-            return ('f_' + randDigs() +
+        def randFile(id):
+            return ('f_' + id + '_' + randDigs() +
                     rnd.choice(['.csv', '.tex', '.j',
                                 '.cpp', '.m', '.mnc',
-                                '.nii.gz']))
+                                '.nii.gz', '']))
 
-        def randStr():
-            return 'str_' + ''.join(rnd.choice(string.digits +
-                                    string.ascii_letters)
-                                    for _ in range(nd))
+        def randStr(id):
+            return 'str_' + id + '_' + ''.join(rnd.choice(string.digits +
+                                               string.ascii_letters)
+                                               for _ in range(nd))
 
         # A function for generating a number type parameter input
         # p is a dictionary object corresponding to a parameter
@@ -491,9 +512,9 @@ class LocalExecutor(object):
                 minv, maxv = float(minv), float(maxv)
             # Apply exclusive boundary constraints, if any
             if self.safeGet(param_id, 'exclusive-minimum'):
-                minv += (1 if isInt else 0.0001)
+                minv += 1 if isInt else 0.001
             if self.safeGet(param_id, 'exclusive-maximum'):
-                maxv -= (1 if isInt else 0.0001)
+                maxv -= 1 if isInt else 0.001
             # Returns a random int or a random float, depending on the type of p
             return (rnd.randint(minv, maxv)
                     if isInt else round(rnd.uniform(minv, maxv), nd))
@@ -504,13 +525,13 @@ class LocalExecutor(object):
             if self.safeGet(prm['id'], 'value-choices'):
                 return rnd.choice(self.safeGet(prm['id'], 'value-choices'))
             if prm['type'] == 'String':
-                return randStr()
+                return randStr(prm['id'])
             if prm['type'] == 'Number':
                 return randNum(prm)
             if prm['type'] == 'Flag':
                 return rnd.choice(['true', 'false'])
             if prm['type'] == 'File':
-                return randFile()
+                return randFile(prm['id'])
 
         # For this function, given prm (a parameter description),
         # a parameter value is generated
@@ -520,9 +541,8 @@ class LocalExecutor(object):
             mn = self.safeGet(prm['id'], 'min-list-entries') or 2
             mx = self.safeGet(prm['id'], 'max-list-entries') or nl
             isList = self.safeGet(prm['id'], 'list') or False
-            return ' '.join(str(paramSingle(prm)) for _ in
-                            range(rnd.randint(mn, mx))
-                            ) if isList else paramSingle(prm)
+            return [str(paramSingle(prm)) for _ in
+                    range(rnd.randint(mn, mx))] if isList else paramSingle(prm)
 
         # Returns a list of the ids of parameters that
         # disable the input parameter
@@ -604,6 +624,7 @@ class LocalExecutor(object):
         # Fill in the required parameters
         for reqp in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[reqp['id']] = makeParam(reqp)
+
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
                     if self.safeGrpGet(g['id'], 'one-is-required')]:
@@ -672,12 +693,12 @@ class LocalExecutor(object):
                 self._validateDict()
             # If an error occurs, print out the problems already
             # encountered before blowing up
-            except Exception:  # Avoid catching BaseExceptions like SystemExit
+            except Exception as e:  # Avoid BaseExceptions like SystemExit
                 sys.stderr.write("An error occurred in validation\n"
                                  "Previously saved issues\n")
                 for err in self.errs:
                     sys.stderr.write("\t" + str(err) + "\n")
-                raise  # Pass on (throw) the caught exception
+                raise e  # Pass on (throw) the caught exception
             # Add new command line
             self.cmdLine.append(self._generateCmdLineFromInDict())
 
@@ -697,9 +718,10 @@ class LocalExecutor(object):
 
         # Quick check that the descriptor has already been read in
         assert self.desc_dict is not None
-        with open(infile, 'r') as inparams:
-            self.in_dict = json.loads(inparams.read())
+        self.in_dict = loadJson(infile)
+
         # Input dictionary
+        print(self.in_dict)
         if self.debug:
             print("Input: " + str(self.in_dict))
         # Fix special flag case: flags given the false value
@@ -935,7 +957,7 @@ class LocalExecutor(object):
             if targ["type"] == "Number":
                 # Number type and constraints are not violated
                 # (note the lambda safety checks)
-                for v in (str(val).split() if isList else [val]):
+                for v in (val if isList else [val]):
                     check('minimum', lambda x, y: float(x) >= targ[y],
                           "violates minimum value", v)
                     check('exclusive-minimum',
@@ -951,7 +973,11 @@ class LocalExecutor(object):
                     check(None, lambda x, y: isNumber(x), "is not a number", v)
             elif self.safeGet(targ['id'], 'value-choices'):
                 # Value is in the list of allowed values
-                check('value-choices', lambda x, y: x in targ[y],
+                if isinstance(val, list):
+                    fn = (lambda x, y: all([x1 in targ[y] for x1 in x]))
+                else:
+                    fn = (lambda x, y: x in targ[y])
+                check('value-choices', fn,
                       "is not a valid enum choice", val)
             elif targ["type"] == "Flag":
                 # Should be 'true' or 'false' when lower-cased
@@ -972,7 +998,7 @@ class LocalExecutor(object):
                     launchDir = os.getcwd()
                     if self.launchDir is not None:
                         launchDir = self.launchDir
-                    for ftarg in (str(val).split() if isList else [val]):
+                    for ftarg in (val if isList else [val]):
                         # Special case 1: launchdir is specified and we
                         # want to use absolute path
                         # Note: in this case, the pwd is mounted as the
@@ -992,16 +1018,18 @@ class LocalExecutor(object):
                         # the path with its absolute version
                         elif targ.get('uses-absolute-path') is True:
                             replacementFiles.append(os.path.abspath(ftarg))
+                        else:
+                            replacementFiles.append(ftarg)
                     # Replace old val with the new one
                     self.in_dict[key] = " ".join(replacementFiles)
             # List length constraints are satisfied
             if isList:
                 check('min-list-entries',
-                      lambda x, y: len(x.split()) >= targ[y],
+                      lambda x, y: len(x) >= targ[y],
                       "violates min size", val)
             if isList:
                 check('max-list-entries',
-                      lambda x, y: len(x.split()) <= targ[y],
+                      lambda x, y: len(x) <= targ[y],
                       "violates max size", val)
         # Required inputs are present
         for reqId in [v['id'] for v in self.inputs if not v.get('optional')]:
@@ -1047,3 +1075,16 @@ class LocalExecutor(object):
             for err in self.errs:
                 message += ("\t" + err + "\n")
             raise ExecutorError(message)
+
+
+# Helper function that loads the JSON object coming from either a string
+# or a file
+def loadJson(jsonInput):
+    if os.path.isfile(jsonInput):
+        with open(jsonInput, 'r') as jsonFile:
+            return json.loads(jsonFile.read())
+    else:
+        try:
+            return json.loads(jsonInput)
+        except ValueError:
+            raise ExecutorError("Unable to decode JSON object")
