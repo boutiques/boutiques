@@ -48,7 +48,7 @@ class Puller():
                                            % file_name, r)
                 return urlopen(file_path)
 
-        raise IOError("Descriptor not found")
+        raise ZenodoError("Descriptor not found")
 
     def print_zenodo_info(self, message, r):
         print("[ INFO ({1}) ] {0}".format(message, r.status_code))

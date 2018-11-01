@@ -41,7 +41,8 @@ def create(*params):
 def validate(*params):
     parser = ArgumentParser("Boutiques descriptor validator")
     parser.add_argument("descriptor", action="store",
-                        help="The Boutiques descriptor.")
+                        help="The Boutiques descriptor as a JSON file, JSON "
+                             "string or Zenodo ID (prefixed by 'zenodo.').")
     parser.add_argument("--bids", "-b", action="store_true",
                         help="Flag indicating if descriptor is a BIDS app")
     parser.add_argument("--format", "-f", action="store_true",
@@ -81,7 +82,8 @@ def execute(*params):
     if mode == "launch":
         parser = ArgumentParser("Launches an invocation.")
         parser.add_argument("descriptor", action="store",
-                            help="The Boutiques descriptor.")
+                            help="The Boutiques descriptor as a JSON file, "
+                            "JSON string or Zenodo ID (prefixed by 'zenodo.').")
         parser.add_argument("invocation", action="store",
                             help="Input JSON complying to invocation.")
         parser.add_argument("-v", "--volumes", action="store", type=str,
@@ -119,7 +121,8 @@ def execute(*params):
     if mode == "simulate":
         parser = ArgumentParser("Simulates an invocation.")
         parser.add_argument("descriptor", action="store",
-                            help="The Boutiques descriptor.")
+                            help="The Boutiques descriptor as a JSON file, "
+                            "JSON string or Zenodo ID (prefixed by 'zenodo.').")
         parser.add_argument("-i", "--input", action="store",
                             help="Input JSON complying to invocation.")
         parser.add_argument("-r", "--random", action="store", type=int,
@@ -141,9 +144,9 @@ def execute(*params):
             raise SystemExit("Input file {} does not exist.".format(inp))
         if inp and not inp.endswith(".json"):
             raise SystemExit("Input file {} must end in 'json'.".format(inp))
-        if not os.path.isfile(descriptor):
-            raise SystemExit("JSON descriptor {} does not seem to exist."
-                             .format(descriptor))
+        # if not os.path.isfile(descriptor):
+        #     raise SystemExit("JSON descriptor {} does not seem to exist."
+        #                      .format(descriptor))
         if not rand and not inp:
             raise SystemExit("The default mode requires an input (-i).")
 
@@ -260,7 +263,8 @@ def invocation(*params):
                             " invocations. Uses descriptor's invocation"
                             " schema if it exists, otherwise creates one.")
     parser.add_argument("descriptor", action="store",
-                        help="The Boutiques descriptor.")
+                        help="The Boutiques descriptor as a JSON file, JSON "
+                             "string or Zenodo ID (prefixed by 'zenodo.').")
     parser.add_argument("-i", "--invocation", action="store",
                         help="Input values in a JSON file or as a JSON "
                         "object to be validated against "
@@ -293,7 +297,8 @@ def evaluate(*params):
     parser = ArgumentParser("Evaluates parameter values for a descriptor"
                             " and invocation")
     parser.add_argument("descriptor", action="store",
-                        help="The Boutiques descriptor.")
+                        help="The Boutiques descriptor as a JSON file, JSON "
+                             "string or Zenodo ID (prefixed by 'zenodo.').")
     parser.add_argument("invocation", action="store",
                         help="Input JSON complying to invocation.")
     parser.add_argument("query", action="store", nargs="*",
@@ -324,8 +329,9 @@ def test(*params):
 
     parser = ArgumentParser("Perform all the tests defined within the"
                             " given descriptor")
-    parser.add_argument("descriptor", action="store", help="The Boutiques"
-                        " descriptor.")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor as a JSON file, JSON "
+                             "string or Zenodo ID (prefixed by 'zenodo.').")
     result = parser.parse_args(params)
 
     # Generation of the invocation schema (and descriptor validation).
@@ -363,7 +369,8 @@ def search(*params):
                             "When no term is supplied, will search for "
                             "all descriptors.")
 
-    parser.add_argument("-q", "--query", action="store", help="Search query")
+    parser.add_argument("query", nargs="?", default="boutiques",
+                        action="store", help="Search query")
 
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print information messages")
@@ -379,9 +386,9 @@ def search(*params):
 def pull(*params):
     parser = ArgumentParser("Download a descriptor from Zenodo.")
 
-    parser.add_argument("identifier", action="store", help="Zenodo ID "
+    parser.add_argument("zid", action="store", help="Zenodo ID "
                         "of the descriptor to pull, prefixed by "
-                        "'zenodo', e.g. zenodo.123456")
+                        "'zenodo.', e.g. zenodo.123456")
 
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print information messages")

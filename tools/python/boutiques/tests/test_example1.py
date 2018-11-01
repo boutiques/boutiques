@@ -196,8 +196,7 @@ class TestExample1(TestCase):
     def test_example1_exec_docker_from_zenodo(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        ret = bosh.execute("launch", "-z",
-                           "example1_docker.json",
+        ret = bosh.execute("launch", "zenodo.1472823",
                            os.path.join(example1_dir,
                                         "invocation.json"))
 
