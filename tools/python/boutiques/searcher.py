@@ -33,6 +33,7 @@ class Searcher():
     def create_results_table(self, results):
         table = []
         for hit in results["hits"]["hits"]:
+            hit["id"] = "zenodo." + str(hit["id"])
             table.append([hit["id"], hit["metadata"]["title"],
                          hit["metadata"]["description"]])
         return tabulate(table, headers=['ID', 'TITLE',

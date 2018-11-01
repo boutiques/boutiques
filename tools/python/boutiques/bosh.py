@@ -99,16 +99,12 @@ def execute(*params):
         parser.add_argument("-s", "--stream", action="store_true",
                             help="Streams stdout and stderr in real time "
                             "during execution.")
-        parser.add_argument("-z", "--zenodo", action="store_true",
-                            help="Download and use a descriptor published "
-                            "on Zenodo.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
 
         # Validate invocation and descriptor
-        if not results.zenodo:
-            valid = invocation(descriptor, '-i', inp)
+        valid = invocation(descriptor, '-i', inp)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -116,8 +112,7 @@ def execute(*params):
                                  {"forcePathType": True,
                                   "debug": results.debug,
                                   "changeUser": results.user,
-                                  "stream": results.stream,
-                                  "zenodo": results.zenodo})
+                                  "stream": results.stream})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -384,8 +379,9 @@ def search(*params):
 def pull(*params):
     parser = ArgumentParser("Download a descriptor from Zenodo.")
 
-    parser.add_argument("identifier", action="store", help="Zenodo ID or "
-                        "filename of the descriptor to pull")
+    parser.add_argument("identifier", action="store", help="Zenodo ID "
+                        "of the descriptor to pull, prefixed by "
+                        "'zenodo', e.g. zenodo.123456")
 
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print information messages")

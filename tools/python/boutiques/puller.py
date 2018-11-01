@@ -16,8 +16,13 @@ class ZenodoError(Exception):
 
 class Puller():
 
-    def __init__(self, identifier, verbose, download):
-        self.identifier = identifier
+    def __init__(self, zid, verbose, download):
+        # remove zenodo prefix
+        try:
+            self.zid = zid.split(".", 1)[1]
+        except IndexError:
+            raise ZenodoError("Zenodo ID must be prefixed by "
+                              "'zenodo', e.g. zenodo.123456")
         self.verbose = verbose
         self.download = download
 
@@ -29,34 +34,10 @@ class Puller():
         if(r.status_code != 200):
             self.raise_zenodo_error("Error searching Zenodo", r)
 
-        try:
-            int(self.identifier)
-            return self.pull_by_id(r, self.identifier)
-        except ValueError:
-            return self.pull_by_filename(r, self.identifier)
-
-    def pull_by_id(self, r, zid):
         for hit in r.json()["hits"]["hits"]:
             file_path = hit["files"][0]["links"]["self"]
             file_name = file_path.split("/")[-1]
-            if hit["id"] == int(zid):
-                if self.download:
-                    if(self.verbose):
-                        self.print_zenodo_info("Downloading descriptor %s"
-                                               % file_name, r)
-                    return urlretrieve(file_path, file_name)
-                if(self.verbose):
-                    self.print_zenodo_info("Opening descriptor %s"
-                                           % file_name, r)
-                return urlopen(file_path)
-
-        raise IOError("Descriptor not found")
-
-    def pull_by_filename(self, r, filename):
-        for hit in r.json()["hits"]["hits"]:
-            file_path = hit["files"][0]["links"]["self"]
-            file_name = file_path.split("/")[-1]
-            if file_name == filename:
+            if hit["id"] == int(self.zid):
                 if self.download:
                     if(self.verbose):
                         self.print_zenodo_info("Downloading descriptor %s"

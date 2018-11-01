@@ -140,13 +140,8 @@ class LocalExecutor(object):
         for option in list(options.keys()):
             setattr(self, option, options.get(option))
 
-        if self.zenodo:
-            from boutiques.puller import Puller
-            puller = Puller(desc, self.debug, False)
-            self.desc_dict = json.loads(puller.pull().read())
-        else:
-            # Parse JSON descriptor
-            self.desc_dict = loadJson(desc)
+        # Parse JSON descriptor
+        self.desc_dict = loadJson(desc)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -1084,14 +1079,21 @@ class LocalExecutor(object):
             raise ExecutorError(message)
 
 
-# Helper function that loads the JSON object coming from either a string
-# or a file
-def loadJson(jsonInput):
-    if os.path.isfile(jsonInput):
-        with open(jsonInput, 'r') as jsonFile:
+# Helper function that loads the JSON object coming from either a string,
+# a file or from Zenodo
+def loadJson(userInput):
+    # JSON file
+    if os.path.isfile(userInput):
+        with open(userInput, 'r') as jsonFile:
             return json.loads(jsonFile.read())
+    # Zenodo ID
+    elif userInput.split(".")[0].lower() == "zenodo":
+        from boutiques.puller import Puller
+        puller = Puller(userInput, False, False)
+        return json.loads(puller.pull().read())
+    # JSON object
     else:
         try:
-            return json.loads(jsonInput)
+            return json.loads(userInput)
         except ValueError:
             raise ExecutorError("Unable to decode JSON object")
