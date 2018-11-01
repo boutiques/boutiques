@@ -9,5 +9,5 @@ class TestSearch(TestCase):
         assert(results)
 
     def test_search_query(self):
-        results = bosh(["search", "-q", "ICA_AROMA"])
+        results = bosh(["search", "ICA_AROMA"])
         assert("ICA_AROMA" in results)

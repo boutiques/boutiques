@@ -28,12 +28,9 @@ class Puller():
         self.download = download
 
     def pull(self):
-        r = requests.get('https://zenodo.org/api/records/?q=boutiques&'
-                         'keywords=boutiques&keywords=schema&'
-                         'keywords=version&file_type=json&type=software')
-
-        if(r.status_code != 200):
-            self.raise_zenodo_error("Error searching Zenodo", r)
+        from boutiques.searcher import Searcher
+        searcher = Searcher(None, self.verbose)
+        r = searcher.zenodo_search()
 
         for hit in r.json()["hits"]["hits"]:
             file_path = hit["files"][0]["links"]["self"]

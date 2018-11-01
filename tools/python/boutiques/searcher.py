@@ -17,6 +17,10 @@ class Searcher():
         self.verbose = verbose
 
     def search(self):
+        results = self.zenodo_search()
+        return self.create_results_table(results.json())
+
+    def zenodo_search(self):
         r = requests.get('https://zenodo.org/api/records/?q=%s&'
                          'keywords=boutiques&keywords=schema&'
                          'keywords=version&file_type=json&type=software'
@@ -27,8 +31,7 @@ class Searcher():
         if(self.verbose):
             self.print_zenodo_info("Zenodo search returned %d results"
                                    % r.json()["hits"]["total"], r)
-
-        return self.create_results_table(r.json())
+        return r
 
     def create_results_table(self, results):
         table = []
