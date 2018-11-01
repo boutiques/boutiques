@@ -396,7 +396,7 @@ def pull(*params):
     result = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.identifier, result.verbose, True)
+    puller = Puller(result.zid, result.verbose, True)
 
     puller.pull()
 

@@ -2,23 +2,14 @@ from boutiques.bosh import bosh
 from unittest import TestCase
 from boutiques.puller import ZenodoError
 import os
-import shutil
 
 
 class TestPull(TestCase):
 
     def test_pull(self):
-        # create a temporary directory to download the file
-        tmp_dir = "test_pull_example1"
-        if not os.path.isdir(tmp_dir):
-            os.mkdir(tmp_dir)
-        os.chdir(tmp_dir)
         bosh(["pull", "zenodo.1472823"])
-
-        assert(os.path.exists("example1_docker.json"))
-
-        os.chdir("..")
-        shutil.rmtree(tmp_dir)
+        cache_dir = os.path.join(os.getenv("HOME"), ".cache", "boutiques")
+        assert(os.path.exists(os.path.join(cache_dir, "example1_docker.json")))
 
     def test_pull_missing_prefix(self):
         with self.assertRaises(ZenodoError) as e:

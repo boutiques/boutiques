@@ -1,5 +1,6 @@
 import requests
 import urllib
+import os
 try:
     # Python 3
     from urllib.request import urlopen
@@ -39,10 +40,15 @@ class Puller():
             file_name = file_path.split("/")[-1]
             if hit["id"] == int(self.zid):
                 if self.download:
+                    cache_dir = os.path.join(os.getenv("HOME"), ".cache",
+                                             "boutiques")
+                    if not os.path.exists(cache_dir):
+                        os.makedirs(cache_dir)
                     if(self.verbose):
                         self.print_zenodo_info("Downloading descriptor %s"
                                                % file_name, r)
-                    return urlretrieve(file_path, file_name)
+                    return urlretrieve(file_path, os.path.join(cache_dir,
+                                       file_name))
                 if(self.verbose):
                     self.print_zenodo_info("Opening descriptor %s"
                                            % file_name, r)
