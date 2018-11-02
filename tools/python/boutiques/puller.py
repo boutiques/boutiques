@@ -37,7 +37,7 @@ class Puller():
 
         for hit in r.json()["hits"]["hits"]:
             file_path = hit["files"][0]["links"]["self"]
-            file_name = file_path.split("/")[-1]
+            file_name = file_path.split(os.sep)[-1]
             if hit["id"] == int(self.zid):
                 if self.download:
                     if(self.verbose):

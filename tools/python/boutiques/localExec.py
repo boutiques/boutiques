@@ -1091,9 +1091,13 @@ def loadJson(userInput):
         from boutiques.puller import Puller
         puller = Puller(userInput, False, False)
         return json.loads(puller.pull().read().decode('utf-8'))
-    # JSON object
-    else:
-        try:
-            return json.loads(userInput)
-        except ValueError:
-            raise ExecutorError("Unable to decode JSON object")
+    # Try to parse JSON object
+    e = ExecutorError("Cannot parse input {}: file not found, "
+                      "invalid Zenodo ID, or invalid JSON object"
+                      .format(userInput))
+    if userInput.isdigit():
+        raise e
+    try:
+        return json.loads(userInput)
+    except ValueError:
+        raise e

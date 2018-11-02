@@ -1,5 +1,6 @@
 import requests
-from tabulate import tabulate
+from collections import OrderedDict
+import json
 
 
 class ZenodoError(Exception):
@@ -19,8 +20,8 @@ class Searcher():
     def search(self):
         results = self.zenodo_search()
         if self.verbose:
-            return self.create_results_table_verbose(results.json())
-        return self.create_results_table(results.json())
+            return self.create_results_list_verbose(results.json())
+        return self.create_results_list(results.json())
 
     def zenodo_search(self):
         r = requests.get('https://zenodo.org/api/records/?q=%s&'
@@ -35,18 +36,18 @@ class Searcher():
                                    % r.json()["hits"]["total"], r)
         return r
 
-    def create_results_table(self, results):
-        table = []
+    def create_results_list(self, results):
+        results_list = []
         for hit in results["hits"]["hits"]:
             id = "zenodo." + str(hit["id"])
             title = hit["metadata"]["title"]
             description = hit["metadata"]["description"]
-            table.append([id, title, description])
-        return tabulate(table, headers=['ID', 'TITLE',
-                        'DESCRIPTION'], tablefmt='plain')
+            results_list.append(OrderedDict([("ID", id), ("TITLE", title),
+                                ("DESCRIPTION", description)]))
+        return results_list
 
-    def create_results_table_verbose(self, results):
-        table = []
+    def create_results_list_verbose(self, results):
+        results_list = []
         for hit in results["hits"]["hits"]:
             id = "zenodo." + str(hit["id"])
             title = hit["metadata"]["title"]
@@ -58,14 +59,17 @@ class Searcher():
             schema_version = keyword_data["schema-version"]
             container = keyword_data["container-type"]
             other_tags = ",".join(keyword_data["other"])
-
-            table.append([id, title, description, author, version,
-                         doi, schema_version, container, other_tags])
-        return tabulate(table, headers=['ID', 'TITLE',
-                                        'DESCRIPTION', 'AUTHOR', 'VERSION',
-                                        'DOI', 'SCHEMA VERSION', 'CONTAINER',
-                                        'TAGS'],
-                        tablefmt='plain')
+            results_list.append(OrderedDict([
+                                ("ID", id),
+                                ("TITLE", title),
+                                ("DESCRIPTION", description),
+                                ("AUTHOR", author),
+                                ("VERSION", version),
+                                ("DOI", doi),
+                                ("SCHEMA VERSION", schema_version),
+                                ("CONTAINER", container),
+                                ("TAGS", other_tags)]))
+        return results_list
 
     def print_zenodo_info(self, message, r):
         print("[ INFO ({1}) ] {0}".format(message, r.status_code))
@@ -79,8 +83,8 @@ class Searcher():
         for keyword in keywords:
             if keyword.split(":")[0] == "schema-version":
                 keyword_data["schema-version"] = keyword.split(":")[1]
-            elif keyword.lower() == "docker" or
-            keyword.lower() == "singularity":
+            elif (keyword.lower() == "docker" or
+                  keyword.lower() == "singularity"):
                 keyword_data["container-type"] = keyword
             else:
                 keyword_data["other"].append(keyword)

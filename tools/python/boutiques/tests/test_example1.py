@@ -189,7 +189,7 @@ class TestExample1(TestCase):
                              os.path.join(example1_dir,
                                           "example1_docker.json"),
                              invocationStr)
-        assert("Unable to decode JSON object" in str(e))
+        assert("Cannot parse input" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")

@@ -17,6 +17,7 @@ from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import loadJson
+from tabulate import tabulate
 
 
 def create(*params):
@@ -395,7 +396,7 @@ def pull(*params):
     from boutiques.puller import Puller
     puller = Puller(result.zid, result.verbose, True)
 
-    puller.pull()
+    return puller.pull()
 
 
 def bosh(args=None):
@@ -433,12 +434,15 @@ def bosh(args=None):
     def runs_as_cli():
         return os.path.basename(sys.argv[0]) == "bosh"
 
-    def bosh_return(val, code=0, hide=False):
+    def bosh_return(val, code=0, hide=False, formatted=None):
         if runs_as_cli():
             if hide:
                 return code
             if val is not None:
-                print(val)
+                if formatted is not None:
+                    print(formatted)
+                else:
+                    print(val)
             else:
                 if code == 0:
                     print("OK")
@@ -480,10 +484,11 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "search":
             out = search(*params)
-            return bosh_return(out)
+            return bosh_return(out, formatted=tabulate(out, headers='keys',
+                                                       tablefmt='plain'))
         elif func == "pull":
             out = pull(*params)
-            return bosh_return(out)
+            return bosh_return(out, hide=True)
         else:
             parser.print_help()
             raise SystemExit
