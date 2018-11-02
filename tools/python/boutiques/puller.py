@@ -26,6 +26,9 @@ class Puller():
                               "'zenodo', e.g. zenodo.123456")
         self.verbose = verbose
         self.download = download
+        self.cache_dir = os.path.join(os.path.expanduser('~'), ".boutiques")
+        if not os.path.exists(self.cache_dir):
+            os.makedirs(self.cache_dir)
 
     def pull(self):
         from boutiques.searcher import Searcher
@@ -37,14 +40,10 @@ class Puller():
             file_name = file_path.split("/")[-1]
             if hit["id"] == int(self.zid):
                 if self.download:
-                    cache_dir = os.path.join(os.getenv("HOME"), ".cache",
-                                             "boutiques")
-                    if not os.path.exists(cache_dir):
-                        os.makedirs(cache_dir)
                     if(self.verbose):
                         self.print_zenodo_info("Downloading descriptor %s"
                                                % file_name, r)
-                    return urlretrieve(file_path, os.path.join(cache_dir,
+                    return urlretrieve(file_path, os.path.join(self.cache_dir,
                                        file_name))
                 if(self.verbose):
                     self.print_zenodo_info("Opening descriptor %s"

@@ -217,9 +217,7 @@ class TestExample1(TestCase):
                ret.output_files[1].file_name == "log-4-coin;plop.txt")
 
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
+        ret = bosh.execute("launch", "zenodo.1472823",
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))

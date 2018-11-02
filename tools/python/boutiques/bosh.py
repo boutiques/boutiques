@@ -144,9 +144,6 @@ def execute(*params):
             raise SystemExit("Input file {} does not exist.".format(inp))
         if inp and not inp.endswith(".json"):
             raise SystemExit("Input file {} must end in 'json'.".format(inp))
-        # if not os.path.isfile(descriptor):
-        #     raise SystemExit("JSON descriptor {} does not seem to exist."
-        #                      .format(descriptor))
         if not rand and not inp:
             raise SystemExit("The default mode requires an input (-i).")
 

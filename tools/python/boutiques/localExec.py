@@ -1090,7 +1090,7 @@ def loadJson(userInput):
     elif userInput.split(".")[0].lower() == "zenodo":
         from boutiques.puller import Puller
         puller = Puller(userInput, False, False)
-        return json.loads(puller.pull().read())
+        return json.loads(puller.pull().read().decode('utf-8'))
     # JSON object
     else:
         try:

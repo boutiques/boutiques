@@ -43,7 +43,11 @@ class Publisher():
                               " from the descriptor before publishing it again."
                               " A new DOI will be generated.")
 
-        self.config_file = os.path.join(os.getenv("HOME"), ".boutiques")
+        self.cache_dir = os.path.join(os.path.expanduser('~'), ".boutiques")
+        if not os.path.exists(self.cache_dir):
+            os.makedirs(self.cache_dir)
+        self.config_file = os.path.join(self.cache_dir, ".config")
+
         # Fix Zenodo access token
         if self.zenodo_access_token is None:
             self.zenodo_access_token = self.get_zenodo_access_token()
