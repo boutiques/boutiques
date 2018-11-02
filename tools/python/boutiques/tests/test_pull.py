@@ -8,7 +8,7 @@ class TestPull(TestCase):
 
     def test_pull(self):
         bosh(["pull", "zenodo.1472823"])
-        cache_dir = os.path.join(os.getenv("HOME"), ".cache", "boutiques")
+        cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
         assert(os.path.exists(os.path.join(cache_dir, "example1_docker.json")))
 
     def test_pull_missing_prefix(self):
