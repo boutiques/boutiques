@@ -10,7 +10,7 @@ DEPS = [
          "termcolor",
          "pyyaml",
          "jsonschema",
-	 "tabulate"
+	       "tabulate"
        ]
 
 setup(name="boutiques",
