@@ -721,7 +721,6 @@ class LocalExecutor(object):
         self.in_dict = loadJson(infile)
 
         # Input dictionary
-        print(self.in_dict)
         if self.debug:
             print("Input: " + str(self.in_dict))
         # Fix special flag case: flags given the false value
@@ -1077,14 +1076,25 @@ class LocalExecutor(object):
             raise ExecutorError(message)
 
 
-# Helper function that loads the JSON object coming from either a string
-# or a file
-def loadJson(jsonInput):
-    if os.path.isfile(jsonInput):
-        with open(jsonInput, 'r') as jsonFile:
+# Helper function that loads the JSON object coming from either a string,
+# a file or from Zenodo
+def loadJson(userInput):
+    # JSON file
+    if os.path.isfile(userInput):
+        with open(userInput, 'r') as jsonFile:
             return json.loads(jsonFile.read())
-    else:
-        try:
-            return json.loads(jsonInput)
-        except ValueError:
-            raise ExecutorError("Unable to decode JSON object")
+    # Zenodo ID
+    elif userInput.split(".")[0].lower() == "zenodo":
+        from boutiques.puller import Puller
+        puller = Puller(userInput, False, False)
+        return json.loads(puller.pull().read().decode('utf-8'))
+    # Try to parse JSON object
+    e = ExecutorError("Cannot parse input {}: file not found, "
+                      "invalid Zenodo ID, or invalid JSON object"
+                      .format(userInput))
+    if userInput.isdigit():
+        raise e
+    try:
+        return json.loads(userInput)
+    except ValueError:
+        raise e
