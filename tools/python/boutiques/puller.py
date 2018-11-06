@@ -17,7 +17,7 @@ class ZenodoError(Exception):
 
 class Puller():
 
-    def __init__(self, zid, verbose, download):
+    def __init__(self, zid, verbose, download, sandbox):
         # remove zenodo prefix
         try:
             self.zid = zid.split(".", 1)[1]
@@ -26,10 +26,11 @@ class Puller():
                               "'zenodo', e.g. zenodo.123456")
         self.verbose = verbose
         self.download = download
+        self.sandbox = sandbox
 
     def pull(self):
         from boutiques.searcher import Searcher
-        searcher = Searcher(None, self.verbose)
+        searcher = Searcher(None, self.verbose, self.sandbox)
         r = searcher.zenodo_search()
 
         for hit in r.json()["hits"]["hits"]:

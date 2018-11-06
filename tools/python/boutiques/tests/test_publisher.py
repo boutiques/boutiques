@@ -5,6 +5,7 @@ import json
 import subprocess
 import shutil
 import tempfile
+import os
 import os.path as op
 import sys
 if sys.version_info < (2, 7):
@@ -30,6 +31,15 @@ class TestPublisher(TestCase):
             descriptor = json.load(fhandle)
             assert(descriptor.get('doi') is None)
 
+        # Generate a unique title for the descriptor
+        unique_title = (descriptor['name'] + " " +
+                        temp_descriptor.name.split(os.sep)[-1])
+
+        # Modify the temp file to use this unique title
+        with open(temp_descriptor.name, 'w') as fhandle:
+            descriptor['name'] = unique_title
+            fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
+
         # Test publication of a descriptor that doesn't have a DOI
         doi = bosh(["publish",
                     temp_descriptor.name,
@@ -52,24 +62,44 @@ class TestPublisher(TestCase):
                   "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertTrue("Desriptor already has a DOI" in str(e.exception))
 
-        # Test publication of an updated version of the descriptor
-        deposition_id = doi.split(".")[-1]
-        example1_desc_new = op.join(example1_dir,
-                                    "example1_docker_updated.json")
-        temp_descriptor_new = tempfile.NamedTemporaryFile(suffix=".json")
-        shutil.copyfile(example1_desc_new, temp_descriptor_new.name)
+        # Test publication of an updated version of the same descriptor
+        example1_desc_updated = op.join(example1_dir,
+                                        "example1_docker_updated.json")
+        temp_descriptor_updated = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(example1_desc_updated, temp_descriptor_updated.name)
 
+        with open(temp_descriptor_updated.name, 'r') as fhandle:
+            descriptor_updated = json.load(fhandle)
+
+        # Give updated descriptor the same title as before
+        with open(temp_descriptor_updated.name, 'w') as fhandle:
+            descriptor_updated['name'] = unique_title
+            fhandle.write(json.dumps(descriptor_updated, indent=4,
+                                     sort_keys=True))
+
+        # Publish the updated version
         new_doi = bosh(["publish",
-                        temp_descriptor_new.name,
+                        temp_descriptor_updated.name,
                         "--sandbox", "-y", "-v",
                         "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                         "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         assert(new_doi)
 
         # Updated version of descriptor should have a new DOI
-        with open(temp_descriptor_new.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
-            assert(descriptor.get('doi') == new_doi)
+        with open(temp_descriptor_updated.name, 'r') as fhandle:
+            descriptor_updated = json.load(fhandle)
+            assert(descriptor_updated.get('doi') == new_doi)
+            assert(descriptor_updated.get('doi') != doi)
+
+        # Search for the descriptor by its title
+        results = bosh(["search", unique_title, "--sandbox", "-v"])
+
+        # Make sure the first search result is the updated version
+        assert(results[0]["DOI"] == new_doi)
+
+        # Make sure there is only one result with this title
+        assert(results[0]["TITLE"] == unique_title)
+        assert(results[1]["TITLE"] != unique_title)
 
     def test_publisher_auth(self):
         example1_dir = op.join(self.get_examples_dir(), "example1")

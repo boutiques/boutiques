@@ -215,14 +215,10 @@ class Publisher():
 
         # perform a search to check if descriptor is an updated version
         # of an existing one
-        r = requests.get(self.zenodo_endpoint +
-                         '/api/records/?q=%s&'
-                         'keywords=boutiques&keywords=schema&'
-                         'keywords=version&file_type=json&type=software'
-                         % self.descriptor.get("name"))
-
-        if(r.status_code != 200):
-            self.raise_zenodo_error("Error searching Zenodo", r)
+        from boutiques.searcher import Searcher
+        searcher = Searcher(self.descriptor.get("name"), self.verbose,
+                            self.sandbox)
+        r = searcher.zenodo_search()
 
         id_to_update = 0
         for hit in r.json()["hits"]["hits"]:
@@ -234,7 +230,8 @@ class Publisher():
         if id_to_update:
             if(not self.no_int):
                 prompt = ("Found an existing record with the same name, "
-                          "would you like to update it? (Y/n) ")
+                          "would you like to update it? "
+                          "(Y:update existing/n:publish new version)")
                 try:
                     ret = raw_input(prompt)  # Python 2
                 except NameError:
