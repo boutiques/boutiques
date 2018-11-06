@@ -189,15 +189,14 @@ class TestExample1(TestCase):
                              os.path.join(example1_dir,
                                           "example1_docker.json"),
                              invocationStr)
-        assert("Unable to decode JSON object" in str(e))
+        assert("Cannot parse input" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_from_zenodo(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        ret = bosh.execute("launch", "-z",
-                           "example1_docker.json",
+        ret = bosh.execute("launch", "zenodo.1472823",
                            os.path.join(example1_dir,
                                         "invocation.json"))
 
@@ -218,9 +217,7 @@ class TestExample1(TestCase):
                ret.output_files[1].file_name == "log-4-coin;plop.txt")
 
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
+        ret = bosh.execute("launch", "zenodo.1472823",
                            "-x",
                            os.path.join(example1_dir,
                                         "invocation.json"))

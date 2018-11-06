@@ -7,7 +7,7 @@
 
 | Abstract | Extensible | Status | Identifiable | Custom Properties | Additional Properties | Defined In |
 |----------|------------|--------|--------------|-------------------|-----------------------|------------|
-| Can be instantiated | No | Experimental | No | Forbidden | Forbidden |  |
+| Can be instantiated | No | Experimental | No | Forbidden | Forbidden | [descriptor.schema.json](descriptor.schema.json) |
 
 # Tool Properties
 
@@ -18,6 +18,7 @@
 | [container-image](#container-image) | `object` | Optional | Tool (this schema) |
 | [custom](#custom) | `object` | Optional | Tool (this schema) |
 | [description](#description) | `string` | **Required** | Tool (this schema) |
+| [descriptor-url](#descriptor-url) | `string` | Optional | Tool (this schema) |
 | [doi](#doi) | `string` | Optional | Tool (this schema) |
 | [environment-variables](#environment-variables) | `object[]` | Optional | Tool (this schema) |
 | [error-codes](#error-codes) | `object[]` | Optional | Tool (this schema) |
@@ -127,6 +128,25 @@ Tool description.
 * defined in this schema
 
 ### description Type
+
+
+`string`
+* minimum length: 1 characters
+
+
+
+
+
+## descriptor-url
+
+Link to the descriptor itself (e.g. the GitHub repo where it is hosted).
+
+`descriptor-url`
+* is optional
+* type: `string`
+* defined in this schema
+
+### descriptor-url Type
 
 
 `string`
