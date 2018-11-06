@@ -94,12 +94,12 @@ class TestPublisher(TestCase):
         # Search for the descriptor by its title
         results = bosh(["search", unique_title, "--sandbox", "-v"])
 
-        # Make sure the first search result is the updated version
-        assert(results[0]["DOI"] == new_doi)
-
         # Make sure there is only one result with this title
-        assert(results[0]["TITLE"] == unique_title)
-        assert(results[1]["TITLE"] != unique_title)
+        # and that its DOI is the updated one
+        results_with_title = [r for r in results
+                              if r["TITLE"] == unique_title]
+        assert(len(results_with_title) == 1)
+        assert(results_with_title[0]["DOI"] == new_doi)
 
     def test_publisher_auth(self):
         example1_dir = op.join(self.get_examples_dir(), "example1")
