@@ -16,7 +16,7 @@ class TestExample1(TestCase):
 
     def test_no_spaces(self):
         out = bosh.execute("simulate",
-                      os.path.join(self.get_examples_dir(),
-                                   "no_spaces.json"),
-                                   "-r")
+                           os.path.join(self.get_examples_dir(),
+                                        "no_spaces.json"),
+                           "-r")
         assert(' ' not in out.stdout)

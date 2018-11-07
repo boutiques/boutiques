@@ -30,7 +30,7 @@ class TestExample1(TestCase):
                            "-i",
                            os.path.join(example1_dir,
                                         "invocation.json"))
-        assert(ret.stdout == "" and ret.stderr == "" and ret.exit_code == 0
+        assert(ret.stdout != "" and ret.stderr == "" and ret.exit_code == 0
                and ret.error_message == "" and ret.missing_files == [])
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -318,7 +318,7 @@ class TestExample1(TestCase):
                                         "example1_docker.json"),
                            "-r", "3")
         print(ret)
-        assert(ret.stdout == ""
+        assert(ret.stdout != ""
                and ret.stderr == ""
                and ret.exit_code == 0
                and ret.error_message == "")
