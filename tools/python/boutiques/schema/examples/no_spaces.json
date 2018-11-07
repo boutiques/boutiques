@@ -1,0 +1,22 @@
+{
+    "command-line": "there[INPUT]shouldnotbeanyspace[INPUT]inhereaftersubstitution", 
+    "description": "A command-line with no space", 
+    "inputs": [
+        {
+            "id": "param", 
+            "name": "param", 
+            "type": "String", 
+            "value-key": "[INPUT]"
+        }
+    ],
+    "name": "nospace", 
+    "output-files": [
+        {
+            "id": "output_file", 
+            "name": "output file", 
+            "path-template": "file.txt"
+        }
+    ], 
+    "schema-version": "0.5", 
+    "tool-version": "0.1"
+}
