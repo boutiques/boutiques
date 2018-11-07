@@ -21,7 +21,7 @@ class TestExample2(TestCase):
                            "-i",
                            os.path.join(example2_dir,
                                         "invocation.json"))
-        assert(ret.stdout == ""
+        assert(ret.stdout != ""
                and ret.stderr == ""
                and ret.exit_code == 0
                and ret.error_message == "")
