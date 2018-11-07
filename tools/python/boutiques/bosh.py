@@ -164,7 +164,7 @@ def execute(*params):
         # for consistency with execute
         # Adding simulate to "container location" field since it's an invalid
         # value, and we can parse that to hide the summary print
-        return ExecutorOutput(''.join(executor.cmd_line), "",
+        return ExecutorOutput(os.linesep.join(executor.cmd_line), "",
                               0, "", [], [], "", "", "simulate")
 
 
