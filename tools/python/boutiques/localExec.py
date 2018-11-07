@@ -212,7 +212,7 @@ class LocalExecutor(object):
         of local execution.
         After execution, it checks for output file existence.
         '''
-        command, exit_code, con = self.cmdLine[0], None, self.con or {}
+        command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
@@ -681,7 +681,7 @@ class LocalExecutor(object):
         values (more than 1 if -n was given).
         '''
 
-        self.cmdLine = []
+        self.cmd_line = []
         for i in range(0, n):
             # Set in_dict with random values
             self._randomFillInDict()
@@ -700,7 +700,7 @@ class LocalExecutor(object):
                     sys.stderr.write("\t" + str(err) + "\n")
                 raise e  # Pass on (throw) the caught exception
             # Add new command line
-            self.cmdLine.append(self._generateCmdLineFromInDict())
+            self.cmd_line.append(self._generateCmdLineFromInDict())
 
     # Read in parameter input file or string
     def readInput(self, infile):
@@ -758,21 +758,24 @@ class LocalExecutor(object):
                 sys.stderr.write("\t" + str(err) + "\n")
             raise  # Raise the exception that caused failure
         # Build and save output command line (as a single-entry list)
-        self.cmdLine = [self._generateCmdLineFromInDict()]
+        self.cmd_line = [self._generateCmdLineFromInDict()]
 
     # Private method to replace the keys in template by input and output
     # values. Input and output values are looked up in self.in_dict and
     # self.out_dict
-    # * if useFlags is true, keys will be replaced by flag+flag-separator+value
-    # * if unfoundKeys is "remove", unfound keys will be replaced by ""
-    # * if unfoundKeys is "clear" then the template is cleared if it has
+    # * if use_flags is true, keys will be replaced by:
+    #      * flag+flag-separator+value if flag is not None
+    #      * value otherwise
+    # * if unfound_keys is "remove", unfound keys will be replaced by ""
+    # * if unfound_keys is "clear" then the template is cleared if it has
     #     unfound keys (useful for configuration files)
-    # * before being substituted, the keys will be stripped from all
-    #    the strings in strippedExtensions
+    # * before being substituted, the values will be:
+    #     * stripped from all the strings in stripped_extensions
+    #     * escaped for special characters
     def _replaceKeysInTemplate(self, template,
-                               useFlags=False, unfoundKeys="remove",
-                               strippedExtensions=[],
-                               escapeSpecialCharsInStrings=True):
+                               use_flags=False, unfound_keys="remove",
+                               stripped_extensions=[],
+                               escape_special_chars=True):
 
             def escape_string(s):
                 try:
@@ -785,16 +788,16 @@ class LocalExecutor(object):
             in_out_dict = dict(self.in_dict)
             in_out_dict.update(self.out_dict)
             # Go through all the keys
-            for paramId in [x['id'] for x in self.inputs + self.outputs]:
-                escape = (escapeSpecialCharsInStrings and
-                          (self.safeGet(paramId, 'type') == 'String' or
-                           self.safeGet(paramId, 'type') == 'File') or
-                          paramId in self.out_dict.keys())
-                clk = self.safeGet(paramId, 'value-key')
+            for param_id in [x['id'] for x in self.inputs + self.outputs]:
+                escape = (escape_special_chars and
+                          (self.safeGet(param_id, 'type') == 'String' or
+                           self.safeGet(param_id, 'type') == 'File') or
+                          param_id in self.out_dict.keys())
+                clk = self.safeGet(param_id, 'value-key')
                 if clk is None:
                     continue
-                if paramId in list(in_out_dict.keys()):  # param has a value
-                    val = in_out_dict[paramId]
+                if param_id in list(in_out_dict.keys()):  # param has a value
+                    val = in_out_dict[param_id]
                     if type(val) is list:
                         s_val = ""
                         for x in val:
@@ -808,24 +811,24 @@ class LocalExecutor(object):
                         if escape:
                             val = escape_string(val)
                     # Add flags and separator if necessary
-                    if useFlags:
-                        flag = self.safeGet(paramId, 'command-line-flag') or ''
-                        sep = self.safeGet(paramId,
+                    flag = self.safeGet(param_id, 'command-line-flag')
+                    if (use_flags and flag is not None):
+                        sep = self.safeGet(param_id,
                                            'command-line-flag-separator')
                         if sep is None:
                             sep = ' '
                         val = flag + sep + val
                         # special case for flag-type inputs
-                        if self.safeGet(paramId, 'type') == 'Flag':
+                        if self.safeGet(param_id, 'type') == 'Flag':
                             val = '' if val.lower() == 'false' else flag
                     # Remove file extensions from input value
-                    for extension in strippedExtensions:
+                    for extension in stripped_extensions:
                         val = val.replace(extension, "")
                     template = template.replace(clk, val)
                 else:  # param has no value
-                    if unfoundKeys == "remove":
+                    if unfound_keys == "remove":
                         template = template.replace(clk, '')
-                    elif unfoundKeys == "clear":
+                    elif unfound_keys == "clear":
                         if clk in template:
                             return ""
             return template
@@ -842,18 +845,18 @@ class LocalExecutor(object):
                 outputFileName = self.out_dict[outputId]
             else:
                 outputFileName = self.safeGet(outputId, 'path-template')
-            strippedExtensions = self.safeGet(
+            stripped_extensions = self.safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
-            if strippedExtensions is None:
-                strippedExtensions = []
+            if stripped_extensions is None:
+                stripped_extensions = []
             # We keep the unfound keys because they will be
             # substituted in a second call to the method in case
             # they are output keys
             outputFileName = self._replaceKeysInTemplate(outputFileName,
                                                          False,
                                                          "keep",
-                                                         strippedExtensions,
+                                                         stripped_extensions,
                                                          False)
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
@@ -866,11 +869,11 @@ class LocalExecutor(object):
             fileTemplate = self.safeGet(outputId, 'file-template')
             if fileTemplate is None:
                 continue  # this is not a configuration file
-            strippedExtensions = self.safeGet(
+            stripped_extensions = self.safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
-            if strippedExtensions is None:
-                strippedExtensions = []
+            if stripped_extensions is None:
+                stripped_extensions = []
             # We substitute the keys line by line so that we can
             # clear the lines that have keys with no value
             # (undefined optional params)
@@ -879,7 +882,7 @@ class LocalExecutor(object):
                 newTemplate.append(self._replaceKeysInTemplate(
                                                 line,
                                                 False, "clear",
-                                                strippedExtensions,
+                                                stripped_extensions,
                                                 True))
             template = "\n".join(newTemplate)
             # Write the configuration file
@@ -910,8 +913,8 @@ class LocalExecutor(object):
     # Print the command line result
     def printCmdLine(self):
         print("Generated Command" +
-              ('s' if len(self.cmdLine) > 1 else '') + ':')
-        for cmd in self.cmdLine:
+              ('s' if len(self.cmd_line) > 1 else '') + ':')
+        for cmd in self.cmd_line:
             print(cmd)
 
     # Private method for validating input parameters

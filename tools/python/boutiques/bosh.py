@@ -159,14 +159,13 @@ def execute(*params):
                                   "changeUser": True})
         if rand:
             executor.generateRandomParams(numb)
-            executor.printCmdLine()
-        else:
-            executor.printCmdLine()
+        executor.printCmdLine()
 
         # for consistency with execute
         # Adding simulate to "container location" field since it's an invalid
         # value, and we can parse that to hide the summary print
-        return ExecutorOutput("", "", 0, "", [], [], "", "", "simulate")
+        return ExecutorOutput(os.linesep.join(executor.cmd_line), "",
+                              0, "", [], [], "", "", "simulate")
 
 
 def importer(*params):
