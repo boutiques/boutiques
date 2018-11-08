@@ -205,10 +205,15 @@ class CreateDescriptor(object):
                 "value-key": "[{0}]".format(adest.upper().strip("[]"))
             }
 
-            if action.type:
+            if action.type is not None:
                 if action.type in [int, float]:
                     newinput["type"] = "Number"
-                elif action.type == list:
+                if action.type == list:
+                    newinput["list"] = True
+
+            if action.nargs is not None:
+                if ((isinstance(action.nargs, str) and action.nargs == "+")
+                   or (isinstance(action.nargs, int) and action.nargs > 1)):
                     newinput["list"] = True
 
             if action.default:

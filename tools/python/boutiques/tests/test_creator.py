@@ -62,6 +62,7 @@ class TestCreator(TestCase):
         sb1.add_argument("--suboptionflag1", "-s", help="the bool opt flag")
         sb1.add_argument("--suboptionflag2", "-d", action="store_true",
                          help="the second sub option flag")
+        sb1.add_argument("--suboptlistflag", "-l", nargs="+", help="listy flag")
 
         creatorObj = bc.CreateDescriptor(parser,
                                          execname='/path/to/myscript.py',
