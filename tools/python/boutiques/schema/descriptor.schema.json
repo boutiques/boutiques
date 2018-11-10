@@ -34,6 +34,12 @@
             "description": "Tool URL.",
             "type": "string"
         },
+        "descriptor-url": {
+            "id": "http://github.com/boutiques/boutiques-schema/descriptor-url",
+            "minLength": 1,
+            "description": "Link to the descriptor itself (e.g. the GitHub repo where it is hosted).",
+            "type": "string"
+        },
         "doi": {
             "id": "http://github.com/boutiques/boutiques-schema/doi",
             "minLength": 1,
@@ -654,7 +660,10 @@
             "type": "object",
             "description": "An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
             "additionalProperties": {
-                "type": "string",
+                "type": ["string", "array"],
+                "items": {
+                    "type": "string"
+                },
                 "description": "Tag values"
             }
         },

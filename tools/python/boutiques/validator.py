@@ -166,9 +166,14 @@ def validate_descriptor(json_file, **kwargs):
 
             msg_template = " InputError: \"{0}\" cannot have default"\
                            " value outside its choices"
-            if ("default-value" in inp.keys()
-               and inp["default-value"] not in inp["value-choices"]):
-                    errors += [msg_template.format(inp["id"])]
+            if "default-value" in inp.keys():
+                if not isinstance(inp["default-value"], list):
+                    if inp["default-value"] not in inp["value-choices"]:
+                        errors += [msg_template.format(inp["id"])]
+                else:
+                    for dv in inp["default-value"]:
+                        if dv not in inp["value-choices"]:
+                            errors += [msg_template.format(inp["id"])]
             else:
                 errors += []
 

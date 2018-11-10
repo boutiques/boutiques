@@ -8,6 +8,7 @@
     },
     "description": "This property describes the tool or application",
     "url": "http://example.com",
+    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/examples/example1/example1_docker.json",
     "tool-doi": "00.0000/example.0000000",
     "environment-variables": [
         {
@@ -159,7 +160,7 @@
     "schema-version": "0.5",
     "tags": {
         "domain": "testing",
-        "foo": "bar",
+        "foo": ["bar1", "bar2"],
         "programming-language": "Python"
     },
     "tool-version": "0.0.1"
