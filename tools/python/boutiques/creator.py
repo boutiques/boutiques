@@ -47,6 +47,11 @@ class CreateDescriptor(object):
         with open(filename, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
 
+    def createInvocation(self, arguments):
+        argdict = vars(arguments)
+        argdict = {k: v for k, v in argdict.items() if v is not None}
+        return argdict
+
     def parse_docker(self, descriptor, docker_image_name, use_singularity):
         cont_image = {}
 
