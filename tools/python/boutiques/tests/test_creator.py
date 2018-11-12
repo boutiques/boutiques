@@ -74,7 +74,7 @@ class TestCreator(TestCase):
         creatorObj.save(fil)
 
         invof = './test-created-argparse-inputs.json'
-        args = parser.parse_args(['val1', '2', 'option2',
+        args = parser.parse_args([['val1', 'val2'], '2', 'option2',
                                   'subval1', 'subval3',
                                   '--suboptionflag1', 't1',
                                   '--suboptionflag2'])
