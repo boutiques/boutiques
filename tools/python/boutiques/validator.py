@@ -306,7 +306,7 @@ def validate_descriptor(json_file, **kwargs):
                                     " cannot both contain input pairs \"{2}\""
                                     " and \"{3}\"")
                     errors += [msg_template.format(grp["id"], grp2["id"],
-                               m1, m2)
+                                                   m1, m2)
                                for m1 in grp["members"]
                                for m2 in grp["members"]
                                if m1 != m2 and m1 in grp2["members"]
