@@ -221,6 +221,7 @@ class Publisher():
         r = searcher.zenodo_search()
 
         id_to_update = 0
+        publish_update = False
         for hit in r.json()["hits"]["hits"]:
             title = hit["metadata"]["title"]
             if title == self.descriptor.get("name"):
@@ -231,13 +232,18 @@ class Publisher():
             if(not self.no_int):
                 prompt = ("Found an existing record with the same name, "
                           "would you like to update it? "
-                          "(Y:update existing/n:publish new version)")
+                          "(Y:Update existing / n:Publish new entry with "
+                          "name {}) ".format(self.descriptor.get("name")))
                 try:
                     ret = raw_input(prompt)  # Python 2
                 except NameError:
                     ret = input(prompt)  # Python 3
-                if ret.upper() != "Y":
-                    self.publish_new_entry()
+                if ret.upper() == "Y":
+                    publish_update = True
+            else:
+                publish_update = True
+
+        if publish_update:
             self.publish_updated_version(id_to_update)
         else:
             self.publish_new_entry()
