@@ -7,6 +7,7 @@ from boutiques import __file__ as bfile
 import boutiques.creator as bc
 import subprocess
 import os.path as op
+import json
 import os
 import pytest
 
@@ -71,4 +72,15 @@ class TestCreator(TestCase):
                                                "foo": "bar"})
         fil = './test-created-argparse-descriptor.json'
         creatorObj.save(fil)
+
+        invof = './test-created-argparse-inputs.json'
+        args = parser.parse_args(['val1', '2', 'option2',
+                                  'subval1', 'subval3',
+                                  '--suboptionflag1', 't1',
+                                  '--suboptionflag2'])
+        invo = creatorObj.createInvocation(args)
+        with open(invof, 'w') as fhandle:
+            fhandle.write(json.dumps(invo, indent=4))
+
         assert bosh(['validate', fil]) is None
+        assert bosh(['invocation', fil, '-i', invof]) is None
