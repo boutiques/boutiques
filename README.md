@@ -61,6 +61,18 @@ There are additional custom arguments which can be supplied to this script, such
 no interpretation of output files is attempted by this tool, so your descriptor could certainly be enhanced by addind these and other
 features available through Boutiques, such as tests, tags, error codes, groups, and container images.
 
+Once you've created your descriptor this way you can translate your arguments to a Boutiques-style invocation using the following
+code block on runtime:
+
+    args = myparser.parse_args()
+    invoc = newDescriptor.createInvocation(args)
+
+    # Then, if you want to save them to a file...
+    import json
+    with open('my-inputs.json', 'w') as fhandle:
+        fhandle.write(json.dumps(invoc, indent=4))
+
+
 ### Validation
 
 You just created a Boutiques descriptor (compliant with the [schema](./tools/python/boutiques/schema/descriptor.schema.json), of course)
