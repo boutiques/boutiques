@@ -9,13 +9,21 @@ class ZenodoError(Exception):
 
 class Searcher():
 
-    def __init__(self, query, verbose):
+    def __init__(self, query, verbose, sandbox):
         if query is not None:
             self.query = query
         else:
             self.query = 'boutiques'
 
         self.verbose = verbose
+        self.sandbox = sandbox
+
+        # Set Zenodo endpoint
+        self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
+            self.sandbox else "https://zenodo.org"
+        if(self.verbose):
+            print("[ INFO ] Using Zenodo endpoint {0}".
+                  format(self.zenodo_endpoint))
 
     def search(self):
         results = self.zenodo_search()
@@ -24,7 +32,7 @@ class Searcher():
         return self.create_results_list(results.json())
 
     def zenodo_search(self):
-        r = requests.get('https://zenodo.org/api/records/?q=%s&'
+        r = requests.get(self.zenodo_endpoint + '/api/records/?q=%s&'
                          'keywords=boutiques&keywords=schema&'
                          'keywords=version&file_type=json&type=software'
                          % self.query)

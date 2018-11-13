@@ -1089,7 +1089,7 @@ def loadJson(userInput):
     # Zenodo ID
     elif userInput.split(".")[0].lower() == "zenodo":
         from boutiques.puller import Puller
-        puller = Puller(userInput, False, False)
+        puller = Puller(userInput, False, False, False)
         return json.loads(puller.pull().read().decode('utf-8'))
     # Try to parse JSON object
     e = ExecutorError("Cannot parse input {}: file not found, "

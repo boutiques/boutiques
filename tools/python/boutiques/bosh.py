@@ -365,17 +365,18 @@ def search(*params):
     parser = ArgumentParser("Search Zenodo for Boutiques descriptors. "
                             "When no term is supplied, will search for "
                             "all descriptors.")
-
     parser.add_argument("query", nargs="?", default="boutiques",
                         action="store", help="Search query")
-
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print information messages")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="search Zenodo's sandbox instead of "
+                        "production server. Recommended for tests.")
 
     result = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
-    searcher = Searcher(result.query, result.verbose)
+    searcher = Searcher(result.query, result.verbose, result.sandbox)
 
     return searcher.search()
 
@@ -386,14 +387,16 @@ def pull(*params):
     parser.add_argument("zid", action="store", help="Zenodo ID "
                         "of the descriptor to pull, prefixed by "
                         "'zenodo.', e.g. zenodo.123456")
-
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print information messages")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="pull from Zenodo's sandbox instead of "
+                        "production server. Recommended for tests.")
 
     result = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.zid, result.verbose, True)
+    puller = Puller(result.zid, result.verbose, True, result.sandbox)
 
     return puller.pull()
 
