@@ -51,7 +51,8 @@ class TestCreator(TestCase):
                             help="my help 2", type=int)
         parser.add_argument("--myarg3", "-m", action="store",
                             help="my help 3")
-        subparser = parser.add_subparsers(help="the choices you will make")
+        subparser = parser.add_subparsers(help="the choices you will make",
+                                          dest="mysubparser")
         sb1 = subparser.add_parser("option1", help="the first value")
         sb1.add_argument("suboption1", help="the first sub option option")
         sb1.add_argument("suboption2", help="the first sub option option",
@@ -70,6 +71,7 @@ class TestCreator(TestCase):
                                          verbose=True,
                                          tags={"purpose": "testing-creator",
                                                "foo": "bar"})
+
         fil = './test-created-argparse-descriptor.json'
         creatorObj.save(fil)
 
