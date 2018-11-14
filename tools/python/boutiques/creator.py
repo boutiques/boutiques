@@ -29,7 +29,7 @@ class CreateDescriptor(object):
                               kwargs.get('docker_image'),
                               kwargs.get('use_singularity'))
 
-        self.count = 0
+        self.sp_count = 0
         if parser is not None:
             self.parser = parser
             self.descriptor["inputs"] = []
@@ -135,11 +135,6 @@ class CreateDescriptor(object):
             if kwargs.get("verbose"):
                 print("_SubParsersAction: Interpretting & Adding")
 
-            if action.dest == "==SUPPRESS==":
-                print("WARNING: Subparser has no destination set, invocation "
-                      "parsing may not work as expected. This can be fixed by "
-                      "adding \"dest='mysubparser'\" to subparser creation.")
-
             # First, add the subparser itself as an input.
             subparser = self.parseAction(action, addParser=True)
             subparser["value-requires"] = {}
@@ -187,8 +182,13 @@ class CreateDescriptor(object):
                 print("{0}: Adding".format(actstring))
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
-                adest = "subparser_{0}".format(self.count)
-                self.count += 1
+                adest = "subparser_{0}".format(self.sp_count)
+                if kwargs.get("verbose"):
+                    print("WARNING: Subparser has no destination set, "
+                          "invocation parsing may not work as expected. This "
+                          "can be fixed by adding \"dest='mysubparser'\" to "
+                          "subparser creation.")
+                self.sp_count += 1
             else:
                 adest = action.dest
 
