@@ -45,6 +45,22 @@ provides an access point to all of the tools wrapped within Boutiques
 and has some ``--help`` text to keep you moving forward if you feel like
 you’re getting stuck. Let’s consider a few common use-cases…
 
+Search For Tools
+~~~~~~~~~~~~~~~~
+
+Perhaps someone has already described the tool you are looking for and
+you could reuse their work. For instance, if you are looking for a tool
+from the FSL suite, try:
+
+$ bosh search fsl
+
+Search returns a list of identifiers for tools matching your query. You
+can use these identifiers in any ``bosh`` command transparently. Even
+better, these identifiers are `Digital Object
+Identifiers <https://www.doi.org>`__ hosted on
+`Zenodo <https://zenodo.org/>`__, they will never change and can’t be
+deleted!
+
 Import Your Tool
 ~~~~~~~~~~~~~~~~
 
