@@ -1,5 +1,5 @@
 {
-    "command-line": "ndmg_pipeline [DTI] [BVAL] [BVEC] [MPRAGE] [ATLAS] [MASK] [OUTDIR] [DESIKAN] [JHU] [TALAIRACH] [AAL] [HARVARDOXFORD] [CPAC200] [CLEAN] [EXTRA1] [EXTRA2] [EXTRA3]", 
+    "command-line": "ndmg_pipeline [DTI] [BVAL] [BVEC] [MPRAGE] [ATLAS] [MASK] [OUTDIR] [DESIKAN] [JHU] [TALAIRACH] [AAL] [HARVARDOXFORD] [CPAC200] [CLEAN] [EXTRA1] [EXTRA2]", 
     "container-image": {
         "entrypoint": false, 
         "image": "neurodata/ndmg:v0.0.41-1", 
@@ -26,16 +26,16 @@
                 "extra2"
             ], 
             "name": "these guys have to be toggled together"
-        }, 
+        },
         {
             "id": "mutex_group", 
             "members": [
-                "extra2", 
-                "extra3"
+                "extra1", 
+                "extra2"
             ], 
             "mutually-exclusive": true, 
-            "name": "group of mutually-exclusive inputs"
-        }, 
+            "name": "group of mutually exclusive inputs"
+        },
         {
             "id": "dti_group", 
             "members": [
@@ -53,11 +53,23 @@
                 "jhu", 
                 "talairach", 
                 "aal", 
+                "harvardoxford"
+            ], 
+            "name": "Group of all used parcellations", 
+            "one-is-required": true
+        },
+        {
+            "id": "parcellation_group2", 
+            "members": [
+                "desikan", 
+                "jhu", 
+                "talairach", 
+                "aal", 
                 "harvardoxford", 
                 "cpac200"
             ], 
             "name": "Group of all used parcellations", 
-            "one-is-required": true
+            "all-or-none": true
         }
     ], 
     "inputs": [
@@ -81,13 +93,6 @@
             "optional": true, 
             "type": "File", 
             "value-key": "[EXTRA2]"
-        }, 
-        {
-            "id": "extra3", 
-            "name": "optional thing at the end", 
-            "optional": true, 
-            "type": "File", 
-            "value-key": "[EXTRA3]"
         }, 
         {
             "id": "dti_file_minc", 
@@ -323,9 +328,6 @@
                 "type": "string"
             }, 
             "extra2": {
-                "type": "string"
-            }, 
-            "extra3": {
                 "type": "string"
             }, 
             "harvardoxford": {

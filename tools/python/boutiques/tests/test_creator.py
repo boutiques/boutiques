@@ -7,6 +7,7 @@ from boutiques import __file__ as bfile
 import boutiques.creator as bc
 import subprocess
 import os.path as op
+import json
 import os
 import pytest
 
@@ -50,7 +51,8 @@ class TestCreator(TestCase):
                             help="my help 2", type=int)
         parser.add_argument("--myarg3", "-m", action="store",
                             help="my help 3")
-        subparser = parser.add_subparsers(help="the choices you will make")
+        subparser = parser.add_subparsers(help="the choices you will make",
+                                          dest="mysubparser")
         sb1 = subparser.add_parser("option1", help="the first value")
         sb1.add_argument("suboption1", help="the first sub option option")
         sb1.add_argument("suboption2", help="the first sub option option",
@@ -62,12 +64,25 @@ class TestCreator(TestCase):
         sb1.add_argument("--suboptionflag1", "-s", help="the bool opt flag")
         sb1.add_argument("--suboptionflag2", "-d", action="store_true",
                          help="the second sub option flag")
+        sb1.add_argument("--suboptlistflag", "-l", nargs="+", help="listy flag")
 
         creatorObj = bc.CreateDescriptor(parser,
                                          execname='/path/to/myscript.py',
                                          verbose=True,
                                          tags={"purpose": "testing-creator",
                                                "foo": "bar"})
+
         fil = './test-created-argparse-descriptor.json'
         creatorObj.save(fil)
+
+        invof = './test-created-argparse-inputs.json'
+        args = parser.parse_args([['val1', 'val2'], '2', 'option2',
+                                  'subval1', 'subval3',
+                                  '--suboptionflag1', 't1',
+                                  '--suboptionflag2'])
+        invo = creatorObj.createInvocation(args)
+        with open(invof, 'w') as fhandle:
+            fhandle.write(json.dumps(invo, indent=4))
+
         assert bosh(['validate', fil]) is None
+        assert bosh(['invocation', fil, '-i', invof]) is None
