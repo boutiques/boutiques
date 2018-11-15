@@ -29,7 +29,7 @@ class CreateDescriptor(object):
                               kwargs.get('docker_image'),
                               kwargs.get('use_singularity'))
 
-        self.count = 0
+        self.sp_count = 0
         if parser is not None:
             self.parser = parser
             self.descriptor["inputs"] = []
@@ -46,6 +46,11 @@ class CreateDescriptor(object):
         import json
         with open(filename, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+
+    def createInvocation(self, arguments):
+        argdict = vars(arguments)
+        argdict = {k: v for k, v in argdict.items() if v is not None}
+        return argdict
 
     def parse_docker(self, descriptor, docker_image_name, use_singularity):
         cont_image = {}
@@ -177,8 +182,13 @@ class CreateDescriptor(object):
                 print("{0}: Adding".format(actstring))
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
-                adest = "subparser_{0}".format(self.count)
-                self.count += 1
+                adest = "subparser_{0}".format(self.sp_count)
+                if kwargs.get("verbose"):
+                    print("WARNING: Subparser has no destination set, "
+                          "invocation parsing may not work as expected. This "
+                          "can be fixed by adding \"dest='mysubparser'\" to "
+                          "subparser creation.")
+                self.sp_count += 1
             else:
                 adest = action.dest
 
