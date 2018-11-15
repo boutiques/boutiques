@@ -804,7 +804,10 @@ class LocalExecutor(object):
                             s = str(x)
                             if escape:
                                 s = escape_string(str(x))
-                            s_val += s + " "
+                            if val.index(x) == len(val)-1:
+                                s_val += s
+                            else:
+                                s_val += s + " "
                         val = s_val
                     else:
                         val = str(val)

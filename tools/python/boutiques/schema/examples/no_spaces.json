@@ -1,5 +1,5 @@
 {
-    "command-line": "there[INPUT]shouldnotbeanyspace[INPUT]inhereaftersubstitution", 
+    "command-line": "there[INPUT]shouldnotbeanyspace[INPUT_LIST]inhereaftersubstitution", 
     "description": "A command-line with no space", 
     "inputs": [
         {
@@ -7,6 +7,15 @@
             "name": "param", 
             "type": "String", 
             "value-key": "[INPUT]"
+        },
+        {
+            "id": "param2", 
+            "name": "param2", 
+            "type": "String",
+            "list": true, 
+            "min-list-entries": 1,
+            "max-list-entries": 1,
+            "value-key": "[INPUT_LIST]"
         }
     ],
     "name": "nospace", 
