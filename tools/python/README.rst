@@ -11,7 +11,7 @@ Boutiques
     :target: https://travis-ci.org/boutiques/boutiques
 .. image:: https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop
     :target: https://coveralls.io/github/boutiques/boutiques?branch=develop
-
+    
 Boutiques is a cross-platform descriptive command-line framework for
 applications.
 
@@ -109,6 +109,20 @@ interpretation of output files is attempted by this tool, so your
 descriptor could certainly be enhanced by addind these and other
 features available through Boutiques, such as tests, tags, error codes,
 groups, and container images.
+
+Once you’ve created your descriptor this way you can translate your
+arguments to a Boutiques-style invocation using the following code block
+on runtime:
+
+::
+
+    args = myparser.parse_args()
+    invoc = newDescriptor.createInvocation(args)
+
+    # Then, if you want to save them to a file...
+    import json
+    with open('my-inputs.json', 'w') as fhandle:
+        fhandle.write(json.dumps(invoc, indent=4))
 
 Validation
 ~~~~~~~~~~
