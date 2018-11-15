@@ -21,3 +21,7 @@ class TestSearch(TestCase):
                                            "AUTHOR", "VERSION", "DOI",
                                            "SCHEMA VERSION", "CONTAINER",
                                            "TAGS"])
+
+    def test_search_specify_max_results(self):
+        results = bosh(["search", "--sandbox", "-m", "20"])
+        assert(len(results) == 20)
