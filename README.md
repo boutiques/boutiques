@@ -31,6 +31,20 @@ The command-line API for Boutiques can be accessed through your new favourite co
 provides an access point to all of the tools wrapped within Boutiques and has some `--help` text to keep you moving forward if
 you feel like you're getting stuck. Let's consider a few common use-cases...
 
+### Search For Tools
+
+Perhaps someone has already described the tool you are looking for and 
+you could reuse their work. For instance, if you are looking for a tool 
+from the FSL suite, try:
+
+$ bosh search fsl
+
+Search returns a list of identifiers for tools matching your query. You 
+can use these identifiers in any `bosh` command transparently. Even 
+better, these identifiers are [Digital Object Identifiers](https://www.doi.org)
+hosted on [Zenodo](https://zenodo.org/), they will never change and can't
+be deleted!
+
 ### Import Your Tool
 
 If you're in the lucky set of people with a Boutiques descriptor from a previous schema iteration (such as `0.4`), or you have a
