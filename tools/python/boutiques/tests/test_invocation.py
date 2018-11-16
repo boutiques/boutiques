@@ -19,6 +19,17 @@ class TestInvocation(TestCase):
         self.assertFalse(bosh(["invocation", descriptor, "-i",
                                invocation, "-w"]))
 
+    def test_invocation_json_obj(self):
+        descriptor = open(os.path.join(os.path.split(bfile)[0],
+                                       "schema/examples/good.json")).read()
+        invocation = open(os.path.join(os.path.split(bfile)[0],
+                                       "schema/examples/"
+                                       "good_invocation.json")).read()
+        self.assertFalse(bosh(["invocation", descriptor, "-i",
+                               invocation, "-w"]))
+        self.assertFalse(bosh(["invocation", descriptor, "-i",
+                               invocation, "-w"]))
+
     def test_invocation_invalid_cli(self):
         descriptor = os.path.join(os.path.split(bfile)[0],
                                   "schema/examples/good.json")

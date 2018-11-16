@@ -26,6 +26,19 @@ class TestTest(TestCase):
                                op.join(self.get_examples_dir(),
                                        "tests_good.json")]))
 
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_test_good_desc_as_json_obj(self):
+        self.assertFalse(bosh(["test",
+                               open(op.join(self.get_examples_dir(),
+                                            "tests_good.json")).read()]))
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_test_good_from_zenodo(self):
+        self.assertFalse(bosh(["test",
+                               "zenodo.1472823"]))
+
     def test_test_invalid(self):
         with self.assertRaises(ValidationError) as context:
             bosh(["test",

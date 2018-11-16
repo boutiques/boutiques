@@ -1,16 +1,16 @@
 import json
 import tempfile
 import os.path as op
+from boutiques.localExec import loadJson
 
 
 def pytest_addoption(parser):
     parser.addoption("--descriptor", action="append", default=[])
 
 
-def fetch_tests(descriptor_filename):
+def fetch_tests(descriptor_input):
 
-    with open(descriptor_filename) as fhandle:
-        descriptor = json.loads(fhandle.read())
+    descriptor = loadJson(descriptor_input)
 
     tests = []
 
@@ -25,7 +25,7 @@ def fetch_tests(descriptor_filename):
         temp_invocation_JSON.seek(0)
 
         # Now we setup the necessary elements for the testing function.
-        tests.append([descriptor_filename, test, temp_invocation_JSON])
+        tests.append([descriptor_input, test, temp_invocation_JSON])
 
     return (descriptor["name"], tests)
 
