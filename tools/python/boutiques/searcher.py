@@ -9,7 +9,7 @@ class ZenodoError(Exception):
 
 class Searcher():
 
-    def __init__(self, query, verbose, sandbox):
+    def __init__(self, query, verbose, sandbox, max_results):
         if query is not None:
             self.query = query
         else:
@@ -17,6 +17,12 @@ class Searcher():
 
         self.verbose = verbose
         self.sandbox = sandbox
+
+        # Return max 10 results by default
+        if max_results is not None:
+            self.max_results = max_results
+        else:
+            self.max_results = 10
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
@@ -35,13 +41,15 @@ class Searcher():
         r = requests.get(self.zenodo_endpoint + '/api/records/?q=%s&'
                          'keywords=boutiques&keywords=schema&'
                          'keywords=version&file_type=json&type=software'
-                         % self.query)
+                         '&page=1&size=%s' % (self.query, self.max_results))
         if(r.status_code != 200):
             self.raise_zenodo_error("Error searching Zenodo", r)
 
         if(self.verbose):
-            self.print_zenodo_info("Zenodo search returned %d results"
-                                   % r.json()["hits"]["total"], r)
+            self.print_zenodo_info("Search successful. Showing %d of %d "
+                                   "results."
+                                   % (len(r.json()["hits"]["hits"]),
+                                      r.json()["hits"]["total"]), r)
         return r
 
     def create_results_list(self, results):

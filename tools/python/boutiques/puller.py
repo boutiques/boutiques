@@ -30,7 +30,7 @@ class Puller():
 
     def pull(self):
         from boutiques.searcher import Searcher
-        searcher = Searcher(None, self.verbose, self.sandbox)
+        searcher = Searcher(None, self.verbose, self.sandbox, None)
         r = searcher.zenodo_search()
 
         for hit in r.json()["hits"]["hits"]:

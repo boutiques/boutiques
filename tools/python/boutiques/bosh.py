@@ -372,11 +372,15 @@ def search(*params):
     parser.add_argument("--sandbox", action="store_true",
                         help="search Zenodo's sandbox instead of "
                         "production server. Recommended for tests.")
+    parser.add_argument("-m", "--max", action="store",
+                        help="Specify the maximum number of results "
+                        "to be returned. Default is 10.")
 
     result = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
-    searcher = Searcher(result.query, result.verbose, result.sandbox)
+    searcher = Searcher(result.query, result.verbose, result.sandbox,
+                        result.max)
 
     return searcher.search()
 
