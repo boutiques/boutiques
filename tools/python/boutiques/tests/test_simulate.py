@@ -24,6 +24,29 @@ class TestSimulate(TestCase):
                                                    "good_nooutputs.json"),
                                       "-r", "1").exit_code)
 
+    def test_success_desc_as_json_obj(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        desc_json = open(os.path.join(example1_dir,
+                                      "example1_docker.json")).read()
+        self.assertFalse(bosh.execute("simulate",
+                                      desc_json,
+                                      "-r", "1").exit_code)
+
+        self.assertFalse(bosh.execute("simulate",
+                                      os.path.join(self.get_examples_dir(),
+                                                   "good_nooutputs.json"),
+                                      "-r", "1").exit_code)
+
+    def test_success_desc_from_zenodo(self):
+        self.assertFalse(bosh.execute("simulate",
+                                      "zenodo.1472823",
+                                      "-r", "1").exit_code)
+
+        self.assertFalse(bosh.execute("simulate",
+                                      os.path.join(self.get_examples_dir(),
+                                                   "good_nooutputs.json"),
+                                      "-r", "1").exit_code)
+
     def test_failing_bad_descriptor_invo_combos(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
 

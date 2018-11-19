@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
+from boutiques.localExec import loadJson
 import boutiques
 import yaml
 import json
@@ -54,8 +55,7 @@ class Importer():
           "walltime-estimate": 3600
         },
         """
-        with open(self.input_descriptor, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+        descriptor = loadJson(self.input_descriptor)
 
         if descriptor["schema-version"] != "0.4":
             raise ImportError("The input descriptor must have 'schema-version'"

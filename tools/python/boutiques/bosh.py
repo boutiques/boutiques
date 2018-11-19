@@ -335,9 +335,7 @@ def test(*params):
     invocation(result.descriptor)
 
     # Extraction of all the invocations defined for the test-cases.
-    with open(result.descriptor) as fhandle:
-        # might just need to be `fhandle` in this context, but not sure
-        descriptor = json.loads(fhandle.read())
+    descriptor = loadJson(result.descriptor)
 
     if (not descriptor.get("tests")):
         # If no tests have been specified, we consider testing successful.
