@@ -33,6 +33,9 @@ class Searcher():
 
     def search(self):
         results = self.zenodo_search()
+        print("Showing %d of %d results."
+              % (len(results.json()["hits"]["hits"]),
+                 results.json()["hits"]["total"]))
         if self.verbose:
             return self.create_results_list_verbose(results.json())
         return self.create_results_list(results.json())
@@ -44,12 +47,8 @@ class Searcher():
                          '&page=1&size=%s' % (self.query, self.max_results))
         if(r.status_code != 200):
             self.raise_zenodo_error("Error searching Zenodo", r)
-
         if(self.verbose):
-            self.print_zenodo_info("Search successful. Showing %d of %d "
-                                   "results."
-                                   % (len(r.json()["hits"]["hits"]),
-                                      r.json()["hits"]["total"]), r)
+            self.print_zenodo_info("Search successful.", r)
         return r
 
     def create_results_list(self, results):

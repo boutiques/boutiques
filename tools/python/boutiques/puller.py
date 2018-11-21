@@ -30,7 +30,7 @@ class Puller():
 
     def pull(self):
         from boutiques.searcher import Searcher
-        searcher = Searcher(None, self.verbose, self.sandbox, None)
+        searcher = Searcher(self.zid, self.verbose, self.sandbox, None)
         r = searcher.zenodo_search()
 
         for hit in r.json()["hits"]["hits"]:
@@ -45,8 +45,10 @@ class Puller():
                     if(self.verbose):
                         self.print_zenodo_info("Downloading descriptor %s"
                                                % file_name, r)
-                    return urlretrieve(file_path, os.path.join(cache_dir,
-                                       file_name))
+                    downloaded = urlretrieve(file_path, os.path.join(cache_dir,
+                                             file_name))
+                    print("Downloaded descriptor to " + cache_dir)
+                    return downloaded
                 if(self.verbose):
                     self.print_zenodo_info("Opening descriptor %s"
                                            % file_name, r)
