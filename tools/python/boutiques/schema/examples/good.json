@@ -3,8 +3,8 @@
     "container-image": {
         "entrypoint": false, 
         "image": "neurodata/ndmg:v0.0.41-1", 
-        "index": "index.docker.io", 
-        "type": "docker"
+        "index": "docker://", 
+        "type": "singularity"
     }, 
     "description": "dwi connectome estimation pipeline", 
     "error-codes": [

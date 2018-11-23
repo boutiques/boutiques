@@ -104,6 +104,9 @@ def execute(*params):
         parser.add_argument("-s", "--stream", action="store_true",
                             help="Streams stdout and stderr in real time "
                             "during execution.")
+        parser.add_argument("--imagepath", action="store",
+                            help="Location of Singularity image "
+                            "(default is current directory).")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -117,7 +120,8 @@ def execute(*params):
                                  {"forcePathType": True,
                                   "debug": results.debug,
                                   "changeUser": results.user,
-                                  "stream": results.stream})
+                                  "stream": results.stream,
+                                  "imagepath": results.imagepath})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -182,6 +186,9 @@ def execute(*params):
         parser.add_argument("-s", "--stream", action="store_true",
                             help="Streams stdout and stderr in real time "
                             "during execution.")
+        parser.add_argument("--imagepath", action="store",
+                            help="Location of Singularity image "
+                            "(default is current directory).")
         results = parser.parse_args(params)
         descriptor = results.descriptor
 
@@ -193,7 +200,8 @@ def execute(*params):
         executor = LocalExecutor(descriptor, None,
                                  {"forcePathType": True,
                                   "debug": results.debug,
-                                  "stream": results.stream})
+                                  "stream": results.stream,
+                                  "imagePath": results.imagepath})
         container_location = executor.prepare()[1]
         print("Container location: " + container_location)
 
