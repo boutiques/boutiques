@@ -66,8 +66,10 @@ def execute(*params):
                         "set of inputs compliant with invocation schema "
                         "and launches the tool. Simulate: shows sample "
                         "command-lines based on the provided descriptor"
-                        " based on provided or randomly generated "
-                        "inputs.", choices=["launch", "simulate"])
+                        " based on provided or randomly generated inputs. "
+                        "Prepare: pulls the Docker or Singularity container "
+                        "image for a given descriptor. ",
+                        choices=["launch", "simulate", "prepare"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
 
@@ -162,10 +164,43 @@ def execute(*params):
         executor.printCmdLine()
 
         # for consistency with execute
-        # Adding simulate to "container location" field since it's an invalid
+        # Adding hide to "container location" field since it's an invalid
         # value, and we can parse that to hide the summary print
         return ExecutorOutput(os.linesep.join(executor.cmd_line), "",
-                              0, "", [], [], "", "", "simulate")
+                              0, "", [], [], "", "", "hide")
+
+    if mode == "prepare":
+        parser = ArgumentParser("Pulls the container image for a given "
+                                "descriptor")
+        parser.add_argument("descriptor", action="store",
+                            help="The Boutiques descriptor as a JSON file, "
+                            "JSON string or Zenodo ID (prefixed by 'zenodo.').")
+        parser.add_argument("-x", "--debug", action="store_true",
+                            help="Keeps temporary scripts used during "
+                            "execution, and prints additional debug "
+                            "messages.")
+        parser.add_argument("-s", "--stream", action="store_true",
+                            help="Streams stdout and stderr in real time "
+                            "during execution.")
+        results = parser.parse_args(params)
+        descriptor = results.descriptor
+
+        # Validate descriptor
+        valid = invocation(descriptor)
+
+        # Generate object that will perform the commands
+        from boutiques.localExec import LocalExecutor
+        executor = LocalExecutor(descriptor, None,
+                                 {"forcePathType": True,
+                                  "debug": results.debug,
+                                  "stream": results.stream})
+        container_location = executor.prepare()[1]
+        print("Container location: " + container_location)
+
+        # Adding hide to "container location" field since it's an invalid
+        # value, and we can parse that to hide the summary print
+        return ExecutorOutput(container_location, "",
+                              0, "", [], [], "", "", "hide")
 
 
 def importer(*params):
@@ -467,7 +502,7 @@ def bosh(args=None):
             # If executed through CLI, print 'out' and return exit_code
             # Otherwise, return out
             return bosh_return(out, out.exit_code,
-                               hide=bool(out.container_location == 'simulate'))
+                               hide=bool(out.container_location == 'hide'))
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)

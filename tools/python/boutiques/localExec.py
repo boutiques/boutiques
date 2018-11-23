@@ -14,6 +14,7 @@ import pwd
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
+from filelock import FileLock
 
 
 class ExecutorOutput():
@@ -238,43 +239,8 @@ class LocalExecutor(object):
         container_location = ""
         container_command = ""
         if conIsPresent:
-            if conType == 'docker':
-                # Pull the docker image
-                if self._localExecute("docker pull " + str(conImage))[1]:
-                    container_location = "Local copy"
-            elif conType == 'singularity':
-                if not conIndex:
-                    conIndex = "shub://"
-                elif not conIndex.endswith("://"):
-                    conIndex = conIndex + "://"
-                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
-
-                if conName not in os.listdir('./'):
-                    pull_loc = "\"{0}\" {1}{2}".format(conName,
-                                                       conIndex,
-                                                       conImage)
-                    container_location = ("Pulled from {1}{2} ({0} not found "
-                                          "in current "
-                                          "working directory)").format(conName,
-                                                                       conIndex,
-                                                                       conImage)
-                    # Pull the singularity image
-                    sing_command = "singularity pull --name " + pull_loc
-                    (stdout, stderr), return_code = self._localExecute(
-                                                            sing_command)
-                    if return_code:
-                        message = ("Could not pull Singularity"
-                                   " image: " + os.linesep + " * Pull command: "
-                                   + sing_command + os.linesep + " * Error: "
-                                   + stderr.decode("utf-8"))
-                        raise ExecutorError(message)
-                else:
-                    container_location = "Local ({0})".format(conName)
-                conName = op.abspath(conName)
-            else:
-                raise ExecutorError('Unrecognized container'
-                                    ' type: \"%s\"' % conType)
-
+            # Pull the container
+            (conName, container_location) = self.prepare()
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = "#!"+self.shell+" -l\n" + str(command)
@@ -414,6 +380,65 @@ class LocalExecutor(object):
                               missing_files,
                               command,
                               container_command, container_location)
+
+    def prepare(self):
+        con = self.con
+        # Check for Container image
+        conType, conImage = con.get('type'), con.get('image'),
+        conIndex = con.get("index")
+        if conImage is None:
+            return
+
+        # If container is present, alter the command template accordingly
+        conName = ""
+        container_location = ""
+        if conType == 'docker':
+            # Pull the docker image
+            if self._localExecute("docker pull " + str(conImage))[1]:
+                container_location = "Local copy"
+            else:
+                container_location = "Pulled from Docker"
+        elif conType == 'singularity':
+            if not conIndex:
+                conIndex = "shub://"
+            elif not conIndex.endswith("://"):
+                conIndex = conIndex + "://"
+            conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
+
+            # Create a lockfile to protect against other threads trying to pull
+            # the image
+            lockfile = conName + ".lock"
+            lock = FileLock(lockfile)
+            lock.acquire()
+            try:
+                if conName not in os.listdir('./'):
+                    pull_loc = "\"{0}\" {1}{2}".format(conName,
+                                                       conIndex,
+                                                       conImage)
+                    container_location = ("Pulled from {1}{2} ({0} not found "
+                                          "in current "
+                                          "working directory)").format(conName,
+                                                                       conIndex,
+                                                                       conImage)
+                    # Pull the singularity image
+                    sing_command = "singularity pull --name " + pull_loc
+                    (stdout, stderr), return_code = self._localExecute(
+                                                            sing_command)
+                    if return_code:
+                        message = ("Could not pull Singularity"
+                                   " image: " + os.linesep + " * Pull command: "
+                                   + sing_command + os.linesep + " * Error: "
+                                   + stderr.decode("utf-8"))
+                        raise ExecutorError(message)
+                else:
+                    container_location = "Local ({0})".format(conName)
+            finally:
+                lock.release()
+            conName = op.abspath(conName)
+        else:
+            raise ExecutorError('Unrecognized container'
+                                ' type: \"%s\"' % conType)
+        return (conName, container_location)
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
