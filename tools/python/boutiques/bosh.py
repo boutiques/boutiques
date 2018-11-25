@@ -121,7 +121,7 @@ def execute(*params):
                                   "debug": results.debug,
                                   "changeUser": results.user,
                                   "stream": results.stream,
-                                  "imagepath": results.imagepath})
+                                  "imagePath": results.imagepath})
         # Execute it
         return executor.execute(results.volumes)
 
