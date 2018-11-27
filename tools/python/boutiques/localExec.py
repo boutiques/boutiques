@@ -383,11 +383,11 @@ class LocalExecutor(object):
 
     def prepare(self):
         con = self.con
-        # Check for Container image
+        if con is None:
+            return ("", "Descriptor does not specify a container image.")
+
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
-        if conImage is None:
-            return
 
         # If container is present, alter the command template accordingly
         conName = ""
@@ -404,7 +404,6 @@ class LocalExecutor(object):
             lockfile = conName + ".lock"
             lock = FileLock(lockfile)
             lock.acquire()
-
             try:
                 if not conIndex:
                     conIndex = "shub://"
