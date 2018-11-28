@@ -49,3 +49,10 @@ class TestPrepare(TestCase):
                            os.path.join(self.get_examples_dir(),
                                         "no_container.json"))
         assert("Descriptor does not specify a container image." in ret.stdout)
+
+    def test_prepare_sing_creates_lockfile(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        ret = bosh.execute("prepare",
+                           os.path.join(example1_dir,
+                                        "example1_sing.json"))
+        assert(os.path.isfile("boutiques-example1-test.simg.lock"))

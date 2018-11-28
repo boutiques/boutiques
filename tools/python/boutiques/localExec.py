@@ -399,23 +399,24 @@ class LocalExecutor(object):
             else:
                 container_location = "Pulled from Docker"
         elif conType == 'singularity':
+            if not conIndex:
+                conIndex = "shub://"
+            elif not conIndex.endswith("://"):
+                conIndex = conIndex + "://"
+            conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
+
+            imagePath = './'
+            if self.imagePath is not None:
+                imagePath = self.imagePath
+                os.environ["SINGULARITY_PULLFOLDER"] = imagePath
+
             # Create a lockfile to protect against other threads trying to pull
             # the image
             lockfile = conName + ".lock"
             lock = FileLock(lockfile)
             lock.acquire()
+
             try:
-                if not conIndex:
-                    conIndex = "shub://"
-                elif not conIndex.endswith("://"):
-                    conIndex = conIndex + "://"
-                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
-
-                imagePath = './'
-                if self.imagePath is not None:
-                    imagePath = self.imagePath
-                    os.environ["SINGULARITY_PULLFOLDER"] = imagePath
-
                 if conName not in os.listdir(imagePath):
                     pull_loc = "\"{0}\" {1}{2}".format(conName,
                                                        conIndex,
