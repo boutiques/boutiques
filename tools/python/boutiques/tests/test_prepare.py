@@ -43,16 +43,10 @@ class TestPrepare(TestCase):
                                             "example1_sing.json"),
                                "--imagepath", os.path.expanduser('~'))
         assert("Could not pull Singularity image" in str(e))
+        assert("SINGULARITY_PULLFOLDER" not in os.environ)
 
     def test_prepare_no_container(self):
         ret = bosh.execute("prepare",
                            os.path.join(self.get_examples_dir(),
                                         "no_container.json"))
         assert("Descriptor does not specify a container image." in ret.stdout)
-
-    def test_prepare_sing_creates_lockfile(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"))
-        assert(os.path.isfile("boutiques-example1-test.simg.lock"))
