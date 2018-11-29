@@ -411,7 +411,7 @@ class LocalExecutor(object):
             # If lockdir exists, block until it no longer exists
             while os.path.isdir(lockdir):
                 # time out after 30 mins of waiting
-                if (time.time() - os.stat(lockdir).st_mtime > 1800):
+                if time.time() - os.stat(lockdir).st_mtime > 1800:
                     raise ExecutorError("Process timed out trying "
                                         "to pull Singularity container")
                 # wait 20 seconds before checking again
