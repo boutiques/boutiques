@@ -281,7 +281,7 @@
                     },
                     "list-separator": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/list-separator",
-                        "description":"Separator used between list items. Defaults to a single space.",
+                        "description": "Separator used between list items. Defaults to a single space.",
                         "type": "string"
                     },
                     "optional": {

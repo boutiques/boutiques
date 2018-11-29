@@ -8,7 +8,7 @@ from boutiques import __file__ as bfile
 import boutiques as bosh
 
 
-class TestExample1(TestCase):
+class TestListSeparator(TestCase):
 
     def get_examples_dir(self):
         return os.path.join(os.path.dirname(bfile),
