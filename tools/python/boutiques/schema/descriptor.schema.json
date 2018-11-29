@@ -279,6 +279,11 @@
                         "description":"True if input is a list of value. An input of type \"Flag\" cannot be a list.",
                         "type": "boolean"
                     },
+                    "list-separator": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/list-separator",
+                        "description":"Separator used between list items. Defaults to a single space.",
+                        "type": "string"
+                    },
                     "optional": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/optional",
                         "description": "True if input is optional.",
@@ -399,6 +404,7 @@
                     "command-line-flag-separator": ["command-line-flag"],
                     "min-list-entries": ["list"],
                     "max-list-entries": ["list"],
+                    "list-separator": ["list"],
                     "value-choices": {
                         "properties": {
                             "type": {"enum": ["String", "Number"]}

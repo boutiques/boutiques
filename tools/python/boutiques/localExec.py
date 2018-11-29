@@ -833,6 +833,8 @@ class LocalExecutor(object):
                     val = in_out_dict[param_id]
                     if type(val) is list:
                         s_val = ""
+                        list_sep = (self.safeGet(param_id, 'list-separator')
+                                    or " ")
                         for x in val:
                             s = str(x)
                             if escape:
@@ -840,7 +842,7 @@ class LocalExecutor(object):
                             if val.index(x) == len(val)-1:
                                 s_val += s
                             else:
-                                s_val += s + " "
+                                s_val += s + list_sep
                         val = s_val
                     else:
                         val = str(val)
