@@ -8,7 +8,7 @@ import textwrap
 # parser, and then using their help text formatting.
 def pprint(descriptor):
     # Create parser description, including: ...
-    #   - Main description
+    # Main description
     sep = "".join(["="] * 80)
     name = "Tool name: {0} (ver: {1})".format(descriptor['name'],
                                               descriptor.get("tool-version"))
@@ -28,7 +28,7 @@ def pprint(descriptor):
                           subsequent_indent='  ' + ' ' * cend)
     cline = "Command-line:\n{0}".format("\n".join(cline))
 
-    #   - Container information
+    # Container information
     conimage = descriptor.get("container-image")
     container_info = "Container Information:\n"
     if conimage:
@@ -38,7 +38,7 @@ def pprint(descriptor):
     else:
         container_info += "\tNo container information provided"
 
-    #   - Output information
+    # Output information
     outputs = descriptor.get("output-files")
     output_info = "Output Files:"
     if outputs:
@@ -59,7 +59,7 @@ def pprint(descriptor):
     else:
         output_info += "\n\tNo output information provided\n"
 
-    #   - Group information
+    # Group information
     groups = descriptor.get("groups")
     gtypes = ["Mutually Exclusive", "All or None", "One is Required"]
     group_info = "Input Groups:"
@@ -79,13 +79,21 @@ def pprint(descriptor):
     else:
         group_info += "\n\tNo input group information provided\n"
 
-    #   - System requirements
+    # System requirements
+    res = descriptor.get("suggested-resources")
+    res_info = "Suggested Resources:"
+    if res:
+        for rkey in res.keys():
+            kx = rkey.replace('-', ' ').title()
+            res_info += "\n\t{0}: {1}".format(kx, res[rkey])
+            if rkey == "ram":
+                res_info += " (GB)"
+        res_info += "\n"
     #   - Error Codes
 
     tool_description = """{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}\n
-{5}\n\n{0}\n\n{6}\n{0}\n\n{7}\n{0}""".format(sep, name, description, tags,
-                                             cline, container_info, output_info,
-                                             group_info)
+{5}\n\n{0}\n\n{6}\n{0}\n\n{7}\n{0}\n\n{8}\n{0}""".format(sep, name, description,
+                                                         tags, cline, container_info, output_info, group_info, res_info)
 
     # For each input, create, including:
     #   - Input value-key
