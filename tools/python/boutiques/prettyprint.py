@@ -87,9 +87,12 @@ def pprint(descriptor):
             kx = rkey.replace('-', ' ').title()
             res_info += "\n\t{0}: {1}".format(kx, res[rkey])
             if rkey == "ram":
-                res_info += " (GB)"
+                res_info += " GB"
+            elif rkey == "walltime-estimate":
+                res_info += " s"
         res_info += "\n"
-    #   - Error Codes
+
+    # Error Codes
 
     tool_description = """{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}\n
 {5}\n\n{0}\n\n{6}\n{0}\n\n{7}\n{0}\n\n{8}\n{0}""".format(sep, name, description,
