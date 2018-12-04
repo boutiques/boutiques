@@ -93,10 +93,32 @@ def pprint(descriptor):
         res_info += "\n"
 
     # Error Codes
+    ecod = descriptor.get("error-codes")
+    ecod_info = "Error Codes:"
+    if ecod:
+        for ecod_obj in ecod:
+           ecod_info += ("\n\tReturn Code: {0}\n\tDescription: {1}\n"
+                         "".format(ecod_obj["code"], ecod_obj["description"]))
+        ecod_info += "\n"
 
-    tool_description = """{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}\n
-{5}\n\n{0}\n\n{6}\n{0}\n\n{7}\n{0}\n\n{8}\n{0}""".format(sep, name, description,
-                                                         tags, cline, container_info, output_info, group_info, res_info)
+    tool_description = ("{0}\n\n"
+                        "{1}\n"
+                        "{2}\n"
+                        "{3}\n\n"
+                        "{4}\n\n"
+                        "{0}\n\n"
+                        "{5}\n\n"
+                        "{0}\n\n"
+                        "{6}\n"
+                        "{0}\n\n"
+                        "{7}\n"
+                        "{0}\n\n"
+                        "{8}\n"
+                        "{0}\n\n"
+                        "{9}\n"
+                        "{0}".format(sep, name, description, tags, cline,
+                                     container_info, output_info, group_info,
+                                     res_info, ecod_info))
 
     # For each input, create, including:
     #   - Input value-key
