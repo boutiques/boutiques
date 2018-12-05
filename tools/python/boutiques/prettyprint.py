@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser, RawTextHelpFormatter
-import prettytable
+from tabulate import tabulate
 import textwrap
 
 
@@ -211,15 +211,15 @@ def pprint(descriptor):
                                   "".format(", ".join(inp["requires-inputs"])))
 
             if inp.get("value-disables") and inp.get("value-requires"):
-                tmp_table = prettytable.PrettyTable(["Value",
-                                                     "Disables",
-                                                     "Requires"])
+                tmp_table_headers = ["Value", "Disables", "Requires"]
+                tmp_table = []
                 vdtab = inp["value-disables"]
                 vrtab = inp["value-requires"]
                 for tkey in vdtab:
-                    tmp_table.add_row([tkey,
-                                       ", ".join(vdtab[tkey]),
-                                       ", ".join(vrtab[tkey])])
+                    tmp_table += [[tkey,
+                                  ", ".join(vdtab[tkey]),
+                                  ", ".join(vrtab[tkey])]]
+                tmp_table = tabulate(tmp_table, headers=tmp_table_headers)
                 tmp_inp_descr += ("Value Dependency: \n {0}\n"
                                   "".format(tmp_table))
 
