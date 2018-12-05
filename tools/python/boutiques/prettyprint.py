@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser, RawTextHelpFormatter
+import prettytable
 import textwrap
 
 
@@ -13,35 +14,43 @@ def pprint(descriptor):
     name = "Tool name: {0} (ver: {1})".format(descriptor['name'],
                                               descriptor.get("tool-version"))
     description = "Tool description: {0}".format(descriptor['description'])
-    tags = "Tags: {0}".format(", ".join(descriptor.get("tags")))
+    if descriptor.get("tags"):
+        tags = "Tags: {0}".format(", ".join(descriptor.get("tags")))
+    else:
+        tags = ""
 
-    clkeys_lut1 = {inp["id"]: inp["value-key"] for inp in descriptor["inputs"]}
-    clkeys_lut2 = {inp["value-key"]: [t
+    clkeys_lut1 = {inp["id"]: inp.get("value-key")
+                   for inp in (descriptor["inputs"] +
+                               descriptor.get("output-files"))}
+    clkeys_lut2 = {inp.get("value-key"): [t
                                       for t in clkeys_lut1.keys()
-                                      if clkeys_lut1[t] == inp['value-key']]
-                   for inp in descriptor["inputs"]}
+                                      if clkeys_lut1[t] == inp.get('value-key')]
+                   for inp in (descriptor["inputs"] +
+                               descriptor.get("output-files"))
+                   if inp.get("value-key")}
     cline = descriptor['command-line']
     cend = len(cline)
     for clkey in clkeys_lut2.keys():
-        cend = cline.find(clkey) if cline.find(clkey) < cend else cend
+        cend = cline.find(clkey) if 0 < cline.find(clkey) < cend else cend
     cline = textwrap.wrap("  " + descriptor['command-line'],
                           subsequent_indent='  ' + ' ' * cend)
     cline = "Command-line:\n{0}".format("\n".join(cline))
+    tool_description = ("{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}"
+                        "".format(sep, name, description, tags, cline))
 
     # Container information
     conimage = descriptor.get("container-image")
-    container_info = "Container Information:\n"
     if conimage:
+        container_info = "Container Information:\n"
         container_info += "\t"
         container_info += "\n\t".join(["{0}: {1}".format(k.title(), conimage[k])
                                        for k in conimage.keys()])
-    else:
-        container_info += "\tNo container information provided"
+        tool_description += "\n\n{0}\n\n{1}".format(container_info, sep)
 
     # Output information
     outputs = descriptor.get("output-files")
-    output_info = "Output Files:"
     if outputs:
+        output_info = "Output Files:"
         for output in outputs:
             required = "Optional" if output.get("optional") else "Required"
             output_info += "\n\tName: {0} ({1})".format(output["name"],
@@ -62,15 +71,18 @@ def pprint(descriptor):
                                 " {0}".format(exts))
             else:
                 exts = ""
+
+            if output.get("file-template"):
+               output_info += ("\n\tTemplate:\n\t {0}"
+                               "".format("\n\t ".join(output["file-template"])))
             output_info += "\n"
-    else:
-        output_info += "\n\tNo output information provided\n"
+        tool_description += "\n\n{0}\n{1}".format(output_info, sep)
 
     # Group information
     groups = descriptor.get("groups")
     gtypes = ["Mutually Exclusive", "All or None", "One is Required"]
-    group_info = "Input Groups:"
     if groups:
+        group_info = "Input Groups:"
         for group in groups:
             gtype = []
             gtype += [0] if bool(group.get("mutually-exclusive")) else []
@@ -83,13 +95,12 @@ def pprint(descriptor):
             group_info += ("\tGroup Member IDs: "
                            "{0}".format(", ".join(group["members"])))
             group_info += "\n"
-    else:
-        group_info += "\n\tNo input group information provided\n"
+        tool_description += "\n\n{0}\n{1}".format(group_info, sep)
 
     # System requirements
     res = descriptor.get("suggested-resources")
-    res_info = "Suggested Resources:"
     if res:
+        res_info = "Suggested Resources:"
         for rkey in res.keys():
             kx = rkey.replace('-', ' ').title()
             res_info += "\n\t{0}: {1}".format(kx, res[rkey])
@@ -98,28 +109,23 @@ def pprint(descriptor):
             elif rkey == "walltime-estimate":
                 res_info += " s"
         res_info += "\n"
+        tool_description += "\n\n{0}\n{1}".format(res_info, sep)
 
     # Error Codes
     ecod = descriptor.get("error-codes")
-    ecod_info = "Error Codes:"
     if ecod:
+        ecod_info = "Error Codes:"
         for ecod_obj in ecod:
            ecod_info += ("\n\tReturn Code: {0}\n\tDescription: {1}\n"
                          "".format(ecod_obj["code"], ecod_obj["description"]))
         ecod_info += "\n"
-
-    tool_description = ("{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}\n\n"
-                        "{5}\n\n{0}\n\n{6}\n{0}\n\n{7}\n{0}\n\n"
-                        "{8}\n{0}\n\n{9}\n{0}"
-                        "".format(sep, name, description, tags, cline,
-                                  container_info, output_info, group_info,
-                                  res_info, ecod_info))
+        tool_description += "\n\n{0}\n{1}".format(ecod_info, sep)
 
     # For each input, create, including:
     parser = ArgumentParser(description=tool_description,
                             formatter_class=RawTextHelpFormatter,
                             add_help=False)
-    inputs = descriptor["inputs"]
+    inputs = descriptor["inputs"] + descriptor.get("output-files")
     # For every command-line key...
     for clkey in clkeys_lut2.keys():
         # Re-initialize an empty argument
@@ -129,9 +135,11 @@ def pprint(descriptor):
 
         # Get all inputs with the command-line key
         inps = [inps
-               for inps in inputs
-               if inps['value-key'] == clkey]
+                for inps in inputs
+                if inps.get('value-key') == clkey]
 
+        if not len(inps):
+            continue
         # Determine if input is optional or required
         tinp = inps[0]
         cflag = tinp.get("command-line-flag")
@@ -143,19 +151,18 @@ def pprint(descriptor):
 
         if len(inps) > 1:
             inp_descr += "Multiple Options...\n"
-            inp_desc_header = "Option {0}:\n  "
+            inp_desc_header = "Option {0}:\n"
             inp_desc_footer = "\n"
         else:
             inp_desc_header = ""
             inp_desc_footer = ""
 
         for i_inp, inp in enumerate(inps):
-    #   - Input description
-    #   - Limits (in description)
-    #   - Input disables/requires (in description)
             inp_descr += inp_desc_header.format(i_inp + 1)
-            tmp_inp_descr = ("ID: {0}, Type: {1}, List: {2}, Optional: {3}"
+            tmp_inp_descr = ("ID: {0}\nValue Key: {1}\nType: {2}\n"
+                             "List: {3}\nOptional: {4}\n"
                              "".format(inp.get("id"),
+                                       inp.get("value-key"),
                                        inp.get("type"),
                                        bool(inp.get("list")),
                                        bool(inp.get("optional"))))
@@ -170,15 +177,55 @@ def pprint(descriptor):
                 elif malen:
                     listlen = "<= {0}".format(malen)
                 else:
-                    listlen = "Unspecified"
-                tmp_inp_descr += (" List length: {0}"
-                                  ""
+                    listlen = "N/A"
+                tmp_inp_descr += ("List Length: {0}"
+                                  "\n"
                                   "".format(listlen))
 
-            if inp.get("description"):
-                tmp_inp_descr += ", Description: {0}".format(inp["description"])
+            if inp.get("type") == "Number":
+                tmp_inp_descr += ("Integer: {0}\n"
+                                  "".format(bool(inp.get("integer"))))
+                minum = inp.get("minimum") or "N/A"
+                manum = inp.get("maximum") or "N/A"
+                emi = "(" if inp.get("exclusive-minimum") else "["
+                ema = ")" if inp.get("exclusive-maximum") else "]"
+                tmp_inp_descr += "Range: {0}{1}, {2}{3}\n".format(emi, minum,
+                                                              manum, ema)
 
-            inp_descr += textwrap.fill(tmp_inp_descr, subsequent_indent="  ")
+
+            if inp.get("value-choices"):
+                inp_kwargs["choices"] = inp["value-choices"]
+            if inp.get("default-value"):
+                inp_kwargs["default"] = inp["default-value"]
+                tmp_inp_descr += ("Default Value: {0}\n"
+                                  "".format(inp['default-value']))
+
+            if inp.get("disables-inputs"):
+                tmp_inp_descr += ("Disables: {0}\n"
+                                  "".format(", ".join(inp["disables-inputs"])))
+            if inp.get("requires-inputs"):
+                tmp_inp_descr += ("Requires: {0}\n"
+                                  "".format(", ".join(inp["requires-inputs"])))
+
+            if inp.get("value-disables") and inp.get("value-requires"):
+                tmp_table = prettytable.PrettyTable(["Value",
+                                                     "Disables",
+                                                     "Requires"])
+                vdtab = inp["value-disables"]
+                vrtab = inp["value-requires"]
+                for tkey in vdtab:
+                    tmp_table.add_row([tkey,
+                                       ", ".join(vdtab[tkey]),
+                                       ", ".join(vrtab[tkey])])
+                tmp_inp_descr += ("Value Dependency: \n {0}\n"
+                                  "".format(tmp_table))
+
+            if inp.get("description"):
+                descr_text = "Description: {0}".format(inp["description"])
+            else:
+                descr_text = ""
+            inp_descr += tmp_inp_descr + textwrap.fill(descr_text,
+                                                       subsequent_indent=" ")
             inp_descr += inp_desc_footer
 
         # Add argument to parser
