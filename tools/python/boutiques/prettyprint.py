@@ -43,18 +43,25 @@ def pprint(descriptor):
     output_info = "Output Files:"
     if outputs:
         for output in outputs:
-            exts = ", ".join(output.get("path-template-stripped-extensions"))
-            depids = ["/".join(clkeys_lut2[inp])
-                      for inp in clkeys_lut2.keys()
-                      if inp in output["path-template"]]
             required = "Optional" if output.get("optional") else "Required"
             output_info += "\n\tName: {0} ({1})".format(output["name"],
                                                         required)
+
             output_info += "\n\tFormat: {0}".format(output["path-template"])
-            output_info += ("\n\tFilename depends on Input IDs: "
-                            "{0}".format(", ".join(depids)))
-            output_info += ("\n\tStripped extensions (before substitution): "
-                            "{0}".format(exts))
+
+            depids = ["/".join(clkeys_lut2[inp])
+                      for inp in clkeys_lut2.keys()
+                      if inp in output["path-template"]]
+            if depids:
+                output_info += ("\n\tFilename depends on Input IDs: "
+                                "{0}".format(", ".join(depids)))
+
+            if output.get("path-template-stripped-extensions"):
+                exts = ", ".join(output["path-template-stripped-extensions"])
+                output_info += ("\n\tStripped extensions (before substitution):"
+                                " {0}".format(exts))
+            else:
+                exts = ""
             output_info += "\n"
     else:
         output_info += "\n\tNo output information provided\n"
@@ -101,57 +108,82 @@ def pprint(descriptor):
                          "".format(ecod_obj["code"], ecod_obj["description"]))
         ecod_info += "\n"
 
-    tool_description = ("{0}\n\n"
-                        "{1}\n"
-                        "{2}\n"
-                        "{3}\n\n"
-                        "{4}\n\n"
-                        "{0}\n\n"
-                        "{5}\n\n"
-                        "{0}\n\n"
-                        "{6}\n"
-                        "{0}\n\n"
-                        "{7}\n"
-                        "{0}\n\n"
-                        "{8}\n"
-                        "{0}\n\n"
-                        "{9}\n"
-                        "{0}".format(sep, name, description, tags, cline,
-                                     container_info, output_info, group_info,
-                                     res_info, ecod_info))
+    tool_description = ("{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}\n\n"
+                        "{5}\n\n{0}\n\n{6}\n{0}\n\n{7}\n{0}\n\n"
+                        "{8}\n{0}\n\n{9}\n{0}"
+                        "".format(sep, name, description, tags, cline,
+                                  container_info, output_info, group_info,
+                                  res_info, ecod_info))
 
     # For each input, create, including:
-    #   - Input value-key
-    #   - Input description
-    #   - Input ID (in description)
-    #   - Input type (in description)
-    #   - Limits (in description)
-    #   - Input disables/requires (in description)
-    #   - Required/Optional status (in description)
     parser = ArgumentParser(description=tool_description,
                             formatter_class=RawTextHelpFormatter,
                             add_help=False)
     inputs = descriptor["inputs"]
+    # For every command-line key...
     for clkey in clkeys_lut2.keys():
-        args = []
-        kwargs = {}
-        inp = [inp
-               for inp in inputs
-               if inp['value-key'] == clkey]
-        opt = bool(inp[0].get("optional"))
-        cflag = inp[0].get("command-line-flag")
+        # Re-initialize an empty argument
+        inp_args = []
+        inp_kwargs = {}
+        inp_descr = ""
+
+        # Get all inputs with the command-line key
+        inps = [inps
+               for inps in inputs
+               if inps['value-key'] == clkey]
+
+        # Determine if input is optional or required
+        tinp = inps[0]
+        cflag = tinp.get("command-line-flag")
         if cflag:
-            args += [cflag]
-            kwargs['dest'] = clkey
+            inp_args += [cflag]
+            inp_kwargs['dest'] = clkey
         else:
-            args += [clkey]
-        ilist = bool(inp[0].get("list"))
-        if ilist:
-            kwargs['nargs'] = '+'
-        itype = inp[0].get("type")
-        desc = ""
-        kwargs['help'] = desc
-        parser.add_argument(*args, **kwargs)
+            inp_args += [clkey]
+
+        if len(inps) > 1:
+            inp_descr += "Multiple Options...\n"
+            inp_desc_header = "Option {0}:\n  "
+            inp_desc_footer = "\n"
+        else:
+            inp_desc_header = ""
+            inp_desc_footer = ""
+
+        for i_inp, inp in enumerate(inps):
+    #   - Input description
+    #   - Limits (in description)
+    #   - Input disables/requires (in description)
+            inp_descr += inp_desc_header.format(i_inp + 1)
+            tmp_inp_descr = ("ID: {0}, Type: {1}, List: {2}, Optional: {3}"
+                             "".format(inp.get("id"),
+                                       inp.get("type"),
+                                       bool(inp.get("list")),
+                                       bool(inp.get("optional"))))
+            if inp.get("list"):
+                milen = inp.get("min-list-entries")
+                malen = inp.get("max-list-entries")
+                if milen and malen:
+                    listlen = "{0} - {1}".format(milen,
+                                                 malen)
+                elif milen:
+                    listlen = ">= {0}".format(milen)
+                elif malen:
+                    listlen = "<= {0}".format(malen)
+                else:
+                    listlen = "Unspecified"
+                tmp_inp_descr += (" List length: {0}"
+                                  ""
+                                  "".format(listlen))
+
+            if inp.get("description"):
+                tmp_inp_descr += ", Description: {0}".format(inp["description"])
+
+            inp_descr += textwrap.fill(tmp_inp_descr, subsequent_indent="  ")
+            inp_descr += inp_desc_footer
+
+        # Add argument to parser
+        inp_kwargs['help'] = textwrap.dedent(inp_descr)
+        parser.add_argument(*inp_args, **inp_kwargs)
         # print(inp)
         pass
 
