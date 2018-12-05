@@ -43,6 +43,7 @@ class TestPrepare(TestCase):
                                             "example1_sing.json"),
                                "--imagepath", os.path.expanduser('~'))
         assert("Could not pull Singularity image" in str(e))
+        assert("SINGULARITY_PULLFOLDER" not in os.environ)
 
     def test_prepare_no_container(self):
         ret = bosh.execute("prepare",
