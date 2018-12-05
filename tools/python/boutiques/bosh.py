@@ -10,7 +10,7 @@ import pytest
 from argparse import ArgumentParser, RawTextHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
-from boutiques.publisher import ZenodoError
+from boutiques.errors import ZenodoError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
