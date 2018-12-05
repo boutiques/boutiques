@@ -29,7 +29,7 @@ class CreateDescriptor(object):
                               kwargs.get('docker_image'),
                               kwargs.get('use_singularity'))
 
-        self.count = 0
+        self.sp_count = 0
         if parser is not None:
             self.parser = parser
             self.descriptor["inputs"] = []
@@ -46,6 +46,11 @@ class CreateDescriptor(object):
         import json
         with open(filename, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+
+    def createInvocation(self, arguments):
+        argdict = vars(arguments)
+        argdict = {k: v for k, v in argdict.items() if v is not None}
+        return argdict
 
     def parse_docker(self, descriptor, docker_image_name, use_singularity):
         cont_image = {}
@@ -177,8 +182,13 @@ class CreateDescriptor(object):
                 print("{0}: Adding".format(actstring))
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
-                adest = "subparser_{0}".format(self.count)
-                self.count += 1
+                adest = "subparser_{0}".format(self.sp_count)
+                if kwargs.get("verbose"):
+                    print("WARNING: Subparser has no destination set, "
+                          "invocation parsing may not work as expected. This "
+                          "can be fixed by adding \"dest='mysubparser'\" to "
+                          "subparser creation.")
+                self.sp_count += 1
             else:
                 adest = action.dest
 
@@ -202,13 +212,18 @@ class CreateDescriptor(object):
                 "description": action.help,
                 "optional": kwargs.get("subaction") or not action.required,
                 "type": "String",
-                "value-key": "[{0}]".format(adest.upper())
+                "value-key": "[{0}]".format(adest.upper().strip("[]"))
             }
 
-            if action.type:
+            if action.type is not None:
                 if action.type in [int, float]:
                     newinput["type"] = "Number"
-                elif action.type == list:
+                if action.type == list:
+                    newinput["list"] = True
+
+            if action.nargs is not None:
+                if ((isinstance(action.nargs, str) and action.nargs == "+")
+                   or (isinstance(action.nargs, int) and action.nargs > 1)):
                     newinput["list"] = True
 
             if action.default:
@@ -228,7 +243,8 @@ class CreateDescriptor(object):
             if type(action) is argparse._StoreTrueAction:
                 newinput["type"] = "Flag"
 
-            self.descriptor["command-line"] += " [{0}]".format(adest.upper())
+            self.descriptor["command-line"] += " [{0}]".format(
+                                                    adest.upper().strip("[]"))
             # If this action belongs to a subparser, return a flag along
             # with the object, indicating its required/not required status.
             if kwargs.get("subaction"):

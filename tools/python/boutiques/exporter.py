@@ -3,6 +3,7 @@
 import json
 import os
 import uuid
+from boutiques.localExec import loadJson
 
 
 class ExportError(Exception):
@@ -46,8 +47,7 @@ class Exporter():
 
     def carmin(self, output_file):
         carmin_desc = {}
-        with open(self.descriptor, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+        descriptor = loadJson(self.descriptor)
 
         if descriptor.get('doi'):
             self.identifier = descriptor.get('doi')

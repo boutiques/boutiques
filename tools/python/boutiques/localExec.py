@@ -63,10 +63,10 @@ class ExecutorOutput():
                "{2}" + os.linesep +
                title("Exit code") +
                "{3}" + os.linesep +
-               title("Std out") +
-               "{4}" + os.linesep +
-               title("Std err") +
-               colored("{5}", 'red') + os.linesep +
+               (title("Std out") +
+                "{4}" + os.linesep if self.stdout else "") +
+               (title("Std err") +
+                colored("{5}", 'red') + os.linesep if self.stderr else "") +
                title("Error message") +
                colored("{6}", 'red') + os.linesep +
                title("Output files") +
@@ -133,8 +133,7 @@ class LocalExecutor(object):
         self.errs = []        # Empty errors holder
         self.invocation = invocation
         # Parse JSON descriptor
-        with open(desc, 'r') as descriptor:
-            self.desc_dict = json.loads(descriptor.read())
+        self.desc_dict = loadJson(desc)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -213,10 +212,11 @@ class LocalExecutor(object):
         of local execution.
         After execution, it checks for output file existence.
         '''
-        command, exit_code, con = self.cmdLine[0], None, self.con or {}
+        command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
+        conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
         # Export environment variables, if they are specified in the descriptor
         envVars = {}
@@ -238,43 +238,8 @@ class LocalExecutor(object):
         container_location = ""
         container_command = ""
         if conIsPresent:
-            if conType == 'docker':
-                # Pull the docker image
-                if self._localExecute("docker pull " + str(conImage))[1]:
-                    container_location = "Local copy"
-            elif conType == 'singularity':
-                if not conIndex:
-                    conIndex = "shub://"
-                elif not conIndex.endswith("://"):
-                    conIndex = conIndex + "://"
-                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
-
-                if conName not in os.listdir('./'):
-                    pull_loc = "\"{0}\" {1}{2}".format(conName,
-                                                       conIndex,
-                                                       conImage)
-                    container_location = ("Pulled from {1}{2} ({0} not found "
-                                          "in current "
-                                          "working directory)").format(conName,
-                                                                       conIndex,
-                                                                       conImage)
-                    # Pull the singularity image
-                    sing_command = "singularity pull --name " + pull_loc
-                    (stdout, stderr), return_code = self._localExecute(
-                                                            sing_command)
-                    if return_code:
-                        message = ("Could not pull Singularity"
-                                   " image: " + os.linesep + " * Pull command: "
-                                   + sing_command + os.linesep + " * Error: "
-                                   + stderr.decode("utf-8"))
-                        raise ExecutorError(message)
-                else:
-                    container_location = "Local ({0})".format(conName)
-                conName = op.abspath(conName)
-            else:
-                raise ExecutorError('Unrecognized container'
-                                    ' type: \"%s\"' % conType)
-
+            # Pull the container
+            (conName, container_location) = self.prepare()
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = "#!"+self.shell+" -l\n" + str(command)
@@ -292,6 +257,11 @@ class LocalExecutor(object):
             if launchDir is None:
                 launchDir = op.realpath('./')
             launchDir = op.realpath(launchDir)
+            # Get the container options
+            conOptsString = ""
+            if conOpts:
+                for opt in conOpts:
+                    conOptsString += opt + ' '
             # Run it in docker
             mount_strings = [] if not mount_strings else mount_strings
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
@@ -316,6 +286,7 @@ class LocalExecutor(object):
                                      ' --rm' + envString +
                                      ' -v ' + docker_mounts +
                                      ' -w ' + launchDir + ' ' +
+                                     conOptsString +
                                      str(conImage) + ' ' + dsname)
             elif conType == 'singularity':
                 envString = ""
@@ -360,6 +331,7 @@ class LocalExecutor(object):
                                      '--cleanenv ' +
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
+                                     conOptsString +
                                      str(conName) + ' ' + dsname)
             else:
                 raise ExecutorError('Unrecognized container type: '
@@ -408,6 +380,106 @@ class LocalExecutor(object):
                               command,
                               container_command, container_location)
 
+    # Looks for the container image locally and pulls it if not found
+    # Returns a tuple containing the container filename (for Singularity)
+    # and the container location (local or pulled)
+    def prepare(self):
+        con = self.con
+        if con is None:
+            return ("", "Descriptor does not specify a container image.")
+
+        conType, conImage = con.get('type'), con.get('image'),
+        conIndex = con.get("index")
+
+        # If container is present, alter the command template accordingly
+        conName = ""
+        container_location = ""
+
+        if conType == 'docker':
+            # Pull the docker image
+            if self._localExecute("docker pull " + str(conImage))[1]:
+                container_location = "Local copy"
+            else:
+                container_location = "Pulled from Docker"
+            return (conName, container_location)
+
+        if conType == 'singularity':
+            if not conIndex:
+                conIndex = "shub://"
+            elif not conIndex.endswith("://"):
+                conIndex = conIndex + "://"
+            conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
+
+            # Check if container already exists
+            if self._singConExists(conName):
+                return (conName, "Local ({0})".format(conName))
+
+            # Container does not exist, try to pull it
+            lockdir = conName + "-lock"
+            maxcount = 36
+            count = 0
+            try:
+                while count < maxcount:
+                    count += 1
+                    try:
+                        os.mkdir(lockdir)
+                    except OSError:
+                        time.sleep(5)
+                    else:
+                        # Check if container was created while waiting
+                        if self._singConExists(conName):
+                            return (conName, "Local ({0})".format(conName))
+                        # Container still does not exist, so pull it
+                        return self._pullSingImage(conName, conIndex, conImage)
+                # If loop times out, check again for existence, otherwise
+                # raise an error
+                if self._singConExists(conName):
+                    return (conName, "Local ({0})".format(conName))
+                raise ExecutorError("Unable to retrieve Singularity image.")
+            finally:
+                os.rmdir(lockdir)
+                if "SINGULARITY_PULLFOLDER" in os.environ:
+                    del os.environ["SINGULARITY_PULLFOLDER"]
+
+        # Invalid container type
+        raise ExecutorError('Unrecognized container'
+                            ' type: \"%s\"' % conType)
+
+    # Private method that checks if a Singularity image exists locally
+    def _singConExists(self, conName):
+        imagePath = self.imagePath or './'
+        return conName in os.listdir(imagePath)
+
+    # Private method that pulls a Singularity image
+    def _pullSingImage(self, conName, conIndex, conImage):
+        # Give the file a temporary name while it's building
+        conNameTmp = conName + ".tmp"
+        # Set the pull directory to the specified imagePath
+        if self.imagePath is not None:
+            os.environ["SINGULARITY_PULLFOLDER"] = self.imagePath
+        pull_loc = "\"{0}\" {1}{2}".format(conNameTmp,
+                                           conIndex,
+                                           conImage)
+        container_location = ("Pulled from {1}{2} ({0} not found "
+                              "in current working "
+                              "directory or specified "
+                              "image path)").format(conName,
+                                                    conIndex,
+                                                    conImage)
+        # Pull the singularity image
+        sing_command = "singularity pull --name " + pull_loc
+        (stdout, stderr), return_code = self._localExecute(
+                                                sing_command)
+        if return_code:
+            message = ("Could not pull Singularity"
+                       " image: " + os.linesep + " * Pull command: "
+                       + sing_command + os.linesep + " * Error: "
+                       + stderr.decode("utf-8"))
+            raise ExecutorError(message)
+        os.rename(conNameTmp, conName)
+        conName = op.abspath(conName)
+        return (conName, container_location)
+
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
     def _localExecute(self, command):
@@ -416,9 +488,14 @@ class LocalExecutor(object):
         if self.debug:
             print("Running: {0}".format(command))
         try:
-            process = subprocess.Popen(command, shell=True,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+            if self.stream:
+                process = subprocess.Popen(command, shell=True,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT)
+            else:
+                process = subprocess.Popen(command, shell=True,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE)
 
         except OSError as e:
             sys.stderr.write('OS Error during attempted execution!')
@@ -426,8 +503,19 @@ class LocalExecutor(object):
         except ValueError as e:
             sys.stderr.write('Input Value Error during attempted execution!')
             raise e
-        else:
+
+        if not self.stream:
             return process.communicate(), process.returncode
+
+        while True:
+            if process.poll() is not None:
+                break
+            outLine = process.stdout.readline().decode()
+            if outLine != '':
+                sys.stdout.write(outLine)
+        # Return (stdout, stderr) as (None, None) since it was already
+        # printed in real time
+        return (None, None), process.returncode
 
     # Private method to generate a random input parameter set that follows
     # the constraints from the json descriptor
@@ -451,7 +539,7 @@ class LocalExecutor(object):
             return ('f_' + id + '_' + randDigs() +
                     rnd.choice(['.csv', '.tex', '.j',
                                 '.cpp', '.m', '.mnc',
-                                '.nii.gz']))
+                                '.nii.gz', '']))
 
         def randStr(id):
             return 'str_' + id + '_' + ''.join(rnd.choice(string.digits +
@@ -489,9 +577,9 @@ class LocalExecutor(object):
                 minv, maxv = float(minv), float(maxv)
             # Apply exclusive boundary constraints, if any
             if self.safeGet(param_id, 'exclusive-minimum'):
-                minv += (1 if isInt else 0.0001)
+                minv += 1 if isInt else 0.001
             if self.safeGet(param_id, 'exclusive-maximum'):
-                maxv -= (1 if isInt else 0.0001)
+                maxv -= 1 if isInt else 0.001
             # Returns a random int or a random float, depending on the type of p
             return (rnd.randint(minv, maxv)
                     if isInt else round(rnd.uniform(minv, maxv), nd))
@@ -518,9 +606,8 @@ class LocalExecutor(object):
             mn = self.safeGet(prm['id'], 'min-list-entries') or 2
             mx = self.safeGet(prm['id'], 'max-list-entries') or nl
             isList = self.safeGet(prm['id'], 'list') or False
-            return ' '.join(str(paramSingle(prm)) for _ in
-                            range(rnd.randint(mn, mx))
-                            ) if isList else paramSingle(prm)
+            return [str(paramSingle(prm)) for _ in
+                    range(rnd.randint(mn, mx))] if isList else paramSingle(prm)
 
         # Returns a list of the ids of parameters that
         # disable the input parameter
@@ -602,6 +689,7 @@ class LocalExecutor(object):
         # Fill in the required parameters
         for reqp in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[reqp['id']] = makeParam(reqp)
+
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
                     if self.safeGrpGet(g['id'], 'one-is-required')]:
@@ -658,7 +746,7 @@ class LocalExecutor(object):
         values (more than 1 if -n was given).
         '''
 
-        self.cmdLine = []
+        self.cmd_line = []
         for i in range(0, n):
             # Set in_dict with random values
             self._randomFillInDict()
@@ -670,14 +758,14 @@ class LocalExecutor(object):
                 self._validateDict()
             # If an error occurs, print out the problems already
             # encountered before blowing up
-            except Exception:  # Avoid catching BaseExceptions like SystemExit
+            except Exception as e:  # Avoid BaseExceptions like SystemExit
                 sys.stderr.write("An error occurred in validation\n"
                                  "Previously saved issues\n")
                 for err in self.errs:
                     sys.stderr.write("\t" + str(err) + "\n")
-                raise  # Pass on (throw) the caught exception
+                raise e  # Pass on (throw) the caught exception
             # Add new command line
-            self.cmdLine.append(self._generateCmdLineFromInDict())
+            self.cmd_line.append(self._generateCmdLineFromInDict())
 
     # Read in parameter input file or string
     def readInput(self, infile):
@@ -695,8 +783,8 @@ class LocalExecutor(object):
 
         # Quick check that the descriptor has already been read in
         assert self.desc_dict is not None
-        with open(infile, 'r') as inparams:
-            self.in_dict = json.loads(inparams.read())
+        self.in_dict = loadJson(infile)
+
         # Input dictionary
         if self.debug:
             print("Input: " + str(self.in_dict))
@@ -735,21 +823,24 @@ class LocalExecutor(object):
                 sys.stderr.write("\t" + str(err) + "\n")
             raise  # Raise the exception that caused failure
         # Build and save output command line (as a single-entry list)
-        self.cmdLine = [self._generateCmdLineFromInDict()]
+        self.cmd_line = [self._generateCmdLineFromInDict()]
 
     # Private method to replace the keys in template by input and output
     # values. Input and output values are looked up in self.in_dict and
     # self.out_dict
-    # * if useFlags is true, keys will be replaced by flag+flag-separator+value
-    # * if unfoundKeys is "remove", unfound keys will be replaced by ""
-    # * if unfoundKeys is "clear" then the template is cleared if it has
+    # * if use_flags is true, keys will be replaced by:
+    #      * flag+flag-separator+value if flag is not None
+    #      * value otherwise
+    # * if unfound_keys is "remove", unfound keys will be replaced by ""
+    # * if unfound_keys is "clear" then the template is cleared if it has
     #     unfound keys (useful for configuration files)
-    # * before being substituted, the keys will be stripped from all
-    #    the strings in strippedExtensions
+    # * before being substituted, the values will be:
+    #     * stripped from all the strings in stripped_extensions
+    #     * escaped for special characters
     def _replaceKeysInTemplate(self, template,
-                               useFlags=False, unfoundKeys="remove",
-                               strippedExtensions=[],
-                               escapeSpecialCharsInStrings=True):
+                               use_flags=False, unfound_keys="remove",
+                               stripped_extensions=[],
+                               escape_special_chars=True):
 
             def escape_string(s):
                 try:
@@ -762,47 +853,53 @@ class LocalExecutor(object):
             in_out_dict = dict(self.in_dict)
             in_out_dict.update(self.out_dict)
             # Go through all the keys
-            for paramId in [x['id'] for x in self.inputs + self.outputs]:
-                escape = (escapeSpecialCharsInStrings and
-                          (self.safeGet(paramId, 'type') == 'String' or
-                           self.safeGet(paramId, 'type') == 'File') or
-                          paramId in self.out_dict.keys())
-                clk = self.safeGet(paramId, 'value-key')
+            for param_id in [x['id'] for x in self.inputs + self.outputs]:
+                escape = (escape_special_chars and
+                          (self.safeGet(param_id, 'type') == 'String' or
+                           self.safeGet(param_id, 'type') == 'File') or
+                          param_id in self.out_dict.keys())
+                clk = self.safeGet(param_id, 'value-key')
                 if clk is None:
                     continue
-                if paramId in list(in_out_dict.keys()):  # param has a value
-                    val = in_out_dict[paramId]
+                if param_id in list(in_out_dict.keys()):  # param has a value
+                    val = in_out_dict[param_id]
                     if type(val) is list:
                         s_val = ""
+                        list_sep = self.safeGet(param_id, 'list-separator')
+                        if list_sep is None:
+                            list_sep = " "
                         for x in val:
                             s = str(x)
                             if escape:
                                 s = escape_string(str(x))
-                            s_val += s + " "
+                            if val.index(x) == len(val)-1:
+                                s_val += s
+                            else:
+                                s_val += s + list_sep
                         val = s_val
                     else:
                         val = str(val)
                         if escape:
                             val = escape_string(val)
                     # Add flags and separator if necessary
-                    if useFlags:
-                        flag = self.safeGet(paramId, 'command-line-flag') or ''
-                        sep = self.safeGet(paramId,
+                    flag = self.safeGet(param_id, 'command-line-flag')
+                    if (use_flags and flag is not None):
+                        sep = self.safeGet(param_id,
                                            'command-line-flag-separator')
                         if sep is None:
                             sep = ' '
                         val = flag + sep + val
                         # special case for flag-type inputs
-                        if self.safeGet(paramId, 'type') == 'Flag':
+                        if self.safeGet(param_id, 'type') == 'Flag':
                             val = '' if val.lower() == 'false' else flag
                     # Remove file extensions from input value
-                    for extension in strippedExtensions:
+                    for extension in stripped_extensions:
                         val = val.replace(extension, "")
                     template = template.replace(clk, val)
                 else:  # param has no value
-                    if unfoundKeys == "remove":
+                    if unfound_keys == "remove":
                         template = template.replace(clk, '')
-                    elif unfoundKeys == "clear":
+                    elif unfound_keys == "clear":
                         if clk in template:
                             return ""
             return template
@@ -819,18 +916,18 @@ class LocalExecutor(object):
                 outputFileName = self.out_dict[outputId]
             else:
                 outputFileName = self.safeGet(outputId, 'path-template')
-            strippedExtensions = self.safeGet(
+            stripped_extensions = self.safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
-            if strippedExtensions is None:
-                strippedExtensions = []
+            if stripped_extensions is None:
+                stripped_extensions = []
             # We keep the unfound keys because they will be
             # substituted in a second call to the method in case
             # they are output keys
             outputFileName = self._replaceKeysInTemplate(outputFileName,
                                                          False,
                                                          "keep",
-                                                         strippedExtensions,
+                                                         stripped_extensions,
                                                          False)
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
@@ -843,11 +940,11 @@ class LocalExecutor(object):
             fileTemplate = self.safeGet(outputId, 'file-template')
             if fileTemplate is None:
                 continue  # this is not a configuration file
-            strippedExtensions = self.safeGet(
+            stripped_extensions = self.safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
-            if strippedExtensions is None:
-                strippedExtensions = []
+            if stripped_extensions is None:
+                stripped_extensions = []
             # We substitute the keys line by line so that we can
             # clear the lines that have keys with no value
             # (undefined optional params)
@@ -856,7 +953,7 @@ class LocalExecutor(object):
                 newTemplate.append(self._replaceKeysInTemplate(
                                                 line,
                                                 False, "clear",
-                                                strippedExtensions,
+                                                stripped_extensions,
                                                 True))
             template = "\n".join(newTemplate)
             # Write the configuration file
@@ -887,8 +984,8 @@ class LocalExecutor(object):
     # Print the command line result
     def printCmdLine(self):
         print("Generated Command" +
-              ('s' if len(self.cmdLine) > 1 else '') + ':')
-        for cmd in self.cmdLine:
+              ('s' if len(self.cmd_line) > 1 else '') + ':')
+        for cmd in self.cmd_line:
             print(cmd)
 
     # Private method for validating input parameters
@@ -933,7 +1030,7 @@ class LocalExecutor(object):
             if targ["type"] == "Number":
                 # Number type and constraints are not violated
                 # (note the lambda safety checks)
-                for v in (str(val).split() if isList else [val]):
+                for v in (val if isList else [val]):
                     check('minimum', lambda x, y: float(x) >= targ[y],
                           "violates minimum value", v)
                     check('exclusive-minimum',
@@ -949,7 +1046,11 @@ class LocalExecutor(object):
                     check(None, lambda x, y: isNumber(x), "is not a number", v)
             elif self.safeGet(targ['id'], 'value-choices'):
                 # Value is in the list of allowed values
-                check('value-choices', lambda x, y: x in targ[y],
+                if isinstance(val, list):
+                    fn = (lambda x, y: all([x1 in targ[y] for x1 in x]))
+                else:
+                    fn = (lambda x, y: x in targ[y])
+                check('value-choices', fn,
                       "is not a valid enum choice", val)
             elif targ["type"] == "Flag":
                 # Should be 'true' or 'false' when lower-cased
@@ -970,7 +1071,7 @@ class LocalExecutor(object):
                     launchDir = os.getcwd()
                     if self.launchDir is not None:
                         launchDir = self.launchDir
-                    for ftarg in (str(val).split() if isList else [val]):
+                    for ftarg in (val if isList else [val]):
                         # Special case 1: launchdir is specified and we
                         # want to use absolute path
                         # Note: in this case, the pwd is mounted as the
@@ -990,16 +1091,18 @@ class LocalExecutor(object):
                         # the path with its absolute version
                         elif targ.get('uses-absolute-path') is True:
                             replacementFiles.append(os.path.abspath(ftarg))
+                        else:
+                            replacementFiles.append(ftarg)
                     # Replace old val with the new one
                     self.in_dict[key] = " ".join(replacementFiles)
             # List length constraints are satisfied
             if isList:
                 check('min-list-entries',
-                      lambda x, y: len(x.split()) >= targ[y],
+                      lambda x, y: len(x) >= targ[y],
                       "violates min size", val)
             if isList:
                 check('max-list-entries',
-                      lambda x, y: len(x.split()) <= targ[y],
+                      lambda x, y: len(x) <= targ[y],
                       "violates max size", val)
         # Required inputs are present
         for reqId in [v['id'] for v in self.inputs if not v.get('optional')]:
@@ -1045,3 +1148,27 @@ class LocalExecutor(object):
             for err in self.errs:
                 message += ("\t" + err + "\n")
             raise ExecutorError(message)
+
+
+# Helper function that loads the JSON object coming from either a string,
+# a file or from Zenodo
+def loadJson(userInput):
+    # JSON file
+    if os.path.isfile(userInput):
+        with open(userInput, 'r') as jsonFile:
+            return json.loads(jsonFile.read())
+    # Zenodo ID
+    elif userInput.split(".")[0].lower() == "zenodo":
+        from boutiques.puller import Puller
+        puller = Puller(userInput, False, False, False)
+        return json.loads(puller.pull().read().decode('utf-8'))
+    # Try to parse JSON object
+    e = ExecutorError("Cannot parse input {}: file not found, "
+                      "invalid Zenodo ID, or invalid JSON object"
+                      .format(userInput))
+    if userInput.isdigit():
+        raise e
+    try:
+        return json.loads(userInput)
+    except ValueError:
+        raise e

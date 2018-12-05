@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
+from boutiques.localExec import loadJson
 import boutiques
 import yaml
 import json
@@ -54,8 +55,7 @@ class Importer():
           "walltime-estimate": 3600
         },
         """
-        with open(self.input_descriptor, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+        descriptor = loadJson(self.input_descriptor)
 
         if descriptor["schema-version"] != "0.4":
             raise ImportError("The input descriptor must have 'schema-version'"
@@ -105,8 +105,11 @@ class Importer():
 
         errors = []
         app_name = os.path.basename(os.path.abspath(self.input_descriptor))
-        with open(os.path.join(self.input_descriptor, "version"), "r") as f:
-            version = f.read().strip()
+        version = 'unknown'
+        version_file = os.path.join(self.input_descriptor, "version")
+        if os.path.exists(version_file):
+            with open(version_file, "r") as f:
+                version = f.read().strip()
         git_repo = "https://github.com/BIDS-Apps/"+app_name
         entrypoint = self.get_entry_point(self.input_descriptor)
         container_image = "bids/"+app_name

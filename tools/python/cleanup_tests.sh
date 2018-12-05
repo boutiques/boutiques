@@ -5,7 +5,10 @@
 # and have not yet committed them!
 #
 
-rm -r temp-*.sh log*.txt config*.txt file.txt creator_output.json test-created-argparse-descriptor.json .pytest_cache/
+rm -r temp-*.sh log*.txt config*.txt file.txt creator_output.json \
+      test-created-argparse-descriptor.json test-created-argparse-inputs.json \
+      .pytest_cache/ bar.dat baz.txt cwl_inv_out.json cwl_out.json \
+      example.conf foo.txt goodbye.txt hello.js hello.tar stdout.txt
 git checkout boutiques/schema/examples/good.json
 git checkout boutiques/schema/examples/example1/example1_docker.json
 git checkout boutiques/schema/examples/example1/example1_sing.json

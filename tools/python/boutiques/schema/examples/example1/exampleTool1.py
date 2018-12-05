@@ -40,10 +40,16 @@ def main(args=None):
     if (not results.number) and (not results.enum_input):
         sys.stderr.write("error: one of number or enum_input is required.\n")
         sys.exit(1)
-    
+   
     var = os.getenv("ENVAR")
     if var != "theValue":
         sys.stderr.write("error: ENVAR environment variable must be set to 'theValue'.\n")
+        sys.exit(1)
+
+    homeDir = os.getenv("HOME")
+    if homeDir != os.getenv("PWD"):
+        sys.stderr.write("error: HOME environment variable must be set to the current"
+                         " working directory.\n")
         sys.exit(1)
 
     with(open(results.config_file,'r')) as co:

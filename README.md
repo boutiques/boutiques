@@ -31,6 +31,20 @@ The command-line API for Boutiques can be accessed through your new favourite co
 provides an access point to all of the tools wrapped within Boutiques and has some `--help` text to keep you moving forward if
 you feel like you're getting stuck. Let's consider a few common use-cases...
 
+### Search For Tools
+
+Perhaps someone has already described the tool you are looking for and 
+you could reuse their work. For instance, if you are looking for a tool 
+from the FSL suite, try:
+
+$ bosh search fsl
+
+Search returns a list of identifiers for tools matching your query. You 
+can use these identifiers in any `bosh` command transparently. Even 
+better, these identifiers are [Digital Object Identifiers](https://www.doi.org)
+hosted on [Zenodo](https://zenodo.org/), they will never change and can't
+be deleted!
+
 ### Import Your Tool
 
 If you're in the lucky set of people with a Boutiques descriptor from a previous schema iteration (such as `0.4`), or you have a
@@ -60,6 +74,18 @@ In the Python script with your argparser defined, simply add the following lines
 There are additional custom arguments which can be supplied to this script, such as tags for your tool. It is also worth noting that
 no interpretation of output files is attempted by this tool, so your descriptor could certainly be enhanced by addind these and other
 features available through Boutiques, such as tests, tags, error codes, groups, and container images.
+
+Once you've created your descriptor this way you can translate your arguments to a Boutiques-style invocation using the following
+code block on runtime:
+
+    args = myparser.parse_args()
+    invoc = newDescriptor.createInvocation(args)
+
+    # Then, if you want to save them to a file...
+    import json
+    with open('my-inputs.json', 'w') as fhandle:
+        fhandle.write(json.dumps(invoc, indent=4))
+
 
 ### Validation
 

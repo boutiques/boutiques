@@ -56,6 +56,23 @@ class TestImport(TestCase):
                result == open(ref_file_p2, "r").read().strip())
         os.remove(fout)
 
+    def test_upgrade_04_json_obj(self):
+        fin = open(opj(op.split(bfile)[0],
+                   "schema/examples/upgrade04.json")).read()
+        fout = opj(op.split(bfile)[0], "schema/examples/upgraded05.json")
+        ref_name = "test-import-04-ref.json"
+        ref_file = opj(op.split(bfile)[0], "schema/examples", ref_name)
+        ref_name_p2 = "test-import-04-ref-python2.json"
+        ref_file_p2 = opj(op.split(bfile)[0], "schema/examples",
+                          ref_name_p2)
+        if op.isfile(fout):
+                os.remove(fout)
+        self.assertFalse(bosh(["import", "0.4",  fout, fin]))
+        result = open(fout, "r").read().strip()
+        assert(result == open(ref_file, "r").read().strip() or
+               result == open(ref_file_p2, "r").read().strip())
+        os.remove(fout)
+
     def test_import_cwl_valid(self):
         ex_dir = opj(op.split(bfile)[0], "tests/cwl")
         # These ones are supposed to crash
@@ -105,8 +122,8 @@ class TestImport(TestCase):
                                 with open('goodbye.txt', 'w') as f:
                                         f.write("goodbye")
                                 # closing required for Python 2.6...
-                                with closing(tarfile.open('hello.tar',
-                                                          "w")) as tar:
+                                with tarfile.open('hello.tar',
+                                                  'w') as tar:
                                         tar.add('goodbye.txt')
                                 ret = boutiques.execute(
                                         "launch",

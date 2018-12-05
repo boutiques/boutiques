@@ -11,7 +11,7 @@ Boutiques
     :target: https://travis-ci.org/boutiques/boutiques
 .. image:: https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop
     :target: https://coveralls.io/github/boutiques/boutiques?branch=develop
-
+    
 Boutiques is a cross-platform descriptive command-line framework for
 applications.
 
@@ -44,6 +44,22 @@ favourite command, ***``bosh``***. The Boutiques Shell (``bosh``)
 provides an access point to all of the tools wrapped within Boutiques
 and has some ``--help`` text to keep you moving forward if you feel like
 you’re getting stuck. Let’s consider a few common use-cases…
+
+Search For Tools
+~~~~~~~~~~~~~~~~
+
+Perhaps someone has already described the tool you are looking for and
+you could reuse their work. For instance, if you are looking for a tool
+from the FSL suite, try:
+
+$ bosh search fsl
+
+Search returns a list of identifiers for tools matching your query. You
+can use these identifiers in any ``bosh`` command transparently. Even
+better, these identifiers are `Digital Object
+Identifiers <https://www.doi.org>`__ hosted on
+`Zenodo <https://zenodo.org/>`__, they will never change and can’t be
+deleted!
 
 Import Your Tool
 ~~~~~~~~~~~~~~~~
@@ -93,6 +109,20 @@ interpretation of output files is attempted by this tool, so your
 descriptor could certainly be enhanced by addind these and other
 features available through Boutiques, such as tests, tags, error codes,
 groups, and container images.
+
+Once you’ve created your descriptor this way you can translate your
+arguments to a Boutiques-style invocation using the following code block
+on runtime:
+
+::
+
+    args = myparser.parse_args()
+    invoc = newDescriptor.createInvocation(args)
+
+    # Then, if you want to save them to a file...
+    import json
+    with open('my-inputs.json', 'w') as fhandle:
+        fhandle.write(json.dumps(invoc, indent=4))
 
 Validation
 ~~~~~~~~~~
