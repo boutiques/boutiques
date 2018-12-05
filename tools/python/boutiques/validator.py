@@ -261,7 +261,7 @@ def validate_descriptor(json_file, **kwargs):
                     errors += [msg_template.format(inp["id"], param, member)
                                for ids in inp[param].keys()
                                for member in inp[param][ids]
-                               if not inById(member)["optional"]]
+                               if not inById(member).get("optional")]
 
     # Verify groups
     for idx, grpid in enumerate(grpIds):

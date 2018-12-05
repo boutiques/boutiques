@@ -112,7 +112,7 @@
                 "val3": []
             },
             "value-disables": {
-                "val1": ["numb_input"],
+                "val1": ["num_input"],
                 "val2": [],
                 "val3": []
             },
