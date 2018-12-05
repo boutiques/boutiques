@@ -23,8 +23,10 @@ def pprint(descriptor):
                    for inp in (descriptor["inputs"] +
                                descriptor.get("output-files"))}
     clkeys_lut2 = {inp.get("value-key"): [t
-                                      for t in clkeys_lut1.keys()
-                                      if clkeys_lut1[t] == inp.get('value-key')]
+                                          for t in clkeys_lut1.keys()
+                                          if clkeys_lut1[t] == inp.get(
+                                                                 'value-key'
+                                                               )]
                    for inp in (descriptor["inputs"] +
                                descriptor.get("output-files"))
                    if inp.get("value-key")}
@@ -73,8 +75,10 @@ def pprint(descriptor):
                 exts = ""
 
             if output.get("file-template"):
-               output_info += ("\n\tTemplate:\n\t {0}"
-                               "".format("\n\t ".join(output["file-template"])))
+                output_info += ("\n\tTemplate:\n\t {0}"
+                                "".format("\n\t ".join(
+                                                    output["file-template"]
+                                                  )))
             output_info += "\n"
         tool_description += "\n\n{0}\n{1}".format(output_info, sep)
 
@@ -116,8 +120,8 @@ def pprint(descriptor):
     if ecod:
         ecod_info = "Error Codes:"
         for ecod_obj in ecod:
-           ecod_info += ("\n\tReturn Code: {0}\n\tDescription: {1}\n"
-                         "".format(ecod_obj["code"], ecod_obj["description"]))
+            ecod_info += ("\n\tReturn Code: {0}\n\tDescription: {1}\n"
+                          "".format(ecod_obj["code"], ecod_obj["description"]))
         ecod_info += "\n"
         tool_description += "\n\n{0}\n{1}".format(ecod_info, sep)
 
@@ -190,8 +194,7 @@ def pprint(descriptor):
                 emi = "(" if inp.get("exclusive-minimum") else "["
                 ema = ")" if inp.get("exclusive-maximum") else "]"
                 tmp_inp_descr += "Range: {0}{1}, {2}{3}\n".format(emi, minum,
-                                                              manum, ema)
-
+                                                                  manum, ema)
 
             if inp.get("value-choices"):
                 inp_kwargs["choices"] = inp["value-choices"]
