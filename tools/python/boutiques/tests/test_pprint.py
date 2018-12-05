@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import os, os.path as op
+import os
+import os.path as op
 from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
