@@ -416,7 +416,7 @@ class LocalExecutor(object):
 
             # Container does not exist, try to pull it
             lockdir = conName + "-lock"
-            maxcount = 90  # how long to wait before timing out
+            maxcount = 36
             count = 0
             try:
                 while count < maxcount:
@@ -424,7 +424,7 @@ class LocalExecutor(object):
                     try:
                         os.mkdir(lockdir)
                     except OSError:
-                        time.sleep(20)
+                        time.sleep(5)
                     else:
                         # Check if container was created while waiting
                         if self._singConExists(conName):
