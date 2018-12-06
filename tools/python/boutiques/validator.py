@@ -7,6 +7,7 @@ from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
 from boutiques.localExec import loadJson
+from boutiques.logger import raise_error, print_info
 
 
 # An exception class specific to descriptors
@@ -34,7 +35,7 @@ def validate_descriptor(json_file, **kwargs):
     try:
         validate(descriptor, schema)
     except ValidationError as e:
-        raise DescriptorValidationError(str(e))
+        raise_error(DescriptorValidationError, (str(e)))
 
     # Helper get functions
     def safeGet(desc, sec, targ):
@@ -383,4 +384,4 @@ def validate_descriptor(json_file, **kwargs):
                 fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
         return descriptor
     else:
-        raise DescriptorValidationError("\n".join(errors))
+        raise_error(DescriptorValidationError, "\n".join(errors))

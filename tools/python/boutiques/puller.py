@@ -2,7 +2,7 @@ import requests
 import urllib
 import os
 from boutiques.logger import raise_error, print_info
-from boutiques.errors import ZenodoError
+from boutiques.publisher import ZenodoError
 try:
     # Python 3
     from urllib.request import urlopen

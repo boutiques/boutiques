@@ -2,10 +2,13 @@
 
 from boutiques.validator import validate_descriptor
 from boutiques.logger import raise_error, print_info
-from boutiques.errors import ZenodoError
 import json
 import requests
 import os
+
+
+class ZenodoError(Exception):
+    pass
 
 
 class Publisher():

@@ -4,7 +4,7 @@ import requests
 from collections import OrderedDict
 import json
 from boutiques.logger import raise_error, print_info
-from boutiques.errors import ZenodoError
+from boutiques.publisher import ZenodoError
 
 
 class Searcher():
