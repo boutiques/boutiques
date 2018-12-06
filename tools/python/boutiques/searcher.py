@@ -9,7 +9,7 @@ class ZenodoError(Exception):
 
 class Searcher():
 
-    def __init__(self, query, verbose, sandbox, max_results):
+    def __init__(self, query, verbose, sandbox, max_results, no_trunc=False):
         if query is not None:
             self.query = query
         else:
@@ -17,6 +17,7 @@ class Searcher():
 
         self.verbose = verbose
         self.sandbox = sandbox
+        self.no_trunc = no_trunc
 
         # Return max 10 results by default
         if max_results is not None:
@@ -54,9 +55,7 @@ class Searcher():
     def create_results_list(self, results):
         results_list = []
         for hit in results["hits"]["hits"]:
-            id = "zenodo." + str(hit["id"])
-            title = hit["metadata"]["title"]
-            description = hit["metadata"]["description"]
+            (id, title, description) = self.parse_basic_info(hit)
             results_list.append(OrderedDict([("ID", id), ("TITLE", title),
                                 ("DESCRIPTION", description)]))
         return results_list
@@ -64,9 +63,7 @@ class Searcher():
     def create_results_list_verbose(self, results):
         results_list = []
         for hit in results["hits"]["hits"]:
-            id = "zenodo." + str(hit["id"])
-            title = hit["metadata"]["title"]
-            description = hit["metadata"]["description"]
+            (id, title, description) = self.parse_basic_info(hit)
             author = hit["metadata"]["creators"][0]["name"]
             version = hit["metadata"]["version"]
             doi = hit["doi"]
@@ -85,6 +82,15 @@ class Searcher():
                                 ("CONTAINER", container),
                                 ("TAGS", other_tags)]))
         return results_list
+
+    def parse_basic_info(self, hit):
+        max_descr_length = 50
+        id = "zenodo." + str(hit["id"])
+        title = hit["metadata"]["title"]
+        description = hit["metadata"]["description"]
+        if len(description) > max_descr_length and not self.no_trunc:
+            description = description[:50] + "..."
+        return (id, title, description)
 
     def print_zenodo_info(self, message, r):
         print("[ INFO ({1}) ] {0}".format(message, r.status_code))
