@@ -27,8 +27,8 @@ def prettyprint(*params):
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import pprint
-    with open(results.descriptor, 'r') as fhandle:
-        helpstring = pprint(json.load(fhandle))
+    desc = loadJson(results.descriptor)
+    helpstring = pprint(desc)
 
     return helpstring
 
