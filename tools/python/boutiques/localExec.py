@@ -382,6 +382,9 @@ class LocalExecutor(object):
                               command,
                               container_command, container_location)
 
+    # Looks for the container image locally and pulls it if not found
+    # Returns a tuple containing the container filename (for Singularity)
+    # and the container location (local or pulled)
     def prepare(self):
         con = self.con
         if con is None:
@@ -393,60 +396,91 @@ class LocalExecutor(object):
         # If container is present, alter the command template accordingly
         conName = ""
         container_location = ""
+
         if conType == 'docker':
             # Pull the docker image
             if self._localExecute("docker pull " + str(conImage))[1]:
                 container_location = "Local copy"
             else:
                 container_location = "Pulled from Docker"
-        elif conType == 'singularity':
-            # Create a lockfile to protect against other threads trying to pull
-            # the image
-            lockfile = conName + ".lock"
-            lock = FileLock(lockfile)
-            lock.acquire()
+            return (conName, container_location)
+
+        if conType == 'singularity':
+            if not conIndex:
+                conIndex = "shub://"
+            elif not conIndex.endswith("://"):
+                conIndex = conIndex + "://"
+            conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
+
+            # Check if container already exists
+            if self._singConExists(conName):
+                return (conName, "Local ({0})".format(conName))
+
+            # Container does not exist, try to pull it
+            lockdir = conName + "-lock"
+            maxcount = 36
+            count = 0
             try:
-                if not conIndex:
-                    conIndex = "shub://"
-                elif not conIndex.endswith("://"):
-                    conIndex = conIndex + "://"
-                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
-
-                imagePath = './'
-                if self.imagePath is not None:
-                    imagePath = self.imagePath
-                    os.environ["SINGULARITY_PULLFOLDER"] = imagePath
-
-                if conName not in os.listdir(imagePath):
-                    pull_loc = "\"{0}\" {1}{2}".format(conName,
-                                                       conIndex,
-                                                       conImage)
-                    container_location = ("Pulled from {1}{2} ({0} not found "
-                                          "in current working "
-                                          "directory or specified "
-                                          "image path)").format(conName,
-                                                                conIndex,
-                                                                conImage)
-                    # Pull the singularity image
-                    sing_command = "singularity pull --name " + pull_loc
-                    (stdout, stderr), return_code = self._localExecute(
-                                                            sing_command)
-                    if return_code:
-                        message = ("Could not pull Singularity"
-                                   " image: " + os.linesep + " * Pull command: "
-                                   + sing_command + os.linesep + " * Error: "
-                                   + stderr.decode("utf-8"))
-                        raise_error(ExecutorError, message)
-                else:
-                    container_location = "Local ({0})".format(conName)
+                while count < maxcount:
+                    count += 1
+                    try:
+                        os.mkdir(lockdir)
+                    except OSError:
+                        time.sleep(5)
+                    else:
+                        # Check if container was created while waiting
+                        if self._singConExists(conName):
+                            return (conName, "Local ({0})".format(conName))
+                        # Container still does not exist, so pull it
+                        return self._pullSingImage(conName, conIndex, conImage)
+                # If loop times out, check again for existence, otherwise
+                # raise an error
+                if self._singConExists(conName):
+                    return (conName, "Local ({0})".format(conName))
+                raise ExecutorError("Unable to retrieve Singularity image.")
             finally:
+                os.rmdir(lockdir)
                 if "SINGULARITY_PULLFOLDER" in os.environ:
                     del os.environ["SINGULARITY_PULLFOLDER"]
-                lock.release()
-            conName = op.abspath(conName)
-        else:
-            raise_error(ExecutorError, 'Unrecognized container'
-                        ' type: \"%s\"' % conType)
+
+        # Invalid container type
+        raise ExecutorError('Unrecognized container'
+                            ' type: \"%s\"' % conType)
+
+    # Private method that checks if a Singularity image exists locally
+    def _singConExists(self, conName):
+        imagePath = self.imagePath or './'
+        return conName in os.listdir(imagePath)
+
+    # Private method that pulls a Singularity image
+    def _pullSingImage(self, conName, conIndex, conImage):
+        # Give the file a temporary name while it's building
+        conNameTmp = conName + ".tmp"
+        # Set the pull directory to the specified imagePath
+        if self.imagePath is not None:
+            os.environ["SINGULARITY_PULLFOLDER"] = self.imagePath
+        pull_loc = "\"{0}\" {1}{2}".format(conNameTmp,
+                                           conIndex,
+                                           conImage)
+        container_location = ("Pulled from {1}{2} ({0} not found "
+                              "in current working "
+                              "directory or specified "
+                              "image path)").format(conName,
+                                                    conIndex,
+                                                    conImage)
+        # Pull the singularity image
+        sing_command = "singularity pull --name " + pull_loc
+        (stdout, stderr), return_code = self._localExecute(
+                                                sing_command)
+        if return_code:
+            message = ("Could not pull Singularity"
+                       " image: " + os.linesep + " * Pull command: "
+                       + sing_command + os.linesep + " * Error: "
+                       + stderr.decode("utf-8"))
+            raise ExecutorError(message)
+        os.rename(conNameTmp, conName)
+        conName = op.abspath(conName)
+>>>>>>> a2a678a80f254c0fb2f069d01a626c5e69a9fcf6
         return (conName, container_location)
 
     # Private method that attempts to locally execute the given
@@ -834,6 +868,9 @@ class LocalExecutor(object):
                     val = in_out_dict[param_id]
                     if type(val) is list:
                         s_val = ""
+                        list_sep = self.safeGet(param_id, 'list-separator')
+                        if list_sep is None:
+                            list_sep = " "
                         for x in val:
                             s = str(x)
                             if escape:
@@ -841,7 +878,7 @@ class LocalExecutor(object):
                             if val.index(x) == len(val)-1:
                                 s_val += s
                             else:
-                                s_val += s + " "
+                                s_val += s + list_sep
                         val = s_val
                     else:
                         val = str(val)

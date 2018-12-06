@@ -106,8 +106,11 @@ class Importer():
 
         errors = []
         app_name = os.path.basename(os.path.abspath(self.input_descriptor))
-        with open(os.path.join(self.input_descriptor, "version"), "r") as f:
-            version = f.read().strip()
+        version = 'unknown'
+        version_file = os.path.join(self.input_descriptor, "version")
+        if os.path.exists(version_file):
+            with open(version_file, "r") as f:
+                version = f.read().strip()
         git_repo = "https://github.com/BIDS-Apps/"+app_name
         entrypoint = self.get_entry_point(self.input_descriptor)
         container_image = "bids/"+app_name

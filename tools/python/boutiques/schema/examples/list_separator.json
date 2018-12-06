@@ -1,0 +1,18 @@
+{
+    "command-line": "[INPUT_LIST]", 
+    "description": "A command with a custom list separator", 
+    "inputs": [
+        {
+            "id": "input_list", 
+            "name": "Input list", 
+            "type": "Number",
+            "list": true,
+            "list-separator": ":",
+            "min-list-entries": 2,
+            "value-key": "[INPUT_LIST]"
+        }
+    ],
+    "name": "list separator",
+    "schema-version": "0.5", 
+    "tool-version": "0.1"
+}
