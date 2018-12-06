@@ -15,7 +15,6 @@ import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info
-from filelock import FileLock
 
 
 class ExecutorOutput():
