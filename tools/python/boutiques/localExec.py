@@ -437,15 +437,16 @@ class LocalExecutor(object):
                 # raise an error
                 if self._singConExists(conName):
                     return (conName, "Local ({0})".format(conName))
-                raise ExecutorError("Unable to retrieve Singularity image.")
+                raise_error(ExecutorError, "Unable to retrieve Singularity "
+                            "image.")
             finally:
                 os.rmdir(lockdir)
                 if "SINGULARITY_PULLFOLDER" in os.environ:
                     del os.environ["SINGULARITY_PULLFOLDER"]
 
         # Invalid container type
-        raise ExecutorError('Unrecognized container'
-                            ' type: \"%s\"' % conType)
+        raise_error(ExecutorError, 'Unrecognized container'
+                    ' type: \"%s\"' % conType)
 
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName):
@@ -477,10 +478,9 @@ class LocalExecutor(object):
                        " image: " + os.linesep + " * Pull command: "
                        + sing_command + os.linesep + " * Error: "
                        + stderr.decode("utf-8"))
-            raise ExecutorError(message)
+            raise_error(ExecutorError, message)
         os.rename(conNameTmp, conName)
         conName = op.abspath(conName)
->>>>>>> a2a678a80f254c0fb2f069d01a626c5e69a9fcf6
         return (conName, container_location)
 
     # Private method that attempts to locally execute the given
