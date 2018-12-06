@@ -17,7 +17,7 @@ from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import loadJson
-from boutiques.logger import raise_error, print_info
+from boutiques.logger import raise_error
 from tabulate import tabulate
 
 
@@ -206,7 +206,7 @@ def execute(*params):
                                   "stream": results.stream,
                                   "imagePath": results.imagepath})
         container_location = executor.prepare()[1]
-        print_info("Container location: " + container_location)
+        print("Container location: " + container_location)
 
         # Adding hide to "container location" field since it's an invalid
         # value, and we can parse that to hide the summary print

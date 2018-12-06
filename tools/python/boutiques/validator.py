@@ -384,4 +384,4 @@ def validate_descriptor(json_file, **kwargs):
                 fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
         return descriptor
     else:
-        raise_error(DescriptorValidationError, "\n".join(errors))
+        raise DescriptorValidationError("\n".join(errors))
