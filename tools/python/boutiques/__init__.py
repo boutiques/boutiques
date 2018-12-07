@@ -7,7 +7,7 @@ from .creator import CreateDescriptor
 from .bids import validate_bids
 from .publisher import Publisher
 from .evaluate import evaluateEngine
-from .prettyprint import pprint
+from .prettyprint import PrettyPrinter
 from .bosh import *
 
 __all__ = ['localExec',

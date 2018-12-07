@@ -26,11 +26,11 @@ def prettyprint(*params):
                         help="The Boutiques descriptor.")
     results = parser.parse_args(params)
 
-    from boutiques.prettyprint import pprint
+    from boutiques.prettyprint import PrettyPrinter
     desc = loadJson(results.descriptor)
-    helpstring = pprint(desc)
+    prettyclass = PrettyPrinter(desc)
 
-    return helpstring
+    return prettyclass.docstring
 
 
 def create(*params):
