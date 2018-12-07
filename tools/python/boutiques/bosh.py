@@ -20,6 +20,19 @@ from boutiques.localExec import loadJson
 from tabulate import tabulate
 
 
+def prettyprint(*params):
+    parser = ArgumentParser("Boutiques pretty-print for generating help text")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor.")
+    results = parser.parse_args(params)
+
+    from boutiques.prettyprint import PrettyPrinter
+    desc = loadJson(results.descriptor)
+    prettyclass = PrettyPrinter(desc)
+
+    return prettyclass.docstring
+
+
 def create(*params):
     parser = ArgumentParser("Boutiques descriptor creator")
     parser.add_argument("descriptor", action="store",
@@ -465,10 +478,11 @@ def bosh(args=None):
                         "descriptor, queries execution properties. "
                         "Test: run pytest on a descriptor detailing tests. "
                         "Search: search Zenodo for descriptors. "
-                        "Pull: download a descriptor from Zenodo.",
+                        "Pull: download a descriptor from Zenodo. "
+                        "Pprint: generate pretty help text from a descriptor.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "search", "pull"])
+                                 "test", "search", "pull", "pprint"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -501,7 +515,7 @@ def bosh(args=None):
     try:
         if func == "create":
             out = create(*params)
-            return bosh_return(out)
+            return bosh_return(out, hide=True)
         elif func == "validate":
             out = validate(*params)
             return bosh_return(out)
@@ -528,6 +542,9 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "test":
             out = test(*params)
+            return bosh_return(out)
+        elif func == "pprint":
+            out = prettyprint(*params)
             return bosh_return(out)
         elif func == "search":
             out = search(*params)
