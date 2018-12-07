@@ -212,7 +212,7 @@ class Publisher():
         # of an existing one
         from boutiques.searcher import Searcher
         searcher = Searcher(self.descriptor.get("name"), self.verbose,
-                            self.sandbox, None)
+                            self.sandbox, None, True)
         r = searcher.zenodo_search()
 
         id_to_update = 0
