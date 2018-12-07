@@ -7,7 +7,7 @@
 
 | Abstract | Extensible | Status | Identifiable | Custom Properties | Additional Properties | Defined In |
 |----------|------------|--------|--------------|-------------------|-----------------------|------------|
-| Can be instantiated | No | Experimental | No | Forbidden | Forbidden | [descriptor.schema.json](descriptor.schema.json) |
+| Can be instantiated | No | Experimental | No | Forbidden | Forbidden |  |
 
 # Tool Properties
 
@@ -571,6 +571,7 @@ All items must be of the type:
 | `id`| string | **Required** |
 | `integer`| boolean | Optional |
 | `list`| boolean | Optional |
+| `list-separator`| string | Optional |
 | `max-list-entries`| number | Optional |
 | `maximum`| number | Optional |
 | `min-list-entries`| number | Optional |
@@ -796,6 +797,26 @@ True if input is a list of value. An input of type "Flag" cannot be a list.
 
 
 `boolean`
+
+
+
+
+
+
+
+#### list-separator
+
+Separator used between list items. Defaults to a single space.
+
+`list-separator`
+* is optional
+* type: `string`
+
+##### list-separator Type
+
+
+`string`
+
 
 
 
