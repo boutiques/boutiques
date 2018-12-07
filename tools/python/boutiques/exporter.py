@@ -4,6 +4,7 @@ import json
 import os
 import uuid
 from boutiques.localExec import loadJson
+from boutiques.logger import raise_error
 
 
 class ExportError(Exception):
@@ -53,8 +54,8 @@ class Exporter():
             self.identifier = descriptor.get('doi')
 
         if self.identifier is None:
-            raise ExportError('Descriptor must have a DOI, or identifier '
-                              'must be specified with --identifier.')
+            raise_error(ExportError, 'Descriptor must have a DOI, or '
+                        'identifier must be specified with --identifier.')
 
         carmin_desc['identifier'] = self.identifier
         carmin_desc['name'] = descriptor.get('name')

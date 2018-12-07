@@ -206,6 +206,7 @@
         }, 
         {
             "command-line-flag": "-c", 
+            "description": "flag which toggles the removal of intermediate outputs",
             "id": "clean", 
             "name": "Clean-up flag", 
             "optional": true, 

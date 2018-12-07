@@ -1,6 +1,8 @@
 import requests
 import urllib
 import os
+from boutiques.logger import raise_error, print_info
+from boutiques.publisher import ZenodoError
 try:
     # Python 3
     from urllib.request import urlopen
@@ -11,10 +13,6 @@ except ImportError:
     from urllib import urlretrieve
 
 
-class ZenodoError(Exception):
-    pass
-
-
 class Puller():
 
     def __init__(self, zid, verbose, download, sandbox, no_int):
@@ -22,8 +20,8 @@ class Puller():
         try:
             self.zid = zid.split(".", 1)[1]
         except IndexError:
-            raise ZenodoError("Zenodo ID must be prefixed by "
-                              "'zenodo', e.g. zenodo.123456")
+            raise_error(ZenodoError, "Zenodo ID must be prefixed by "
+                        "'zenodo', e.g. zenodo.123456")
         self.verbose = verbose
         self.download = download
         self.sandbox = sandbox
@@ -55,26 +53,19 @@ class Puller():
                         if ret.upper() != "Y":
                             return
                     if(self.verbose):
-                        self.print_zenodo_info("Downloading descriptor %s"
-                                               % file_name, r)
+                        self.print_info("Downloading descriptor %s"
+                                        % file_name, r)
                     downloaded = urlretrieve(file_path,
                                              os.path.join(self.cache_dir,
                                                           file_name))
                     print("Downloaded descriptor to " + self.cache_dir)
                     return downloaded
                 if(self.verbose):
-                    self.print_zenodo_info("Opening descriptor %s"
-                                           % file_name, r)
+                    self.print_info("Opening descriptor %s"
+                                    % file_name, r)
                 # use the cached file if it exists
                 if os.path.isfile(os.path.join(self.cache_dir, file_name)):
                     return open(os.path.join(self.cache_dir, file_name), "r")
                 return urlopen(file_path)
 
-        raise ZenodoError("Descriptor not found")
-
-    def print_zenodo_info(self, message, r):
-        print("[ INFO ({1}) ] {0}".format(message, r.status_code))
-
-    def raise_zenodo_error(self, message, r):
-        raise ZenodoError("Zenodo error ({0}): {1}."
-                          .format(r.status_code, message))
+        raise_error(ZenodoError, "Descriptor not found")

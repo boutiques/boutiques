@@ -1,11 +1,11 @@
+#!/usr/bin/env python
+
 import requests
 from collections import OrderedDict
 import json
 from operator import itemgetter
-
-
-class ZenodoError(Exception):
-    pass
+from boutiques.logger import raise_error, print_info
+from boutiques.publisher import ZenodoError
 
 
 class Searcher():
@@ -30,14 +30,14 @@ class Searcher():
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
             self.sandbox else "https://zenodo.org"
         if(self.verbose):
-            print("[ INFO ] Using Zenodo endpoint {0}".
-                  format(self.zenodo_endpoint))
+            print_info("Using Zenodo endpoint {0}".
+                       format(self.zenodo_endpoint))
 
     def search(self):
         results = self.zenodo_search()
-        print("Showing %d of %d results."
-              % (len(results.json()["hits"]["hits"]),
-                 results.json()["hits"]["total"]))
+        print_info("Showing %d of %d results."
+                   % (len(results.json()["hits"]["hits"]),
+                      results.json()["hits"]["total"]))
         if self.verbose:
             return self.create_results_list_verbose(results.json())
         return self.create_results_list(results.json())
@@ -48,9 +48,9 @@ class Searcher():
                          'keywords=version&file_type=json&type=software'
                          '&page=1&size=%s' % (self.query, self.max_results))
         if(r.status_code != 200):
-            self.raise_zenodo_error("Error searching Zenodo", r)
+            raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
-            self.print_zenodo_info("Search successful.", r)
+            print_info("Search successful.", r)
         return r
 
     def create_results_list(self, results):
@@ -109,13 +109,6 @@ class Searcher():
             if len(str(v)) > max_length:
                 d[k] = v[:max_length] + "..."
         return d
-
-    def print_zenodo_info(self, message, r):
-        print("[ INFO ({1}) ] {0}".format(message, r.status_code))
-
-    def raise_zenodo_error(self, message, r):
-        raise ZenodoError("Zenodo error ({0}): {1}."
-                          .format(r.status_code, message))
 
     def get_keyword_data(self, keywords):
         keyword_data = {"container-type": "None", "other": []}
