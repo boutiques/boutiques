@@ -42,14 +42,14 @@ class Puller():
                         os.makedirs(cache_dir)
                     if(self.verbose):
                         print_info("Downloading descriptor %s"
-                                   % file_name, r)
+                                   % file_name)
                     downloaded = urlretrieve(file_path, os.path.join(cache_dir,
                                              file_name))
-                    print("Downloaded descriptor to " + cache_dir)
+                    print_info("Downloaded descriptor to " + cache_dir)
                     return downloaded
                 if(self.verbose):
                     print_info("Opening descriptor %s"
-                               % file_name, r)
+                               % file_name)
                 return urlopen(file_path)
 
         raise_error(ZenodoError, "Descriptor not found")

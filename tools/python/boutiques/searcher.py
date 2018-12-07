@@ -33,9 +33,9 @@ class Searcher():
 
     def search(self):
         results = self.zenodo_search()
-        print("Showing %d of %d results."
-              % (len(results.json()["hits"]["hits"]),
-                 results.json()["hits"]["total"]))
+        print_info("Showing %d of %d results."
+                   % (len(results.json()["hits"]["hits"]),
+                      results.json()["hits"]["total"]))
         if self.verbose:
             return self.create_results_list_verbose(results.json())
         return self.create_results_list(results.json())
@@ -46,7 +46,7 @@ class Searcher():
                          'keywords=version&file_type=json&type=software'
                          '&page=1&size=%s' % (self.query, self.max_results))
         if(r.status_code != 200):
-            raise_zenodo_error("Error searching Zenodo", r)
+            raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
             print_info("Search successful.", r)
         return r
