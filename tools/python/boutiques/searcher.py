@@ -10,7 +10,7 @@ from boutiques.publisher import ZenodoError
 
 class Searcher():
 
-    def __init__(self, query, verbose, sandbox, max_results, no_trunc=False):
+    def __init__(self, query, verbose, sandbox, max_results, no_trunc):
         if query is not None:
             self.query = query
         else:
