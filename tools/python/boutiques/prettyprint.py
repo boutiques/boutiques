@@ -44,14 +44,16 @@ class PrettyPrinter():
 
     def createLUT(self):
         # Creates two look-up tables: from ids to value-keys, and the reverse
+        if self.desc.get("output-files"):
+            self.CLfields = self.desc["inputs"] + self.desc["output-files"]
+        else:
+            self.CLfields = self.desc["inputs"]
+
         tmplut = {inp["id"]: inp.get("value-key")
-                  for inp in (self.desc["inputs"] +
-                              self.desc.get("output-files"))}
+                  for inp in self.CLfields}
         self.lut = {inp.get("value-key"): [t for t in tmplut.keys()
                                            if tmplut[t] == inp.get('value-key')]
-                    for inp in (self.desc["inputs"] +
-                                self.desc.get("output-files"))
-                    if inp.get("value-key")}
+                    for inp in self.CLfields if inp.get("value-key")}
 
     def descMetadata(self):
         # Gather main description and basic metadata
@@ -161,7 +163,7 @@ class PrettyPrinter():
         self.parser = ArgumentParser(description=self.helptext,
                                      formatter_class=RawTextHelpFormatter,
                                      add_help=False)
-        inputs = self.desc["inputs"] + self.desc.get("output-files")
+        inputs = self.CLfields
 
         # For every command-line key (i.e. input)...
         for clkey in self.lut.keys():
