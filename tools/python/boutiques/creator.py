@@ -10,6 +10,7 @@ import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
+from boutiques.logger import raise_error, print_info, print_warning
 import subprocess
 
 
@@ -39,7 +40,7 @@ class CreateDescriptor(object):
             del self.descriptor["container-image"]
             del self.descriptor["error-codes"]
             if type(parser) is not argparse.ArgumentParser:
-                raise CreatorError("Invalid argument parser")
+                raise_error(CreatorError, "Invalid argument parser")
             self.parseParser(**kwargs)
 
     def save(self, filename):
@@ -75,15 +76,15 @@ class CreateDescriptor(object):
         ((stdout, stderr),
          returncode) = self.executor("docker pull "+docker_image_name)
         if returncode:
-            raise CreatorError("Cannot pull Docker image {0}: {1} "
-                               "{2} {3}".format(docker_image_name, stdout,
-                                                os.linesep, stderr))
+            raise_error(CreatorError, "Cannot pull Docker image {0}: {1} "
+                        "{2} {3}".format(docker_image_name, stdout,
+                                         os.linesep, stderr))
         ((stdout, stderr),
          returncode) = self.executor("docker inspect "+docker_image_name)
         if returncode:
-            raise CreatorError("Cannot inspect Docker image {0}: {1} "
-                               "{2} {3}".format(docker_image_name, stdout,
-                                                os.linesep, stderr))
+            raise_error(CreatorError, "Cannot inspect Docker image {0}: {1} "
+                        "{2} {3}".format(docker_image_name, stdout,
+                                         os.linesep, stderr))
         image_attrs = json.loads(stdout.decode("utf-8"))[0]
         if (image_attrs.get('ContainerConfig')):
             container_config = image_attrs['ContainerConfig']
@@ -99,8 +100,8 @@ class CreateDescriptor(object):
                 descriptor['name'] = entrypoint[0]
             workingDir = container_config.get('WorkingDir')
             if workingDir:
-                raise CreatorError("The container image has a working dir, "
-                                   " this is currently not supported.")
+                raise_error(CreatorError, "The container image has a working "
+                            "dir, this is currently not supported.")
         if image_attrs.get('Author'):
             descriptor['author'] = image_attrs.get('Author')
         if image_attrs.get('RepoTags'):
@@ -120,7 +121,7 @@ class CreateDescriptor(object):
         # Desired outcome: we skip it
         if type(action) is argparse._HelpAction:
             if kwargs.get("verbose"):
-                print("_HelpAction: Skipping")
+                print_info("_HelpAction: Skipping")
             # If this action belongs to a subparser, return a flag alongside
             # the empty object, indicating it is not required
             if kwargs.get("subaction"):
@@ -133,7 +134,7 @@ class CreateDescriptor(object):
         elif (type(action) is argparse._SubParsersAction and
               not kwargs.get("addParser")):
             if kwargs.get("verbose"):
-                print("_SubParsersAction: Interpretting & Adding")
+                print_info("_SubParsersAction: Interpretting & Adding")
 
             # First, add the subparser itself as an input.
             subparser = self.parseAction(action, addParser=True)
@@ -179,15 +180,16 @@ class CreateDescriptor(object):
             if kwargs.get("verbose"):
                 actstring = str(type(action))
                 actstring = actstring.split("'")[1].split(".")[-1]
-                print("{0}: Adding".format(actstring))
+                print_info("{0}: Adding".format(actstring))
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
                 adest = "subparser_{0}".format(self.sp_count)
                 if kwargs.get("verbose"):
-                    print("WARNING: Subparser has no destination set, "
-                          "invocation parsing may not work as expected. This "
-                          "can be fixed by adding \"dest='mysubparser'\" to "
-                          "subparser creation.")
+                    print_warning("Subparser has no destination set, "
+                                  "invocation parsing may not work as "
+                                  "expected. This can be fixed by adding "
+                                  "\"dest='mysubparser'\" to subparser "
+                                  "creation.")
                 self.sp_count += 1
             else:
                 adest = action.dest
@@ -195,8 +197,8 @@ class CreateDescriptor(object):
             # If an input already exists with this ID, don't re-add it
             if any(adest == it["id"] for it in self.descriptor["inputs"]):
                 if kwargs.get("verbose"):
-                    print("Duplicate: Argument won't be added multiple times"
-                          " ({0})".format(adest))
+                    print_info("Duplicate: Argument won't be added multiple "
+                               "times ({0})".format(adest))
                 # If this action belongs to a subparser return a flag alongside
                 # the empty object, indicating it is not required
                 if kwargs.get("subaction"):

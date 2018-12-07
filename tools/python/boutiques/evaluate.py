@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from boutiques.logger import print_error
+
 
 def evaluateEngine(executor, query):
     try:
@@ -47,5 +49,5 @@ def evaluateEngine(executor, query):
         return query_result
 
     except Exception:
-        print("Invalid query ({0}). See --help.".format(query))
+        print_error("Invalid query ({0}). See --help.".format(query))
         return {}

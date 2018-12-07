@@ -17,7 +17,21 @@ from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import loadJson
+from boutiques.logger import raise_error
 from tabulate import tabulate
+
+
+def prettyprint(*params):
+    parser = ArgumentParser("Boutiques pretty-print for generating help text")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor.")
+    results = parser.parse_args(params)
+
+    from boutiques.prettyprint import PrettyPrinter
+    desc = loadJson(results.descriptor)
+    prettyclass = PrettyPrinter(desc)
+
+    return prettyclass.docstring
 
 
 def create(*params):
@@ -143,16 +157,18 @@ def execute(*params):
         numb = results.random[0] if rand and len(results.random) > 0 else 1
 
         if numb and numb < 1:
-            raise SystemExit("--number value must be positive.")
+            raise_error(SystemExit, "--number value must be positive.")
+            # raise SystemExit("--number value must be positive.")
         if rand and inp:
-            raise SystemExit("--random setting and --input value cannot "
-                             "be used together.")
+            raise_error(SystemExit, "--random setting and --input value cannot "
+                        "be used together.")
         if inp and not os.path.isfile(inp):
-            raise SystemExit("Input file {} does not exist.".format(inp))
+            raise_error(SystemExit, "Input file {} does not exist.".format(inp))
         if inp and not inp.endswith(".json"):
-            raise SystemExit("Input file {} must end in 'json'.".format(inp))
+            raise_error(SystemExit, "Input file {} must end in 'json'.".
+                        format(inp))
         if not rand and not inp:
-            raise SystemExit("The default mode requires an input (-i).")
+            raise_error(SystemExit, "The default mode requires an input (-i).")
 
         valid = invocation(descriptor, '-i', inp) if inp else\
             invocation(descriptor)
@@ -465,10 +481,11 @@ def bosh(args=None):
                         "descriptor, queries execution properties. "
                         "Test: run pytest on a descriptor detailing tests. "
                         "Search: search Zenodo for descriptors. "
-                        "Pull: download a descriptor from Zenodo.",
+                        "Pull: download a descriptor from Zenodo. "
+                        "Pprint: generate pretty help text from a descriptor.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "search", "pull"])
+                                 "test", "search", "pull", "pprint"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -501,7 +518,7 @@ def bosh(args=None):
     try:
         if func == "create":
             out = create(*params)
-            return bosh_return(out)
+            return bosh_return(out, hide=True)
         elif func == "validate":
             out = validate(*params)
             return bosh_return(out)
@@ -528,6 +545,9 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "test":
             out = test(*params)
+            return bosh_return(out)
+        elif func == "pprint":
+            out = prettyprint(*params)
             return bosh_return(out)
         elif func == "search":
             out = search(*params)
