@@ -61,7 +61,10 @@ class PrettyPrinter():
                                                   self.desc.get("tool-version"))
         description = "Tool description: {0}".format(self.desc['description'])
         if self.desc.get("tags"):
-            tags = "Tags: {0}".format(", ".join(self.desc["tags"]))
+            taglist = ["{0}: {1}".format(k, v) if not isinstance(v, list)
+                       else "{0}: {1}".format(k, ", ".join(v))
+                       for k, v in self.desc["tags"].items()]
+            tags = "Tags: {0}".format("; ".join(taglist))
         else:
             tags = ""
 

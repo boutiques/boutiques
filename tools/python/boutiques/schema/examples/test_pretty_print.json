@@ -174,7 +174,7 @@
     }, 
     "tags": {
         "domain": "testing",
-        "foo": "bar",
+        "foo": ["bar1", "bar2"],
         "programming-language": "Python"
     },
     "tool-version": "0.0.1"
