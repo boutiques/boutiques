@@ -50,6 +50,7 @@ script:
 - pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
 - jsonlint -q boutiques/schema/descriptor.schema.json
 - coverage run --source boutiques setup.py pytest
+- coverage report -m
 
 after_success:
 - coveralls
