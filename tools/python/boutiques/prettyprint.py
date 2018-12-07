@@ -22,7 +22,7 @@ class PrettyPrinter():
             self.descContainer()
 
         # Add output information - if applicable
-        if self.desc.get("outputs"):
+        if self.desc.get("output-files"):
             self.descOutputs()
 
         # Add group information - if applicable
