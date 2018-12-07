@@ -17,6 +17,7 @@ from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import loadJson
+from boutiques.logger import raise_error
 from tabulate import tabulate
 
 
@@ -156,16 +157,18 @@ def execute(*params):
         numb = results.random[0] if rand and len(results.random) > 0 else 1
 
         if numb and numb < 1:
-            raise SystemExit("--number value must be positive.")
+            raise_error(SystemExit, "--number value must be positive.")
+            # raise SystemExit("--number value must be positive.")
         if rand and inp:
-            raise SystemExit("--random setting and --input value cannot "
-                             "be used together.")
+            raise_error(SystemExit, "--random setting and --input value cannot "
+                        "be used together.")
         if inp and not os.path.isfile(inp):
-            raise SystemExit("Input file {} does not exist.".format(inp))
+            raise_error(SystemExit, "Input file {} does not exist.".format(inp))
         if inp and not inp.endswith(".json"):
-            raise SystemExit("Input file {} must end in 'json'.".format(inp))
+            raise_error(SystemExit, "Input file {} must end in 'json'.".
+                        format(inp))
         if not rand and not inp:
-            raise SystemExit("The default mode requires an input (-i).")
+            raise_error(SystemExit, "The default mode requires an input (-i).")
 
         valid = invocation(descriptor, '-i', inp) if inp else\
             invocation(descriptor)

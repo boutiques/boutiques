@@ -14,6 +14,7 @@ import pwd
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
+from boutiques.logger import raise_error, print_info
 
 
 class ExecutorOutput():
@@ -164,8 +165,8 @@ class LocalExecutor(object):
         if (self.con is not None) and self.con['type'] not in conEngines:
                 msg = "Other container types than {0} (e.g. {1})"\
                       " are not yet supported"
-                raise ValueError(msg.format(", ".join(conEngines),
-                                            self.con['type']))
+                raise_error(ValueError, msg.format(", ".join(conEngines),
+                            self.con['type']))
 
         # Generate the command line
         if self.invocation:
@@ -334,8 +335,8 @@ class LocalExecutor(object):
                                      conOptsString +
                                      str(conName) + ' ' + dsname)
             else:
-                raise ExecutorError('Unrecognized container type: '
-                                    '\"%s\"' % conType)
+                raise_error(ExecutorError, 'Unrecognized container type: '
+                            '\"%s\"' % conType)
             (stdout, stderr), exit_code = self._localExecute(container_command)
         # Otherwise, just run command locally
         else:
@@ -435,15 +436,16 @@ class LocalExecutor(object):
                 # raise an error
                 if self._singConExists(conName):
                     return (conName, "Local ({0})".format(conName))
-                raise ExecutorError("Unable to retrieve Singularity image.")
+                raise_error(ExecutorError, "Unable to retrieve Singularity "
+                            "image.")
             finally:
                 os.rmdir(lockdir)
                 if "SINGULARITY_PULLFOLDER" in os.environ:
                     del os.environ["SINGULARITY_PULLFOLDER"]
 
         # Invalid container type
-        raise ExecutorError('Unrecognized container'
-                            ' type: \"%s\"' % conType)
+        raise_error(ExecutorError, 'Unrecognized container'
+                    ' type: \"%s\"' % conType)
 
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName):
@@ -475,7 +477,7 @@ class LocalExecutor(object):
                        " image: " + os.linesep + " * Pull command: "
                        + sing_command + os.linesep + " * Error: "
                        + stderr.decode("utf-8"))
-            raise ExecutorError(message)
+            raise_error(ExecutorError, message)
         os.rename(conNameTmp, conName)
         conName = op.abspath(conName)
         return (conName, container_location)
@@ -486,7 +488,7 @@ class LocalExecutor(object):
         # Note: invokes the command through the shell
         # (potential injection dangers)
         if self.debug:
-            print("Running: {0}".format(command))
+            print_info("Running: {0}".format(command))
         try:
             if self.stream:
                 process = subprocess.Popen(command, shell=True,
@@ -752,7 +754,7 @@ class LocalExecutor(object):
             self._randomFillInDict()
             # Look at generated input, if debugging
             if self.debug:
-                print("Input: " + str(self.in_dict))
+                print_info("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
                 self._validateDict()
@@ -787,7 +789,7 @@ class LocalExecutor(object):
 
         # Input dictionary
         if self.debug:
-            print("Input: " + str(self.in_dict))
+            print_info("Input: " + str(self.in_dict))
         # Fix special flag case: flags given the false value
         # are treated as non-existent
         toRm = []
@@ -1147,7 +1149,7 @@ class LocalExecutor(object):
             message = "Problems found with prospective input:\n"
             for err in self.errs:
                 message += ("\t" + err + "\n")
-            raise ExecutorError(message)
+            raise_error(ExecutorError, message)
 
 
 # Helper function that loads the JSON object coming from either a string,
@@ -1163,12 +1165,11 @@ def loadJson(userInput):
         puller = Puller(userInput, False, False, False)
         return json.loads(puller.pull().read().decode('utf-8'))
     # Try to parse JSON object
-    e = ExecutorError("Cannot parse input {}: file not found, "
-                      "invalid Zenodo ID, or invalid JSON object"
-                      .format(userInput))
+    e = ("Cannot parse input {}: file not found, "
+         "invalid Zenodo ID, or invalid JSON object").format(userInput)
     if userInput.isdigit():
-        raise e
+        raise_error(ExecutorError, e)
     try:
         return json.loads(userInput)
     except ValueError:
-        raise e
+        raise_error(ExecutorError, e)

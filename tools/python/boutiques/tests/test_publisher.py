@@ -60,7 +60,7 @@ class TestPublisher(TestCase):
                   "--sandbox", "-y", "-v",
                   "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                   "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
-        self.assertTrue("Desriptor already has a DOI" in str(e.exception))
+        self.assertTrue("Descriptor already has a DOI" in str(e.exception))
 
         # Test publication of an updated version of the same descriptor
         example1_desc_updated = op.join(example1_dir,
