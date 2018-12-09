@@ -65,7 +65,8 @@ class Puller():
                                % file_name)
                 # use the cached file if it exists
                 if os.path.isfile(os.path.join(self.cache_dir, file_name)):
-                    return open(os.path.join(self.cache_dir, file_name), "r")
-                return urlopen(file_path)
+                    return open(os.path.join(self.cache_dir, file_name),
+                                "r").read()
+                return urlopen(file_path).read().decode('utf-8')
 
         raise_error(ZenodoError, "Descriptor not found")

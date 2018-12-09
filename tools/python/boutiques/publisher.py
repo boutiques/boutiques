@@ -285,9 +285,7 @@ class Publisher():
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
         if self.descriptor.get('tests'):
-            keywords.append('tests:y')
-        else:
-            keywords.append('tests:n')
+            keywords.append('tested')
         if self.url is not None:
             if data['metadata'].get('related_identifiers') is None:
                 data['metadata']['related_identifiers'] = []
