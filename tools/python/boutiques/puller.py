@@ -15,7 +15,7 @@ except ImportError:
 
 class Puller():
 
-    def __init__(self, zid, verbose, download, sandbox, no_int):
+    def __init__(self, zid, verbose, sandbox):
         # remove zenodo prefix
         try:
             self.zid = zid.split(".", 1)[1]
@@ -23,13 +23,20 @@ class Puller():
             raise_error(ZenodoError, "Zenodo ID must be prefixed by "
                         "'zenodo', e.g. zenodo.123456")
         self.verbose = verbose
-        self.download = download
         self.sandbox = sandbox
-        self.no_int = no_int
         self.cache_dir = os.path.join(os.path.expanduser('~'), ".cache",
                                       "boutiques")
+        self.cached_fname = os.path.join(self.cache_dir,
+                                         "zenodo-{0}.json".format(self.zid))
 
     def pull(self):
+        # return cached file if it exists
+        if os.path.isfile(self.cached_fname):
+            if(self.verbose):
+                print_info("Found cached file at %s"
+                           % self.cached_fname)
+            return self.cached_fname
+
         from boutiques.searcher import Searcher
         searcher = Searcher(self.zid, self.verbose, self.sandbox, None, True)
         r = searcher.zenodo_search()
@@ -38,35 +45,12 @@ class Puller():
             file_path = hit["files"][0]["links"]["self"]
             file_name = file_path.split(os.sep)[-1]
             if hit["id"] == int(self.zid):
-                if self.download:
-                    if not os.path.exists(self.cache_dir):
-                        os.makedirs(self.cache_dir)
-                    elif(not self.no_int and
-                         os.path.isfile(os.path.join(self.cache_dir,
-                                                     file_name))):
-                        prompt = ("Found existing file with the same name. "
-                                  "Overwrite? (Y/n) ")
-                        try:
-                            ret = raw_input(prompt)  # Python 2
-                        except NameError:
-                            ret = input(prompt)  # Python 3
-                        if ret.upper() != "Y":
-                            return
-                    if(self.verbose):
-                        print_info("Downloading descriptor %s"
-                                   % file_name)
-                    downloaded = urlretrieve(file_path,
-                                             os.path.join(self.cache_dir,
-                                                          file_name))
-                    print("Downloaded descriptor to " + self.cache_dir)
-                    return downloaded
+                if not os.path.exists(self.cache_dir):
+                    os.makedirs(self.cache_dir)
                 if(self.verbose):
-                    print_info("Opening descriptor %s"
+                    print_info("Downloading descriptor %s"
                                % file_name)
-                # use the cached file if it exists
-                if os.path.isfile(os.path.join(self.cache_dir, file_name)):
-                    return open(os.path.join(self.cache_dir, file_name),
-                                "r").read()
-                return urlopen(file_path).read().decode('utf-8')
-
+                downloaded = urlretrieve(file_path, self.cached_fname)
+                print("Downloaded descriptor to " + downloaded[0])
+                return downloaded[0]
         raise_error(ZenodoError, "Descriptor not found")

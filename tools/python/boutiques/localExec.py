@@ -133,8 +133,15 @@ class LocalExecutor(object):
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
         self.invocation = invocation
+
+        # Extra Options
+        # Include: forcePathType and debug
+        self.debug = False
+        for option in list(options.keys()):
+            setattr(self, option, options.get(option))
+
         # Parse JSON descriptor
-        self.desc_dict = loadJson(desc)
+        self.desc_dict = loadJson(desc, self.debug)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -155,11 +162,6 @@ class LocalExecutor(object):
         if self.con is not None:
             self.con.get('working-directory')
 
-        # Extra Options
-        # Include: forcePathType and debug
-        self.debug = False
-        for option in list(options.keys()):
-            setattr(self, option, options.get(option))
         # Container Implementation check
         conEngines = ['docker', 'singularity']
         if (self.con is not None) and self.con['type'] not in conEngines:
@@ -1153,18 +1155,20 @@ class LocalExecutor(object):
 
 
 # Helper function that loads the JSON object coming from either a string,
-# a file or from Zenodo
-def loadJson(userInput):
-    # JSON file
+# a local file or a file pulled from Zenodo
+def loadJson(userInput, verbose=False):
+    # Check for JSON file (local or from Zenodo)
+    json_file = None
     if os.path.isfile(userInput):
-        with open(userInput, 'r') as jsonFile:
-            return json.loads(jsonFile.read())
-    # Zenodo ID
+        json_file = userInput
     elif userInput.split(".")[0].lower() == "zenodo":
         from boutiques.puller import Puller
-        puller = Puller(userInput, False, False, False, True)
-        return json.loads(puller.pull())
-    # Try to parse JSON object
+        puller = Puller(userInput, verbose, False)
+        json_file = puller.pull()
+    if json_file is not None:
+        with open(json_file, 'r') as f:
+            return json.loads(f.read())
+    # JSON file not found, so try to parse JSON object
     e = ("Cannot parse input {}: file not found, "
          "invalid Zenodo ID, or invalid JSON object").format(userInput)
     if userInput.isdigit():

@@ -455,14 +455,11 @@ def pull(*params):
     parser.add_argument("--sandbox", action="store_true",
                         help="pull from Zenodo's sandbox instead of "
                         "production server. Recommended for tests.")
-    parser.add_argument("--no-int", '-y', action="store_true",
-                        help="disable interactive input.")
 
     result = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.zid, result.verbose, True, result.sandbox,
-                    result.no_int)
+    puller = Puller(result.zid, result.verbose, result.sandbox)
     return puller.pull()
 
 
