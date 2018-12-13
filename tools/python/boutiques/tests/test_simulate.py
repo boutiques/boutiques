@@ -17,11 +17,13 @@ class TestSimulate(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example1_dir,
-                                          "example1_docker.json")).exit_code)
+                                                   "example1_docker.json"
+                                                   )).exit_code)
 
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(self.get_examples_dir(),
-                                          "good_nooutputs.json")).exit_code)
+                                                   "good_nooutputs.json"
+                                                   )).exit_code)
 
     def test_success_desc_as_json_obj(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
@@ -32,7 +34,8 @@ class TestSimulate(TestCase):
 
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(self.get_examples_dir(),
-                                          "good_nooutputs.json")).exit_code)
+                                                   "good_nooutputs.json"
+                                                   )).exit_code)
 
     def test_success_desc_from_zenodo(self):
         self.assertFalse(bosh.execute("simulate",
@@ -40,7 +43,8 @@ class TestSimulate(TestCase):
 
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(self.get_examples_dir(),
-                                          "good_nooutputs.json")).exit_code)
+                                                   "good_nooutputs.json"
+                                                   )).exit_code)
 
     def test_success_json(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
