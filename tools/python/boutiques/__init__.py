@@ -17,5 +17,6 @@ __all__ = ['localExec',
            'bids',
            'publisher',
            'evaluate',
+           'example',
            'prettyprint',
            'bosh']

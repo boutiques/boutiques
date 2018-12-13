@@ -518,7 +518,7 @@ def bosh(args=None):
             return bosh_return(out, out.exit_code,
                                hide=bool(out.container_location == 'hide'))
         elif func == "example":
-            out = execute('simulate', *params, '-j')
+            out = execute('simulate', '-j', *params)
             return bosh_return(out, out.exit_code,
                                hide=bool(out.container_location == 'hide'))
         elif func == "import":
