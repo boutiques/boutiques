@@ -167,14 +167,16 @@ def execute(*params):
             executor.generateRandomParams(1)
 
         if results.json:
-            print(json.dumps(executor.in_dict, indent=4))
+            sout = [json.dumps(executor.in_dict, indent=4)]
+            print(sout[0])
         else:
             executor.printCmdLine()
+            sout = executor.cmd_line
 
         # for consistency with execute
         # Adding hide to "container location" field since it's an invalid
-        # value, and we can parse that to hide the summary print
-        return ExecutorOutput(os.linesep.join(executor.cmd_line), "",
+        # value, can parse that to hide the summary print
+        return ExecutorOutput(os.linesep.join(sout), "",
                               0, "", [], [], "", "", "hide")
 
     if mode == "prepare":
