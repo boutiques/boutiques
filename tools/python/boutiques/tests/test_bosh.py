@@ -23,3 +23,4 @@ class TestBosh(TestCase):
         self.assertRaises(SystemExit, bosh, ["invocation", "--help"])
         self.assertRaises(SystemExit, bosh, ["evaluate", "--help"])
         self.assertRaises(SystemExit, bosh, ["create", "--help"])
+        self.assertRaises(SystemExit, bosh, ["example", "--help"])

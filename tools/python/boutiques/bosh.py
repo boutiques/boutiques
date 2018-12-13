@@ -146,29 +146,13 @@ def execute(*params):
                             "JSON string or Zenodo ID (prefixed by 'zenodo.').")
         parser.add_argument("-i", "--input", action="store",
                             help="Input JSON complying to invocation.")
-        parser.add_argument("-r", "--random", action="store", type=int,
-                            nargs="*", help="Generate random set of inputs.")
+        parser.add_argument("-j", "--json", action="store_true",
+                            help="Flag to generate invocation in JSON format.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
 
         # Do some basic input scrubbing
         inp = results.input
-        rand = results.random is not None
-        numb = results.random[0] if rand and len(results.random) > 0 else 1
-
-        if numb and numb < 1:
-            raise_error(SystemExit, "--number value must be positive.")
-            # raise SystemExit("--number value must be positive.")
-        if rand and inp:
-            raise_error(SystemExit, "--random setting and --input value cannot "
-                        "be used together.")
-        if inp and not os.path.isfile(inp):
-            raise_error(SystemExit, "Input file {} does not exist.".format(inp))
-        if inp and not inp.endswith(".json"):
-            raise_error(SystemExit, "Input file {} must end in 'json'.".
-                        format(inp))
-        if not rand and not inp:
-            raise_error(SystemExit, "The default mode requires an input (-i).")
 
         valid = invocation(descriptor, '-i', inp) if inp else\
             invocation(descriptor)
@@ -179,9 +163,13 @@ def execute(*params):
                                  {"forcePathType": True,
                                   "destroyTempScripts": True,
                                   "changeUser": True})
-        if rand:
-            executor.generateRandomParams(numb)
-        executor.printCmdLine()
+        if not inp:
+            executor.generateRandomParams(1)
+
+        if results.json:
+            print(json.dumps(executor.in_dict, indent=4))
+        else:
+            executor.printCmdLine()
 
         # for consistency with execute
         # Adding hide to "container location" field since it's an invalid
@@ -477,15 +465,16 @@ def bosh(args=None):
                         "an entry in Zenodo for the descriptor and "
                         "adds the DOI created by Zenodo to the descriptor. "
                         "Invocation: generates the invocation schema for a "
-                        "given descriptor. Eval: given an invocation and a "
+                        "given descriptor. Evaluate: given an invocation and a "
                         "descriptor, queries execution properties. "
                         "Test: run pytest on a descriptor detailing tests. "
-                        "Search: search Zenodo for descriptors. "
+                        "Example: Generates example command-line for descriptor"
+                        ". Search: search Zenodo for descriptors. "
                         "Pull: download a descriptor from Zenodo. "
                         "Pprint: generate pretty help text from a descriptor.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "search", "pull", "pprint"])
+                                 "test", "example", "search", "pull", "pprint"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -526,6 +515,10 @@ def bosh(args=None):
             out = execute(*params)
             # If executed through CLI, print 'out' and return exit_code
             # Otherwise, return out
+            return bosh_return(out, out.exit_code,
+                               hide=bool(out.container_location == 'hide'))
+        elif func == "example":
+            out = execute('simulate', *params, '-j')
             return bosh_return(out, out.exit_code,
                                hide=bool(out.container_location == 'hide'))
         elif func == "import":
