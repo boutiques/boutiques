@@ -183,6 +183,8 @@ class Publisher():
         if(self.verbose):
             print_info("Updated metadata of new version", r)
 
+    # When a new version is created, the files from the old version are
+    # automatically copied over. This method removes them.
     def zenodo_delete_files(self, deposition_id, files):
         for file in files:
             file_id = file["id"]
@@ -192,9 +194,9 @@ class Publisher():
                                 params={'access_token':
                                         self.zenodo_access_token})
             if(r.status_code != 204):
-                raise_error(ZenodoError, "Could not delete file", r)
+                raise_error(ZenodoError, "Could not delete old file", r)
             if(self.verbose):
-                print_info("Deleted file", r)
+                print_info("Deleted old file", r)
 
     def publish(self):
         if(not self.no_int):
@@ -239,22 +241,12 @@ class Publisher():
                 publish_update = True
 
         if publish_update:
-            self.publish_updated_version(id_to_update)
+            deposition_id = self.zenodo_deposit_updated_version(id_to_update)
         else:
-            self.publish_new_entry()
+            deposition_id = self.zenodo_deposit()
 
-    def publish_new_entry(self):
-        deposition_id = self.zenodo_deposit()
         self.zenodo_upload_descriptor(deposition_id)
         self.doi = self.zenodo_publish(deposition_id)
-        self.descriptor['doi'] = self.doi
-        with open(self.descriptor_file_name, "w") as f:
-                f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
-
-    def publish_updated_version(self, deposition_id):
-        new_deposition_id = self.zenodo_deposit_updated_version(deposition_id)
-        self.zenodo_upload_descriptor(new_deposition_id)
-        self.doi = self.zenodo_publish(new_deposition_id)
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
                 f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
