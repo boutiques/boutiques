@@ -10,7 +10,8 @@ DEPS = [
          "termcolor",
          "pyyaml",
          "jsonschema",
-         "tabulate"
+         "tabulate",
+         "mock"
        ]
 
 setup(name="boutiques",

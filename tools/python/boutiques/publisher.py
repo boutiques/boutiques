@@ -104,7 +104,7 @@ class Publisher():
             print_info("Zenodo is accessible", r)
         r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions',
                          params={'access_token': self.zenodo_access_token})
-        message = "Cannot authenticate to Zenodo API, check you access token"
+        message = "Cannot authenticate to Zenodo API, check your access token"
         if(r.status_code != 200):
             raise_error(ZenodoError, "Cannot authenticate to Zenodo", r)
         if(self.verbose):
