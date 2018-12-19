@@ -17,16 +17,16 @@ class MockZenodoRecord():
 
 
 def mock_zenodo_test_api():
-    return [MockHttpResponse(401), MockHttpResponse(200)]
+    return MockHttpResponse(200)
 
 
 def mock_zenodo_test_api_fail():
-    return [MockHttpResponse(401), MockHttpResponse(500)]
+    return MockHttpResponse(401)
 
 
 def mock_zenodo_deposit(mock_zid):
     mock_json = {"id": mock_zid}
-    return [MockHttpResponse(201, mock_json)]
+    return MockHttpResponse(201, mock_json)
 
 
 def mock_zenodo_deposit_updated(mock_zid):
@@ -41,24 +41,24 @@ def mock_zenodo_deposit_updated(mock_zid):
                         }
                     ]
                 }
-    return [MockHttpResponse(201, mock_json)]
+    return MockHttpResponse(201, mock_json)
 
 
 def mock_zenodo_upload_descriptor():
-    return [MockHttpResponse(201)]
+    return MockHttpResponse(201)
 
 
 def mock_zenodo_publish(mock_zid):
     mock_json = {"doi": "10.5281/zenodo.%s" % mock_zid}
-    return [MockHttpResponse(202, mock_json)]
+    return MockHttpResponse(202, mock_json)
 
 
 def mock_zenodo_update_metadata():
-    return [MockHttpResponse(200)]
+    return MockHttpResponse(200)
 
 
 def mock_zenodo_delete_files():
-    return [MockHttpResponse(204)]
+    return MockHttpResponse(204)
 
 
 def mock_zenodo_search(mock_records):
@@ -83,8 +83,8 @@ def mock_zenodo_search(mock_records):
                           "description": "Test description",
                           "doi": "10.5281/zenodo.%s" % record.id,
                           "keywords": [
-                            "mock-keyword1",
-                            "mock-keyword2"
+                            "schema-version:0.5",
+                            "docker"
                           ],
                           "title": record.title,
                           "version": "0.0.1"
@@ -94,5 +94,5 @@ def mock_zenodo_search(mock_records):
                         }
                       }
         mock_results.append(mock_result)
-    mock_json = {"hits": {"hits": mock_results}}
-    return [MockHttpResponse(200, mock_json)]
+    mock_json = {"hits": {"hits": mock_results, "total": len(mock_results)}}
+    return MockHttpResponse(200, mock_json)

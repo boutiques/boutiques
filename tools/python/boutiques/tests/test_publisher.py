@@ -18,19 +18,21 @@ else:
 
 def mock_get():
     mock_record = MockZenodoRecord(1234567, "Example Boutiques Tool")
-    return (mock_zenodo_test_api() +
-            mock_zenodo_search([]) +
-            mock_zenodo_test_api() +
-            mock_zenodo_search([mock_record]))
+    return ([mock_zenodo_test_api_fail(),
+            mock_zenodo_test_api(),
+            mock_zenodo_search([]),
+            mock_zenodo_test_api_fail(),
+            mock_zenodo_test_api(),
+            mock_zenodo_search([mock_record])])
 
 
 def mock_post():
-    return (mock_zenodo_deposit(1234567) +
-            mock_zenodo_upload_descriptor() +
-            mock_zenodo_publish(1234567) +
-            mock_zenodo_deposit_updated(2345678) +
-            mock_zenodo_upload_descriptor() +
-            mock_zenodo_publish(2345678))
+    return ([mock_zenodo_deposit(1234567),
+            mock_zenodo_upload_descriptor(),
+            mock_zenodo_publish(1234567),
+            mock_zenodo_deposit_updated(2345678),
+            mock_zenodo_upload_descriptor(),
+            mock_zenodo_publish(2345678)])
 
 
 def mock_put():
@@ -53,8 +55,8 @@ class TestPublisher(TestCase):
 
     @mock.patch('requests.get', side_effect=mock_get())
     @mock.patch('requests.post', side_effect=mock_post())
-    @mock.patch('requests.put', side_effect=mock_put())
-    @mock.patch('requests.delete', side_effect=mock_delete())
+    @mock.patch('requests.put', return_value=mock_put())
+    @mock.patch('requests.delete', return_value=mock_delete())
     def test_publication(self, mock_get, mock_post, mock_put, mock_delete):
         example1_dir = op.join(self.get_examples_dir(), "example1")
         example1_desc = op.join(example1_dir, "example1_docker.json")
@@ -111,7 +113,7 @@ class TestPublisher(TestCase):
             assert(descriptor_updated.get('doi') == new_doi)
             assert(descriptor_updated.get('doi') != doi)
 
-    @mock.patch('requests.get', side_effect=mock_get_auth_fail()*2)
+    @mock.patch('requests.get', return_value=mock_get_auth_fail())
     def test_publisher_auth(self, mock_get):
         example1_dir = op.join(self.get_examples_dir(), "example1")
 
@@ -147,7 +149,7 @@ class TestPublisher(TestCase):
                                        "example1_docker.json"),
                                "--sandbox", "-y", "-v"])
 
-    @mock.patch('requests.get', side_effect=mock_get_auth_fail())
+    @mock.patch('requests.get', return_value=mock_get_auth_fail())
     def test_publisher_auth_fail_cli(self, mock_get):
         example1_dir = op.join(self.get_examples_dir(), "example1")
         command = ("bosh publish " + op.join(example1_dir,
