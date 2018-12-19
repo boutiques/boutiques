@@ -1,7 +1,7 @@
 from boutiques.bosh import bosh
 from unittest import TestCase
 import mock
-from boutiques_mocks import *
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
 
 
 def mock_get(*args, **kwargs):
