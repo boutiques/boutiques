@@ -31,15 +31,15 @@ def mock_zenodo_deposit(mock_zid):
 
 def mock_zenodo_deposit_updated(mock_zid):
     mock_json = {
-                    "links": {
-                        "latest_draft": "https://zenodo.org/api/record/%s"
-                                        % mock_zid
-                    },
-                    "files": [
-                        {
-                            "id": 1234
-                        }
-                    ]
+                  "links": {
+                    "latest_draft": "https://zenodo.org/api/record/%s"
+                                    % mock_zid
+                  },
+                  "files": [
+                    {
+                      "id": 1234
+                    }
+                  ]
                 }
     return MockHttpResponse(201, mock_json)
 
