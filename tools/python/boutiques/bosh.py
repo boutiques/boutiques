@@ -432,12 +432,14 @@ def search(*params):
     parser.add_argument("-m", "--max", action="store",
                         help="Specify the maximum number of results "
                         "to be returned. Default is 10.")
+    parser.add_argument("-nt", "--no-trunc", action="store_true",
+                        help="Do not truncate long tool descriptions.")
 
     result = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
     searcher = Searcher(result.query, result.verbose, result.sandbox,
-                        result.max)
+                        result.max, result.no_trunc)
 
     return searcher.search()
 
@@ -457,8 +459,7 @@ def pull(*params):
     result = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.zid, result.verbose, True, result.sandbox)
-
+    puller = Puller(result.zid, result.verbose, result.sandbox)
     return puller.pull()
 
 
