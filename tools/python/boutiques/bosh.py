@@ -16,7 +16,7 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
-from boutiques.localExec import loadJson
+from boutiques.localExec import loadJson, addDefaultValues
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
@@ -162,11 +162,6 @@ def execute(*params):
         if rand and inp:
             raise_error(SystemExit, "--random setting and --input value cannot "
                         "be used together.")
-        if inp and not os.path.isfile(inp):
-            raise_error(SystemExit, "Input file {} does not exist.".format(inp))
-        if inp and not inp.endswith(".json"):
-            raise_error(SystemExit, "Input file {} must end in 'json'.".
-                        format(inp))
         if not rand and not inp:
             raise_error(SystemExit, "The default mode requires an input (-i).")
 
@@ -346,6 +341,7 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
+        data = addDefaultValues(descriptor, data)
         validateSchema(invSchema, data)
 
 
