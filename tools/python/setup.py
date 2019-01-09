@@ -2,7 +2,7 @@ import sys
 from setuptools import setup
 import sys
 
-VERSION = "0.5.17"
+VERSION = "0.5.18"
 DEPS = [
          "simplejson",
          "requests",
@@ -10,7 +10,8 @@ DEPS = [
          "termcolor",
          "pyyaml",
          "jsonschema",
-         "tabulate"
+         "tabulate",
+         "mock"
        ]
 
 setup(name="boutiques",

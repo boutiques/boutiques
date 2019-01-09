@@ -7,10 +7,20 @@ from boutiques import __file__ as bfile
 from boutiques import bosh
 from jsonschema.exceptions import ValidationError
 import sys
+import mock
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
 if sys.version_info < (2, 7):
     from unittest2 import TestCase
 else:
     from unittest import TestCase
+
+
+def mock_get():
+    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
+                                   "https://zenodo.org/api/files/"
+                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
+                                   "example1_docker.json")
+    return mock_zenodo_search([mock_record])
 
 
 class TestTest(TestCase):
@@ -35,7 +45,8 @@ class TestTest(TestCase):
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
-    def test_test_good_from_zenodo(self):
+    @mock.patch('requests.get', return_value=mock_get())
+    def test_test_good_from_zenodo(self, mock_get):
         self.assertFalse(bosh(["test",
                                "zenodo.1472823"]))
 

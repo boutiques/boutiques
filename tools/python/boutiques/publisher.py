@@ -104,7 +104,7 @@ class Publisher():
             print_info("Zenodo is accessible", r)
         r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions',
                          params={'access_token': self.zenodo_access_token})
-        message = "Cannot authenticate to Zenodo API, check you access token"
+        message = "Cannot authenticate to Zenodo API, check your access token"
         if(r.status_code != 200):
             raise_error(ZenodoError, "Cannot authenticate to Zenodo", r)
         if(self.verbose):
@@ -183,6 +183,8 @@ class Publisher():
         if(self.verbose):
             print_info("Updated metadata of new version", r)
 
+    # When a new version is created, the files from the old version are
+    # automatically copied over. This method removes them.
     def zenodo_delete_files(self, deposition_id, files):
         for file in files:
             file_id = file["id"]
@@ -192,9 +194,9 @@ class Publisher():
                                 params={'access_token':
                                         self.zenodo_access_token})
             if(r.status_code != 204):
-                raise_error(ZenodoError, "Could not delete file", r)
+                raise_error(ZenodoError, "Could not delete old file", r)
             if(self.verbose):
-                print_info("Deleted file", r)
+                print_info("Deleted old file", r)
 
     def publish(self):
         if(not self.no_int):
@@ -212,7 +214,7 @@ class Publisher():
         # of an existing one
         from boutiques.searcher import Searcher
         searcher = Searcher(self.descriptor.get("name"), self.verbose,
-                            self.sandbox, None)
+                            self.sandbox, None, True)
         r = searcher.zenodo_search()
 
         id_to_update = 0
@@ -239,22 +241,12 @@ class Publisher():
                 publish_update = True
 
         if publish_update:
-            self.publish_updated_version(id_to_update)
+            deposition_id = self.zenodo_deposit_updated_version(id_to_update)
         else:
-            self.publish_new_entry()
+            deposition_id = self.zenodo_deposit()
 
-    def publish_new_entry(self):
-        deposition_id = self.zenodo_deposit()
         self.zenodo_upload_descriptor(deposition_id)
         self.doi = self.zenodo_publish(deposition_id)
-        self.descriptor['doi'] = self.doi
-        with open(self.descriptor_file_name, "w") as f:
-                f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
-
-    def publish_updated_version(self, deposition_id):
-        new_deposition_id = self.zenodo_deposit_updated_version(deposition_id)
-        self.zenodo_upload_descriptor(new_deposition_id)
-        self.doi = self.zenodo_publish(new_deposition_id)
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
                 f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
@@ -284,6 +276,8 @@ class Publisher():
                     keywords += [key + ":" + item for item in value]
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
+        if self.descriptor.get('tests'):
+            keywords.append('tested')
         if self.url is not None:
             if data['metadata'].get('related_identifiers') is None:
                 data['metadata']['related_identifiers'] = []

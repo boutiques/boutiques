@@ -7,6 +7,16 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 from boutiques.localExec import ExecutorError
+import mock
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+
+
+def mock_get():
+    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
+                                   "https://zenodo.org/api/files/"
+                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
+                                   "example1_docker.json")
+    return mock_zenodo_search([mock_record])
 
 
 class TestExample1(TestCase):
@@ -193,7 +203,8 @@ class TestExample1(TestCase):
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
-    def test_example1_exec_docker_from_zenodo(self):
+    @mock.patch('requests.get', return_value=mock_get())
+    def test_example1_exec_docker_from_zenodo(self, mock_get):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         ret = bosh.execute("launch", "zenodo.1472823",
@@ -315,8 +326,7 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         ret = bosh.execute("simulate",
                            os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           "-r", "3")
+                                        "example1_docker.json"))
         print(ret)
         assert(ret.stdout != ""
                and ret.stderr == ""
