@@ -167,7 +167,7 @@ def execute(*params):
             executor.generateRandomParams(1)
 
         if results.json:
-            sout = [json.dumps(executor.in_dict, indent=4)]
+            sout = [json.dumps(executor.in_dict, indent=4, sort_keys=True)]
             print(sout[0])
         else:
             executor.printCmdLine()
