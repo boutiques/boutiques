@@ -4,6 +4,16 @@ import os
 from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
+import mock
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+
+
+def mock_get():
+    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
+                                   "https://zenodo.org/api/files/"
+                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
+                                   "example1_docker.json")
+    return mock_zenodo_search([mock_record])
 
 
 class TestEvaluate(TestCase):
@@ -59,7 +69,8 @@ class TestEvaluate(TestCase):
         expect = {}
         assert(query == expect)
 
-    def test_evaloutput_from_zenodo(self):
+    @mock.patch('requests.get', return_value=mock_get())
+    def test_evaloutput_from_zenodo(self, mock_get):
         self.set_examples_from_zenodo()
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
