@@ -326,8 +326,7 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         ret = bosh.execute("simulate",
                            os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           "-r", "3")
+                                        "example1_docker.json"))
         print(ret)
         assert(ret.stdout != ""
                and ret.stderr == ""

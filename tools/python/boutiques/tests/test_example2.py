@@ -51,5 +51,4 @@ class TestExample2(TestCase):
         example2_dir = os.path.join(self.get_examples_dir(), "example2")
         self.assertFalse(bosh.execute("simulate",
                                       os.path.join(example2_dir,
-                                                   "example2.json"),
-                                      "-r", "3").exit_code)
+                                                   "example2.json")).exit_code)
