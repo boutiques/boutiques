@@ -455,26 +455,37 @@ def pull(*params):
 
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
-                            add_help=False)
+                            add_help=False, formatter_class=RawTextHelpFormatter)
     parser.add_argument("function", action="store", nargs="?",
-                        help="The tool within boutiques/bosh you wish to run. "
-                        "Create: creates an Boutiques descriptor from scratch. "
-                        "Validate: validates an existing boutiques descriptor. "
-                        "Exec: launches or simulates an execution given a "
-                        "descriptor and a set of inputs. Import: creates a "
-                        "descriptor for a BIDS app or updates a descriptor "
-                        "from an older version of the schema. Export: exports a"
-                        "descriptor to other formats. Publish: creates"
-                        "an entry in Zenodo for the descriptor and "
-                        "adds the DOI created by Zenodo to the descriptor. "
-                        "Invocation: generates the invocation schema for a "
-                        "given descriptor. Evaluate: given an invocation and a "
-                        "descriptor, queries execution properties. "
-                        "Test: run pytest on a descriptor detailing tests. "
-                        "Example: Generates example command-line for descriptor"
-                        ". Search: search Zenodo for descriptors. "
-                        "Pull: download a descriptor from Zenodo. "
-                        "Pprint: generate pretty help text from a descriptor.",
+                        help="""
+Provide one of these subcommands:
+
+create: creates an Boutiques descriptor from scratch.
+
+validate: validates an existing boutiques descriptor.
+
+exec: launches or simulates an execution given a descriptor and a set of inputs.
+
+import: creates a descriptor for a BIDS app or updates a descriptor from an older version of the schema.
+
+export: exports a descriptor to other formats.
+
+publish: creates an entry in Zenodo for the descriptor and adds the DOI created by Zenodo to the descriptor.
+
+invocation: generates the invocation schema for a given descriptor.
+
+evaluate: given an invocation and a descriptor, queries execution properties.
+
+test: run pytest on a descriptor detailing tests.
+
+example: Generates example command-line for descriptor.
+
+search: search Zenodo for descriptors.
+
+pull: download a descriptor from Zenodo.
+
+pprint: generate pretty help text from a descriptor.
+                        """,
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
                                  "test", "example", "search", "pull", "pprint"])
