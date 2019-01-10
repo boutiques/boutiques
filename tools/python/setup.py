@@ -1,8 +1,14 @@
 import sys
 from setuptools import setup
-import sys
+import os.path as op
 
-VERSION = "0.5.18"
+
+# Loads version information from file inside package. This allows the package
+# itself to be aware of its version.
+verfile = op.join("boutiques", "__version__.py")
+with open(verfile) as fhandle:
+    exec(fhandle.read())
+
 DEPS = [
          "simplejson",
          "requests",
