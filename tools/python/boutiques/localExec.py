@@ -808,6 +808,7 @@ class LocalExecutor(object):
         # Add default values for required parameters,
         # if no value has been given
         addDefaultValues(self.desc_dict, self.in_dict)
+        # Check results (as much as possible)
         try:
             pass  # self._validateDict()
         except Exception:  # Avoid catching BaseExceptions like SystemExit

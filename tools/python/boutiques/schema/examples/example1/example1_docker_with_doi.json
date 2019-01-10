@@ -47,7 +47,7 @@
             "type": "String",
             "value-key": "[STRING_INPUT]"
         },
-	    {
+        {
             "command-line-flag": "-l", 
             "description": "Describe the use and meaning of the parameter", 
             "id": "list_int_input", 
