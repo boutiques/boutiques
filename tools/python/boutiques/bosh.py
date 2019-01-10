@@ -474,10 +474,12 @@ def bosh(args=None):
                         "Example: Generates example command-line for descriptor"
                         ". Search: search Zenodo for descriptors. "
                         "Pull: download a descriptor from Zenodo. "
-                        "Pprint: generate pretty help text from a descriptor.",
+                        "Pprint: generate pretty help text from a descriptor."
+                        "Version: prints the version of this tool.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "pprint"])
+                                 "test", "example", "search", "pull", "pprint",
+                                 "version"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -552,6 +554,9 @@ def bosh(args=None):
         elif func == "pull":
             out = pull(*params)
             return bosh_return(out, hide=True)
+        elif func == "version":
+            from boutiques.__version__ import VERSION
+            return bosh_return(VERSION)
         else:
             parser.print_help()
             raise SystemExit
