@@ -334,7 +334,7 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        validateSchema(invSchema, loadJson(result.invocation)))
+        validateSchema(invSchema, loadJson(result.invocation))
 
 
 def evaluate(*params):
