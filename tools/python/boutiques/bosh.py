@@ -391,7 +391,8 @@ def test(*params):
         # Create temporary file for the invocation() function.
         invocation_JSON = test["invocation"]
         # Check if the invocation is valid.
-        invocation(result.descriptor, "--invocation", json.dumps(invocation_JSON).encode())
+        invocation(result.descriptor, "--invocation",
+                   json.dumps(invocation_JSON).encode())
 
     # Invocations have been properly validated. We can launch the actual tests.
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
