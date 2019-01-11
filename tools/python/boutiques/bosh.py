@@ -393,7 +393,8 @@ def test(*params):
         invocation_JSON = test["invocation"]
 
         # Check if the invocation is valid.
-        invocation(result.descriptor, "--invocation", json.dumps(invocation_JSON).encode())
+        invocation(result.descriptor, "--invocation",
+                   json.dumps(invocation_JSON).encode())
 
     # Invocations have been properly validated. We can launch the actual tests.
 
