@@ -334,7 +334,8 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        validateSchema(invSchema, loadJson(result.invocation))
+        validateSchema(invSchema, loadJson(result.invocation)))
+
 
 def evaluate(*params):
     parser = ArgumentParser("Evaluates parameter values for a descriptor"
@@ -390,10 +391,12 @@ def test(*params):
     for test in descriptor["tests"]:
         # Create temporary file for the invocation() function.
         invocation_JSON = test["invocation"]
+
         # Check if the invocation is valid.
         invocation(result.descriptor, "--invocation", json.dumps(invocation_JSON).encode())
 
     # Invocations have been properly validated. We can launch the actual tests.
+
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
     return pytest.main([test_path, "--descriptor", result.descriptor])
 
@@ -464,12 +467,10 @@ def bosh(args=None):
                         "Example: Generates example command-line for descriptor"
                         ". Search: search Zenodo for descriptors. "
                         "Pull: download a descriptor from Zenodo. "
-                        "Pprint: generate pretty help text from a descriptor."
-                        "Version: prints the version of this tool.",
+                        "Pprint: generate pretty help text from a descriptor.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "pprint",
-                                 "version"])
+                                 "test", "example", "search", "pull", "pprint"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -544,9 +545,6 @@ def bosh(args=None):
         elif func == "pull":
             out = pull(*params)
             return bosh_return(out, hide=True)
-        elif func == "version":
-            from boutiques.__version__ import VERSION
-            return bosh_return(VERSION)
         else:
             parser.print_help()
             raise SystemExit
