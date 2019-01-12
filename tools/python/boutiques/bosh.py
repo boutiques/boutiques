@@ -368,7 +368,6 @@ def evaluate(*params):
         query_results += [evaluateEngine(executor, query)]
     return query_results[0] if len(query_results) == 1 else query_results
 
-
 def test(*params):
 
     parser = ArgumentParser("Perform all the tests defined within the"
