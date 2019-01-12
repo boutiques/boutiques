@@ -393,7 +393,7 @@ def test(*params):
 
         # Check if the invocation is valid.
         invocation(result.descriptor, "--invocation",
-                   json.dumps(invocation_JSON).encode())
+                   json.dumps(invocation_JSON))
 
     # Invocations have been properly validated. We can launch the actual tests.
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
