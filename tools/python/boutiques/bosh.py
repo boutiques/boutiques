@@ -336,6 +336,7 @@ def invocation(*params):
         from boutiques.invocationSchemaHandler import validateSchema
         validateSchema(invSchema, loadJson(result.invocation))
 
+
 def evaluate(*params):
     parser = ArgumentParser("Evaluates parameter values for a descriptor"
                             " and invocation")
@@ -366,6 +367,7 @@ def evaluate(*params):
     for query in result.query:
         query_results += [evaluateEngine(executor, query)]
     return query_results[0] if len(query_results) == 1 else query_results
+
 
 def test(*params):
 
