@@ -94,7 +94,8 @@ class Searcher():
                     if isinstance(v, unicode):
                         result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
                 elif isinstance(v, str):
-                    result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
+                    result_dict[k] = \
+                        v.encode('ascii', 'xmlcharrefreplace').decode()
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
             results_list.append(result_dict)
