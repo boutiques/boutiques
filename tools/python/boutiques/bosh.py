@@ -424,12 +424,14 @@ def search(*params):
                         "to be returned. Default is 10.")
     parser.add_argument("-nt", "--no-trunc", action="store_true",
                         help="Do not truncate long tool descriptions.")
+    parser.add_argument("-e", "--exact", action="store_true",
+                        help="Only return results containing the exact query.")
 
     result = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
     searcher = Searcher(result.query, result.verbose, result.sandbox,
-                        result.max, result.no_trunc)
+                        result.max, result.no_trunc, result.exact)
 
     return searcher.search()
 

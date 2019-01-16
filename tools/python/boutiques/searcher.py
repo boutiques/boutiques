@@ -10,11 +10,15 @@ from boutiques.publisher import ZenodoError
 
 class Searcher():
 
-    def __init__(self, query, verbose, sandbox, max_results, no_trunc):
+    def __init__(self, query, verbose, sandbox, max_results, no_trunc,
+                 exact_match):
         if query is not None:
             self.query = query
         else:
             self.query = 'boutiques'
+
+        if not exact_match:
+            self.query = '*' + self.query + '*'
 
         self.verbose = verbose
         self.sandbox = sandbox
