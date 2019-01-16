@@ -16,7 +16,7 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
-from boutiques.localExec import loadJson
+from boutiques.localExec import loadJson, addDefaultValues
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
@@ -334,7 +334,8 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        validateSchema(invSchema, loadJson(result.invocation))
+        data = addDefaultValues(descriptor, loadJson(result.invocation))
+        validateSchema(invSchema, data)
 
 
 def evaluate(*params):

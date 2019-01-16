@@ -161,24 +161,23 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
 
 # Validate data with respect to the invocation schema
 def validateSchema(s, d=None, **kwargs):
-        # Check schema wrt meta-schema
+    # Check schema wrt meta-schema
+    try:
+        jsonschema.Draft4Validator.check_schema(s)
+    except jsonschema.SchemaError as se:
+        errExit("Invocation schema is invalid.\n" +
+                str(se.message), False)
+    # Check data instance against schema
+    if d:
         try:
-                jsonschema.Draft4Validator.check_schema(s)
-        except jsonschema.SchemaError as se:
-                errExit("Invocation schema is invalid.\n" +
-                        str(se.message), False)
-        # Check data instance against schema
-        if d:
-                try:
-                        jsonschema.validate(d, s)
-                except ValidationError as e:
-                        raise e
-                        raise_error(InvocationValidationError, e)
-                if kwargs.get("verbose"):
-                        print_info("Invocation Schema validation OK")
+            jsonschema.validate(d, s)
+        except ValidationError as e:
+            raise_error(InvocationValidationError, e)
+        if kwargs.get("verbose"):
+            print_info("Invocation Schema validation OK")
 
 
 # Script exit helper
 def errExit(msg, parser, err_code=1):
-        sys.stderr.write('Error: ' + msg + '\n')
-        sys.exit(err_code)
+    sys.stderr.write('Error: ' + msg + '\n')
+    sys.exit(err_code)

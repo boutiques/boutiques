@@ -88,6 +88,9 @@ class Searcher():
                                       ("SCHEMA VERSION", schema_version),
                                       ("CONTAINER", container),
                                       ("TAGS", other_tags)])
+            for k, v in list(result_dict.items()):
+                if isinstance(v, unicode):
+                    result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
             results_list.append(result_dict)
