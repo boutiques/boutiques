@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import requests
+import sys
 from collections import OrderedDict
 import json
 from operator import itemgetter
@@ -89,7 +90,10 @@ class Searcher():
                                       ("CONTAINER", container),
                                       ("TAGS", other_tags)])
             for k, v in list(result_dict.items()):
-                if isinstance(v, str) or isinstance(v, unicode):
+                if sys.version_info[0] < 3:
+                    if isinstance(v, unicode):
+                        result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
+                elif isinstance(v, str):
                     result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
