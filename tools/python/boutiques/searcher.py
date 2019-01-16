@@ -89,7 +89,7 @@ class Searcher():
                                       ("CONTAINER", container),
                                       ("TAGS", other_tags)])
             for k, v in list(result_dict.items()):
-                if isinstance(v, unicode):
+                if isinstance(v, str) or isinstance(v, unicode):
                     result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
