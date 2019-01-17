@@ -390,7 +390,6 @@ def test(*params):
         return 0
 
     for test in descriptor["tests"]:
-        # Create temporary file for the invocation() function.
         invocation_JSON = test["invocation"]
 
         # Check if the invocation is valid.
