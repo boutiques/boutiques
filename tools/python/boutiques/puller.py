@@ -38,7 +38,8 @@ class Puller():
             return self.cached_fname
 
         from boutiques.searcher import Searcher
-        searcher = Searcher(self.zid, self.verbose, self.sandbox, None, True)
+        searcher = Searcher(self.zid, self.verbose, self.sandbox,
+                            exact_match=True)
         r = searcher.zenodo_search()
 
         for hit in r.json()["hits"]["hits"]:

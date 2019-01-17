@@ -10,20 +10,23 @@ from boutiques.publisher import ZenodoError
 
 class Searcher():
 
-    def __init__(self, query, verbose, sandbox, max_results, no_trunc):
+    def __init__(self, query, verbose, sandbox, max_results=None,
+                 no_trunc=False, exact_match=False):
         if query is not None:
             self.query = query
         else:
             self.query = 'boutiques'
 
+        if not exact_match:
+            self.query = '*' + self.query + '*'
+
         self.verbose = verbose
         self.sandbox = sandbox
         self.no_trunc = no_trunc
+        self.max_results = max_results
 
         # Return max 10 results by default
-        if max_results is not None:
-            self.max_results = max_results
-        else:
+        if max_results is None:
             self.max_results = 10
 
         # Set Zenodo endpoint
