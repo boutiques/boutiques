@@ -147,7 +147,7 @@ class Publisher():
             print_info("Deposition of new version succeeded", r)
         new_url = r.json()['links']['latest_draft']
         new_zid = new_url.split("/")[-1]
-        self.zenodo_update_metadata(new_zid)
+        self.zenodo_update_metadata(new_zid, r.json()['doi'])
         self.zenodo_delete_files(new_zid, r.json()["files"])
         return new_zid
 
@@ -179,11 +179,18 @@ class Publisher():
                        format(r.json()['doi']), r)
         return r.json()['doi']
 
-    def zenodo_update_metadata(self, deposition_id):
+    def zenodo_update_metadata(self, new_deposition_id, old_doi):
         data = self.create_metadata()
+
+        # Add the new DOI to the metadata
+        old_doi_split = old_doi.split(".")
+        old_doi_split[-1] = new_deposition_id
+        new_doi = '.'.join(old_doi_split)
+        data['metadata']['doi'] = new_doi
+
         headers = {"Content-Type": "application/json"}
         r = requests.put(self.zenodo_endpoint+'/api/deposit/depositions/%s'
-                         % deposition_id,
+                         % new_deposition_id,
                          params={'access_token': self.zenodo_access_token},
                          data=json.dumps(data),
                          headers=headers)
@@ -194,12 +201,12 @@ class Publisher():
 
     # When a new version is created, the files from the old version are
     # automatically copied over. This method removes them.
-    def zenodo_delete_files(self, deposition_id, files):
+    def zenodo_delete_files(self, new_deposition_id, files):
         for file in files:
             file_id = file["id"]
             r = requests.delete(self.zenodo_endpoint +
                                 '/api/deposit/depositions/%s/files/%s'
-                                % (deposition_id, file_id),
+                                % (new_deposition_id, file_id),
                                 params={'access_token':
                                         self.zenodo_access_token})
             if(r.status_code != 204):
