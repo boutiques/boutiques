@@ -15,13 +15,20 @@ class Publisher():
 
     def __init__(self, descriptor_file_name,
                  verbose, sandbox, no_int,
-                 auth_token):
+                 auth_token, replace):
         # Straightforward assignments
         self.verbose = verbose
         self.sandbox = sandbox
         self.descriptor_file_name = descriptor_file_name
         self.no_int = no_int
         self.zenodo_access_token = auth_token
+
+        # remove zenodo prefix of ID to update
+        try:
+            self.id_to_update = replace.split(".", 1)[1] if replace else None
+        except IndexError:
+            raise_error(ZenodoError, "Zenodo ID must be prefixed by "
+                                     "'zenodo', e.g. zenodo.123456")
 
         # Validate and load descriptor
         validate_descriptor(descriptor_file_name)
@@ -106,7 +113,7 @@ class Publisher():
                          params={'access_token': self.zenodo_access_token})
         message = "Cannot authenticate to Zenodo API, check your access token"
         if(r.status_code != 200):
-            raise_error(ZenodoError, "Cannot authenticate to Zenodo", r)
+            raise_error(ZenodoError, message, r)
         if(self.verbose):
             print_info("Authentication to Zenodo successful", r)
 
@@ -133,7 +140,8 @@ class Publisher():
                           % deposition_id,
                           params={'access_token': self.zenodo_access_token})
         if(r.status_code != 201):
-            raise_error(ZenodoError, "Deposition of new version failed", r)
+            raise_error(ZenodoError, "Deposition of new version failed. Check that the "
+                                     "Zenodo ID is correct (if one was provided).", r)
         if(self.verbose):
             print_info("Deposition of new version succeeded", r)
         new_url = r.json()['links']['latest_draft']
@@ -210,38 +218,40 @@ class Publisher():
                 return
         self.zenodo_test_api()
 
-        # perform a search to check if descriptor is an updated version
-        # of an existing one
-        from boutiques.searcher import Searcher
-        searcher = Searcher(self.descriptor.get("name"), self.verbose,
-                            self.sandbox, exact_match=True)
-        r = searcher.zenodo_search()
+        if self.id_to_update is not None:
+            publish_update = True
+        else:
+            # perform a search to check if descriptor is an updated version
+            # of an existing one
+            from boutiques.searcher import Searcher
+            searcher = Searcher(self.descriptor.get("name"), self.verbose,
+                                self.sandbox, exact_match=True)
+            r = searcher.zenodo_search()
 
-        id_to_update = 0
-        publish_update = False
-        for hit in r.json()["hits"]["hits"]:
-            title = hit["metadata"]["title"]
-            if title == self.descriptor.get("name"):
-                id_to_update = hit["id"]
-                break
+            publish_update = False
+            for hit in r.json()["hits"]["hits"]:
+                title = hit["metadata"]["title"]
+                if title == self.descriptor.get("name"):
+                    self.id_to_update = hit["id"]
+                    break
 
-        if id_to_update:
-            if(not self.no_int):
-                prompt = ("Found an existing record with the same name, "
-                          "would you like to update it? "
-                          "(Y:Update existing / n:Publish new entry with "
-                          "name {}) ".format(self.descriptor.get("name")))
-                try:
-                    ret = raw_input(prompt)  # Python 2
-                except NameError:
-                    ret = input(prompt)  # Python 3
-                if ret.upper() == "Y":
+            if self.id_to_update is not None:
+                if(not self.no_int):
+                    prompt = ("Found an existing record with the same name, "
+                              "would you like to update it? "
+                              "(Y:Update existing / n:Publish new entry with "
+                              "name {}) ".format(self.descriptor.get("name")))
+                    try:
+                        ret = raw_input(prompt)  # Python 2
+                    except NameError:
+                        ret = input(prompt)  # Python 3
+                    if ret.upper() == "Y":
+                        publish_update = True
+                else:
                     publish_update = True
-            else:
-                publish_update = True
 
         if publish_update:
-            deposition_id = self.zenodo_deposit_updated_version(id_to_update)
+            deposition_id = self.zenodo_deposit_updated_version(self.id_to_update)
         else:
             deposition_id = self.zenodo_deposit()
 

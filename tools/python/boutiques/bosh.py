@@ -290,6 +290,10 @@ def publish(*params):
                         help="disable interactive input.")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="print information messages.")
+    parser.add_argument("-r", "--replace", action="store",
+                        help="Zenodo ID of an existing record you wish to "
+                             "replace with a new version, prefixed by "
+                             "'zenodo.' (e.g. zenodo.123456).")
 
     results = parser.parse_args(params)
 
@@ -298,7 +302,8 @@ def publish(*params):
                           results.verbose,
                           results.sandbox,
                           results.no_int,
-                          results.zenodo_token)
+                          results.zenodo_token,
+                          results.replace)
     publisher.publish()
     if hasattr(publisher, 'doi'):
         return publisher.doi
