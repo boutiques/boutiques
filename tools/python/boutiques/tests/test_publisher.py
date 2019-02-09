@@ -36,13 +36,13 @@ def mock_post_publish_then_update():
     return ([mock_zenodo_deposit(1234567),
             mock_zenodo_upload_descriptor(),
             mock_zenodo_publish(1234567),
-            mock_zenodo_deposit_updated(2345678),
+            mock_zenodo_deposit_updated(1234567, 2345678),
             mock_zenodo_upload_descriptor(),
             mock_zenodo_publish(2345678)])
 
 
 def mock_post_publish_update_only():
-    return ([mock_zenodo_deposit_updated(2345678),
+    return ([mock_zenodo_deposit_updated(1234567, 2345678),
             mock_zenodo_upload_descriptor(),
             mock_zenodo_publish(2345678)])
 
