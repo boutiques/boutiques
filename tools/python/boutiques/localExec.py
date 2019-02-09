@@ -898,7 +898,7 @@ class LocalExecutor(object):
                 elif unfound_keys == "clear":
                     if clk in template:
                         return ""
-            return template
+        return template
 
     # Private method to generate output file names.
     # Output file names will be put in self.out_dict.
