@@ -140,8 +140,9 @@ class Publisher():
                           % deposition_id,
                           params={'access_token': self.zenodo_access_token})
         if(r.status_code != 201):
-            raise_error(ZenodoError, "Deposition of new version failed. Check that the "
-                                     "Zenodo ID is correct (if one was provided).", r)
+            raise_error(ZenodoError, "Deposition of new version failed. Check "
+                                     "that the Zenodo ID is correct (if one "
+                                     "was provided).", r)
         if(self.verbose):
             print_info("Deposition of new version succeeded", r)
         new_url = r.json()['links']['latest_draft']
@@ -251,7 +252,8 @@ class Publisher():
                     publish_update = True
 
         if publish_update:
-            deposition_id = self.zenodo_deposit_updated_version(self.id_to_update)
+            deposition_id = \
+                self.zenodo_deposit_updated_version(self.id_to_update)
         else:
             deposition_id = self.zenodo_deposit()
 
