@@ -337,7 +337,7 @@ def validate_descriptor(json_file, **kwargs):
                             " and cannot be paired with one-is-required"
                             " or mutually-exclusive groups")
             if grp.get("one-is-required") or grp.get("mutually-exclusive"):
-                    errors += [msg_template.format(grp["id"])]
+                errors += [msg_template.format(grp["id"])]
 
             msg_template = (" GroupError: \"{0}\" is an all-or-none"
                             " group and contains a required member, \"{1}\"")
