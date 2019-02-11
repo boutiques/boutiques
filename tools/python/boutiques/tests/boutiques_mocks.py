@@ -80,7 +80,7 @@ def mock_zenodo_search(mock_records):
                               "name": "Test author"
                             }
                           ],
-                          "description": "Test description",
+                          "description": record.description,
                           "doi": "10.5281/zenodo.%s" % record.id,
                           "keywords": [
                             "schema-version:0.5",

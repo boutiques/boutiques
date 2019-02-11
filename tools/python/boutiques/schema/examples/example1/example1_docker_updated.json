@@ -38,7 +38,7 @@
     "inputs": [
         {
             "command-line-flag": "-i",
-            "default-value": "aStringValue",
+            "default-value": ["aStringValue"],
             "description": "Describe the use and meaning of the parameter",
             "id": "str_input_list",
             "list": true,

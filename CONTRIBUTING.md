@@ -8,11 +8,14 @@ Please note we have a code of conduct, please follow it in all your interactions
 ## Pull Request Process
 
 1. Make tests for your code in `pytest`
-2. Include evidence in your pull request of the functionality you added (i.e. show behaviour before and after changes were made, and demonstrate all unrelated content that has code touched by changes remains unchanged)
-2. Update relevant documentation with details of the changes
-3. Get feedback from maintainers
-4. Address suggested changes
-5. Rinse & repeat until you and the maintainers agree
+2. Create a pull request against the `develop` branch.
+  - Include evidence in your pull request of the functionality you added (i.e. show behaviour before and after changes were made, and demonstrate all unrelated content that has code touched by changes remains unchanged)
+  - Try not to include too many features in one pull request. If multiple features were worked on, create a separate branch for each.
+  - Mention the relevant issue number(s), if any.
+3. Update relevant documentation with details of the changes
+4. Get feedback from maintainers
+5. Address suggested changes
+6. Rinse & repeat until you and the maintainers agree
 
 ## Code of Conduct
 > *"Just, don't be a jerk!"* :smile:

@@ -807,15 +807,7 @@ class LocalExecutor(object):
             del self.in_dict[r]
         # Add default values for required parameters,
         # if no value has been given
-        for input in [s for s in self.inputs
-                      if s.get("default-value") is not None
-                      and not s.get("optional")]:
-            if self.in_dict.get(input['id']) is None:
-                df = input.get("default-value")
-                if not input['type'] == 'Flag':
-                    self.in_dict[input['id']] = df
-                else:
-                    self.in_dict[input['id']] = str(df)
+        addDefaultValues(self.desc_dict, self.in_dict)
         # Check results (as much as possible)
         try:
             pass  # self._validateDict()
@@ -1177,3 +1169,18 @@ def loadJson(userInput, verbose=False):
         return json.loads(userInput)
     except ValueError:
         raise_error(ExecutorError, e)
+
+
+# Adds default values to input dictionary
+# for parameters whose values were not given
+def addDefaultValues(desc_dict, in_dict):
+    inputs = desc_dict['inputs']
+    for in_param in [s for s in inputs
+                     if s.get("default-value") is not None]:
+        if in_dict.get(in_param['id']) is None:
+            df = in_param.get("default-value")
+            if not in_param['type'] == 'Flag':
+                in_dict[in_param['id']] = df
+            else:
+                in_dict[in_param['id']] = str(df)
+    return in_dict

@@ -16,7 +16,7 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
-from boutiques.localExec import loadJson
+from boutiques.localExec import loadJson, addDefaultValues
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
@@ -336,6 +336,7 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
+        data = addDefaultValues(descriptor, data)
         validateSchema(invSchema, data)
 
 
@@ -424,12 +425,14 @@ def search(*params):
                         "to be returned. Default is 10.")
     parser.add_argument("-nt", "--no-trunc", action="store_true",
                         help="Do not truncate long tool descriptions.")
+    parser.add_argument("-e", "--exact", action="store_true",
+                        help="Only return results containing the exact query.")
 
     result = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
     searcher = Searcher(result.query, result.verbose, result.sandbox,
-                        result.max, result.no_trunc)
+                        result.max, result.no_trunc, result.exact)
 
     return searcher.search()
 
@@ -474,10 +477,12 @@ def bosh(args=None):
                         "Example: Generates example command-line for descriptor"
                         ". Search: search Zenodo for descriptors. "
                         "Pull: download a descriptor from Zenodo. "
-                        "Pprint: generate pretty help text from a descriptor.",
+                        "Pprint: generate pretty help text from a descriptor."
+                        "Version: prints the version of this tool.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "pprint"])
+                                 "test", "example", "search", "pull", "pprint",
+                                 "version"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -552,6 +557,9 @@ def bosh(args=None):
         elif func == "pull":
             out = pull(*params)
             return bosh_return(out, hide=True)
+        elif func == "version":
+            from boutiques.__version__ import VERSION
+            return bosh_return(VERSION)
         else:
             parser.print_help()
             raise SystemExit
