@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import requests
+import sys
 from collections import OrderedDict
 import json
 from operator import itemgetter
@@ -91,6 +92,13 @@ class Searcher():
                                       ("SCHEMA VERSION", schema_version),
                                       ("CONTAINER", container),
                                       ("TAGS", other_tags)])
+            for k, v in list(result_dict.items()):
+                if sys.version_info[0] < 3:
+                    if isinstance(v, unicode):
+                        result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
+                elif isinstance(v, str):
+                    result_dict[k] = \
+                        v.encode('ascii', 'xmlcharrefreplace').decode()
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
             results_list.append(result_dict)
