@@ -120,8 +120,7 @@ def execute(*params):
                             "during execution.")
         parser.add_argument("--imagepath", action="store",
                             help="Absolute path to Singularity image. "
-                                 "If not specified, will use current "
-                                 "directory.")
+                            "If not specified, will use current directory.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -194,8 +193,8 @@ def execute(*params):
                             help="Streams stdout and stderr in real time "
                             "during execution.")
         parser.add_argument("--imagepath", action="store",
-                            help="Location of Singularity image "
-                            "(default is current directory).")
+                            help="Absolute path to Singularity image. "
+                            "If not specified, will use current directory.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
 
