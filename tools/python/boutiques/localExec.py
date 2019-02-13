@@ -439,14 +439,18 @@ class LocalExecutor(object):
                 except OSError:
                     time.sleep(5)
                 else:
-                    # Check if container was created while waiting
-                    if self._singConExists(conName, imageDir):
+                    try:
+                        # Check if container was created while waiting
+                        if self._singConExists(conName, imageDir):
+                            conPath = op.abspath(op.join(imageDir, conName))
+                            container_location = "Local ({0})".format(conName)
+                        # Container still does not exist, so pull it
+                        else:
+                            conPath, container_location = self._pullSingImage(
+                                conName, conIndex, conImage, imageDir, lockDir)
+                        return conPath, container_location
+                    finally:
                         self._cleanUpAfterSingPull(lockDir)
-                        conPath = op.abspath(op.join(imageDir, conName))
-                        return conPath, "Local ({0})".format(conName)
-                    # Container still does not exist, so pull it
-                    return self._pullSingImage(conName, conIndex, conImage,
-                                               imageDir, lockDir)
             # If loop times out, check again for existence, otherwise
             # raise an error
             if self._singConExists(conName, imageDir):
@@ -483,7 +487,6 @@ class LocalExecutor(object):
         sing_command = "singularity pull --name " + pull_loc
         (stdout, stderr), return_code = self._localExecute(
                                                 sing_command)
-        self._cleanUpAfterSingPull(lockDir)
         if return_code:
             message = ("Could not pull Singularity"
                        " image: " + os.linesep + " * Pull command: "
