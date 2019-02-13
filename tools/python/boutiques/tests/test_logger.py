@@ -36,10 +36,10 @@ class TestLogger(TestCase):
         invocationStr = open(os.path.join(example1_dir,
                                           "invocation_invalid.json")).read()
         with pytest.raises(ExecutorError) as e:
-                bosh.execute("launch",
-                             os.path.join(example1_dir,
-                                          "example1_docker.json"),
-                             invocationStr)
+            bosh.execute("launch",
+                         os.path.join(example1_dir,
+                                      "example1_docker.json"),
+                         invocationStr)
         assert("[ ERROR ]" in str(e))
 
     @mock.patch('requests.get', side_effect=mock_get)
