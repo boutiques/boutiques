@@ -87,7 +87,7 @@ class TestPrepare(TestCase):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing_multiple_processes(self, mock_mkdir, mock_exists,
-                                        mock_clean_up):
+                                             mock_clean_up):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify the wrong path for the image, but mock that another process
         # created the image at that path while this process was waiting
