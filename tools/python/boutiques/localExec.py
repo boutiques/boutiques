@@ -165,10 +165,10 @@ class LocalExecutor(object):
         # Container Implementation check
         conEngines = ['docker', 'singularity']
         if (self.con is not None) and self.con['type'] not in conEngines:
-                msg = "Other container types than {0} (e.g. {1})"\
-                      " are not yet supported"
-                raise_error(ValueError, msg.format(", ".join(conEngines),
-                            self.con['type']))
+            msg = "Other container types than {0} (e.g. {1})"\
+                  " are not yet supported"
+            raise_error(ValueError, msg.format(", ".join(conEngines),
+                        self.con['type']))
 
         # Generate the command line
         if self.invocation:
@@ -371,8 +371,8 @@ class LocalExecutor(object):
         if 'error-codes' in list(self.desc_dict.keys()):
             for err_elem in self.desc_dict['error-codes']:
                 if err_elem['code'] == exit_code:
-                        desc_err = err_elem['description']
-                        break
+                    desc_err = err_elem['description']
+                    break
 
         return ExecutorOutput(stdout,
                               stderr,
@@ -815,7 +815,7 @@ class LocalExecutor(object):
         for inprm in self.in_dict:
             if (str(self.in_dict[inprm]).lower() == 'false'
                and self.byId(inprm)['type'] == 'Flag'):
-                    toRm.append(inprm)
+                toRm.append(inprm)
             elif (self.byId(inprm)['type'] == 'Flag'
                   and self.in_dict[inprm] is True):
                 # Fix json inputs using bools instead of strings
@@ -855,67 +855,67 @@ class LocalExecutor(object):
                                stripped_extensions=[],
                                escape_special_chars=True):
 
-            def escape_string(s):
-                try:
-                    from shlex import quote
-                except ImportError as e:
-                    from pipes import quote
-                return quote(s)
+        def escape_string(s):
+            try:
+                from shlex import quote
+            except ImportError as e:
+                from pipes import quote
+            return quote(s)
 
-            # Concatenate input and output dictionaries
-            in_out_dict = dict(self.in_dict)
-            in_out_dict.update(self.out_dict)
-            # Go through all the keys
-            for param_id in [x['id'] for x in self.inputs + self.outputs]:
-                escape = (escape_special_chars and
-                          (self.safeGet(param_id, 'type') == 'String' or
-                           self.safeGet(param_id, 'type') == 'File') or
-                          param_id in self.out_dict.keys())
-                clk = self.safeGet(param_id, 'value-key')
-                if clk is None:
-                    continue
-                if param_id in list(in_out_dict.keys()):  # param has a value
-                    val = in_out_dict[param_id]
-                    if type(val) is list:
-                        s_val = ""
-                        list_sep = self.safeGet(param_id, 'list-separator')
-                        if list_sep is None:
-                            list_sep = " "
-                        for x in val:
-                            s = str(x)
-                            if escape:
-                                s = escape_string(str(x))
-                            if val.index(x) == len(val)-1:
-                                s_val += s
-                            else:
-                                s_val += s + list_sep
-                        val = s_val
-                    else:
-                        val = str(val)
+        # Concatenate input and output dictionaries
+        in_out_dict = dict(self.in_dict)
+        in_out_dict.update(self.out_dict)
+        # Go through all the keys
+        for param_id in [x['id'] for x in self.inputs + self.outputs]:
+            escape = (escape_special_chars and
+                      (self.safeGet(param_id, 'type') == 'String' or
+                       self.safeGet(param_id, 'type') == 'File') or
+                      param_id in self.out_dict.keys())
+            clk = self.safeGet(param_id, 'value-key')
+            if clk is None:
+                continue
+            if param_id in list(in_out_dict.keys()):  # param has a value
+                val = in_out_dict[param_id]
+                if type(val) is list:
+                    s_val = ""
+                    list_sep = self.safeGet(param_id, 'list-separator')
+                    if list_sep is None:
+                        list_sep = " "
+                    for x in val:
+                        s = str(x)
                         if escape:
-                            val = escape_string(val)
-                    # Add flags and separator if necessary
-                    flag = self.safeGet(param_id, 'command-line-flag')
-                    if (use_flags and flag is not None):
-                        sep = self.safeGet(param_id,
-                                           'command-line-flag-separator')
-                        if sep is None:
-                            sep = ' '
-                        val = flag + sep + val
-                        # special case for flag-type inputs
-                        if self.safeGet(param_id, 'type') == 'Flag':
-                            val = '' if val.lower() == 'false' else flag
-                    # Remove file extensions from input value
-                    for extension in stripped_extensions:
-                        val = val.replace(extension, "")
-                    template = template.replace(clk, val)
-                else:  # param has no value
-                    if unfound_keys == "remove":
-                        template = template.replace(clk, '')
-                    elif unfound_keys == "clear":
-                        if clk in template:
-                            return ""
-            return template
+                            s = escape_string(str(x))
+                        if val.index(x) == len(val)-1:
+                            s_val += s
+                        else:
+                            s_val += s + list_sep
+                    val = s_val
+                else:
+                    val = str(val)
+                    if escape:
+                        val = escape_string(val)
+                # Add flags and separator if necessary
+                flag = self.safeGet(param_id, 'command-line-flag')
+                if (use_flags and flag is not None):
+                    sep = self.safeGet(param_id,
+                                       'command-line-flag-separator')
+                    if sep is None:
+                        sep = ' '
+                    val = flag + sep + val
+                    # special case for flag-type inputs
+                    if self.safeGet(param_id, 'type') == 'Flag':
+                        val = '' if val.lower() == 'false' else flag
+                # Remove file extensions from input value
+                for extension in stripped_extensions:
+                    val = val.replace(extension, "")
+                template = template.replace(clk, val)
+            else:  # param has no value
+                if unfound_keys == "remove":
+                    template = template.replace(clk, '')
+                elif unfound_keys == "clear":
+                    if clk in template:
+                        return ""
+        return template
 
     # Private method to generate output file names.
     # Output file names will be put in self.out_dict.
@@ -1151,10 +1151,10 @@ class LocalExecutor(object):
             # groups have at least one member present
             if (("one-is-required" in list(group.keys())) and
                group["one-is-required"]):
-                    if len(set.intersection(set(mbs),
-                                            set(self.in_dict.keys()))) < 1:
-                        self.errs.append('Group ' + str(group["id"]) +
-                                         ' requires one member to be present')
+                if len(set.intersection(set(mbs),
+                                        set(self.in_dict.keys()))) < 1:
+                    self.errs.append('Group ' + str(group["id"]) +
+                                     ' requires one member to be present')
         # Fast-fail if there was a problem with the input parameters
         if len(self.errs) != 0:
             message = "Problems found with prospective input:\n"

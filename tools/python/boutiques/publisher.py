@@ -249,7 +249,7 @@ class Publisher():
         self.doi = self.zenodo_publish(deposition_id)
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
-                f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+            f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
 
     def create_metadata(self):
         data = {
