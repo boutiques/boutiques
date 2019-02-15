@@ -15,7 +15,7 @@ class Publisher():
 
     def __init__(self, descriptor_file_name,
                  verbose, sandbox, no_int,
-                 auth_token, replace):
+                 auth_token, replace, id):
         # Straightforward assignments
         self.verbose = verbose
         self.sandbox = sandbox
@@ -25,7 +25,7 @@ class Publisher():
 
         # remove zenodo prefix of ID to update
         try:
-            self.id_to_update = replace.split(".", 1)[1] if replace else None
+            self.id_to_update = id.split(".", 1)[1] if id else None
         except IndexError:
             raise_error(ZenodoError, "Zenodo ID must be prefixed by "
                                      "'zenodo', e.g. zenodo.123456")
@@ -34,7 +34,7 @@ class Publisher():
         validate_descriptor(descriptor_file_name)
         self.descriptor = json.loads(open(self.descriptor_file_name).read())
 
-        # Get relevant descriptor propertis
+        # Get relevant descriptor properties
         self.url = self.descriptor.get('url')
         self.tool_doi = self.descriptor.get('tool-doi')
         self.descriptor_url = self.descriptor.get('descriptor-url')
@@ -46,11 +46,21 @@ class Publisher():
                         "descriptor.")
         self.creator = self.descriptor['author']
 
-        # Get descriptor doi and check that it's not defined
-        if self.descriptor.get('doi') is not None:
+        # If in replace mode, make sure descriptor has a DOI and get the ID.
+        # Otherwise, make sure the descriptor does not have a DOI.
+        if replace:
+            if self.descriptor.get('doi') is None:
+                raise_error(ZenodoError, "To publish an updated version of a "
+                            "previously published descriptor, the descriptor "
+                            "must contain a DOI. This DOI will be replaced "
+                            "with a new one.")
+            else:
+                self.id_to_update = self.descriptor.get('doi').split(".")[-1]
+        elif self.descriptor.get('doi') is not None:
             raise_error(ZenodoError, "Descriptor already has a DOI. Please "
                         "remove it from the descriptor before publishing it "
-                        "again. A new DOI will be generated.")
+                        "again, or use the --replace flag to publish an "
+                        "updated version. A new DOI will be generated.")
 
         self.config_file = os.path.join(os.path.expanduser('~'), ".boutiques")
 
@@ -152,6 +162,13 @@ class Publisher():
         return new_zid
 
     def zenodo_upload_descriptor(self, deposition_id):
+        # If in replace mode, remove the old DOI
+        if self.descriptor.get('doi'):
+            del self.descriptor['doi']
+
+        with open(self.descriptor_file_name, 'w') as fhandle:
+            fhandle.write(json.dumps(self.descriptor, indent=4))
+
         data = {'filename': os.path.basename(self.descriptor_file_name)}
         files = {'file': open(self.descriptor_file_name, 'rb')}
         r = requests.post(self.zenodo_endpoint +

@@ -1,5 +1,6 @@
 {
-    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [INT_LIST_INPUT] &> [LOG]", 
+    "author": "Test author",
+    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [INT_LIST_INPUT] &> [LOG]",
     "container-image": {
         "image": "boutiques/example1:test", 
         "type": "docker"
