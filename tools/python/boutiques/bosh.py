@@ -292,13 +292,13 @@ def publish(*params):
                         help="print information messages.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-r", "--replace", action="store_true",
-                        help="Publish an updated version of an existing "
-                        "record. The descriptor must contain a DOI, which "
-                        "will be replaced with a new one.")
+                       help="Publish an updated version of an existing "
+                       "record. The descriptor must contain a DOI, which "
+                       "will be replaced with a new one.")
     group.add_argument("--id", action="store",
-                        help="Zenodo ID of an existing record you wish to "
-                        "update with a new version, prefixed by "
-                        "'zenodo.' (e.g. zenodo.123456).")
+                       help="Zenodo ID of an existing record you wish to "
+                       "update with a new version, prefixed by "
+                       "'zenodo.' (e.g. zenodo.123456).")
 
     results = parser.parse_args(params)
 
