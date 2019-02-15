@@ -219,8 +219,8 @@ class Importer():
                 cwl_type = cwl_type['items']
                 bout_input['list'] = True
             if type(cwl_type) != str:
-                    raise_error(ImportError, "Unknown type:"
-                                " {0}".format(str(cwl_type)))
+                raise_error(ImportError, "Unknown type:"
+                            " {0}".format(str(cwl_type)))
             boutiques_type = boutiques_types[cwl_type.replace("[]", "")
                                                      .replace("?", "")]
             bout_input['type'] = boutiques_type
@@ -284,7 +284,7 @@ class Importer():
                 if type(cwl_out_obj.get('type')) is dict:
                     if (cwl_out_obj['type'].get('type')
                        and cwl_out_obj['type']['type'] == 'array'):
-                            bout_output['list'] = True
+                        bout_output['list'] = True
                     else:
                         raise_error(ImportError, 'Unsupported output type: '
                                     + cwl_output['type'])
