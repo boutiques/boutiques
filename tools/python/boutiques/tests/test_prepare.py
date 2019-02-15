@@ -141,7 +141,7 @@ class TestPrepare(TestCase):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing_timeout_success(self, mock_mkdir, mock_sleep,
-                                                mock_exists):
+                                          mock_exists):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify path for image that does not exist.
         # Mock that another process has the lockdir and this one
