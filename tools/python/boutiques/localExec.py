@@ -1196,7 +1196,8 @@ def loadJson(userInput, verbose=False):
 def addDefaultValues(desc_dict, in_dict):
     inputs = desc_dict['inputs']
     for in_param in [s for s in inputs
-                     if s.get("default-value") is not None]:
+                     if s.get("default-value") is not None
+                     and not s.get("optional")]:
         if in_dict.get(in_param['id']) is None:
             df = in_param.get("default-value")
             if not in_param['type'] == 'Flag':
