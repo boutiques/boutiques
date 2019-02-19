@@ -413,7 +413,7 @@ class LocalExecutor(object):
 
             if self.imagePath:
                 conName = op.basename(self.imagePath)
-                imageDir = op.dirname(self.imagePath)
+                imageDir = op.dirname(self.imagePath) or "./"
             else:
                 conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
                 imageDir = "./"
