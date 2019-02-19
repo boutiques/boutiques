@@ -16,7 +16,7 @@ else:
     from unittest import TestCase
 
 
-def mock_get():
+def mock_get_publish_then_update():
     mock_record = MockZenodoRecord(1234567, "Example Boutiques Tool")
     return ([mock_zenodo_test_api_fail(),
             mock_zenodo_test_api(),
@@ -26,11 +26,23 @@ def mock_get():
             mock_zenodo_search([mock_record])])
 
 
-def mock_post():
+# for publishing updates with --replace option
+def mock_get_no_search():
+    return ([mock_zenodo_test_api_fail(),
+            mock_zenodo_test_api()])
+
+
+def mock_post_publish_then_update():
     return ([mock_zenodo_deposit(1234567),
             mock_zenodo_upload_descriptor(),
             mock_zenodo_publish(1234567),
-            mock_zenodo_deposit_updated(2345678),
+            mock_zenodo_deposit_updated(1234567, 2345678),
+            mock_zenodo_upload_descriptor(),
+            mock_zenodo_publish(2345678)])
+
+
+def mock_post_publish_update_only():
+    return ([mock_zenodo_deposit_updated(1234567, 2345678),
             mock_zenodo_upload_descriptor(),
             mock_zenodo_publish(2345678)])
 
@@ -53,8 +65,8 @@ class TestPublisher(TestCase):
         return op.join(op.dirname(bfile),
                        "schema", "examples")
 
-    @mock.patch('requests.get', side_effect=mock_get())
-    @mock.patch('requests.post', side_effect=mock_post())
+    @mock.patch('requests.get', side_effect=mock_get_publish_then_update())
+    @mock.patch('requests.post', side_effect=mock_post_publish_then_update())
     @mock.patch('requests.put', return_value=mock_put())
     @mock.patch('requests.delete', return_value=mock_delete())
     def test_publication(self, mock_get, mock_post, mock_put, mock_delete):
@@ -161,3 +173,66 @@ class TestPublisher(TestCase):
                                    stderr=subprocess.PIPE)
         process.communicate()
         self.assertTrue(process.returncode)
+
+    @mock.patch('requests.get', side_effect=mock_get_no_search())
+    @mock.patch('requests.post', side_effect=mock_post_publish_update_only())
+    @mock.patch('requests.put', return_value=mock_put())
+    @mock.patch('requests.delete', return_value=mock_delete())
+    def test_publication_replace_with_id(self, mock_get, mock_post, mock_put,
+                                         mock_delete):
+        example1_dir = op.join(self.get_examples_dir(), "example1")
+        example1_desc = op.join(example1_dir, "example1_docker.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(example1_desc, temp_descriptor.name)
+
+        # Make sure that example1.json doesn't have a DOI yet
+        with open(temp_descriptor.name, 'r') as fhandle:
+            descriptor = json.load(fhandle)
+            assert (descriptor.get('doi') is None)
+
+        # Publish an updated version of an already published descriptor
+        doi = bosh(["publish",
+                    temp_descriptor.name,
+                    "--sandbox", "-y", "-v",
+                    "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                      "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    "--id", "zenodo.1234567"])
+        assert (doi)
+
+        # Now descriptor should have a DOI
+        with open(temp_descriptor.name, 'r') as fhandle:
+            descriptor = json.load(fhandle)
+            assert (descriptor.get('doi') == doi)
+
+    @mock.patch('requests.get', side_effect=mock_get_no_search())
+    @mock.patch('requests.post', side_effect=mock_post_publish_update_only())
+    @mock.patch('requests.put', return_value=mock_put())
+    @mock.patch('requests.delete', return_value=mock_delete())
+    def test_publication_replace_no_id(self, mock_get, mock_post, mock_put,
+                                       mock_delete):
+        example1_dir = op.join(self.get_examples_dir(), "example1")
+        example1_desc = op.join(example1_dir, "example1_docker_with_doi.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(example1_desc, temp_descriptor.name)
+
+        # Make sure that descriptor has a DOI
+        with open(temp_descriptor.name, 'r') as fhandle:
+            descriptor = json.load(fhandle)
+            assert (descriptor.get('doi') is not None)
+            old_doi = descriptor['doi']
+
+        # Publish an updated version of an already published descriptor
+        doi = bosh(["publish",
+                    temp_descriptor.name,
+                    "--sandbox", "-y", "-v",
+                    "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                      "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    "--replace"])
+        assert (doi)
+
+        # Now descriptor should have a DOI which should be different
+        # than the old DOI
+        with open(temp_descriptor.name, 'r') as fhandle:
+            descriptor = json.load(fhandle)
+            assert (descriptor.get('doi') == doi)
+            assert(descriptor.get('doi') != old_doi)

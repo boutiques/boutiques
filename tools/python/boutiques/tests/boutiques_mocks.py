@@ -29,17 +29,19 @@ def mock_zenodo_deposit(mock_zid):
     return MockHttpResponse(201, mock_json)
 
 
-def mock_zenodo_deposit_updated(mock_zid):
+def mock_zenodo_deposit_updated(old_zid, new_zid):
     mock_json = {
                   "links": {
                     "latest_draft": "https://zenodo.org/api/record/%s"
-                                    % mock_zid
+                                    % new_zid
                   },
                   "files": [
                     {
                       "id": 1234
                     }
-                  ]
+                  ],
+                  "doi": "10.5072/zenodo.%s"
+                         % old_zid
                 }
     return MockHttpResponse(201, mock_json)
 

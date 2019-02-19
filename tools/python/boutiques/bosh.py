@@ -290,15 +290,26 @@ def publish(*params):
                         help="disable interactive input.")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="print information messages.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-r", "--replace", action="store_true",
+                       help="Publish an updated version of an existing "
+                       "record. The descriptor must contain a DOI, which "
+                       "will be replaced with a new one.")
+    group.add_argument("--id", action="store",
+                       help="Zenodo ID of an existing record you wish to "
+                       "update with a new version, prefixed by "
+                       "'zenodo.' (e.g. zenodo.123456).")
 
     results = parser.parse_args(params)
 
     from boutiques.publisher import Publisher
     publisher = Publisher(results.boutiques_descriptor,
+                          results.zenodo_token,
                           results.verbose,
                           results.sandbox,
                           results.no_int,
-                          results.zenodo_token)
+                          results.replace,
+                          results.id)
     publisher.publish()
     if hasattr(publisher, 'doi'):
         return publisher.doi
