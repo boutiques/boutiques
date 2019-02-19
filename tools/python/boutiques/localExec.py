@@ -165,10 +165,10 @@ class LocalExecutor(object):
         # Container Implementation check
         conEngines = ['docker', 'singularity']
         if (self.con is not None) and self.con['type'] not in conEngines:
-                msg = "Other container types than {0} (e.g. {1})"\
-                      " are not yet supported"
-                raise_error(ValueError, msg.format(", ".join(conEngines),
-                            self.con['type']))
+            msg = "Other container types than {0} (e.g. {1})"\
+                  " are not yet supported"
+            raise_error(ValueError, msg.format(", ".join(conEngines),
+                        self.con['type']))
 
         # Generate the command line
         if self.invocation:
@@ -242,7 +242,7 @@ class LocalExecutor(object):
         container_command = ""
         if conIsPresent:
             # Pull the container
-            (conName, container_location) = self.prepare()
+            (conPath, container_location) = self.prepare()
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = "#!"+self.shell+" -l\n" + str(command)
@@ -335,7 +335,7 @@ class LocalExecutor(object):
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
                                      conOptsString +
-                                     str(conName) + ' ' + dsname)
+                                     str(conPath) + ' ' + dsname)
             else:
                 raise_error(ExecutorError, 'Unrecognized container type: '
                             '\"%s\"' % conType)
@@ -371,8 +371,8 @@ class LocalExecutor(object):
         if 'error-codes' in list(self.desc_dict.keys()):
             for err_elem in self.desc_dict['error-codes']:
                 if err_elem['code'] == exit_code:
-                        desc_err = err_elem['description']
-                        break
+                    desc_err = err_elem['description']
+                    break
 
         return ExecutorOutput(stdout,
                               stderr,
@@ -396,7 +396,6 @@ class LocalExecutor(object):
 
         # If container is present, alter the command template accordingly
         conName = ""
-        container_location = ""
 
         if conType == 'docker':
             # Pull the docker image
@@ -411,56 +410,70 @@ class LocalExecutor(object):
                 conIndex = "shub://"
             elif not conIndex.endswith("://"):
                 conIndex = conIndex + "://"
-            conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
+
+            if self.imagePath:
+                conName = op.basename(self.imagePath)
+                imageDir = op.dirname(self.imagePath)
+            else:
+                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
+                imageDir = "./"
 
             # Check if container already exists
-            if self._singConExists(conName):
-                return (conName, "Local ({0})".format(conName))
+            if self._singConExists(conName, imageDir):
+                conPath = op.abspath(op.join(imageDir, conName))
+                return conPath, "Local ({0})".format(conName)
 
             # Container does not exist, try to pull it
-            lockdir = conName + "-lock"
+            if self.imagePath:
+                lockDir = self.imagePath + "-lock"
+            else:
+                lockDir = conName + "-lock"
+
             maxcount = 36
             count = 0
-            try:
-                while count < maxcount:
-                    count += 1
+
+            while count < maxcount:
+                count += 1
+                try:
+                    os.mkdir(lockDir)
+                except OSError:
+                    time.sleep(5)
+                else:
                     try:
-                        os.mkdir(lockdir)
-                    except OSError:
-                        time.sleep(5)
-                    else:
                         # Check if container was created while waiting
-                        if self._singConExists(conName):
-                            return (conName, "Local ({0})".format(conName))
+                        if self._singConExists(conName, imageDir):
+                            conPath = op.abspath(op.join(imageDir, conName))
+                            container_location = "Local ({0})".format(conName)
                         # Container still does not exist, so pull it
-                        return self._pullSingImage(conName, conIndex, conImage)
-                # If loop times out, check again for existence, otherwise
-                # raise an error
-                if self._singConExists(conName):
-                    return (conName, "Local ({0})".format(conName))
-                raise_error(ExecutorError, "Unable to retrieve Singularity "
-                            "image.")
-            finally:
-                os.rmdir(lockdir)
-                if "SINGULARITY_PULLFOLDER" in os.environ:
-                    del os.environ["SINGULARITY_PULLFOLDER"]
+                        else:
+                            conPath, container_location = self._pullSingImage(
+                                conName, conIndex, conImage, imageDir, lockDir)
+                        return conPath, container_location
+                    finally:
+                        self._cleanUpAfterSingPull(lockDir)
+            # If loop times out, check again for existence, otherwise
+            # raise an error
+            if self._singConExists(conName, imageDir):
+                conPath = op.abspath(op.join(imageDir, conName))
+                return conPath, "Local ({0})".format(conName)
+            raise_error(ExecutorError, "Unable to retrieve Singularity "
+                        "image.")
 
         # Invalid container type
         raise_error(ExecutorError, 'Unrecognized container'
                     ' type: \"%s\"' % conType)
 
     # Private method that checks if a Singularity image exists locally
-    def _singConExists(self, conName):
-        imagePath = self.imagePath or './'
-        return conName in os.listdir(imagePath)
+    def _singConExists(self, conName, imageDir):
+        return conName in os.listdir(imageDir)
 
     # Private method that pulls a Singularity image
-    def _pullSingImage(self, conName, conIndex, conImage):
+    def _pullSingImage(self, conName, conIndex, conImage, imageDir, lockDir):
         # Give the file a temporary name while it's building
         conNameTmp = conName + ".tmp"
         # Set the pull directory to the specified imagePath
-        if self.imagePath is not None:
-            os.environ["SINGULARITY_PULLFOLDER"] = self.imagePath
+        if self.imagePath:
+            os.environ["SINGULARITY_PULLFOLDER"] = imageDir
         pull_loc = "\"{0}\" {1}{2}".format(conNameTmp,
                                            conIndex,
                                            conImage)
@@ -480,9 +493,16 @@ class LocalExecutor(object):
                        + sing_command + os.linesep + " * Error: "
                        + stderr.decode("utf-8"))
             raise_error(ExecutorError, message)
-        os.rename(conNameTmp, conName)
-        conName = op.abspath(conName)
-        return (conName, container_location)
+        os.rename(op.join(imageDir, conNameTmp), op.join(imageDir, conName))
+        conPath = op.abspath(op.join(imageDir, conName))
+        return conPath, container_location
+
+    # Removes the lock directory and environment variable
+    # created while pulling an image
+    def _cleanUpAfterSingPull(self, lockDir):
+        os.rmdir(lockDir)
+        if "SINGULARITY_PULLFOLDER" in os.environ:
+            del os.environ["SINGULARITY_PULLFOLDER"]
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
@@ -798,7 +818,7 @@ class LocalExecutor(object):
         for inprm in self.in_dict:
             if (str(self.in_dict[inprm]).lower() == 'false'
                and self.byId(inprm)['type'] == 'Flag'):
-                    toRm.append(inprm)
+                toRm.append(inprm)
             elif (self.byId(inprm)['type'] == 'Flag'
                   and self.in_dict[inprm] is True):
                 # Fix json inputs using bools instead of strings
@@ -838,67 +858,67 @@ class LocalExecutor(object):
                                stripped_extensions=[],
                                escape_special_chars=True):
 
-            def escape_string(s):
-                try:
-                    from shlex import quote
-                except ImportError as e:
-                    from pipes import quote
-                return quote(s)
+        def escape_string(s):
+            try:
+                from shlex import quote
+            except ImportError as e:
+                from pipes import quote
+            return quote(s)
 
-            # Concatenate input and output dictionaries
-            in_out_dict = dict(self.in_dict)
-            in_out_dict.update(self.out_dict)
-            # Go through all the keys
-            for param_id in [x['id'] for x in self.inputs + self.outputs]:
-                escape = (escape_special_chars and
-                          (self.safeGet(param_id, 'type') == 'String' or
-                           self.safeGet(param_id, 'type') == 'File') or
-                          param_id in self.out_dict.keys())
-                clk = self.safeGet(param_id, 'value-key')
-                if clk is None:
-                    continue
-                if param_id in list(in_out_dict.keys()):  # param has a value
-                    val = in_out_dict[param_id]
-                    if type(val) is list:
-                        s_val = ""
-                        list_sep = self.safeGet(param_id, 'list-separator')
-                        if list_sep is None:
-                            list_sep = " "
-                        for x in val:
-                            s = str(x)
-                            if escape:
-                                s = escape_string(str(x))
-                            if val.index(x) == len(val)-1:
-                                s_val += s
-                            else:
-                                s_val += s + list_sep
-                        val = s_val
-                    else:
-                        val = str(val)
+        # Concatenate input and output dictionaries
+        in_out_dict = dict(self.in_dict)
+        in_out_dict.update(self.out_dict)
+        # Go through all the keys
+        for param_id in [x['id'] for x in self.inputs + self.outputs]:
+            escape = (escape_special_chars and
+                      (self.safeGet(param_id, 'type') == 'String' or
+                       self.safeGet(param_id, 'type') == 'File') or
+                      param_id in self.out_dict.keys())
+            clk = self.safeGet(param_id, 'value-key')
+            if clk is None:
+                continue
+            if param_id in list(in_out_dict.keys()):  # param has a value
+                val = in_out_dict[param_id]
+                if type(val) is list:
+                    s_val = ""
+                    list_sep = self.safeGet(param_id, 'list-separator')
+                    if list_sep is None:
+                        list_sep = " "
+                    for x in val:
+                        s = str(x)
                         if escape:
-                            val = escape_string(val)
-                    # Add flags and separator if necessary
-                    flag = self.safeGet(param_id, 'command-line-flag')
-                    if (use_flags and flag is not None):
-                        sep = self.safeGet(param_id,
-                                           'command-line-flag-separator')
-                        if sep is None:
-                            sep = ' '
-                        val = flag + sep + val
-                        # special case for flag-type inputs
-                        if self.safeGet(param_id, 'type') == 'Flag':
-                            val = '' if val.lower() == 'false' else flag
-                    # Remove file extensions from input value
-                    for extension in stripped_extensions:
-                        val = val.replace(extension, "")
-                    template = template.replace(clk, val)
-                else:  # param has no value
-                    if unfound_keys == "remove":
-                        template = template.replace(clk, '')
-                    elif unfound_keys == "clear":
-                        if clk in template:
-                            return ""
-            return template
+                            s = escape_string(str(x))
+                        if val.index(x) == len(val)-1:
+                            s_val += s
+                        else:
+                            s_val += s + list_sep
+                    val = s_val
+                else:
+                    val = str(val)
+                    if escape:
+                        val = escape_string(val)
+                # Add flags and separator if necessary
+                flag = self.safeGet(param_id, 'command-line-flag')
+                if (use_flags and flag is not None):
+                    sep = self.safeGet(param_id,
+                                       'command-line-flag-separator')
+                    if sep is None:
+                        sep = ' '
+                    val = flag + sep + val
+                    # special case for flag-type inputs
+                    if self.safeGet(param_id, 'type') == 'Flag':
+                        val = '' if val.lower() == 'false' else flag
+                # Remove file extensions from input value
+                for extension in stripped_extensions:
+                    val = val.replace(extension, "")
+                template = template.replace(clk, val)
+            else:  # param has no value
+                if unfound_keys == "remove":
+                    template = template.replace(clk, '')
+                elif unfound_keys == "clear":
+                    if clk in template:
+                        return ""
+        return template
 
     # Private method to generate output file names.
     # Output file names will be put in self.out_dict.
@@ -1134,10 +1154,10 @@ class LocalExecutor(object):
             # groups have at least one member present
             if (("one-is-required" in list(group.keys())) and
                group["one-is-required"]):
-                    if len(set.intersection(set(mbs),
-                                            set(self.in_dict.keys()))) < 1:
-                        self.errs.append('Group ' + str(group["id"]) +
-                                         ' requires one member to be present')
+                if len(set.intersection(set(mbs),
+                                        set(self.in_dict.keys()))) < 1:
+                    self.errs.append('Group ' + str(group["id"]) +
+                                     ' requires one member to be present')
         # Fast-fail if there was a problem with the input parameters
         if len(self.errs) != 0:
             message = "Problems found with prospective input:\n"

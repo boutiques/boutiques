@@ -195,10 +195,10 @@ class TestExample1(TestCase):
         invocationStr = open(os.path.join(example1_dir,
                                           "invocation_invalid.json")).read()
         with pytest.raises(ExecutorError) as e:
-                bosh.execute("launch",
-                             os.path.join(example1_dir,
-                                          "example1_docker.json"),
-                             invocationStr)
+            bosh.execute("launch",
+                         os.path.join(example1_dir,
+                                      "example1_docker.json"),
+                         invocationStr)
         assert("Cannot parse input" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -285,11 +285,11 @@ class TestExample1(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         with pytest.raises(ExecutorError) as e:
-                bosh.execute("launch",
-                             os.path.join(example1_dir,
-                                          "example1_sing_crash_pull.json"),
-                             os.path.join(example1_dir,
-                                          "invocation_sing.json"))
+            bosh.execute("launch",
+                         os.path.join(example1_dir,
+                                      "example1_sing_crash_pull.json"),
+                         os.path.join(example1_dir,
+                                      "invocation_sing.json"))
         assert("Could not pull Singularity image" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),

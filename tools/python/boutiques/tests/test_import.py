@@ -23,7 +23,7 @@ class TestImport(TestCase):
         outfile = "test-import.json"
         ref_name = "test-import-ref.json"
         if op.isfile(outfile):
-                os.remove(outfile)
+            os.remove(outfile)
         self.assertFalse(bosh(["import", "bids", outfile, bids_app]))
         assert(open(outfile, "U").read().strip() == open(opj(bids_app,
                                                              ref_name),
@@ -49,7 +49,7 @@ class TestImport(TestCase):
         ref_file_p2 = opj(op.split(bfile)[0], "schema/examples",
                           ref_name_p2)
         if op.isfile(fout):
-                os.remove(fout)
+            os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
         result = open(fout, "U").read().strip()
         assert(result == open(ref_file, "U").read().strip() or
@@ -66,7 +66,7 @@ class TestImport(TestCase):
         ref_file_p2 = opj(op.split(bfile)[0], "schema/examples",
                           ref_name_p2)
         if op.isfile(fout):
-                os.remove(fout)
+            os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
         result = open(fout, "U").read().strip()
         assert(result == open(ref_file, "U").read().strip() or
@@ -83,52 +83,52 @@ class TestImport(TestCase):
                     "nestedworkflows"  # workflow
                     ]
         for d in os.listdir(ex_dir):
-                if d == "README.md":
-                        continue
-                files = os.listdir(opj(ex_dir, d))
-                cwl_descriptor = None
-                cwl_invocation = None
-                for f in files:
-                        if op.basename(f).endswith(".cwl"):
-                                cwl_descriptor = op.abspath(opj(ex_dir, d, f))
-                        if op.basename(f).endswith(".yml"):
-                                cwl_invocation = op.abspath(opj(ex_dir, d, f))
-                assert(cwl_descriptor is not None)
-                out_desc = "./cwl_out.json"
-                out_inv = "./cwl_inv_out.json"
-                run = False
-                if cwl_invocation is not None:
-                        args = ["import",
-                                "cwl",
-                                out_desc,
-                                cwl_descriptor,
-                                "-i", cwl_invocation,
-                                "-o", out_inv]
-                        run = True
-                else:
-                        args = ["import",
-                                "cwl",
-                                out_desc,
-                                cwl_descriptor]
-                if d in bad_dirs:
-                        with pytest.raises(ImportError):
-                                bosh(args)
-                else:
-                        self.assertFalse(bosh(args), cwl_descriptor)
-                        if run:
-                                # write files required by cwl tools
-                                with open('hello.js', 'w') as f:
-                                        f.write("'hello'")
-                                with open('goodbye.txt', 'w') as f:
-                                        f.write("goodbye")
-                                # closing required for Python 2.6...
-                                with tarfile.open('hello.tar',
-                                                  'w') as tar:
-                                        tar.add('goodbye.txt')
-                                ret = boutiques.execute(
-                                        "launch",
-                                        out_desc,
-                                        out_inv
-                                      )
-                                self.assertFalse(ret.exit_code,
-                                                 cwl_descriptor)
+            if d == "README.md":
+                continue
+            files = os.listdir(opj(ex_dir, d))
+            cwl_descriptor = None
+            cwl_invocation = None
+            for f in files:
+                if op.basename(f).endswith(".cwl"):
+                    cwl_descriptor = op.abspath(opj(ex_dir, d, f))
+                if op.basename(f).endswith(".yml"):
+                    cwl_invocation = op.abspath(opj(ex_dir, d, f))
+            assert(cwl_descriptor is not None)
+            out_desc = "./cwl_out.json"
+            out_inv = "./cwl_inv_out.json"
+            run = False
+            if cwl_invocation is not None:
+                args = ["import",
+                        "cwl",
+                        out_desc,
+                        cwl_descriptor,
+                        "-i", cwl_invocation,
+                        "-o", out_inv]
+                run = True
+            else:
+                args = ["import",
+                        "cwl",
+                        out_desc,
+                        cwl_descriptor]
+            if d in bad_dirs:
+                with pytest.raises(ImportError):
+                    bosh(args)
+            else:
+                self.assertFalse(bosh(args), cwl_descriptor)
+                if run:
+                    # write files required by cwl tools
+                    with open('hello.js', 'w') as f:
+                        f.write("'hello'")
+                    with open('goodbye.txt', 'w') as f:
+                        f.write("goodbye")
+                    # closing required for Python 2.6...
+                    with tarfile.open('hello.tar',
+                                      'w') as tar:
+                        tar.add('goodbye.txt')
+                    ret = boutiques.execute(
+                            "launch",
+                            out_desc,
+                            out_inv
+                          )
+                    self.assertFalse(ret.exit_code,
+                                     cwl_descriptor)

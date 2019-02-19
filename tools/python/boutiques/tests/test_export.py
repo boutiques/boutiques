@@ -38,10 +38,10 @@ class TestExport(TestCase):
                result == open(ref_file_p2, "U").read().strip())
         # Identifier is not passed, descriptor has no DOI
         with self.assertRaises(ExportError) as e:
-                bosh(["export",
-                      "carmin",
-                      example1_desc,
-                      fout])
+            bosh(["export",
+                  "carmin",
+                  example1_desc,
+                  fout])
         self.assertTrue("Descriptor must have a DOI, or identifier "
                         "must be specified" in str(e.exception))
         self.assertRaises(ExportError, )
@@ -77,10 +77,10 @@ class TestExport(TestCase):
                result == open(ref_file_p2, "U").read().strip())
         # Identifier is not passed, descriptor has no DOI
         with self.assertRaises(ExportError) as e:
-                bosh(["export",
-                      "carmin",
-                      example1_desc,
-                      fout])
+            bosh(["export",
+                  "carmin",
+                  example1_desc,
+                  fout])
         self.assertTrue("Descriptor must have a DOI, or identifier "
                         "must be specified" in str(e.exception))
         self.assertRaises(ExportError, )
