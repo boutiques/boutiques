@@ -13,9 +13,9 @@ class ZenodoError(Exception):
 
 class Publisher():
 
-    def __init__(self, descriptor_file_name,
-                 verbose, sandbox, no_int,
-                 auth_token, replace, id):
+    def __init__(self, descriptor_file_name, auth_token,
+                 verbose=False, sandbox=False, no_int=False,
+                 replace=False, id=None):
         # Straightforward assignments
         self.verbose = verbose
         self.sandbox = sandbox

@@ -304,10 +304,10 @@ def publish(*params):
 
     from boutiques.publisher import Publisher
     publisher = Publisher(results.boutiques_descriptor,
+                          results.zenodo_token,
                           results.verbose,
                           results.sandbox,
                           results.no_int,
-                          results.zenodo_token,
                           results.replace,
                           results.id)
     publisher.publish()
