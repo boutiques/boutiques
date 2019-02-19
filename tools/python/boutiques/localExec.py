@@ -618,7 +618,7 @@ class LocalExecutor(object):
             if prm['type'] == 'Number':
                 return randNum(prm)
             if prm['type'] == 'Flag':
-                return rnd.choice(['true', 'false'])
+                return rnd.choice([True, False])
             if prm['type'] == 'File':
                 return randFile(prm['id'])
 
