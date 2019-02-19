@@ -630,7 +630,7 @@ Separator used between flags and their arguments. Defaults to a single space.
 
 #### default-value
 
-Default value of the input, used by the tool when no option is specified.
+Default value of the input. The default value is set when no value is specified, even when the input is optional. If the desired behavior is to omit the input from the command line when no value is specified, then no default value should be used. In this case, the tool might still use a default value internally, but this will remain undocumented in the Boutiques interface.
 
 `default-value`
 * is optional
@@ -643,7 +643,7 @@ Unknown type ``.
 ```json
 {
   "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
-  "description": "Default value of the input, used by the tool when no option is specified.",
+  "description": "Default value of the input. The default value is set when no value is specified, even when the input is optional. If the desired behavior is to omit the input from the command line when no value is specified, then no default value should be used. In this case, the tool might still use a default value internally, but this will remain undocumented in the Boutiques interface.",
   "simpletype": "complex"
 }
 ```

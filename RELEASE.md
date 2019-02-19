@@ -1,6 +1,6 @@
 # Release process
 
-1. Bump version number in `setup.py`
+1. Bump version number in `boutiques/__version__.py`
 2. If schema was modified, re-generate `schema/README.md` using [jsonschema2md](https://github.com/adobe/jsonschema2md)
    ```
    git clone https://github.com/adobe/jsonschema2md.git
