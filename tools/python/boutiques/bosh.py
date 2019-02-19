@@ -103,11 +103,11 @@ def execute(*params):
                             "JSON string or Zenodo ID (prefixed by 'zenodo.').")
         parser.add_argument("invocation", action="store",
                             help="Input JSON complying to invocation.")
-        parser.add_argument("-v", "--volumes", action="store", type=str,
+        parser.add_argument("-v", "--volumes", action="append", type=str,
                             help="Volumes to mount when launching the "
                             "container. Format consistently the following:"
                             " /a:/b will mount local directory /a to "
-                            "container directory /b.", nargs="*")
+                            "container directory /b.")
         parser.add_argument("-x", "--debug", action="store_true",
                             help="Keeps temporary scripts used during "
                             "execution, and prints additional debug "
