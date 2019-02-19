@@ -812,25 +812,13 @@ class LocalExecutor(object):
         # Input dictionary
         if self.debug:
             print_info("Input: " + str(self.in_dict))
-        # Fix special flag case: flags given the false value
-        # are treated as non-existent
-        toRm = []
-        for inprm in self.in_dict:
-            if (str(self.in_dict[inprm]).lower() == 'false'
-               and self.byId(inprm)['type'] == 'Flag'):
-                toRm.append(inprm)
-            elif (self.byId(inprm)['type'] == 'Flag'
-                  and self.in_dict[inprm] is True):
-                # Fix json inputs using bools instead of strings
-                self.in_dict[inprm] = "true"
-        for r in toRm:
-            del self.in_dict[r]
+
         # Add default values for required parameters,
         # if no value has been given
         addDefaultValues(self.desc_dict, self.in_dict)
         # Check results (as much as possible)
         try:
-            pass  # self._validateDict()
+            self._validateDict()
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write("An error occurred in validation\n"
                              "Previously saved issues\n")
@@ -904,10 +892,11 @@ class LocalExecutor(object):
                                        'command-line-flag-separator')
                     if sep is None:
                         sep = ' '
-                    val = flag + sep + val
                     # special case for flag-type inputs
                     if self.safeGet(param_id, 'type') == 'Flag':
                         val = '' if val.lower() == 'false' else flag
+                    else:
+                        val = flag + sep + val
                 # Remove file extensions from input value
                 for extension in stripped_extensions:
                     val = val.replace(extension, "")
@@ -971,7 +960,7 @@ class LocalExecutor(object):
                                                 False, "clear",
                                                 stripped_extensions,
                                                 True))
-            template = "\n".join(newTemplate)
+            template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
             file = open(fileName, 'w')
@@ -1072,7 +1061,7 @@ class LocalExecutor(object):
                 # Should be 'true' or 'false' when lower-cased
                 # (based on our transformations of the input)
                 check(None,
-                      lambda x, y: x.lower() in ["true", "false"],
+                      lambda x, y: type(x) == bool,
                       "is not a valid flag value", val)
             elif targ["type"] == "File":
                 # Check path-type (absolute vs relative)
@@ -1198,9 +1187,5 @@ def addDefaultValues(desc_dict, in_dict):
     for in_param in [s for s in inputs
                      if s.get("default-value") is not None]:
         if in_dict.get(in_param['id']) is None:
-            df = in_param.get("default-value")
-            if not in_param['type'] == 'Flag':
-                in_dict[in_param['id']] = df
-            else:
-                in_dict[in_param['id']] = str(df)
+            in_dict[in_param['id']] = in_param.get("default-value")
     return in_dict
