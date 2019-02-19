@@ -11,7 +11,6 @@
     },
     "description": "This property describes the tool or application",
     "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/examples/example1/example1_docker.json",
-    "doi": "10.5072/zenodo.261391",
     "environment-variables": [
         {
             "name": "ENVAR",
