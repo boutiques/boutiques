@@ -317,7 +317,7 @@
                     },
                     "default-value": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
-                        "description": "Default value of the input, used by the tool when no option is specified."
+                        "description": "Default value of the input. Default values will be added to the command line when no value is specified, even when input is optional. No default value should be specified if the desired behavior is to omit the input all together when no value is specified. In this case, the tool might still use a default value internally, but this will remain undocumented in the Boutiques interface."
                     },
                     "value-choices": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/value-choices",
