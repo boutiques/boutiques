@@ -25,9 +25,9 @@ class TestImport(TestCase):
         if op.isfile(outfile):
             os.remove(outfile)
         self.assertFalse(bosh(["import", "bids", outfile, bids_app]))
-        assert(open(outfile, "r").read().strip() == open(opj(bids_app,
+        assert(open(outfile, "U").read().strip() == open(opj(bids_app,
                                                              ref_name),
-                                                         "r").read().strip())
+                                                         "U").read().strip())
 
     def test_import_bids_bad(self):
         bids_app = opj(op.split(bfile)[0],
@@ -51,9 +51,9 @@ class TestImport(TestCase):
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = open(fout, "r").read().strip()
-        assert(result == open(ref_file, "r").read().strip() or
-               result == open(ref_file_p2, "r").read().strip())
+        result = open(fout, "U").read().strip()
+        assert(result == open(ref_file, "U").read().strip() or
+               result == open(ref_file_p2, "U").read().strip())
         os.remove(fout)
 
     def test_upgrade_04_json_obj(self):
@@ -68,9 +68,9 @@ class TestImport(TestCase):
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = open(fout, "r").read().strip()
-        assert(result == open(ref_file, "r").read().strip() or
-               result == open(ref_file_p2, "r").read().strip())
+        result = open(fout, "U").read().strip()
+        assert(result == open(ref_file, "U").read().strip() or
+               result == open(ref_file_p2, "U").read().strip())
         os.remove(fout)
 
     def test_import_cwl_valid(self):

@@ -322,8 +322,6 @@ def invocation(*params):
     result = parser.parse_args(params)
 
     validate(result.descriptor)
-    if result.invocation:
-        data = loadJson(result.invocation)
     descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
@@ -336,7 +334,7 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        data = addDefaultValues(descriptor, data)
+        data = addDefaultValues(descriptor, loadJson(result.invocation))
         validateSchema(invSchema, data)
 
 
@@ -392,19 +390,13 @@ def test(*params):
         return 0
 
     for test in descriptor["tests"]:
-        # Create temporary file for the invocation() function.
         invocation_JSON = test["invocation"]
-        temp_invocation_JSON = tempfile.NamedTemporaryFile(suffix=".json",
-                                                           delete=False)
-        temp_invocation_JSON.write(json.dumps(invocation_JSON).encode())
-        temp_invocation_JSON.seek(0)
+
         # Check if the invocation is valid.
-        invocation(result.descriptor, "--invocation", temp_invocation_JSON.name)
-        # Destroy the temporary file.
-        temp_invocation_JSON.close()
+        invocation(result.descriptor, "--invocation",
+                   json.dumps(invocation_JSON))
 
     # Invocations have been properly validated. We can launch the actual tests.
-
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
     return pytest.main([test_path, "--descriptor", result.descriptor])
 
