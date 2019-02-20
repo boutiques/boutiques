@@ -9,6 +9,20 @@ from boutiques import __file__ as bfile
 from boutiques.localExec import ExecutorError
 from argparse import ArgumentParser
 from unittest import TestCase
+import mock
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+
+
+def mock_get(*args, **kwargs):
+    query = args[0].split("=")[1]
+    query = query[:query.find("&")]
+    query = query.replace("*", '')
+
+    mock_records = []
+    # Return an arbitrary list of results
+    for i in range(0, 10):
+        mock_records.append(MockZenodoRecord(i, "Example Tool %s" % i))
+    return mock_zenodo_search(mock_records)
 
 
 class TestLogger(TestCase):
@@ -22,13 +36,14 @@ class TestLogger(TestCase):
         invocationStr = open(os.path.join(example1_dir,
                                           "invocation_invalid.json")).read()
         with pytest.raises(ExecutorError) as e:
-                bosh.execute("launch",
-                             os.path.join(example1_dir,
-                                          "example1_docker.json"),
-                             invocationStr)
+            bosh.execute("launch",
+                         os.path.join(example1_dir,
+                                      "example1_docker.json"),
+                         invocationStr)
         assert("[ ERROR ]" in str(e))
 
-    def test_print_info(self):
+    @mock.patch('requests.get', side_effect=mock_get)
+    def test_print_info(self, mock_get):
         bosh.search("-v")
         out, err = self.capfd.readouterr()
         assert("[ INFO ]" in out)

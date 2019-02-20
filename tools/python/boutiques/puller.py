@@ -15,7 +15,7 @@ except ImportError:
 
 class Puller():
 
-    def __init__(self, zid, verbose, sandbox):
+    def __init__(self, zid, verbose=False, sandbox=False):
         # remove zenodo prefix
         try:
             self.zid = zid.split(".", 1)[1]
@@ -38,7 +38,8 @@ class Puller():
             return self.cached_fname
 
         from boutiques.searcher import Searcher
-        searcher = Searcher(self.zid, self.verbose, self.sandbox, None, True)
+        searcher = Searcher(self.zid, self.verbose, self.sandbox,
+                            exact_match=True)
         r = searcher.zenodo_search()
 
         for hit in r.json()["hits"]["hits"]:

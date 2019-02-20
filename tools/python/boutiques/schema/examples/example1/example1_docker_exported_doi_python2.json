@@ -11,13 +11,24 @@
     "name": "Example Boutiques Tool", 
     "parameters": [
         {
+            "defaultValue": [
+                "aStringValue"
+            ], 
+            "description": "Describe the use and meaning of the parameter", 
+            "id": "str_input_list", 
+            "isOptional": false, 
+            "isReturnedValue": false, 
+            "name": "A list of string inputs", 
+            "type": "List"
+        }, 
+        {
             "defaultValue": "aStringValue", 
             "description": "Describe the use and meaning of the parameter", 
             "id": "str_input", 
             "isOptional": false, 
             "isReturnedValue": false, 
             "name": "A string input", 
-            "type": "List"
+            "type": "String"
         }, 
         {
             "description": "Describe the use and meaning of the parameter", 

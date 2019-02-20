@@ -11,7 +11,7 @@ Boutiques
     :target: https://travis-ci.org/boutiques/boutiques
 .. image:: https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop
     :target: https://coveralls.io/github/boutiques/boutiques?branch=develop
-    
+
 Boutiques is a cross-platform descriptive command-line framework for
 applications.
 
@@ -34,7 +34,15 @@ Simple! Just open your favourite terminal and type:
 
 Alongside installing the Boutiques package, this will also ensure the
 dependencies are installed: ``simplejson``, ``jsonschema``,
-``requests``, and ``pytest``.
+``requests``, ``pytest``, ``termcolor``, ``pyyaml``, ``tabulate`` and
+``mock``.
+
+If you want the latest changes that aren’t officially released yet, you
+can also install directly from GitHub:
+
+::
+
+    $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques&subdirectory=tools/python"
 
 Command-Line API
 ----------------
@@ -52,7 +60,9 @@ Perhaps someone has already described the tool you are looking for and
 you could reuse their work. For instance, if you are looking for a tool
 from the FSL suite, try:
 
-$ bosh search fsl
+::
+
+    $ bosh search fsl
 
 Search returns a list of identifiers for tools matching your query. You
 can use these identifiers in any ``bosh`` command transparently. Even

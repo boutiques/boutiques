@@ -16,7 +16,7 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
-from boutiques.localExec import loadJson
+from boutiques.localExec import loadJson, addDefaultValues
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
@@ -103,11 +103,11 @@ def execute(*params):
                             "JSON string or Zenodo ID (prefixed by 'zenodo.').")
         parser.add_argument("invocation", action="store",
                             help="Input JSON complying to invocation.")
-        parser.add_argument("-v", "--volumes", action="store", type=str,
+        parser.add_argument("-v", "--volumes", action="append", type=str,
                             help="Volumes to mount when launching the "
                             "container. Format consistently the following:"
                             " /a:/b will mount local directory /a to "
-                            "container directory /b.", nargs="*")
+                            "container directory /b.")
         parser.add_argument("-x", "--debug", action="store_true",
                             help="Keeps temporary scripts used during "
                             "execution, and prints additional debug "
@@ -119,8 +119,8 @@ def execute(*params):
                             help="Streams stdout and stderr in real time "
                             "during execution.")
         parser.add_argument("--imagepath", action="store",
-                            help="Location of Singularity image "
-                            "(default is current directory).")
+                            help="Path to Singularity image. "
+                            "If not specified, will use current directory.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -177,7 +177,7 @@ def execute(*params):
         # Adding hide to "container location" field since it's an invalid
         # value, can parse that to hide the summary print
         return ExecutorOutput(os.linesep.join(sout), "",
-                              0, "", [], [], "", "", "hide")
+                              0, "", [], [], os.linesep.join(sout), "", "hide")
 
     if mode == "prepare":
         parser = ArgumentParser("Pulls the container image for a given "
@@ -193,8 +193,8 @@ def execute(*params):
                             help="Streams stdout and stderr in real time "
                             "during execution.")
         parser.add_argument("--imagepath", action="store",
-                            help="Location of Singularity image "
-                            "(default is current directory).")
+                            help="Path to Singularity image. "
+                            "If not specified, will use current directory.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
 
@@ -290,15 +290,26 @@ def publish(*params):
                         help="disable interactive input.")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="print information messages.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-r", "--replace", action="store_true",
+                       help="Publish an updated version of an existing "
+                       "record. The descriptor must contain a DOI, which "
+                       "will be replaced with a new one.")
+    group.add_argument("--id", action="store",
+                       help="Zenodo ID of an existing record you wish to "
+                       "update with a new version, prefixed by "
+                       "'zenodo.' (e.g. zenodo.123456).")
 
     results = parser.parse_args(params)
 
     from boutiques.publisher import Publisher
     publisher = Publisher(results.boutiques_descriptor,
+                          results.zenodo_token,
                           results.verbose,
                           results.sandbox,
                           results.no_int,
-                          results.zenodo_token)
+                          results.replace,
+                          results.id)
     publisher.publish()
     if hasattr(publisher, 'doi'):
         return publisher.doi
@@ -322,8 +333,6 @@ def invocation(*params):
     result = parser.parse_args(params)
 
     validate(result.descriptor)
-    if result.invocation:
-        data = loadJson(result.invocation)
     descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
@@ -336,6 +345,7 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
+        data = addDefaultValues(descriptor, loadJson(result.invocation))
         validateSchema(invSchema, data)
 
 
@@ -391,19 +401,13 @@ def test(*params):
         return 0
 
     for test in descriptor["tests"]:
-        # Create temporary file for the invocation() function.
         invocation_JSON = test["invocation"]
-        temp_invocation_JSON = tempfile.NamedTemporaryFile(suffix=".json",
-                                                           delete=False)
-        temp_invocation_JSON.write(json.dumps(invocation_JSON).encode())
-        temp_invocation_JSON.seek(0)
+
         # Check if the invocation is valid.
-        invocation(result.descriptor, "--invocation", temp_invocation_JSON.name)
-        # Destroy the temporary file.
-        temp_invocation_JSON.close()
+        invocation(result.descriptor, "--invocation",
+                   json.dumps(invocation_JSON))
 
     # Invocations have been properly validated. We can launch the actual tests.
-
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
     return pytest.main([test_path, "--descriptor", result.descriptor])
 
@@ -424,12 +428,14 @@ def search(*params):
                         "to be returned. Default is 10.")
     parser.add_argument("-nt", "--no-trunc", action="store_true",
                         help="Do not truncate long tool descriptions.")
+    parser.add_argument("-e", "--exact", action="store_true",
+                        help="Only return results containing the exact query.")
 
     result = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
     searcher = Searcher(result.query, result.verbose, result.sandbox,
-                        result.max, result.no_trunc)
+                        result.max, result.no_trunc, result.exact)
 
     return searcher.search()
 
@@ -474,10 +480,12 @@ def bosh(args=None):
                         "Example: Generates example command-line for descriptor"
                         ". Search: search Zenodo for descriptors. "
                         "Pull: download a descriptor from Zenodo. "
-                        "Pprint: generate pretty help text from a descriptor.",
+                        "Pprint: generate pretty help text from a descriptor."
+                        "Version: prints the version of this tool.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "pprint"])
+                                 "test", "example", "search", "pull", "pprint",
+                                 "version"])
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -552,6 +560,9 @@ def bosh(args=None):
         elif func == "pull":
             out = pull(*params)
             return bosh_return(out, hide=True)
+        elif func == "version":
+            from boutiques.__version__ import VERSION
+            return bosh_return(VERSION)
         else:
             parser.print_help()
             raise SystemExit

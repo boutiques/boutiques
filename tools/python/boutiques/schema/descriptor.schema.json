@@ -317,7 +317,7 @@
                     },
                     "default-value": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
-                        "description": "Default value of the input, used by the tool when no option is specified."
+                        "description": "Default value of the input. The default value is set when no value is specified, even when the input is optional. If the desired behavior is to omit the input from the command line when no value is specified, then no default value should be used. In this case, the tool might still use a default value internally, but this will remain undocumented in the Boutiques interface."
                     },
                     "value-choices": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/value-choices",
@@ -514,6 +514,15 @@
                   "assertions",
                   "invocation"
                 ]
+            }
+        },
+        "online-platform-urls": {
+            "id": "http://github.com/boutiques/boutiques-schema/online-platforms",
+            "type": "array",
+            "description": "Online platform URLs from which the tool can be executed.",
+            "items": {
+                "type": "string",
+                "pattern": "^https?://"
             }
         },
         "output-files": {
