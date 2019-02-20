@@ -119,7 +119,7 @@ def execute(*params):
                             help="Streams stdout and stderr in real time "
                             "during execution.")
         parser.add_argument("--imagepath", action="store",
-                            help="Absolute path to Singularity image. "
+                            help="Path to Singularity image. "
                             "If not specified, will use current directory.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
@@ -193,7 +193,7 @@ def execute(*params):
                             help="Streams stdout and stderr in real time "
                             "during execution.")
         parser.add_argument("--imagepath", action="store",
-                            help="Absolute path to Singularity image. "
+                            help="Path to Singularity image. "
                             "If not specified, will use current directory.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
