@@ -82,6 +82,18 @@ class TestPrepare(TestCase):
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
+    def test_prepare_sing_specify_imagepath_basename_only(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        ret = bosh.execute("prepare",
+                           os.path.join(example1_dir,
+                                        "example1_sing.json"),
+                           "--imagepath",
+                           "boutiques-example1-test.simg")
+        assert ("Local (boutiques-example1-test.simg)" in ret.stdout)
+        assert ("SINGULARITY_PULLFOLDER" not in os.environ)
+
+    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
+                        reason="Singularity not installed")
     def test_prepare_sing_image_does_not_exist(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify the wrong path for the image
