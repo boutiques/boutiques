@@ -245,7 +245,7 @@ class LocalExecutor(object):
             (conPath, container_location) = self.prepare()
             # Generate command script
             # Get the supported shell by the docker or singularity
-            cmdString = "#!"+self.shell+" -l\n" + str(command)
+            cmdString = "#!"+self.shell+" -l"+os.linesep+str(command)
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
@@ -881,10 +881,8 @@ class LocalExecutor(object):
                         else:
                             s_val += s + list_sep
                     val = s_val
-                else:
-                    val = str(val)
-                    if escape:
-                        val = escape_string(val)
+                elif escape:
+                    val = escape_string(val)
                 # Add flags and separator if necessary
                 flag = self.safeGet(param_id, 'command-line-flag')
                 if (use_flags and flag is not None):
@@ -894,13 +892,16 @@ class LocalExecutor(object):
                         sep = ' '
                     # special case for flag-type inputs
                     if self.safeGet(param_id, 'type') == 'Flag':
-                        val = '' if val.lower() == 'false' else flag
+                        val = '' if val == False else flag
                     else:
                         val = flag + sep + val
                 # Remove file extensions from input value
-                for extension in stripped_extensions:
-                    val = val.replace(extension, "")
-                template = template.replace(clk, val)
+                if (self.safeGet(param_id, 'type') == 'File' or
+                    self.safeGet(param_id, 'type') == 'String'):
+                    for extension in stripped_extensions:
+                        val = val.replace(extension, "")
+                # Here val can be a number so we need to cast it
+                template = template.replace(clk, str(val))
             else:  # param has no value
                 if unfound_keys == "remove":
                     template = template.replace(clk, '')
