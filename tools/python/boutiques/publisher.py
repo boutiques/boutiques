@@ -38,6 +38,7 @@ class Publisher():
         self.url = self.descriptor.get('url')
         self.tool_doi = self.descriptor.get('tool-doi')
         self.descriptor_url = self.descriptor.get('descriptor-url')
+        self.online_platforms = self.descriptor.get('online-platform-urls')
 
         # Get tool author and check that it's defined
         if self.descriptor.get("author") is None:
@@ -321,6 +322,14 @@ class Publisher():
                 'identifier': self.url,
                 'relation': 'hasPart'
             })
+        if self.online_platforms is not None:
+            if data['metadata'].get('related_identifiers') is None:
+                data['metadata']['related_identifiers'] = []
+            for p in self.online_platforms:
+                data['metadata']['related_identifiers'].append({
+                    'identifier': p,
+                    'relation': 'hasPart'
+                })
         if self.tool_doi is not None:
             if data['metadata'].get('related_identifiers') is None:
                 data['metadata']['related_identifiers'] = []
