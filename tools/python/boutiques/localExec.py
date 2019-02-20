@@ -413,10 +413,10 @@ class LocalExecutor(object):
 
             if self.imagePath:
                 conName = op.basename(self.imagePath)
-                imageDir = op.dirname(self.imagePath) or "./"
+                imageDir = op.normpath(op.dirname(self.imagePath))
             else:
                 conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
-                imageDir = "./"
+                imageDir = op.normpath("")
 
             # Check if container already exists
             if self._singConExists(conName, imageDir):
