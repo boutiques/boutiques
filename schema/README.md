@@ -26,6 +26,7 @@
 | [inputs](#inputs) | `object[]` | **Required** | Tool (this schema) |
 | [invocation-schema](#invocation-schema) | `object` | Optional | Tool (this schema) |
 | [name](#name) | `string` | **Required** | Tool (this schema) |
+| [online-platform-urls](#online-platform-urls) | `string[]` | Optional | Tool (this schema) |
 | [output-files](#output-files) | `object[]` | Optional | Tool (this schema) |
 | [schema-version](#schema-version) | `enum` | **Required** | Tool (this schema) |
 | [shell](#shell) | `string` | Optional | Tool (this schema) |
@@ -1177,6 +1178,39 @@ Tool name.
 
 `string`
 * minimum length: 1 characters
+
+
+
+
+
+## online-platform-urls
+
+Online platform URLs from which the tool can be executed.
+
+`online-platform-urls`
+* is optional
+* type: `string[]`
+
+* defined in this schema
+
+### online-platform-urls Type
+
+
+Array type: `string[]`
+
+All items must be of the type:
+`string`
+
+
+All instances must conform to this regular expression 
+(test examples [here](https://regexr.com/?expression=%5Ehttps%3F%3A%2F%2F)):
+```regex
+^https?://
+```
+
+
+
+
 
 
 
