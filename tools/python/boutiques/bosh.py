@@ -177,7 +177,7 @@ def execute(*params):
         # Adding hide to "container location" field since it's an invalid
         # value, can parse that to hide the summary print
         return ExecutorOutput(os.linesep.join(sout), "",
-                              0, "", [], [], "", "", "hide")
+                              0, "", [], [], os.linesep.join(sout), "", "hide")
 
     if mode == "prepare":
         parser = ArgumentParser("Pulls the container image for a given "

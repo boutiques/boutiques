@@ -1,0 +1,40 @@
+{
+    "name": "BinTrue", 
+    "tool-version": "1.0.0.0.0.0",
+    "description": "The True Executable", 
+    "command-line": "/bin/true [DASH_T] [DASH_F]", 
+    "author": "Pierre Rioux",
+    "url": "https://github.com/prioux",
+    "schema-version": "0.5", 
+    "inputs": [
+        {
+            "command-line-flag": "-t", 
+            "description": "A flag with default true",
+            "id": "dash_t", 
+            "name": "dash_t", 
+            "optional": true, 
+            "type": "Flag", 
+            "value-key": "[DASH_T]",
+            "default-value": true
+        },
+        {
+            "command-line-flag": "-f", 
+            "description": "A flag with default false",
+            "id": "dash_f", 
+            "name": "dash_f", 
+            "optional": true, 
+            "type": "Flag", 
+            "value-key": "[DASH_F]",
+            "default-value": false
+        }
+    ], 
+    "tags": {
+        "application-type": [
+            "unix"
+        ], 
+        "domain": [
+            "bosh", 
+            "bash"
+        ]
+    } 
+}
