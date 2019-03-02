@@ -23,7 +23,7 @@ class TestValidator(TestCase):
                                    stderr=subprocess.PIPE)
         stdout = process.stdout.read().decode("utf-8").strip()
         print(stdout)
-        self.assertEqual(stdout,"OK")
+        self.assertEqual(stdout, "OK")
         self.assertFalse(process.returncode)
 
     def test_fail(self):
