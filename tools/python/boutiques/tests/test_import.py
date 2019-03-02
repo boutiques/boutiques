@@ -86,18 +86,13 @@ class TestImport(TestCase):
             if d == "README.md":
                 continue
             files = os.listdir(opj(ex_dir, d))
-            cwl_descriptor = None
-            cwl_invocation = None
-            for f in files:
-                if op.basename(f).endswith(".cwl"):
-                    cwl_descriptor = op.abspath(opj(ex_dir, d, f))
-                if op.basename(f).endswith(".yml"):
-                    cwl_invocation = op.abspath(opj(ex_dir, d, f))
-            assert(cwl_descriptor is not None)
+            cwl_descriptor = op.abspath(opj(ex_dir, d, d+".cwl"))
+            cwl_invocation = op.abspath(opj(ex_dir, d, d+".yml"))
+            assert(os.path.isfile(cwl_descriptor))
             out_desc = "./cwl_out.json"
             out_inv = "./cwl_inv_out.json"
             run = False
-            if cwl_invocation is not None:
+            if os.path.isfile(cwl_invocation):
                 args = ["import",
                         "cwl",
                         out_desc,
