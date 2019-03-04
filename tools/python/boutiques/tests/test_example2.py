@@ -2,7 +2,7 @@
 
 import os
 import subprocess
-from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 
 

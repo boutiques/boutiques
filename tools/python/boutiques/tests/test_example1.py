@@ -3,7 +3,7 @@
 import os
 import subprocess
 import pytest
-from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 from boutiques.localExec import ExecutorError
 import mock
