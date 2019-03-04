@@ -12,4 +12,4 @@ class TestBoutiquesTools(TestCase):
 
     def test_pythoninterface_validate(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
-        assert boutiques.validate(fil) is None
+        self.assertIsNone(boutiques.validate(fil))
