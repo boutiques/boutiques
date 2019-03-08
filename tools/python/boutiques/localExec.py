@@ -334,8 +334,8 @@ class LocalExecutor(object):
                 # Only forces contains for cli when user hasn't already
                 forced_container_opts = ""
                 if os.path.basename(sys.argv[0]) != "bosh" and \
-                   not any([s.startswith('-contain') for s in conOpts]):
-                    forced_container_opts = " -contain"
+                   not any([s.startswith('--contain') for s in conOpts]):
+                    forced_container_opts = " --contain"
 
                 container_command = (envString + 'singularity exec '
                                      '--cleanenv ' +
