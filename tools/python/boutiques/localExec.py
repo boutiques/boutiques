@@ -220,6 +220,8 @@ class LocalExecutor(object):
         conType, conImage = con.get('type'), con.get('image'),
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
+        if not conOpts:
+            conOpts = []
         conIsPresent = (conImage is not None)
         # Export environment variables, if they are specified in the descriptor
         envVars = {}
@@ -262,9 +264,8 @@ class LocalExecutor(object):
             launchDir = op.realpath(launchDir)
             # Get the container options
             conOptsString = ""
-            if conOpts:
-                for opt in conOpts:
-                    conOptsString += opt + ' '
+            for opt in conOpts:
+                conOptsString += opt + ' '
             # Run it in docker
             mount_strings = [] if not mount_strings else mount_strings
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
@@ -330,9 +331,16 @@ class LocalExecutor(object):
                     if not any(d in m for d in def_mounts):
                         singularity_mounts += "-B {0} ".format(m)
 
+                # Only forces contains for cli when user hasn't already
+                forced_container_opts = ""
+                if os.path.basename(sys.argv[0]) != "bosh" and \
+                   not any([s.startswith('-contain') for s in conOpts]):
+                    forced_container_opts = " -contain"
+
                 container_command = (envString + 'singularity exec '
                                      '--cleanenv ' +
                                      singularity_mounts +
+                                     forced_container_opts +
                                      ' -W ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conPath) + ' ' + dsname)
