@@ -3,6 +3,7 @@ import urllib
 import os
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
+from boutiques.searcher import Searcher
 try:
     # Python 3
     from urllib.request import urlopen
@@ -15,43 +16,59 @@ except ImportError:
 
 class Puller():
 
-    def __init__(self, zid, verbose=False, sandbox=False):
+    def __init__(self, zids, verbose=False, sandbox=False):
         # remove zenodo prefix
-        try:
-            self.zid = zid.split(".", 1)[1]
-        except IndexError:
-            raise_error(ZenodoError, "Zenodo ID must be prefixed by "
-                        "'zenodo', e.g. zenodo.123456")
-        self.verbose = verbose
-        self.sandbox = sandbox
+        self.zenodo_entries = []
         self.cache_dir = os.path.join(os.path.expanduser('~'), ".cache",
                                       "boutiques")
-        self.cached_fname = os.path.join(self.cache_dir,
-                                         "zenodo-{0}.json".format(self.zid))
+        zids = list(dict.fromkeys(zids))
+        for zid in zids:
+            try:
+                newzid = zid.split(".", 1)[1]
+                newfname = os.path.join(self.cache_dir,
+                                        "zenodo-{0}.json".format(newzid))
+                self.zenodo_entries.append({"zid": newzid, "fname": newfname})
+            except IndexError:
+                raise_error(ZenodoError, "Zenodo ID must be prefixed by "
+                            "'zenodo', e.g. zenodo.123456")
+        self.verbose = verbose
+        self.sandbox = sandbox
 
     def pull(self):
         # return cached file if it exists
-        if os.path.isfile(self.cached_fname):
-            if(self.verbose):
-                print_info("Found cached file at %s"
-                           % self.cached_fname)
-            return self.cached_fname
-
-        from boutiques.searcher import Searcher
-        searcher = Searcher(self.zid, self.verbose, self.sandbox,
-                            exact_match=True)
-        r = searcher.zenodo_search()
-
-        for hit in r.json()["hits"]["hits"]:
-            file_path = hit["files"][0]["links"]["self"]
-            file_name = file_path.split(os.sep)[-1]
-            if hit["id"] == int(self.zid):
-                if not os.path.exists(self.cache_dir):
-                    os.makedirs(self.cache_dir)
+        json_files = []
+        for entry in self.zenodo_entries:
+            if os.path.isfile(entry["fname"]):
                 if(self.verbose):
-                    print_info("Downloading descriptor %s"
-                               % file_name)
-                downloaded = urlretrieve(file_path, self.cached_fname)
-                print("Downloaded descriptor to " + downloaded[0])
-                return downloaded[0]
-        raise_error(ZenodoError, "Descriptor not found")
+                    print_info("Found cached file at %s"
+                               % entry["fname"])
+                json_files.append(entry["fname"])
+                continue
+
+            searcher = Searcher(entry["zid"], self.verbose, self.sandbox,
+                                exact_match=True)
+            r = searcher.zenodo_search()
+
+            if not len(r.json()["hits"]["hits"]):
+                raise_error(ZenodoError, "Descriptor \"{0}\" "
+                            "not found".format(entry["zid"]))
+            for hit in r.json()["hits"]["hits"]:
+                file_path = hit["files"][0]["links"]["self"]
+                file_name = file_path.split(os.sep)[-1]
+                if hit["id"] == int(entry["zid"]):
+                    if not os.path.exists(self.cache_dir):
+                        os.makedirs(self.cache_dir)
+                    if(self.verbose):
+                        print_info("Downloading descriptor %s"
+                                   % file_name)
+                    downloaded = urlretrieve(file_path, entry["fname"])
+                    if(self.verbose):
+                        print_info("Downloaded descriptor to "
+                                   + downloaded[0])
+                    json_files.append(downloaded[0])
+                else:
+                    raise_error(ZenodoError, "Seached-for descriptor \"{0}\" "
+                                "does not match descriptor \"{1}\" returned "
+                                "from Zenodo".format(entry["zid"], hit["id"]))
+
+        return json_files
