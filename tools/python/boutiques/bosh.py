@@ -521,6 +521,7 @@ def bosh(args=None):
             return bosh_return(out, hide=True)
         elif func == "validate":
             out = validate(*params)
+            assert(out is None)
             return bosh_return(out)
         elif func == "exec":
             out = execute(*params)
