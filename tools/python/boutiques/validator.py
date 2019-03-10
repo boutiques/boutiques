@@ -3,6 +3,7 @@
 import simplejson
 import os.path as op
 import json
+import warnings
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
@@ -20,6 +21,9 @@ def validate_descriptor(json_file, **kwargs):
     """
     Validates the Boutiques descriptor against the schema.
     """
+    
+    warnings.filterwarnings('ignore')
+    
     path, fil = op.split(bfile)
     schema_file = op.join(path, "schema", "descriptor.schema.json")
 
