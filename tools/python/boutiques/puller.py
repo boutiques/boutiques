@@ -21,8 +21,10 @@ class Puller():
         self.zenodo_entries = []
         self.cache_dir = os.path.join(os.path.expanduser('~'), ".cache",
                                       "boutiques")
+        discarded_zids = zids
         zids = list(dict.fromkeys(zids))
         for zid in zids:
+            discarded_zids.remove(zid)
             try:
                 newzid = zid.split(".", 1)[1]
                 newfname = os.path.join(self.cache_dir,
@@ -33,6 +35,9 @@ class Puller():
                             "'zenodo', e.g. zenodo.123456")
         self.verbose = verbose
         self.sandbox = sandbox
+        if(self.verbose):
+            for zid in discarded_zids:
+                print_info("Discarded duplicate id {0}".format(zid))
 
     def pull(self):
         # return cached file if it exists
