@@ -97,7 +97,8 @@ class Searcher():
                 for k, v in list(result_dict.items()):
                     if sys.version_info[0] < 3:
                         if isinstance(v, unicode):
-                            result_dict[k] = v.encode('ascii', 'xmlcharrefreplace')
+                            result_dict[k] = v.encode('ascii',
+                                                      'xmlcharrefreplace')
                     elif isinstance(v, str):
                         result_dict[k] = \
                             v.encode('ascii', 'xmlcharrefreplace').decode()
