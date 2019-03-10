@@ -15,7 +15,7 @@ except ImportError:
 
 class Puller():
 
-    def __init__(self, zid, verbose, sandbox):
+    def __init__(self, zid, verbose=False, sandbox=False):
         # remove zenodo prefix
         try:
             self.zid = zid.split(".", 1)[1]

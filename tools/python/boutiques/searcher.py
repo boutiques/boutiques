@@ -11,7 +11,7 @@ from boutiques.publisher import ZenodoError
 
 class Searcher():
 
-    def __init__(self, query, verbose, sandbox, max_results=None,
+    def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
         if query is not None:
             self.query = query

@@ -26,6 +26,7 @@
 | [inputs](#inputs) | `object[]` | **Required** | Tool (this schema) |
 | [invocation-schema](#invocation-schema) | `object` | Optional | Tool (this schema) |
 | [name](#name) | `string` | **Required** | Tool (this schema) |
+| [online-platform-urls](#online-platform-urls) | `string[]` | Optional | Tool (this schema) |
 | [output-files](#output-files) | `object[]` | Optional | Tool (this schema) |
 | [schema-version](#schema-version) | `enum` | **Required** | Tool (this schema) |
 | [shell](#shell) | `string` | Optional | Tool (this schema) |
@@ -630,7 +631,7 @@ Separator used between flags and their arguments. Defaults to a single space.
 
 #### default-value
 
-Default value of the input, used by the tool when no option is specified.
+Default value of the input. The default value is set when no value is specified, even when the input is optional. If the desired behavior is to omit the input from the command line when no value is specified, then no default value should be used. In this case, the tool might still use a default value internally, but this will remain undocumented in the Boutiques interface.
 
 `default-value`
 * is optional
@@ -643,7 +644,7 @@ Unknown type ``.
 ```json
 {
   "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
-  "description": "Default value of the input, used by the tool when no option is specified.",
+  "description": "Default value of the input. The default value is set when no value is specified, even when the input is optional. If the desired behavior is to omit the input from the command line when no value is specified, then no default value should be used. In this case, the tool might still use a default value internally, but this will remain undocumented in the Boutiques interface.",
   "simpletype": "complex"
 }
 ```
@@ -1177,6 +1178,39 @@ Tool name.
 
 `string`
 * minimum length: 1 characters
+
+
+
+
+
+## online-platform-urls
+
+Online platform URLs from which the tool can be executed.
+
+`online-platform-urls`
+* is optional
+* type: `string[]`
+
+* defined in this schema
+
+### online-platform-urls Type
+
+
+Array type: `string[]`
+
+All items must be of the type:
+`string`
+
+
+All instances must conform to this regular expression 
+(test examples [here](https://regexr.com/?expression=%5Ehttps%3F%3A%2F%2F)):
+```regex
+^https?://
+```
+
+
+
+
 
 
 
