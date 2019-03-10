@@ -43,6 +43,7 @@ before_install:
 install:
 - pip install --upgrade setuptools
 - pip install "jsonschema>=2.6.0,<3.0.0"
+- pip install --upgrade pyOpenSSL
 - pip install pytest pytest-runner pycodestyle coveralls
 - pip install .
 - pip freeze
