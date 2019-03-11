@@ -22,6 +22,7 @@ class Puller():
         self.cache_dir = os.path.join(os.path.expanduser('~'), ".cache",
                                       "boutiques")
         discarded_zids = zids
+        #This removes duplicates, should maintain order
         zids = list(dict.fromkeys(zids))
         for zid in zids:
             discarded_zids.remove(zid)
@@ -72,7 +73,7 @@ class Puller():
                                    + downloaded[0])
                     json_files.append(downloaded[0])
                 else:
-                    raise_error(ZenodoError, "Seached-for descriptor \"{0}\" "
+                    raise_error(ZenodoError, "Seacrhed-for descriptor \"{0}\" "
                                 "does not match descriptor \"{1}\" returned "
                                 "from Zenodo".format(entry["zid"], hit["id"]))
 
