@@ -13,7 +13,7 @@ class TestValidator(TestCase):
 
     def test_success(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
-        assert bosh(['validate', '--format', fil]) is None
+        self.assertIsNone(bosh(['validate', '--format', fil]))
 
     def test_success_cli(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
@@ -22,7 +22,6 @@ class TestValidator(TestCase):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         stdout = process.stdout.read().decode("utf-8").strip()
-        print(stdout)
         self.assertEqual(stdout, "OK")
         self.assertFalse(process.returncode)
 

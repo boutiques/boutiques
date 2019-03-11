@@ -43,15 +43,15 @@ class TestEvaluate(TestCase):
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './config.txt'}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=logfile")
         expect = {'logfile': 'log-4-coin;plop.txt'}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=log-file")
         expect = {}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
     def test_evaloutput_json_obj(self):
         self.set_examples_json_obj()
@@ -59,15 +59,15 @@ class TestEvaluate(TestCase):
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './config.txt'}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=logfile")
         expect = {'logfile': 'log-4-coin;plop.txt'}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=log-file")
         expect = {}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
     @mock.patch('requests.get', return_value=mock_get())
     def test_evaloutput_from_zenodo(self, mock_get):
@@ -76,15 +76,15 @@ class TestEvaluate(TestCase):
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './config.txt'}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=logfile")
         expect = {'logfile': 'log-4-coin;plop.txt'}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "output-files/id=log-file")
         expect = {}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
     def test_evalinput(self):
         self.set_examples()
@@ -97,7 +97,7 @@ class TestEvaluate(TestCase):
                   'enum_input': 'val1',
                   'list_int_input': [1, 2, 3],
                   'flag_input': None}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo,
                               "inputs/type=Flag,id=flag_input",
@@ -106,26 +106,26 @@ class TestEvaluate(TestCase):
                   {'config_num': 4,
                    'num_input': None,
                    'list_int_input': [1, 2, 3]}]
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "inputs/id=strinputs")
         expect = {}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo, "inputt/nonsense=strinputs")
         expect = {}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
     def test_evalgroups(self):
         self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "groups/")
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}
-        assert(query == expect)
+        self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc,
                               self.invo,
                               "groups/mutually-exclusive=True")
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}
-        assert(query == expect)
+        self.assertEqual(query, expect)
