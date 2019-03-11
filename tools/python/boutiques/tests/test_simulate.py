@@ -61,10 +61,10 @@ class TestSimulate(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         desc_json = open(os.path.join(example1_dir,
                                       "example1_docker.json")).read()
-        siminvo = bosh.execute("simulate", desc_json, "-j").stdout
-        assert(isinstance(json.loads(siminvo), dict))
-        siminvo = bosh.bosh(args=["example", desc_json]).stdout
-        assert(isinstance(json.loads(siminvo), dict))
+        ret = bosh.execute("simulate", desc_json, "-j").stdout
+        self.assertIsInstance(json.loads(ret), dict)
+        ret = bosh.bosh(args=["example", desc_json]).stdout
+        self.assertIsInstance(json.loads(ret), dict)
 
     def test_failing_bad_descriptor_invo_combos(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")

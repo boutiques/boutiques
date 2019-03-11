@@ -52,8 +52,8 @@ class TestExport(TestCase):
         ref_file_p2 = opj(example1_dir, ref_name_p2)
         self.assertFalse(bosh(["export", "carmin", example1_desc_doi, fout]))
         result = open(fout, "U").read().strip()
-        assert(result == open(ref_file, "U").read().strip() or
-               result == open(ref_file_p2, "U").read().strip())
+        self.assertIn(result, [open(ref_file, "U").read().strip(),
+                               open(ref_file_p2, "U").read().strip()])
         os.remove(fout)
 
     def test_export_json_obj(self):
@@ -73,16 +73,16 @@ class TestExport(TestCase):
                                example1_desc,
                                "--identifier", "123", fout]))
         result = open(fout, "U").read().strip()
-        assert(result == open(ref_file, "U").read().strip() or
-               result == open(ref_file_p2, "U").read().strip())
+        self.assertIn(result, [open(ref_file, "U").read().strip(),
+                               open(ref_file_p2, "U").read().strip()])
         # Identifier is not passed, descriptor has no DOI
         with self.assertRaises(ExportError) as e:
             bosh(["export",
                   "carmin",
                   example1_desc,
                   fout])
-        self.assertTrue("Descriptor must have a DOI, or identifier "
-                        "must be specified" in str(e.exception))
+        self.assertIn("Descriptor must have a DOI, or identifier "
+                      "must be specified", str(e.exception))
         self.assertRaises(ExportError, )
         # Identifier is not passed, descriptor has a DOI
         ref_name = "example1_docker_exported_doi.json"
@@ -91,6 +91,6 @@ class TestExport(TestCase):
         ref_file_p2 = opj(example1_dir, ref_name_p2)
         self.assertFalse(bosh(["export", "carmin", example1_desc_doi, fout]))
         result = open(fout, "U").read().strip()
-        assert(result == open(ref_file, "U").read().strip() or
-               result == open(ref_file_p2, "U").read().strip())
+        self.assertIn(result, [open(ref_file, "U").read().strip(),
+                               open(ref_file_p2, "U").read().strip()])
         os.remove(fout)

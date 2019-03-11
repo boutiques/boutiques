@@ -15,7 +15,7 @@ class TestNoSpaces(TestCase):
                             "schema", "examples")
 
     def test_no_spaces(self):
-        out = bosh.execute("simulate",
+        ret = bosh.execute("simulate",
                            os.path.join(self.get_examples_dir(),
                                         "no_spaces.json"))
-        assert(' ' not in out.stdout)
+        self.assertNotIn(' ', ret.stdout)

@@ -56,7 +56,7 @@ class TestPrepare(TestCase):
         ret = bosh.execute("prepare",
                            os.path.join(example1_dir,
                                         "example1_docker.json"))
-        assert("Local copy" in ret.stdout)
+        self.assertIn("Local copy", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -65,7 +65,7 @@ class TestPrepare(TestCase):
         ret = bosh.execute("prepare",
                            os.path.join(example1_dir,
                                         "example1_sing.json"))
-        assert("Local (boutiques-example1-test.simg)" in ret.stdout)
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -77,8 +77,8 @@ class TestPrepare(TestCase):
                            "--imagepath",
                            os.path.join(os.getcwd(),
                                         "boutiques-example1-test.simg"))
-        assert("Local (boutiques-example1-test.simg)" in ret.stdout)
-        assert("SINGULARITY_PULLFOLDER" not in os.environ)
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
+        self.assertNotIn("SINGULARITY_PULLFOLDER", os.environ)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -89,8 +89,8 @@ class TestPrepare(TestCase):
                                         "example1_sing.json"),
                            "--imagepath",
                            "boutiques-example1-test.simg")
-        assert ("Local (boutiques-example1-test.simg)" in ret.stdout)
-        assert ("SINGULARITY_PULLFOLDER" not in os.environ)
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
+        self.assertNotIn("SINGULARITY_PULLFOLDER", os.environ)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -105,7 +105,7 @@ class TestPrepare(TestCase):
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-test.simg"))
-        assert("Could not pull Singularity image" in str(e))
+        self.assertIn("Could not pull Singularity image", str(e))
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir())
     @mock.patch('boutiques.localExec.LocalExecutor._singConExists',
@@ -126,7 +126,7 @@ class TestPrepare(TestCase):
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
-        assert ("Local (boutiques-example1-test.simg)" in ret.stdout)
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir_timeout())
     @mock.patch('time.sleep', side_effect=mock_sleep())
@@ -144,7 +144,7 @@ class TestPrepare(TestCase):
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-test.simg"))
-        assert ("Unable to retrieve Singularity image" in str(e))
+        self.assertIn("Unable to retrieve Singularity image", str(e))
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir_timeout())
     @mock.patch('time.sleep', side_effect=mock_sleep())
@@ -165,7 +165,7 @@ class TestPrepare(TestCase):
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
-        assert ("Local (boutiques-example1-test.simg)" in ret.stdout)
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
     @mock.patch('boutiques.localExec.LocalExecutor._localExecute',
                 side_effect=mock_sing_pull())
@@ -182,10 +182,12 @@ class TestPrepare(TestCase):
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
-        assert ("Pulled from docker://boutiques/example1:test" in ret.stdout)
+        self.assertIn("Pulled from docker://boutiques/example1:test",
+                      ret.stdout)
 
     def test_prepare_no_container(self):
         ret = bosh.execute("prepare",
                            os.path.join(self.get_examples_dir(),
                                         "no_container.json"))
-        assert("Descriptor does not specify a container image." in ret.stdout)
+        self.assertIn("Descriptor does not specify a container image.",
+                      ret.stdout)
