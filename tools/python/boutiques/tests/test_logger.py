@@ -40,14 +40,14 @@ class TestLogger(TestCase):
                          os.path.join(example1_dir,
                                       "example1_docker.json"),
                          invocationStr)
-        assert("[ ERROR ]" in str(e))
+        self.assertIn("[ ERROR ]", str(e))
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_print_info(self, mock_get):
         bosh.search("-v")
         out, err = self.capfd.readouterr()
-        assert("[ INFO ]" in out)
-        assert("[ INFO (200) " in out)
+        self.assertIn("[ INFO ]", out)
+        self.assertIn("[ INFO (200) ", out)
 
     def test_print_warning(self):
         parser = ArgumentParser(description="my tool description")
@@ -59,7 +59,7 @@ class TestLogger(TestCase):
                                          tags={"purpose": "testing-creator",
                                                "foo": "bar"})
         out, err = self.capfd.readouterr()
-        assert("[ WARNING ]" in out)
+        self.assertIn("[ WARNING ]", out)
 
     def test_evaloutput(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
@@ -67,7 +67,7 @@ class TestLogger(TestCase):
         invo = os.path.join(example1_dir, "invocation.json")
         query = bosh.evaluate(desc, invo, "invalid-query")
         out, err = self.capfd.readouterr()
-        assert("[ ERROR ]" in out)
+        self.assertIn("[ ERROR ]", out)
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()

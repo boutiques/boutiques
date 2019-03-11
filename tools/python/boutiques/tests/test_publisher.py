@@ -78,7 +78,7 @@ class TestPublisher(TestCase):
         # Make sure that example1.json doesn't have a DOI yet
         with open(temp_descriptor.name, 'r') as fhandle:
             descriptor = json.load(fhandle)
-            assert(descriptor.get('doi') is None)
+            self.assertIsNone(descriptor.get('doi'))
 
         # Test publication of a descriptor that doesn't have a DOI
         doi = bosh(["publish",
@@ -86,12 +86,12 @@ class TestPublisher(TestCase):
                     "--sandbox", "-y", "-v",
                     "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                     "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
-        assert(doi)
+        self.assertTrue(doi)
 
         # Now descriptor should have a DOI
         with open(temp_descriptor.name, 'r') as fhandle:
             descriptor = json.load(fhandle)
-            assert(descriptor.get('doi') == doi)
+            self.assertEqual(descriptor.get('doi'), doi)
 
         # Test publication of a descriptor that already has a DOI
         with self.assertRaises(ZenodoError) as e:
@@ -117,13 +117,13 @@ class TestPublisher(TestCase):
                         "--sandbox", "-y", "-v",
                         "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                         "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
-        assert(new_doi)
+        self.assertTrue(new_doi)
 
         # Updated version of descriptor should have a new DOI
         with open(temp_descriptor_updated.name, 'r') as fhandle:
             descriptor_updated = json.load(fhandle)
-            assert(descriptor_updated.get('doi') == new_doi)
-            assert(descriptor_updated.get('doi') != doi)
+            self.assertNotEqual(new_doi, doi)
+            self.assertEqual(descriptor_updated.get('doi'), new_doi)
 
     @mock.patch('requests.get', return_value=mock_get_auth_fail())
     def test_publisher_auth(self, mock_get):
@@ -135,7 +135,7 @@ class TestPublisher(TestCase):
                   op.join(example1_dir, "example1_docker.json"),
                   "--sandbox",
                   "-y", "-v", "--zenodo-token", "12345"])
-        self.assertTrue("Cannot authenticate to Zenodo" in str(e.exception))
+        self.assertIn("Cannot authenticate to Zenodo", str(e.exception))
 
         # No token should fail
         with self.assertRaises(ZenodoError) as e:
@@ -143,7 +143,7 @@ class TestPublisher(TestCase):
                  op.join(example1_dir,
                          "example1_docker.json"),
                  "--sandbox", "-y", "-v"])
-        self.assertTrue("Cannot authenticate to Zenodo" in str(e.exception))
+        self.assertIn("Cannot authenticate to Zenodo", str(e.exception))
 
         # Right token should work
         self.assertTrue(bosh, ["publish",
@@ -188,7 +188,7 @@ class TestPublisher(TestCase):
         # Make sure that example1.json doesn't have a DOI yet
         with open(temp_descriptor.name, 'r') as fhandle:
             descriptor = json.load(fhandle)
-            assert (descriptor.get('doi') is None)
+            self.assertIsNone(descriptor.get('doi'))
 
         # Publish an updated version of an already published descriptor
         doi = bosh(["publish",
@@ -197,12 +197,12 @@ class TestPublisher(TestCase):
                     "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                                       "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                     "--id", "zenodo.1234567"])
-        assert (doi)
+        self.assertTrue(doi)
 
         # Now descriptor should have a DOI
         with open(temp_descriptor.name, 'r') as fhandle:
             descriptor = json.load(fhandle)
-            assert (descriptor.get('doi') == doi)
+            self.assertEqual(descriptor.get('doi'), doi)
 
     @mock.patch('requests.get', side_effect=mock_get_no_search())
     @mock.patch('requests.post', side_effect=mock_post_publish_update_only())
@@ -218,7 +218,7 @@ class TestPublisher(TestCase):
         # Make sure that descriptor has a DOI
         with open(temp_descriptor.name, 'r') as fhandle:
             descriptor = json.load(fhandle)
-            assert (descriptor.get('doi') is not None)
+            self.assertIsNotNone(descriptor.get('doi'))
             old_doi = descriptor['doi']
 
         # Publish an updated version of an already published descriptor
@@ -228,11 +228,11 @@ class TestPublisher(TestCase):
                     "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                                       "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                     "--replace"])
-        assert (doi)
+        self.assertTrue(doi)
 
         # Now descriptor should have a DOI which should be different
         # than the old DOI
         with open(temp_descriptor.name, 'r') as fhandle:
             descriptor = json.load(fhandle)
-            assert (descriptor.get('doi') == doi)
-            assert(descriptor.get('doi') != old_doi)
+            self.assertNotEqual(doi, old_doi)
+            self.assertEqual(descriptor.get('doi'), doi)

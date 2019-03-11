@@ -3,8 +3,7 @@
 import os
 import subprocess
 import pytest
-from unittest import TestCase
-from boutiques import __file__ as bfile
+from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 from boutiques.localExec import ExecutorError
 import mock
@@ -19,11 +18,10 @@ def mock_get():
     return mock_zenodo_search([mock_record])
 
 
-class TestExample1(TestCase):
+class TestExample1(BaseTest):
 
-    def get_examples_dir(self):
-        return os.path.join(os.path.dirname(bfile),
-                            "schema", "examples")
+    def setUp(self):
+        self.setup("example1")
 
     def clean_up(self):
         fls = os.listdir('./')
@@ -33,289 +31,186 @@ class TestExample1(TestCase):
                 os.remove(fl)
 
     def test_example1_no_exec(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        ret = bosh.execute("simulate",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           "-i",
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
-        assert(ret.stdout != "" and ret.stderr == "" and ret.exit_code == 0
-               and ret.error_message == "" and ret.missing_files == [])
+        self.assert_successful_return(
+            bosh.execute("simulate",
+                         self.get_file_path("example1_docker.json"),
+                         "-i",
+                         self.get_file_path("invocation.json")),
+            aditional_assertions=self.assert_only_stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
+                           self.get_file_path("example1_docker.json"),
+                           self.get_file_path("invocation.json"))
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
         out, err = self.capfd.readouterr()
-        assert("This is stdout" not in out)
-        assert("This is stderr" not in out)
+        self.assertNotIn("This is stdout", out)
+        self.assertNotIn("This is stderr", out)
 
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        self.assert_successful_return(
+            ret, ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
 
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           "-x",
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_docker.json"),
+                         "-x",
+                         self.get_file_path("invocation.json")),
+            ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_stream_output(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
+                           self.get_file_path("example1_docker.json"),
                            "-s",
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
+                           self.get_file_path("invocation.json"))
 
         # Make sure stdout and stderr are printed on the fly for
         # streaming mode
         out, err = self.capfd.readouterr()
-        assert("This is stdout" in out)
-        assert("This is stderr" in out)
+        self.assertIn("This is stdout", out)
+        self.assertIn("This is stderr", out)
 
-        print(ret)
-        assert(ret.stdout is None)
-        assert(ret.stderr is None)
+        self.assertIsNone(ret.stdout)
+        self.assertIsNone(ret.stderr)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_inv_as_json_obj(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        invocationStr = open(os.path.join(example1_dir,
-                                          "invocation.json")).read()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           invocationStr)
-
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        invocationStr = open(self.get_file_path("invocation.json")).read()
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_docker.json"),
+                         invocationStr),
+            ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
 
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           "-x",
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_docker.json"),
+                         "-x",
+                         self.get_file_path("invocation.json")),
+            ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_desc_as_json_obj(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        descStr = open(os.path.join(example1_dir,
-                                    "example1_docker.json")).read()
-        ret = bosh.execute("launch",
-                           descStr,
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
-
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        descStr = open(self.get_file_path("example1_docker.json")).read()
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         descStr,
+                         self.get_file_path("invocation.json")),
+            ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
 
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           "-x",
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_docker.json"),
+                         "-x",
+                         self.get_file_path("invocation.json")),
+            ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_json_string_invalid(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        invocationStr = open(os.path.join(example1_dir,
-                                          "invocation_invalid.json")).read()
+        invocationStr = open(
+            self.get_file_path("invocation_invalid.json")).read()
         with pytest.raises(ExecutorError) as e:
             bosh.execute("launch",
-                         os.path.join(example1_dir,
-                                      "example1_docker.json"),
+                         self.get_file_path("example1_docker.json"),
                          invocationStr)
-        assert("Cannot parse input" in str(e))
+        self.assertIn("Cannot parse input", str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     @mock.patch('requests.get', return_value=mock_get())
     def test_example1_exec_docker_from_zenodo(self, mock_get):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         ret = bosh.execute("launch", "zenodo.1472823",
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
+                           self.get_file_path("invocation.json"))
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
         out, err = self.capfd.readouterr()
-        assert("This is stdout" not in out)
-        assert("This is stderr" not in out)
-
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        self.assertNotIn("This is stdout", out)
+        self.assertNotIn("This is stderr", out)
+        self.assert_successful_return(ret,
+                                      ["log-4-coin;plop.txt"], 2,
+                                      self.assert_reflected_output)
 
         self.clean_up()
-        ret = bosh.execute("launch", "zenodo.1472823",
-                           "-x",
-                           os.path.join(example1_dir,
-                                        "invocation.json"))
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4-coin;plop.txt" or
-               ret.output_files[1].file_name == "log-4-coin;plop.txt")
+        self.assert_successful_return(
+            bosh.execute("launch", "zenodo.1472823",
+                         "-x",
+                         self.get_file_path("invocation.json")),
+            ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
 
-    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
-                        reason="Singularity not installed")
+    @pytest.mark.skipif(
+        subprocess.Popen("type singularity", shell=True).wait(),
+        reason="Singularity not installed")
     def test_example1_exec_singularity(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"),
-                           os.path.join(example1_dir,
-                                        "invocation_sing.json"))
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or
-               ret.output_files[1].file_name == "log-4.txt")
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_sing.json"),
+                         self.get_file_path("invocation_sing.json")),
+            ["log-4.txt"], 2,
+            self.assert_reflected_output)
 
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"),
-                           "-x",
-                           os.path.join(example1_dir,
-                                        "invocation_sing.json"))
-        print(ret)
-        assert("This is stdout" in ret.stdout)
-        assert("This is stderr" in ret.stderr)
-        assert(ret.exit_code == 0)
-        assert(ret.error_message == "")
-        assert(ret.missing_files == [])
-        assert(len(ret.output_files) == 2)
-        assert(ret.output_files[0].file_name == "log-4.txt" or
-               ret.output_files[1].file_name == "log-4.txt")
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_sing.json"),
+                         "-x",
+                         self.get_file_path("invocation_sing.json")),
+            ["log-4.txt"], 2,
+            self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_example1_crash_pull_singularity(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         with pytest.raises(ExecutorError) as e:
             bosh.execute("launch",
-                         os.path.join(example1_dir,
-                                      "example1_sing_crash_pull.json"),
-                         os.path.join(example1_dir,
-                                      "invocation_sing.json"))
-        assert("Could not pull Singularity image" in str(e))
+                         self.get_file_path(
+                             "example1_sing_crash_pull.json"),
+                         self.get_file_path(
+                             "invocation_sing.json"))
+        self.assertIn("Could not pull Singularity image", str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_missing_script(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
-        ret = bosh.execute("launch",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"),
-                           os.path.join(example1_dir,
-                                        "invocation_missing_script.json"))
-        print(ret)
-        assert(ret.exit_code == 2)
-        assert(ret.error_message == "File does not exist!")
-        assert(len(ret.missing_files) == 1)
-        assert(ret.missing_files[0].file_name == "log-4-pwet.txt")
+        self.assert_failed_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_docker.json"),
+                         self.get_file_path(
+                             "invocation_missing_script.json")),
+            2, "File does not exist!", ["log-4-pwet.txt"], 1)
 
     def test_example1_exec_fail_cli(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         self.clean_up()
         command = ("bosh exec launch " +
-                   os.path.join(example1_dir,
-                                "example1_docker.json") + " " +
-                   os.path.join(example1_dir,
-                                "invocation_missing_script.json"))
+                   self.get_file_path("example1_docker.json") + " " +
+                   self.get_file_path("invocation_missing_script.json"))
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -323,15 +218,10 @@ class TestExample1(TestCase):
         assert(process.returncode == 2), command
 
     def test_example1_no_exec_random(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        ret = bosh.execute("simulate",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"))
-        print(ret)
-        assert(ret.stdout != ""
-               and ret.stderr == ""
-               and ret.exit_code == 0
-               and ret.error_message == "")
+        self.assert_successful_return(
+            bosh.execute("simulate",
+                         self.get_file_path("example1_docker.json")),
+            aditional_assertions=self.assert_only_stdout)
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()

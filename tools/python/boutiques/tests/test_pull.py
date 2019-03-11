@@ -28,7 +28,8 @@ class TestPull(TestCase):
     def test_pull(self, mock_get):
         bosh(["pull", "zenodo.1472823"])
         cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
-        assert(os.path.exists(os.path.join(cache_dir, "zenodo-1472823.json")))
+        self.assertTrue(os.path.exists(os.path.join(cache_dir,
+                                                    "zenodo-1472823.json")))
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_pull_multi(self, mock_get):
@@ -61,7 +62,8 @@ class TestPull(TestCase):
     def test_pull_missing_prefix(self, mock_get):
         with self.assertRaises(ZenodoError) as e:
             bosh(["pull", "1472823"])
-        assert("Zenodo ID must be prefixed by 'zenodo'" in str(e.exception))
+        self.assertIn("Zenodo ID must be prefixed by 'zenodo'",
+                      str(e.exception))
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_pull_not_found(self, mock_get):
