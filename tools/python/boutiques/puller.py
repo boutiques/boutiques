@@ -22,7 +22,7 @@ class Puller():
         self.cache_dir = os.path.join(os.path.expanduser('~'), ".cache",
                                       "boutiques")
         discarded_zids = zids
-        #This removes duplicates, should maintain order
+        # This removes duplicates, should maintain order
         zids = list(dict.fromkeys(zids))
         for zid in zids:
             discarded_zids.remove(zid)
