@@ -68,8 +68,9 @@ class Puller():
                         print_info("Downloading descriptor %s"
                                    % file_name)
                     downloaded = urlretrieve(file_path, entry["fname"])
-                    print_info("Downloaded descriptor to "
-                               + downloaded[0])
+                    if(self.verbose):
+                        print_info("Downloaded descriptor to "
+                                   + downloaded[0])
                     json_files.append(downloaded[0])
                 else:
                     raise_error(ZenodoError, "Searched-for descriptor \"{0}\" "

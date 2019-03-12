@@ -441,7 +441,8 @@ def search(*params):
 
 
 def pull(*params):
-    parser = ArgumentParser("Download a descriptor from Zenodo.")
+    parser = ArgumentParser("Ensures that Zenodo descriptors are locally "
+                            "cached, downloading them if needed.")
 
     parser.add_argument("zids", nargs="+", action="store", help="One or "
                         "more Zenodo IDs for the descriptor(s) to pull, "
