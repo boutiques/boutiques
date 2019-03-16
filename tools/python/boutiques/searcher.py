@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import requests
+import sys
 from collections import OrderedDict
+import numbers
 import json
 from operator import itemgetter
 from boutiques.logger import raise_error, print_info
@@ -91,6 +93,15 @@ class Searcher():
                                       ("SCHEMA VERSION", schema_version),
                                       ("CONTAINER", container),
                                       ("TAGS", other_tags)])
+            if sys.stdout.encoding.lower != "UTF-8":
+                for k, v in list(result_dict.items()):
+                    if sys.version_info[0] < 3:
+                        if isinstance(v, unicode):
+                            result_dict[k] = v.encode('ascii',
+                                                      'xmlcharrefreplace')
+                    elif isinstance(v, str):
+                        result_dict[k] = \
+                            v.encode('ascii', 'xmlcharrefreplace').decode()
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
             results_list.append(result_dict)
@@ -109,7 +120,9 @@ class Searcher():
     # greater than max_length
     def truncate(self, d, max_length):
         for k, v in list(d.items()):
-            if len(str(v)) > max_length:
+            if isinstance(v, numbers.Number):
+                v = str(v)
+            if len(v) > max_length:
                 d[k] = v[:max_length] + "..."
         return d
 
