@@ -123,7 +123,8 @@ class TestImport(TestCase):
                     ret = boutiques.execute(
                             "launch",
                             out_desc,
-                            out_inv
+                            out_inv,
+                            "--skip-data-collection"
                           )
                     self.assertFalse(ret.exit_code,
                                      cwl_descriptor)

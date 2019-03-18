@@ -44,7 +44,8 @@ class TestExample1(BaseTest):
         self.clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
-                           self.get_file_path("invocation.json"))
+                           self.get_file_path("invocation.json"),
+                           "--skip-data-collection")
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
@@ -61,7 +62,8 @@ class TestExample1(BaseTest):
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
                          "-x",
-                         self.get_file_path("invocation.json")),
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -72,7 +74,8 @@ class TestExample1(BaseTest):
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
                            "-s",
-                           self.get_file_path("invocation.json"))
+                           self.get_file_path("invocation.json"),
+                           "--skip-data-collection")
 
         # Make sure stdout and stderr are printed on the fly for
         # streaming mode
@@ -91,7 +94,8 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
-                         invocationStr),
+                         invocationStr,
+                         "--skip-data-collection"),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -100,7 +104,8 @@ class TestExample1(BaseTest):
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
                          "-x",
-                         self.get_file_path("invocation.json")),
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -112,7 +117,8 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          descStr,
-                         self.get_file_path("invocation.json")),
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -121,7 +127,8 @@ class TestExample1(BaseTest):
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
                          "-x",
-                         self.get_file_path("invocation.json")),
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -134,7 +141,8 @@ class TestExample1(BaseTest):
         with pytest.raises(ExecutorError) as e:
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
-                         invocationStr)
+                         invocationStr,
+                         "--skip-data-collection")
         self.assertIn("Cannot parse input", str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -143,7 +151,8 @@ class TestExample1(BaseTest):
     def test_example1_exec_docker_from_zenodo(self, mock_get):
         self.clean_up()
         ret = bosh.execute("launch", "zenodo.1472823",
-                           self.get_file_path("invocation.json"))
+                           self.get_file_path("invocation.json"),
+                           "--skip-data-collection")
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
@@ -158,7 +167,8 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch", "zenodo.1472823",
                          "-x",
-                         self.get_file_path("invocation.json")),
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -170,7 +180,8 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_sing.json"),
-                         self.get_file_path("invocation_sing.json")),
+                         self.get_file_path("invocation_sing.json"),
+                         "--skip-data-collection"),
             ["log-4.txt"], 2,
             self.assert_reflected_output)
 
@@ -192,7 +203,8 @@ class TestExample1(BaseTest):
                          self.get_file_path(
                              "example1_sing_crash_pull.json"),
                          self.get_file_path(
-                             "invocation_sing.json"))
+                             "invocation_sing.json"),
+                         "--skip-data-collection")
         self.assertIn("Could not pull Singularity image", str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -203,14 +215,16 @@ class TestExample1(BaseTest):
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
                          self.get_file_path(
-                             "invocation_missing_script.json")),
+                             "invocation_missing_script.json"),
+                         "--skip-data-collection"),
             2, "File does not exist!", ["log-4-pwet.txt"], 1)
 
     def test_example1_exec_fail_cli(self):
         self.clean_up()
         command = ("bosh exec launch " +
                    self.get_file_path("example1_docker.json") + " " +
-                   self.get_file_path("invocation_missing_script.json"))
+                   self.get_file_path("invocation_missing_script.json"),
+                  "--skip-data-collection")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)

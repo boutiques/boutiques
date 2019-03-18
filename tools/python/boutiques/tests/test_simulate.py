@@ -102,7 +102,7 @@ class TestSimulate(TestCase):
                                                      "-i",
                                                      os.path.join(
                                                        example1_dir,
-                                                       "invocation.json")])
+                                                       "dir_invocation.json")])
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
                                                      os.path.join(
                                                        example1_dir,

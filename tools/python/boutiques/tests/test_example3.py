@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import subprocess
 from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 
@@ -15,5 +13,6 @@ class TestExample2(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example3.json"),
-                         self.get_file_path("invocation.json")),
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
             aditional_assertions=self.assert_no_output)
