@@ -192,6 +192,12 @@ your descriptor lives in a Git-repo available at `/utility/belt/`, your name is 
 Your tool is now being shared in a packaged and fully described fashion, making it easier than ever to reproduce and extend your work! As always,
 learn more about this feature with `bosh publish -h`.
 
+### Execution Records
+
+Want to check up on what happened during a previous analysis? The details of each execution are captured and recorded in a publicly safe format so that 
+you can review past analysis runs. These records are stored in the Boutiques cache and capture each executions' descriptor, invocation and output results.
+Input and output file hashes are included to easily compare results between different analyses.
+
 ## Python API
 
 Now that you've spent all that time learning the command-line API, we've got some good news for you: you already know the Python API, too. The

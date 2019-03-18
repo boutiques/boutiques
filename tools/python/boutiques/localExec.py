@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
 import os
 import sys
 import json
@@ -12,7 +11,6 @@ import subprocess
 import time
 import datetime
 import hashlib
-#import pwd
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
@@ -385,17 +383,20 @@ class LocalExecutor(object):
                     break
 
         executor_output = ExecutorOutput(stdout,
-                              stderr,
-                              exit_code,
-                              desc_err,
-                              output_files,
-                              missing_files,
-                              command,
-                              container_command, container_location)
+                                         stderr,
+                                         exit_code,
+                                         desc_err,
+                                         output_files,
+                                         missing_files,
+                                         command,
+                                         container_command,
+                                         container_location)
 
         if not self.skipDataCollect:
             # Generate public output
-            self.public_out = self._generatePublicOutput(executor_output, output_files_dict, missing_files_dict)
+            self.public_out = self._generatePublicOutput(executor_output,
+                                                         output_files_dict,
+                                                         missing_files_dict)
             # Write data collection to file
             self._saveDataCaptureToCache()
 
@@ -1188,12 +1189,12 @@ class LocalExecutor(object):
     # Private method to attempt to find descriptor DOI
     # through various cases
     # userInput may be json string, filename or zenodo id
-    def _findDOI(self, userInput):
+    def _findDOI(self, userIn):
         # DOI in Zenodo reference case
-        if userInput.split(".")[0].lower() == "zenodo":
-            return userInput
+        if userIn.split(".")[0].lower() == "zenodo":
+            return userIn
         # File cases
-        if os.path.isfile(userInput):
+        if os.path.isfile(userIn):
             # Most recent DOI in file if user is publisher
             # Include check to ensure descriptor is unmodified
             if self.desc_dict.get('doi') is not None:
@@ -1202,19 +1203,21 @@ class LocalExecutor(object):
                     return doi
             # DOI in filename if descriptor pulled from Zenodo
             # Include check to ensure descriptor is as published
-            elif os.path.basename(userInput).split("-")[0].lower() == "zenodo":
-                doi = os.path.basename(userInput).split(".")[0].replace("-",".")
+            elif os.path.basename(userIn).split("-")[0].lower() == "zenodo":
+                doi = os.path.basename(userIn).split(".")[0].replace("-", ".")
                 if loadJson(doi) == self.desc_dict:
                     return doi
         # TODO: No DOI found, Handle descriptor must be published case
         return None
 
-    # Private method to generate public invocation object for data collection file
+    # Private method to generate public invocation object
+    # for data collection file
     # absolute paths are stripped to filenames and hashes are generated for
     # each input of type File, all other inputs are recorded as submitted
     def _generatePublicInvocation(self):
         public_in_dict = self.in_dict.copy()
-        # Replace file type inputs with object containing input file hash and filename
+        # Replace file type inputs with object containing
+        # input file hash and filename
         for x in self.inputs:
             if x.get('type') == "File":
                 id = x.get('id')
@@ -1226,19 +1229,22 @@ class LocalExecutor(object):
 
     # Private method to generate public output object for data collection file
     # hashes are generated for each output file.
-    def _generatePublicOutput(self, exec_output, out_files_dict, missing_files_dict):
+    def _generatePublicOutput(self,
+                              exec_output,
+                              out_files_dict,
+                              missing_files_dict):
         public_out_dict = {}
         public_out_dict['stdout'] = exec_output.stdout
         public_out_dict['stderr'] = exec_output.stderr
         public_out_dict['exit-code'] = exec_output.exit_code
         public_out_dict['error-message'] = exec_output.error_message
-        public_out_dict['shell-command'] = exec_output.error_message
+        public_out_dict['shell-command'] = exec_output.shell_command
         public_out_dict['missing-files'] = missing_files_dict
 
         # Iterate through output files to generate output objects
-        for id, filename in out_files_dict.items():
-            # Generate objects with hash of files
-            out_files_dict[id] = self._buildPublicFile(filename)
+        # and generate objects with hash of files
+        out_files_dict = {id: self._buildPublicFile(filename)
+                          for id, filename in out_files_dict.items()}
         public_out_dict['output-files'] = out_files_dict
         return public_out_dict
 
@@ -1247,18 +1253,15 @@ class LocalExecutor(object):
         filename = extractFileName(path)
         # Directories are expanded recursively
         if os.path.isdir(path):
-            files = []
             contents = os.listdir(path)
-            for x in contents:
-                temp = os.path.join(path, x)
-                # Recursive call to expand directory
-                files.append(self._buildPublicFile(temp))
+            # Recursive call to expand directory
+            files = [self._buildPublicFile(os.path.join(path, x))
+                     for x in contents]
             return {'file-name': filename, 'files': files}
         # Files are hashed
-        if os.path.isfile(path):
-            hash =compute_md5(path)
-            return {'file-name': filename, 'hash': hash}
-        return None
+        else:
+            md5sum = computeMD5(path)
+            return {'file-name': filename, 'hash': md5sum}
 
     # Private method to publish data collection objects to file
     # summary, publicInput an publicOutput are combined and
@@ -1267,7 +1270,7 @@ class LocalExecutor(object):
         date_time = datetime.datetime.now().isoformat()
         self.summary['date-time'] = date_time
         # Combine three modules in master dictionary
-        data_dict = {'summary' : self.summary,
+        data_dict = {'summary': self.summary,
                      'public-invocation': self.public_in,
                      'public-output': self.public_out}
         # Convert dictionary to Json string
@@ -1279,10 +1282,14 @@ class LocalExecutor(object):
             os.makedirs(cache_dir)
         if not os.path.exists(data_cache_dir):
             os.makedirs(data_cache_dir)
-        filename = os.path.join(data_cache_dir,"execution-{0}.json".format(date_time))
+        filename = os.path.join(data_cache_dir,
+                                "execution-{0}.json".format(date_time))
         file = open(filename, 'w+')
         file.write(content)
         file.close()
+        if self.debug:
+            print_info("Data capture from execution saved to cache")
+
 
 # Helper function that loads the JSON object coming from either a string,
 # a local file or a file pulled from Zenodo
@@ -1319,16 +1326,19 @@ def addDefaultValues(desc_dict, in_dict):
             in_dict[in_param['id']] = in_param.get("default-value")
     return in_dict
 
+
 # Parses absolute path into filename
 def extractFileName(path):
+    # Helps OS path handle case where "/" is at the end of path
     if path[:-1] == '/':
         return os.path.basename(path[:-1]) + "/"
     else:
         return os.path.basename(path)
 
+
 # Hashes files with MD5,
 # capable of handling large data files
-def compute_md5(filename):
+def computeMD5(filename):
     hash_md5 = hashlib.md5()
     with open(filename, "rb") as fhandle:
         for chunk in iter(lambda: fhandle.read(4096), b""):

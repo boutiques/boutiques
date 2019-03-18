@@ -139,7 +139,8 @@ def execute(*params):
                                   "changeUser": results.user,
                                   "stream": results.stream,
                                   "imagePath": results.imagepath,
-                                  "skipDataCollect": results.skip_data_collection})
+                                  "skipDataCollect":
+                                      results.skip_data_collection})
         # Execute it
         return executor.execute(results.volumes)
 

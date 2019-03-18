@@ -223,8 +223,8 @@ class TestExample1(BaseTest):
         self.clean_up()
         command = ("bosh exec launch " +
                    self.get_file_path("example1_docker.json") + " " +
-                   self.get_file_path("invocation_missing_script.json"),
-                  "--skip-data-collection")
+                   self.get_file_path("invocation_missing_script.json") +
+                   " --skip-data-collection")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
