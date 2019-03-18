@@ -17,7 +17,8 @@ class TestExample2(TestCase):
         example2_dir = os.path.join(self.get_examples_dir(), "example3")
         ret = bosh.execute("launch",
                            os.path.join(example2_dir, "example3.json"),
-                           os.path.join(example2_dir, "invocation.json"))
+                           os.path.join(example2_dir, "invocation.json"),
+                           "--skip-data-collection")
         print(ret)
         assert(ret.stdout == "")  # if shell is not set to bash, this will fail
         assert(ret.stderr == "")

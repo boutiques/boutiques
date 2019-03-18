@@ -30,7 +30,8 @@ class TestExample2(TestCase):
         example2_dir = os.path.join(self.get_examples_dir(), "example2")
         ret = bosh.execute("launch",
                            os.path.join(example2_dir, "example2.json"),
-                           os.path.join(example2_dir, "invocation.json"))
+                           os.path.join(example2_dir, "invocation.json"),
+                           "--skip-data-collection")
         print(ret)
         assert(ret.stdout == ""
                and ret.stderr == ""
@@ -40,7 +41,8 @@ class TestExample2(TestCase):
         ret = bosh.execute("launch",
                            os.path.join(example2_dir, "example2.json"),
                            "-x",
-                           os.path.join(example2_dir, "invocation.json"))
+                           os.path.join(example2_dir, "invocation.json"),
+                           "--skip-data-collection")
         print(ret)
         assert(ret.stdout == ""
                and ret.stderr == ""

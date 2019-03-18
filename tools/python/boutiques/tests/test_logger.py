@@ -39,7 +39,8 @@ class TestLogger(TestCase):
             bosh.execute("launch",
                          os.path.join(example1_dir,
                                       "example1_docker.json"),
-                         invocationStr)
+                         invocationStr,
+                         "--skip-data-collection")
         assert("[ ERROR ]" in str(e))
 
     @mock.patch('requests.get', side_effect=mock_get)

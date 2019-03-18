@@ -16,7 +16,7 @@ class TestCrashPython3(TestCase):
                             "schema", "examples")
 
     def test_no_container(self):
-        command = ("bosh exec launch "
+        command = ("bosh exec launch --skip-data-collection "
                    "{0} {1}".format(opj(self.get_examples_dir(),
                                         "crash3.json"),
                                     opj(self.get_examples_dir(),

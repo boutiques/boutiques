@@ -10,7 +10,9 @@ import math
 import random
 import subprocess
 import time
-import pwd
+import datetime
+import hashlib
+#import pwd
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
@@ -147,6 +149,10 @@ class LocalExecutor(object):
         self.shell = self.desc_dict.get("shell")
         if self.shell is None:
             self.shell = "/bin/sh"
+
+        # Generate Summary for data collection
+        if not self.skipDataCollect:
+            self.summary = self._generateSummary(desc)
 
         # Helpers Functions
         # The set of input parameters from the json descriptor
@@ -353,7 +359,9 @@ class LocalExecutor(object):
 
         # Check for output files
         missing_files = []
+        missing_files_dict = {}
         output_files = []
+        output_files_dict = {}
         all_files = evaluateEngine(self, "output-files")
         required_files = evaluateEngine(self, "output-files/optional=False")
         optional_files = evaluateEngine(self, "output-files/optional=True")
@@ -362,9 +370,11 @@ class LocalExecutor(object):
             fd = FileDescription(f, file_name, False)
             if op.exists(file_name):
                 output_files.append(fd)
+                output_files_dict[f] = file_name
             else:  # file does not exist
                 if f in required_files.keys():
                     missing_files.append(fd)
+                    missing_files_dict[f] = file_name
 
         # Set error messages
         desc_err = ''
@@ -374,7 +384,7 @@ class LocalExecutor(object):
                     desc_err = err_elem['description']
                     break
 
-        return ExecutorOutput(stdout,
+        executor_output = ExecutorOutput(stdout,
                               stderr,
                               exit_code,
                               desc_err,
@@ -382,6 +392,14 @@ class LocalExecutor(object):
                               missing_files,
                               command,
                               container_command, container_location)
+
+        if not self.skipDataCollect:
+            # Generate public output
+            self.public_out = self._generatePublicOutput(executor_output, output_files_dict, missing_files_dict)
+            # Write data collection to file
+            self._saveDataCaptureToCache()
+
+        return executor_output
 
     # Looks for the container image locally and pulls it if not found
     # Returns a tuple containing the container filename (for Singularity)
@@ -813,6 +831,10 @@ class LocalExecutor(object):
         if self.debug:
             print_info("Input: " + str(self.in_dict))
 
+        # Generate public invocation
+        if not self.skipDataCollect:
+            self.public_in = self._generatePublicInvocation()
+
         # Add default values for required parameters,
         # if no value has been given
         addDefaultValues(self.desc_dict, self.in_dict)
@@ -971,7 +993,7 @@ class LocalExecutor(object):
     # Private method to build the actual command line by substitution,
     # using the input data
     def _generateCmdLineFromInDict(self):
-        # Genrate output file names
+        # Generate output file names
         self._generateOutputFileNames()
         # it is required to call the method twice in case path
         # templates contain output keys
@@ -1155,6 +1177,112 @@ class LocalExecutor(object):
                 message += ("\t" + err + "\n")
             raise_error(ExecutorError, message)
 
+    # Private method to generate summary object of data
+    # collection file containing the tool name and descriptor DOI
+    def _generateSummary(self, desc):
+        summary = {}
+        summary['name'] = self.desc_dict['name']
+        summary['descriptor-doi'] = self._findDOI(desc)
+        return summary
+
+    # Private method to attempt to find descriptor DOI
+    # through various cases
+    # userInput may be json string, filename or zenodo id
+    def _findDOI(self, userInput):
+        # DOI in Zenodo reference case
+        if userInput.split(".")[0].lower() == "zenodo":
+            return userInput
+        # File cases
+        if os.path.isfile(userInput):
+            # Most recent DOI in file if user is publisher
+            # Include check to ensure descriptor is unmodified
+            if self.desc_dict.get('doi') is not None:
+                doi = self.desc_dict.get('doi')
+                if loadJson(doi) == self.desc_dict:
+                    return doi
+            # DOI in filename if descriptor pulled from Zenodo
+            # Include check to ensure descriptor is as published
+            elif os.path.basename(userInput).split("-")[0].lower() == "zenodo":
+                doi = os.path.basename(userInput).split(".")[0].replace("-",".")
+                if loadJson(doi) == self.desc_dict:
+                    return doi
+        # TODO: No DOI found, Handle descriptor must be published case
+        return None
+
+    # Private method to generate public invocation object for data collection file
+    # absolute paths are stripped to filenames and hashes are generated for
+    # each input of type File, all other inputs are recorded as submitted
+    def _generatePublicInvocation(self):
+        public_in_dict = self.in_dict.copy()
+        # Replace file type inputs with object containing input file hash and filename
+        for x in self.inputs:
+            if x.get('type') == "File":
+                id = x.get('id')
+                path = public_in_dict.get(id)
+                if path is not None:
+                    public_in_dict[id] = self._buildPublicFile(path)
+
+        return public_in_dict
+
+    # Private method to generate public output object for data collection file
+    # hashes are generated for each output file.
+    def _generatePublicOutput(self, exec_output, out_files_dict, missing_files_dict):
+        public_out_dict = {}
+        public_out_dict['stdout'] = exec_output.stdout
+        public_out_dict['stderr'] = exec_output.stderr
+        public_out_dict['exit-code'] = exec_output.exit_code
+        public_out_dict['error-message'] = exec_output.error_message
+        public_out_dict['shell-command'] = exec_output.error_message
+        public_out_dict['missing-files'] = missing_files_dict
+
+        # Iterate through output files to generate output objects
+        for id, filename in out_files_dict.items():
+            # Generate objects with hash of files
+            out_files_dict[id] = self._buildPublicFile(filename)
+        public_out_dict['output-files'] = out_files_dict
+        return public_out_dict
+
+    # Private method to recursively explore directory and hash all files
+    def _buildPublicFile(self, path):
+        filename = extractFileName(path)
+        # Directories are expanded recursively
+        if os.path.isdir(path):
+            files = []
+            contents = os.listdir(path)
+            for x in contents:
+                temp = os.path.join(path, x)
+                # Recursive call to expand directory
+                files.append(self._buildPublicFile(temp))
+            return {'file-name': filename, 'files': files}
+        # Files are hashed
+        if os.path.isfile(path):
+            hash =compute_md5(path)
+            return {'file-name': filename, 'hash': hash}
+        return None
+
+    # Private method to publish data collection objects to file
+    # summary, publicInput an publicOutput are combined and
+    # written to a file in .cache
+    def _saveDataCaptureToCache(self):
+        date_time = datetime.datetime.now().isoformat()
+        self.summary['date-time'] = date_time
+        # Combine three modules in master dictionary
+        data_dict = {'summary' : self.summary,
+                     'public-invocation': self.public_in,
+                     'public-output': self.public_out}
+        # Convert dictionary to Json string
+        content = json.dumps(data_dict, indent=4)
+        # Write collected data to file
+        cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
+        data_cache_dir = os.path.join(cache_dir, "data")
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+        if not os.path.exists(data_cache_dir):
+            os.makedirs(data_cache_dir)
+        filename = os.path.join(data_cache_dir,"execution-{0}.json".format(date_time))
+        file = open(filename, 'w+')
+        file.write(content)
+        file.close()
 
 # Helper function that loads the JSON object coming from either a string,
 # a local file or a file pulled from Zenodo
@@ -1190,3 +1318,19 @@ def addDefaultValues(desc_dict, in_dict):
         if in_dict.get(in_param['id']) is None:
             in_dict[in_param['id']] = in_param.get("default-value")
     return in_dict
+
+# Parses absolute path into filename
+def extractFileName(path):
+    if path[:-1] == '/':
+        return os.path.basename(path[:-1]) + "/"
+    else:
+        return os.path.basename(path)
+
+# Hashes files with MD5,
+# capable of handling large data files
+def compute_md5(filename):
+    hash_md5 = hashlib.md5()
+    with open(filename, "rb") as fhandle:
+        for chunk in iter(lambda: fhandle.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()

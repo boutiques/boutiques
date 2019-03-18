@@ -121,6 +121,9 @@ def execute(*params):
         parser.add_argument("--imagepath", action="store",
                             help="Path to Singularity image. "
                             "If not specified, will use current directory.")
+        parser.add_argument("--skip-data-collection", action="store_true",
+                            help="Skips execution data collection and saving"
+                            "to cache.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -135,7 +138,8 @@ def execute(*params):
                                   "debug": results.debug,
                                   "changeUser": results.user,
                                   "stream": results.stream,
-                                  "imagePath": results.imagepath})
+                                  "imagePath": results.imagepath,
+                                  "skipDataCollect": results.skip_data_collection})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -162,7 +166,8 @@ def execute(*params):
         executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "destroyTempScripts": True,
-                                  "changeUser": True})
+                                  "changeUser": True,
+                                  "skipDataCollect": True})
         if not inp:
             executor.generateRandomParams(1)
 
@@ -207,7 +212,8 @@ def execute(*params):
                                  {"forcePathType": True,
                                   "debug": results.debug,
                                   "stream": results.stream,
-                                  "imagePath": results.imagepath})
+                                  "imagePath": results.imagepath,
+                                  "skipDataCollect": True})
         container_location = executor.prepare()[1]
         print("Container location: " + container_location)
 
@@ -372,7 +378,8 @@ def evaluate(*params):
     executor = LocalExecutor(result.descriptor, result.invocation,
                              {"forcePathType": True,
                               "destroyTempScripts": True,
-                              "changeUser": True})
+                              "changeUser": True,
+                              "skipDataCollect": True})
 
     from boutiques.evaluate import evaluateEngine
     query_results = []

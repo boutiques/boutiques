@@ -3,6 +3,7 @@
 import os
 import subprocess
 import pytest
+import datetime as dt
 from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
@@ -52,7 +53,8 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "example1_docker.json"),
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
@@ -76,7 +78,8 @@ class TestExample1(TestCase):
                                         "example1_docker.json"),
                            "-x",
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -97,7 +100,8 @@ class TestExample1(TestCase):
                                         "example1_docker.json"),
                            "-s",
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
 
         # Make sure stdout and stderr are printed on the fly for
         # streaming mode
@@ -119,7 +123,8 @@ class TestExample1(TestCase):
         ret = bosh.execute("launch",
                            os.path.join(example1_dir,
                                         "example1_docker.json"),
-                           invocationStr)
+                           invocationStr,
+                           "--skip-data-collection")
 
         print(ret)
         assert("This is stdout" in ret.stdout)
@@ -137,7 +142,8 @@ class TestExample1(TestCase):
                                         "example1_docker.json"),
                            "-x",
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -158,7 +164,8 @@ class TestExample1(TestCase):
         ret = bosh.execute("launch",
                            descStr,
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
 
         print(ret)
         assert("This is stdout" in ret.stdout)
@@ -176,7 +183,8 @@ class TestExample1(TestCase):
                                         "example1_docker.json"),
                            "-x",
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -198,7 +206,8 @@ class TestExample1(TestCase):
             bosh.execute("launch",
                          os.path.join(example1_dir,
                                       "example1_docker.json"),
-                         invocationStr)
+                         invocationStr,
+                         "--skip-data-collection")
         assert("Cannot parse input" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -209,7 +218,8 @@ class TestExample1(TestCase):
         self.clean_up()
         ret = bosh.execute("launch", "zenodo.1472823",
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
@@ -231,7 +241,8 @@ class TestExample1(TestCase):
         ret = bosh.execute("launch", "zenodo.1472823",
                            "-x",
                            os.path.join(example1_dir,
-                                        "invocation.json"))
+                                        "invocation.json"),
+                           "--skip-data-collection")
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -251,7 +262,8 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "example1_sing.json"),
                            os.path.join(example1_dir,
-                                        "invocation_sing.json"))
+                                        "invocation_sing.json"),
+                           "--skip-data-collection")
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -268,7 +280,8 @@ class TestExample1(TestCase):
                                         "example1_sing.json"),
                            "-x",
                            os.path.join(example1_dir,
-                                        "invocation_sing.json"))
+                                        "invocation_sing.json"),
+                           "--skip-data-collection")
         print(ret)
         assert("This is stdout" in ret.stdout)
         assert("This is stderr" in ret.stderr)
@@ -289,7 +302,8 @@ class TestExample1(TestCase):
                          os.path.join(example1_dir,
                                       "example1_sing_crash_pull.json"),
                          os.path.join(example1_dir,
-                                      "invocation_sing.json"))
+                                      "invocation_sing.json"),
+                         "--skip-data-collection")
         assert("Could not pull Singularity image" in str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -301,7 +315,8 @@ class TestExample1(TestCase):
                            os.path.join(example1_dir,
                                         "example1_docker.json"),
                            os.path.join(example1_dir,
-                                        "invocation_missing_script.json"))
+                                        "invocation_missing_script.json"),
+                           "--skip-data-collection")
         print(ret)
         assert(ret.exit_code == 2)
         assert(ret.error_message == "File does not exist!")
@@ -315,7 +330,8 @@ class TestExample1(TestCase):
                    os.path.join(example1_dir,
                                 "example1_docker.json") + " " +
                    os.path.join(example1_dir,
-                                "invocation_missing_script.json"))
+                                "invocation_missing_script.json"),
+                   "--skip-data-collection")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
