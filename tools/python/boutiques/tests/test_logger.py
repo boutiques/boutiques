@@ -2,7 +2,6 @@
 
 import os
 import pytest
-import json
 import boutiques as bosh
 import boutiques.creator as bc
 from boutiques import __file__ as bfile
@@ -39,7 +38,8 @@ class TestLogger(TestCase):
             bosh.execute("launch",
                          os.path.join(example1_dir,
                                       "example1_docker.json"),
-                         invocationStr)
+                         invocationStr,
+                         "--skip-data-collection")
         self.assertIn("[ ERROR ]", str(e))
 
     @mock.patch('requests.get', side_effect=mock_get)

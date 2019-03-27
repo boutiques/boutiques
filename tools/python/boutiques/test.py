@@ -14,7 +14,8 @@ def test(descriptor, test, invocation):
     # Run pipeline.
     ret = bosh.execute("launch",
                        descriptor,
-                       invocation.name)
+                       invocation.name,
+                       "--skip-data-collection")
     print(ret)
 
     # Choose appropriate assertion scenario
