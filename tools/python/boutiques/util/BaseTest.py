@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 import os
+import sys
 from unittest import TestCase
 from boutiques import __file__ as bfile
 
@@ -26,8 +28,12 @@ class BaseTest(TestCase):
         self.assertIn("This is stderr", ret.stderr)
 
     def assert_reflected_output_nonutf8(self, ret):
-        self.assertIn("�a c'est stdout", ret.stdout)
-        self.assertIn("This is std�rr", ret.stderr)
+        if sys.version_info[0] < 3:
+            self.assertIn("a c'est stdout", ret.stdout)
+            self.assertIn("This is stdrr", ret.stderr)
+        else:
+            self.assertIn("\\xc7a c'est stdout", ret.stdout)
+            self.assertIn("This is std\\xe9rr", ret.stderr)
 
     def assert_no_output(self, ret):
         self.assertEqual(ret.stdout, "")

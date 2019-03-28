@@ -24,11 +24,11 @@ class ExecutorOutput():
                  container_command,
                  container_location):
         try:
-            self.stdout = stdout.decode("utf=8", "replace")
+            self.stdout = decodeByteStr(stdout)
         except AttributeError as e:
             self.stdout = stdout
         try:
-            self.stderr = stderr.decode("utf=8", "replace")
+            self.stderr = decodeByteStr(stderr)
         except AttributeError as e:
             self.stderr = stderr
         self.exit_code = exit_code
@@ -1190,3 +1190,14 @@ def addDefaultValues(desc_dict, in_dict):
         if in_dict.get(in_param['id']) is None:
             in_dict[in_param['id']] = in_param.get("default-value")
     return in_dict
+
+
+# Decodes a byte string, handling non utf-8 characters according to
+# Python version.
+def decodeByteStr(byteStr):
+    if sys.version_info[0] < 3:
+        # ignore non-decodable chars
+        return byteStr.decode("utf=8", "ignore")
+    else:
+        # replace non-decodable chars with escape sequence
+        return byteStr.decode("utf=8", "backslashreplace")
