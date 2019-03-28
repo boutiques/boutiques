@@ -31,6 +31,9 @@ class BaseTest(TestCase):
         if sys.version_info[0] < 3:
             self.assertIn("a c'est stdout", ret.stdout)
             self.assertIn("This is stdrr", ret.stderr)
+        elif sys.version_info[0] == 3 and sys.version_info[1] == 4:
+            self.assertIn("�a c'est stdout", ret.stdout)
+            self.assertIn("This is std�rr", ret.stderr)
         else:
             self.assertIn("\\xc7a c'est stdout", ret.stdout)
             self.assertIn("This is std\\xe9rr", ret.stderr)

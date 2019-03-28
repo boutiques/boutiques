@@ -1198,6 +1198,9 @@ def decodeByteStr(byteStr):
     if sys.version_info[0] < 3:
         # ignore non-decodable chars
         return byteStr.decode("utf=8", "ignore")
+    elif sys.version_info[0] == 3 and sys.version_info[1] == 4:
+        # replace non-decodable chars with a replacement character
+        return byteStr.decode("utf=8", "replace")
     else:
         # replace non-decodable chars with escape sequence
         return byteStr.decode("utf=8", "backslashreplace")
