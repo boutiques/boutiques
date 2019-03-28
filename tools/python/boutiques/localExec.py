@@ -24,11 +24,11 @@ class ExecutorOutput():
                  container_command,
                  container_location):
         try:
-            self.stdout = stdout.decode("utf=8")
+            self.stdout = stdout.decode("utf=8", "replace")
         except AttributeError as e:
             self.stdout = stdout
         try:
-            self.stderr = stderr.decode("utf=8")
+            self.stderr = stderr.decode("utf=8", "replace")
         except AttributeError as e:
             self.stderr = stderr
         self.exit_code = exit_code

@@ -25,6 +25,10 @@ class BaseTest(TestCase):
         self.assertIn("This is stdout", ret.stdout)
         self.assertIn("This is stderr", ret.stderr)
 
+    def assert_reflected_output_nonutf8(self, ret):
+        self.assertIn("�a c'est stdout", ret.stdout)
+        self.assertIn("This is std�rr", ret.stderr)
+
     def assert_no_output(self, ret):
         self.assertEqual(ret.stdout, "")
         self.assertEqual(ret.stderr, "")
