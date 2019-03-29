@@ -19,17 +19,20 @@ class TestExec(TestCase):
                                                                   "fake.json"),
                                                      os.path.join(
                                                        example1_dir,
-                                                       "invocation.json")])
+                                                       "invocation.json"),
+                                                     "--skip-data-collection"])
         self.assertRaises(SystemExit, bosh.execute, ["launch",
                                                      os.path.join(
                                                        example1_dir,
                                                        "example1_docker.json"),
                                                      os.path.join(example1_dir,
-                                                                  "fake.json")])
+                                                                  "fake.json"),
+                                                     "--skip-data-collection"])
         self.assertRaises(SystemExit, bosh.execute, ["launch",
                                                      os.path.join(
                                                        example1_dir,
                                                        "example1_docker.json"),
                                                      os.path.join(
                                                        example1_dir,
-                                                       "exampleTool1.py")])
+                                                       "exampleTool1.py"),
+                                                     "--skip-data-collection"])

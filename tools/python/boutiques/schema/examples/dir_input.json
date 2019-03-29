@@ -1,0 +1,30 @@
+{
+    "author": "Test author",
+    "command-line": "cp -Rf [DIR_INPUT] [DIR_OUTPUT]",
+    "description": "This property describes the tool or application",
+    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/examples/example-dir/example_dir.json",
+    "inputs": [
+        {
+            "id": "input_dir",
+            "name": "Directory of input files",
+            "optional": true,
+            "type": "File",
+            "value-key": "[DIR_INPUT]"
+        }
+    ],
+    "name": "Example Boutiques Tool",
+    "output-files": [
+        {
+            "path-template": "output-dir",
+            "description": "This directory will contain output files.",
+            "optional": true,
+            "id": "results",
+            "name": "Results",
+            "value-key": "[DIR_OUTPUT]"
+        }
+    ],
+    "schema-version": "0.5",
+    "tool-doi": "00.0000/example.0000000",
+    "tool-version": "0.0.1",
+    "url": "http://example.com"
+}

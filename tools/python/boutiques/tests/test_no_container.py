@@ -20,4 +20,5 @@ class TestNoContainer(TestCase):
                                                    "no_container.json"),
                                       os.path.join(self.get_examples_dir(),
                                                    "no_container_invocation."
-                                                   + "json")).exit_code)
+                                                   + "json"),
+                                      "--skip-data-collection").exit_code)
