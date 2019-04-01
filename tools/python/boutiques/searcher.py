@@ -55,7 +55,7 @@ class Searcher():
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
-            print_info("Search successful.", r)
+            print_info("Search successful for query \"%s\"" % self.query, r)
         return r
 
     def create_results_list(self, results):

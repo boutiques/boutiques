@@ -1300,8 +1300,8 @@ def loadJson(userInput, verbose=False):
         json_file = userInput
     elif userInput.split(".")[0].lower() == "zenodo":
         from boutiques.puller import Puller
-        puller = Puller(userInput, verbose)
-        json_file = puller.pull()
+        puller = Puller([userInput], verbose)
+        json_file = puller.pull()[0]
     if json_file is not None:
         with open(json_file, 'r') as f:
             return json.loads(f.read())

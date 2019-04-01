@@ -449,11 +449,13 @@ def search(*params):
 
 
 def pull(*params):
-    parser = ArgumentParser("Download a descriptor from Zenodo.")
+    parser = ArgumentParser("Ensures that Zenodo descriptors are locally "
+                            "cached, downloading them if needed.")
 
-    parser.add_argument("zid", action="store", help="Zenodo ID "
-                        "of the descriptor to pull, prefixed by "
-                        "'zenodo.', e.g. zenodo.123456")
+    parser.add_argument("zids", nargs="+", action="store", help="One or "
+                        "more Zenodo IDs for the descriptor(s) to pull, "
+                        "prefixed by 'zenodo.', e.g. zenodo.123456 "
+                        "zenodo.123457")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print information messages")
     parser.add_argument("--sandbox", action="store_true",
@@ -463,7 +465,7 @@ def pull(*params):
     result = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.zid, result.verbose, result.sandbox)
+    puller = Puller(result.zids, result.verbose, result.sandbox)
     return puller.pull()
 
 
