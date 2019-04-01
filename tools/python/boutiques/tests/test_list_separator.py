@@ -22,3 +22,4 @@ class TestListSeparator(TestCase):
                            os.path.join(self.get_examples_dir(),
                                         "list_separator_inv.json"))
         self.assertIn('1:2:3', ret.stdout)
+        self.assertIn('foo.txt,bar.m', ret.stdout)

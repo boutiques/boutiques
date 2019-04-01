@@ -1131,7 +1131,10 @@ class LocalExecutor(object):
                         else:
                             replacementFiles.append(ftarg)
                     # Replace old val with the new one
-                    self.in_dict[key] = " ".join(replacementFiles)
+                    if len(replacementFiles) == 1:
+                        self.in_dict[key] = replacementFiles[0]
+                    else:
+                        self.in_dict[key] = replacementFiles
             # List length constraints are satisfied
             if isList:
                 check('min-list-entries',
