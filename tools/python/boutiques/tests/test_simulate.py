@@ -72,8 +72,8 @@ class TestSimulate(TestCase):
         target_input["exclusive-minimum"] = False
         mock_random.return_value = -0.001
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
-                                             json.dumps(test_json),
-                                             "-j"])
+                                                     json.dumps(test_json),
+                                                     "-j"])
         mock_random.return_value = 0
         ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
         self.assertIsInstance(json.loads(ret), dict)
