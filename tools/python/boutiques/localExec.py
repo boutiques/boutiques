@@ -572,6 +572,13 @@ class LocalExecutor(object):
         # nd = number of random characters to use in generating strings,
         # nl = max number of random list items
         nd, nl = 2, 5
+        # number_decimals = the number of decimal places to round to
+        # on randomly generated floating point numbers
+        number_decimals = 3
+        # epsilon = an upper bound on the relative error due to
+        # rounding for the chosen number of decimals, making sure
+        # excluded values aren't rounded to by accident.
+        epsilon = 1.0/(10**number_decimals)
 
         def randDigs():
             # Generate random string of digits
@@ -620,12 +627,13 @@ class LocalExecutor(object):
                 minv, maxv = float(minv), float(maxv)
             # Apply exclusive boundary constraints, if any
             if self.safeGet(param_id, 'exclusive-minimum'):
-                minv += 1 if isInt else 0.001
+                minv += 1 if isInt else epsilon
             if self.safeGet(param_id, 'exclusive-maximum'):
-                maxv -= 1 if isInt else 0.001
+                maxv -= 1 if isInt else epsilon
             # Returns a random int or a random float, depending on the type of p
             return (rnd.randint(minv, maxv)
-                    if isInt else round(rnd.uniform(minv, maxv), nd))
+                    if isInt else round(rnd.uniform(minv, maxv),
+                                        number_decimals))
 
         # Generate a random parameter value based on the input
         # type (where prm \in self.inputs)

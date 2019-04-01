@@ -57,6 +57,55 @@ class TestSimulate(TestCase):
                                                    "inv_no_defaults.json"))
                              .exit_code)
 
+    @mock.patch('random.uniform')
+    def test_number_bounds(self, mock_random):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        desc_json = open(os.path.join(example1_dir,
+                                      "example1_docker.json")).read()
+        test_json = json.loads(desc_json)
+        del test_json['groups']
+        target_input = [i for i in test_json["inputs"]
+                        if i["id"] == "num_input"][0]
+        target_input["optional"] = False
+
+        # Test inclusive lower bound
+        target_input["exclusive-minimum"] = False
+        mock_random.return_value = -0.001
+        self.assertRaises(SystemExit, bosh.execute, ["simulate",
+                                                     json.dumps(test_json),
+                                                     "-j"])
+        mock_random.return_value = 0
+        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        self.assertIsInstance(json.loads(ret), dict)
+
+        # Test exclusive lower bound
+        target_input["exclusive-minimum"] = True
+        self.assertRaises(SystemExit, bosh.execute, ["simulate",
+                                                     json.dumps(test_json),
+                                                     "-j"])
+        mock_random.return_value = 0.001
+        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        self.assertIsInstance(json.loads(ret), dict)
+
+        # Test inclusive upper bound
+        target_input["exclusive-maximum"] = False
+        mock_random.return_value = 1.001
+        self.assertRaises(SystemExit, bosh.execute, ["simulate",
+                                                     json.dumps(test_json),
+                                                     "-j"])
+        mock_random.return_value = 1
+        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        self.assertIsInstance(json.loads(ret), dict)
+
+        # Test exclusive upper bound
+        target_input["exclusive-maximum"] = True
+        self.assertRaises(SystemExit, bosh.execute, ["simulate",
+                                                     json.dumps(test_json),
+                                                     "-j"])
+        mock_random.return_value = 0.999
+        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        self.assertIsInstance(json.loads(ret), dict)
+
     def test_success_json(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         desc_json = open(os.path.join(example1_dir,
