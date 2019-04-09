@@ -94,6 +94,7 @@ class TestEvaluate(TestCase):
                   'config_num': 4,
                   'num_input': None,
                   'file_input': './setup.py',
+                  'file_list_input': ['./setup.py', './requirements.txt'],
                   'enum_input': 'val1',
                   'list_int_input': [1, 2, 3],
                   'flag_input': None}
