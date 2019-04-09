@@ -102,10 +102,10 @@
         {
             "command-line-flag": "-t",
             "id": "file_list_input",
+            "list": true,
             "name": "A file list input",
             "optional": true,
             "type": "File",
-            "list": true,
             "value-key": "[FILE_LIST_INPUT]"
         },
         {
