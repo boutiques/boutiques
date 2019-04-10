@@ -31,6 +31,10 @@ class Searcher():
         if max_results is None:
             self.max_results = 10
 
+        # Zenodo will error if asked for more than 9999 results
+        if(int(self.max_results) > 9999):
+            self.max_results = "9999"
+
         # Set Zenodo endpoint
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
             self.sandbox else "https://zenodo.org"
