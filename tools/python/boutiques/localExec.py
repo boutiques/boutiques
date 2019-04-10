@@ -16,6 +16,7 @@ from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info
 from boutiques.dataHandler import getDataCacheDir
+from boutiques.util.utils import extractFileName, loadJson
 
 
 class ExecutorOutput():
@@ -1335,32 +1336,6 @@ class LocalExecutor(object):
             print_info("Descriptor from execution saved to cache for future "
                        "publishing as {}".format(filename))
         return filename
-
-
-
-# Helper function that loads the JSON object coming from either a string,
-# a local file or a file pulled from Zenodo
-def loadJson(userInput, verbose=False):
-    # Check for JSON file (local or from Zenodo)
-    json_file = None
-    if os.path.isfile(userInput):
-        json_file = userInput
-    elif userInput.split(".")[0].lower() == "zenodo":
-        from boutiques.puller import Puller
-        puller = Puller([userInput], verbose)
-        json_file = puller.pull()[0]
-    if json_file is not None:
-        with open(json_file, 'r') as f:
-            return json.loads(f.read())
-    # JSON file not found, so try to parse JSON object
-    e = ("Cannot parse input {}: file not found, "
-         "invalid Zenodo ID, or invalid JSON object").format(userInput)
-    if userInput.isdigit():
-        raise_error(ExecutorError, e)
-    try:
-        return json.loads(userInput)
-    except ValueError:
-        raise_error(ExecutorError, e)
 
 
 # Adds default values to input dictionary

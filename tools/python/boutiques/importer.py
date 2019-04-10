@@ -3,7 +3,7 @@
 from argparse import ArgumentParser
 from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
-from boutiques.localExec import loadJson
+from boutiques.util.utils import loadJson
 from boutiques.logger import raise_error
 import boutiques
 import yaml

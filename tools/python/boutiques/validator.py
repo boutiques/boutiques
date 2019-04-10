@@ -6,7 +6,7 @@ import json
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
-from boutiques.localExec import loadJson
+from boutiques.util.utils import loadJson
 from boutiques.logger import raise_error, print_info
 
 
