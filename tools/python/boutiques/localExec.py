@@ -24,11 +24,11 @@ class ExecutorOutput():
                  container_command,
                  container_location):
         try:
-            self.stdout = stdout.decode("utf=8")
+            self.stdout = decodeByteStr(stdout)
         except AttributeError as e:
             self.stdout = stdout
         try:
-            self.stderr = stderr.decode("utf=8")
+            self.stderr = decodeByteStr(stderr)
         except AttributeError as e:
             self.stderr = stderr
         self.exit_code = exit_code
@@ -1359,3 +1359,17 @@ def computeMD5(filename):
         for chunk in iter(lambda: fhandle.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+
+# Decodes a byte string, handling non utf-8 characters according to
+# Python version.
+def decodeByteStr(byteStr):
+    if sys.version_info[0] < 3:
+        # ignore non-decodable chars
+        return byteStr.decode("utf=8", "ignore")
+    elif sys.version_info[0] == 3 and sys.version_info[1] == 4:
+        # replace non-decodable chars with a replacement character
+        return byteStr.decode("utf=8", "replace")
+    else:
+        # replace non-decodable chars with escape sequence
+        return byteStr.decode("utf=8", "backslashreplace")

@@ -235,6 +235,27 @@ class TestExample1(BaseTest):
                          self.get_file_path("example1_docker.json")),
             aditional_assertions=self.assert_only_stdout)
 
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_exec_docker_non_utf8(self):
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           self.get_file_path("example1_docker_nonutf8.json"),
+                           self.get_file_path("invocation.json"))
+
+        self.assert_successful_return(
+            ret, ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output_nonutf8)
+
+        self.clean_up()
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_docker_nonutf8.json"),
+                         "-x",
+                         self.get_file_path("invocation.json")),
+            ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output_nonutf8)
+
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
     @pytest.fixture(autouse=True)
