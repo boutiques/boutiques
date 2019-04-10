@@ -6,6 +6,7 @@ import pytest
 from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 from boutiques.localExec import ExecutorError
+from boutiques.util.utils import LoadError
 import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
 
@@ -138,7 +139,7 @@ class TestExample1(BaseTest):
         self.clean_up()
         invocationStr = open(
             self.get_file_path("invocation_invalid.json")).read()
-        with pytest.raises(ExecutorError) as e:
+        with pytest.raises(LoadError) as e:
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
                          invocationStr,

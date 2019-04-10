@@ -44,7 +44,8 @@ class DataHandler(object):
                   .format(len(self.record_files)))
             print("There are {} unpublished descriptors in the cache"
                   .format(len(self.descriptor_files)))
-            print(*self.cache_files, sep="\n")
+            for i in range(len(self.cache_files)):
+                print(self.cache_files[i])
 
     # Private function to print a file to console
     def _display_file(self, file_path):
@@ -102,7 +103,6 @@ class DataHandler(object):
             self.bulk_publish = True
             self._zenodo_publish(self.record_files)
 
-
     # Private method to publish all the records in file_list to a single
     # data-set on Zenodo
     def _zenodo_publish(self, files_list):
@@ -120,10 +120,10 @@ class DataHandler(object):
         for file in records_dict.keys():
             self._zenodo_upload_dataset(deposition_id, file)
 
-        # Publish deposition TODO: access key of dict
+        # Publish deposition
         msg_obj = "Records" if self.bulk_publish else "Record"
         doi = self.zenodo_helper.zenodo_publish(self.zenodo_access_token,
-                                          deposition_id, msg_obj)
+                                                deposition_id, msg_obj)
         # Clear cache of published records
         if doi:
             self._clean_cache(records_dict)
@@ -177,13 +177,13 @@ class DataHandler(object):
         }
         # Add tool name(s) to keywords
         data['metadata']['keywords'] = [v['summary']['name']
-                                        for k,v in records_dict.items()]
+                                        for k, v in records_dict.items()]
         data['metadata']['keywords'].insert(0, 'Boutiques')
         # Add descriptor link(s) to related identifiers
         data['metadata']['related_identifiers'] = \
             [{'identifier': url.format(v['summary']['descriptor-doi']
                                        .split('.')[2]),
-             'relation': 'hasPart'} for k,v in records_dict.items()]
+             'relation': 'hasPart'} for k, v in records_dict.items()]
         return data
 
     def _zenodo_upload_dataset(self, deposition_id, file):
@@ -198,9 +198,9 @@ class DataHandler(object):
                           files=files)
 
         if(r.status_code != 201):
-            raise_error(ZenodoError, "Cannot upload descriptor", r)
+            raise_error(ZenodoError, "Cannot upload record", r)
         if(self.verbose):
-            print_info("Descriptor uploaded to Zenodo", r)
+            print_info("Record uploaded to Zenodo", r)
 
     def _get_publishing_prompt(self):
         if self.filename is not None:
@@ -223,7 +223,7 @@ class DataHandler(object):
         self.record_files = [fl for fl in os.listdir(self.cache_dir)
                              if fl not in self.descriptor_files]
         doi_list = [loadJson(os.path.join(self.cache_dir, fl))
-                        .get('summary').get('descriptor-doi')
+                    .get('summary').get('descriptor-doi')
                     for fl in self.record_files]
 
         # Check each descriptor in remaining records
@@ -231,7 +231,6 @@ class DataHandler(object):
             # No records link to descriptor
             if descriptor not in doi_list:
                 self.delete(descriptor)
-
 
     # Function to remove file(s) from the cache
     # Option all will clear the data collection cache of all files
@@ -266,6 +265,7 @@ class DataHandler(object):
             msg = "File {} does not exist in the data cache".format(filename)
             raise_error(ValueError, msg)
 
+
 def getDataCacheDir():
     cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
     data_cache_dir = os.path.join(cache_dir, "data")
@@ -274,4 +274,3 @@ def getDataCacheDir():
     if not os.path.exists(data_cache_dir):
         os.makedirs(data_cache_dir)
     return data_cache_dir
-

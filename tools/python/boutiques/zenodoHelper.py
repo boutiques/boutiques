@@ -4,9 +4,9 @@ import json
 import requests
 from boutiques.logger import raise_error, print_info
 
+
 class ZenodoError(Exception):
     pass
-
 
 
 class ZenodoHelper(object):
@@ -18,7 +18,6 @@ class ZenodoHelper(object):
         self.verbose = verbose
         self.config_file = os.path.join(os.path.expanduser('~'), ".boutiques")
         self.zenodo_endpoint = self.get_zenodo_endpoint()
-
 
     def get_zenodo_access_token(self):
         json_creds = self.read_credentials()
@@ -143,7 +142,7 @@ class ZenodoHelper(object):
             r = requests.delete(self.zenodo_endpoint +
                                 '/api/deposit/depositions/%s/files/%s'
                                 % (new_deposition_id, file_id),
-                                params={'access_token':access_token})
+                                params={'access_token': access_token})
             if(r.status_code != 204):
                 raise_error(ZenodoError, "Could not delete old file", r)
             if(self.verbose):

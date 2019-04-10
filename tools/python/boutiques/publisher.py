@@ -8,7 +8,6 @@ import requests
 import os
 
 
-
 class Publisher():
 
     def __init__(self, descriptor_file_name, auth_token,

@@ -5,7 +5,7 @@ import pytest
 import boutiques as bosh
 import boutiques.creator as bc
 from boutiques import __file__ as bfile
-from boutiques.localExec import ExecutorError
+from boutiques.util.utils import LoadError
 from argparse import ArgumentParser
 from unittest import TestCase
 import mock
@@ -34,7 +34,7 @@ class TestLogger(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         invocationStr = open(os.path.join(example1_dir,
                                           "invocation_invalid.json")).read()
-        with pytest.raises(ExecutorError) as e:
+        with pytest.raises(LoadError) as e:
             bosh.execute("launch",
                          os.path.join(example1_dir,
                                       "example1_docker.json"),

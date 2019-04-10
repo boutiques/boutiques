@@ -1,7 +1,7 @@
 {
   "summary": {
     "name": "tool2",
-    "descriptor-doi": "descriptor-tool2-123"
+    "descriptor-doi": "descriptor-tool2-123.json"
   }, 
   "public_invocation": {}, 
   "public_output": {}

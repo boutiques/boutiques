@@ -1208,7 +1208,7 @@ class LocalExecutor(object):
         if userIn.split(".")[0].lower() == "zenodo":
             return doi_prefix+userIn
         # File cases
-        elif os.path.isfile(userIn):
+        if os.path.isfile(userIn):
             # Most recent DOI in file if user is publisher
             # Include check to ensure descriptor is unmodified
             if self.desc_dict.get('doi') is not None:
@@ -1222,8 +1222,7 @@ class LocalExecutor(object):
                 if loadJson(doi) == self.desc_dict:
                     return doi_prefix+doi
         # No DOI found, save descriptor to cache and return filename
-        else:
-            return self._saveDescriptorToCache()
+        return self._saveDescriptorToCache()
 
     # Private method to generate public invocation object
     # for data collection file

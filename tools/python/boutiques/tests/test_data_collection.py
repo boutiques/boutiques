@@ -127,7 +127,8 @@ class TestDataCollection(TestCase):
 
         summary = data_collect_dict.get("summary")
         self.assertIsNotNone(summary)
-        self.assertEqual(summary.get("descriptor-doi"), "zenodo.1472823")
+        self.assertEqual(summary.get("descriptor-doi"),
+                         "10.5281/zenodo.1472823")
 
         self.clean_up()
 
