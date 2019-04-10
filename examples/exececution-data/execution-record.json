@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "name": "Example Boutiques Tool",
+    "descriptor-doi": "10.5281/zenodo.2634310",
+    "date-time": "2019-03-18T07:26:12.459313"
+  },
+  "public-invocation": {
+    "str_input_list": [
+      "fo '; echo FAIL",
+      "bar"
+    ],
+    "str_input": "coin;plop",
+    "file_input": {
+      "file-name": "setup.py",
+      "hash": "cfca29dcf1578b0d656e8a4e4b8964ca"
+    },
+    "list_int_input": [
+      1,
+      2,
+      3
+    ],
+    "config_num": 4,
+    "enum_input": "val1"
+  },
+  "public-output": {
+    "stdout": "This is stdout",
+    "stderr": "This is stderr",
+    "exit-code": 0,
+    "error-message": "",
+    "shell-command": "exampleTool1.py -c config.txt -i 'fo '\"'\"'; echo FAIL' bar -s 'coin;plop'   -e val1 ./setup.py 'log-4-coin;plop.txt' -l 1 2 3",
+    "missing-files": {},
+    "output-files": {
+      "logfile": {
+        "file-name": "log-4-coin;plop.txt",
+        "hash": "8bb2564936980e92ceec8a5759ec34a8"
+      },
+      "config_file": {
+        "file-name": "config.txt",
+        "hash": "ee9cdba358282652236c5bfb61180ef5"
+      }
+    }
+  }
+}

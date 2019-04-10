@@ -468,6 +468,83 @@ def pull(*params):
     puller = Puller(result.zids, result.verbose, result.sandbox)
     return puller.pull()
 
+def data(*params):
+    parser = ArgumentParser("Manage execution data collection.", add_help=False)
+
+    parser.add_argument("action", action="store",
+                        help="Manage execution data records. Inspect: displays "
+                        "the unpublished records currently in the cache. "
+                        "Publish: publishes contents of cache to Zenodo as "
+                        "a public data set. Requires a Zenodo access token, "
+                        "see http://developers.zenodo.org/#authentication. " 
+                        "Discard: remove one or more records from the cache.",
+                        choices=["inspect", "publish", "delete"])
+    parser.add_argument("--help", "-h", action="store_true",
+                        help="show this help message and exit")
+
+    helps = any([True for ht in ["--help", "-h"] if ht in params])
+    if len(params) <= 1 and helps:
+        parser.print_help()
+        raise SystemExit
+
+    args, params = parser.parse_known_args(params)
+    action = args.action
+    params += ["--help"] if args.help is True else []
+
+    if action == "inspect":
+        parser = ArgumentParser("Displays contents of cache")
+        parser.add_argument("-e", "--example", action="store_true",
+                            help="Display example data file contents.")
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.inspect(results.example)
+
+    if action == "publish":
+        parser = ArgumentParser("Publishes record(s) to a Zenodo data set.")
+        parser.add_argument("-a", "--author", action="store",
+                            help="Set the author name for the data set "
+                            "publication. Defaults to anonymous.")
+        parser.add_argument("-f", "--file", action="store",
+                            help="Filename of record to publish alone as a "
+                            "data set.")
+        parser.add_argument("-i", "--individually", action="store_true",
+                            help="Publishes all data files in cache as "
+                            "independent data sets, By Default will publish "
+                            "files in bulk data sets.")
+        parser.add_argument("--no-int", '-y', action="store_true",
+                            help="disable interactive input.")
+        parser.add_argument("-v", "--verbose", action="store_true",
+                            help="print information messages.")
+        parser.add_argument("--sandbox", action="store_true",
+                            help="publish to Zenodo's sandbox instead of "
+                            "production server. Recommended for tests.")
+        parser.add_argument("--zenodo-token", action="store",
+                            help="Zenodo API token to use for authentication. "
+                            "If not used, token will be read from "
+                            "configuration file or requested interactively.")
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.publish(results.file, results.zenodo_token,
+                                   results.author, results.individually,
+                                   results.sandbox, results.no_int,
+                                   results.verbose)
+
+    if action == "delete":
+        parser = ArgumentParser("Delete data record(s) in cache.")
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument("-f", "--file", action="store",
+                            help="Filename of record to delete.")
+        group.add_argument( "--all", action="store_true",
+                            help="Delete all records in the cache.")
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.delete(results.file, results.all)
 
 def bosh(args=None):
     parser = ArgumentParser(description="Driver for Bosh functions",
@@ -490,11 +567,12 @@ def bosh(args=None):
                         "Example: Generates example command-line for descriptor"
                         ". Search: search Zenodo for descriptors. "
                         "Pull: download a descriptor from Zenodo. "
+                        "Data: manage execution data collection. "
                         "Pprint: generate pretty help text from a descriptor."
                         "Version: prints the version of this tool.",
                         choices=["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "pprint",
+                                 "test", "example", "search", "pull", "data", "pprint",
                                  "version"])
 
     parser.add_argument("--help", "-h", action="store_true",
@@ -570,6 +648,9 @@ def bosh(args=None):
         elif func == "pull":
             out = pull(*params)
             return bosh_return(out, hide=True)
+        elif func == "data":
+            out = data(*params)
+            return bosh_return(out)
         elif func == "version":
             from boutiques.__version__ import VERSION
             return bosh_return(VERSION)

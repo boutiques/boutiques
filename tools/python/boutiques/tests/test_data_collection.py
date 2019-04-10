@@ -146,7 +146,7 @@ class TestDataCollection(TestCase):
         self.assertIsNotNone(input_dir)
         files = input_dir.get("files")
         self.assertIsNotNone(files)
-        self.assertEqual(len(files), 3)
+        self.assertEqual(len(files), 2)
 
         public_out = data_collect_dict.get("public-output")
         self.assertIsNotNone(public_out)
@@ -156,6 +156,6 @@ class TestDataCollection(TestCase):
         self.assertIsNotNone(results)
         files = results.get("files")
         self.assertIsNotNone(files)
-        self.assertEqual(len(files), 3)
+        self.assertEqual(len(files), 2)
 
         self.clean_up()

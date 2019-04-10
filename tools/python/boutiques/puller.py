@@ -2,8 +2,9 @@ import requests
 import urllib
 import os
 from boutiques.logger import raise_error, print_info
-from boutiques.publisher import ZenodoError
 from boutiques.searcher import Searcher
+from boutiques.zenodoHelper import ZenodoError
+
 try:
     # Python 3
     from urllib.request import urlopen
