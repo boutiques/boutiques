@@ -185,7 +185,12 @@ class PrettyPrinter():
             tinp = inps[0]
             cflag = tinp.get("command-line-flag")
             if cflag:
+                # argparse crashes when dest is supplied and
+                # argument doesn't start with '--'
+                if not cflag.startswith("-"):
+                    cflag = '--' + cflag
                 inp_args += [cflag]
+                inp_kwargs['dest'] = clkey
             else:
                 inp_args += [clkey]
 
