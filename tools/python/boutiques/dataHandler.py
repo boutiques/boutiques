@@ -5,7 +5,7 @@ import time
 import hashlib
 from boutiques import __file__ as bfile
 from boutiques.logger import raise_error, print_info
-from boutiques.localExec import extractFileName, loadJson
+from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
 
 

@@ -16,7 +16,8 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
-from boutiques.localExec import loadJson, addDefaultValues
+from boutiques.localExec import addDefaultValues
+from boutiques.util.utils import loadJson
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
