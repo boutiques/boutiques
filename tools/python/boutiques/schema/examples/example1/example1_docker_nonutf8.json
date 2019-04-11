@@ -1,6 +1,6 @@
 {
     "author": "Test author",
-    "command-line": "exampleTool1_nonutf8.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
+    "command-line": "exampleTool1_nonutf8.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FILE_LIST_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
     "container-image": {
         "container-opts": [
             "-e",
@@ -98,6 +98,15 @@
             "optional": true,
             "type": "File",
             "value-key": "[FILE_INPUT]"
+        },
+        {
+            "command-line-flag": "-t",
+            "id": "file_list_input",
+            "list": true,
+            "name": "A file list input",
+            "optional": true,
+            "type": "File",
+            "value-key": "[FILE_LIST_INPUT]"
         },
         {
             "command-line-flag": "-e",

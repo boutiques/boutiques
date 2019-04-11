@@ -6,15 +6,12 @@ import json
 from boutiques import __file__ as bfile
 import boutiques as bosh
 import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
+    example_boutiques_tool
 
 
 def mock_get():
-    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
-                                   "https://zenodo.org/api/files/"
-                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
-                                   "example1_docker.json")
-    return mock_zenodo_search([mock_record])
+    return mock_zenodo_search([example_boutiques_tool])
 
 
 class TestSimulate(TestCase):
@@ -45,7 +42,9 @@ class TestSimulate(TestCase):
     @mock.patch('requests.get', return_value=mock_get())
     def test_success_desc_from_zenodo(self, mock_get):
         self.assertFalse(bosh.execute("simulate",
-                                      "zenodo.1472823").exit_code)
+                                      "zenodo." +
+                                      str(example_boutiques_tool.id))
+                         .exit_code)
 
     def test_success_default_values(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")

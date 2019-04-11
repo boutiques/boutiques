@@ -7,15 +7,12 @@ from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 from boutiques.localExec import ExecutorError
 import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
+    example_boutiques_tool
 
 
 def mock_get():
-    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
-                                   "https://zenodo.org/api/files/"
-                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
-                                   "example1_docker.json")
-    return mock_zenodo_search([mock_record])
+    return mock_zenodo_search([example_boutiques_tool])
 
 
 class TestExample1(BaseTest):
@@ -150,7 +147,8 @@ class TestExample1(BaseTest):
     @mock.patch('requests.get', return_value=mock_get())
     def test_example1_exec_docker_from_zenodo(self, mock_get):
         self.clean_up()
-        ret = bosh.execute("launch", "zenodo.1472823",
+        ret = bosh.execute("launch",
+                           "zenodo." + str(example_boutiques_tool.id),
                            self.get_file_path("invocation.json"),
                            "--skip-data-collection")
 
@@ -165,7 +163,7 @@ class TestExample1(BaseTest):
 
         self.clean_up()
         self.assert_successful_return(
-            bosh.execute("launch", "zenodo.1472823",
+            bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
                          "-x",
                          self.get_file_path("invocation.json"),
                          "--skip-data-collection"),
