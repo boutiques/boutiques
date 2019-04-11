@@ -657,7 +657,7 @@ class LocalExecutor(object):
             mn = self.safeGet(prm['id'], 'min-list-entries') or 2
             mx = self.safeGet(prm['id'], 'max-list-entries') or nl
             isList = self.safeGet(prm['id'], 'list') or False
-            return [str(paramSingle(prm)) for _ in
+            return [paramSingle(prm) for _ in
                     range(rnd.randint(mn, mx))] if isList else paramSingle(prm)
 
         # Returns a list of the ids of parameters that
