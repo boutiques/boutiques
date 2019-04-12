@@ -1265,6 +1265,9 @@ class LocalExecutor(object):
     # Private method to recursively explore directory and hash all files
     def _buildPublicFile(self, path):
         filename = extractFileName(path)
+        # If path is not found, report it
+        if not os.path.exists(path):
+            return {'file-name': filename, 'not_found': True}
         # Directories are expanded recursively
         if os.path.isdir(path):
             contents = os.listdir(path)
