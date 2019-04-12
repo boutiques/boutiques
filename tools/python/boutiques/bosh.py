@@ -432,7 +432,7 @@ def search(*params):
     parser.add_argument("--sandbox", action="store_true",
                         help="search Zenodo's sandbox instead of "
                         "production server. Recommended for tests.")
-    parser.add_argument("-m", "--max", action="store",
+    parser.add_argument("-m", "--max", action="store", type=int,
                         help="Specify the maximum number of results "
                         "to be returned. Default is 10.")
     parser.add_argument("-nt", "--no-trunc", action="store_true",

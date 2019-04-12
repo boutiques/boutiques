@@ -7,16 +7,13 @@ import subprocess
 import pytest
 from boutiques import __file__ as bfile
 from boutiques.localExec import loadJson
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
+    example_boutiques_tool
 import boutiques as bosh
 
 
 def mock_get():
-    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
-                                   "https://zenodo.org/api/files/"
-                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
-                                   "example1_docker.json")
-    return mock_zenodo_search([mock_record])
+    return mock_zenodo_search([example_boutiques_tool])
 
 
 def retrieve_data_record():
@@ -120,7 +117,7 @@ class TestDataCollection(TestCase):
     @mock.patch('requests.get', return_value=mock_get())
     def test_read_doi_zenodo(self, mock_get):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        bosh.execute("launch", "zenodo.1472823",
+        bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
                      os.path.join(example1_dir,
                                   "invocation.json"))
         data_collect_dict = retrieve_data_record()
@@ -128,7 +125,8 @@ class TestDataCollection(TestCase):
         summary = data_collect_dict.get("summary")
         self.assertIsNotNone(summary)
         self.assertEqual(summary.get("descriptor-doi"),
-                         "10.5281/zenodo.1472823")
+                         "10.5281/zenodo." + str(example_boutiques_tool.id))
+
 
         self.clean_up()
 
