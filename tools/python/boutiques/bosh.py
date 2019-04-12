@@ -479,7 +479,7 @@ def data(*params):
                         "Publish: publishes contents of cache to Zenodo as "
                         "a public data set. Requires a Zenodo access token, "
                         "see http://developers.zenodo.org/#authentication. "
-                        "Discard: remove one or more records from the cache.",
+                        "Delete: remove one or more records from the cache.",
                         choices=["inspect", "publish", "delete"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -537,16 +537,15 @@ def data(*params):
 
     if action == "delete":
         parser = ArgumentParser("Delete data record(s) in cache.")
-        group = parser.add_mutually_exclusive_group(required=True)
-        group.add_argument("-f", "--file", action="store",
-                           help="Filename of record to delete.")
-        group.add_argument("--all", action="store_true",
-                           help="Delete all records in the cache.")
+        parser.add_argument("-f", "--file", action="store",
+                            help="Filename of record to delete.")
+        parser.add_argument("--no-int", '-y', action="store_true",
+                            help="disable interactive input.")
         results = parser.parse_args(params)
 
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
-        return dataHandler.delete(results.file, results.all)
+        return dataHandler.delete(results.file, results.no_int)
 
 
 def bosh(args=None):

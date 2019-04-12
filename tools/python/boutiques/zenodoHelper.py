@@ -19,6 +19,14 @@ class ZenodoHelper(object):
         self.config_file = os.path.join(os.path.expanduser('~'), ".boutiques")
         self.zenodo_endpoint = self.get_zenodo_endpoint()
 
+    def verify_zenodo_access_token(self, user_input):
+        access_token = user_input
+        if access_token is None:
+            access_token = self.get_zenodo_access_token()
+        self.zenodo_test_api(access_token)
+        self.save_zenodo_access_token(access_token)
+        return access_token
+
     def get_zenodo_access_token(self):
         json_creds = self.read_credentials()
         if json_creds.get(self.config_token_property_name()):

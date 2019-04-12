@@ -64,10 +64,8 @@ class Publisher():
         self.config_file = os.path.join(os.path.expanduser('~'), ".boutiques")
 
         # Fix Zenodo access token
-        if self.zenodo_access_token is None:
-            self.zenodo_access_token = self.zenodo_helper\
-                .get_zenodo_access_token()
-        self.zenodo_helper.save_zenodo_access_token(self.zenodo_access_token)
+        self.zenodo_access_token = self.zenodo_helper \
+            .verify_zenodo_access_token(self.zenodo_access_token)
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = self.zenodo_helper.get_zenodo_endpoint()
@@ -105,7 +103,6 @@ class Publisher():
                 ret = input(prompt)  # Python 3
             if ret.upper() != "Y":
                 return
-        self.zenodo_helper.zenodo_test_api(self.zenodo_access_token)
 
         if self.id_to_update is not None:
             publish_update = True

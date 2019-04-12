@@ -57,6 +57,19 @@ def mock_post_publish_bulk():
             mock_zenodo_upload_descriptor(),
             mock_zenodo_publish(1234567)])
 
+def mock_get_publish_individual():
+  return ([mock_zenodo_test_api_fail(),
+           mock_zenodo_test_api()])
+
+
+def mock_post_publish_individual():
+  return([mock_zenodo_deposit(1234567),
+          mock_zenodo_upload_descriptor(),
+          mock_zenodo_publish(1234567),
+          mock_zenodo_deposit(2345678),
+          mock_zenodo_upload_descriptor(),
+          mock_zenodo_publish(2345678)])
+
 
 class TestDataHandler(TestCase):
 
@@ -65,29 +78,28 @@ class TestDataHandler(TestCase):
     def test_inspect(self, mock_dir):
         setup()
 
-        output = bosh(["data", "inspect", "-e"])
-        output = bosh(["data", "inspect"])
+        bosh(["data", "inspect", "-e"])
+        bosh(["data", "inspect"])
 
         cleanup()
 
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
-    def test_discard(self, mock_dir):
+    def test_delete(self, mock_dir):
         setup()
 
         with self.assertRaises(ValueError) as e:
-            bosh(["data", "delete", "-f", "bad-filename"])
+            bosh(["data", "delete", "-f", "bad-filename", "--no-int"])
         self.assertIn("File bad-filename does not exist in the data cache",
                       str(e.exception))
 
-        fl1_path = os.path.join(mock_get_data_cache(), "tool1-123.json")
-        fl2_path = os.path.join(mock_get_data_cache(), "tool2-123.json")
-        result = bosh(["data", "delete", "-f", "tool1-123.json"])
+        fl1_path = os.path.join(mock_get_data_cache(), "tool1_123.json")
+        fl2_path = os.path.join(mock_get_data_cache(), "tool2_123.json")
+        bosh(["data", "delete", "-f", "tool1_123.json", "-y"])
         self.assertFalse(os.path.isfile(fl1_path))
-        result = bosh(["data", "delete", "-f", fl2_path])
+        bosh(["data", "delete", "-f", fl2_path, "-y"])
         self.assertFalse(os.path.isfile(fl2_path))
-
-        result = bosh(["data", "delete", "--all"])
+        bosh(["data", "delete", "-y"])
         self.assertEqual(len(os.listdir(mock_get_data_cache())), 0)
 
         cleanup()
@@ -106,23 +118,23 @@ class TestDataHandler(TestCase):
                       str(e.exception))
 
         # Publish a record with a correct descriptor-doi
-        bosh(["data", "publish", "-f", "tool1-123.json", "-y",
+        bosh(["data", "publish", "-f", "tool1_123.json", "-y",
               "--sandbox", "--zenodo-token",
               "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertFalse(os.path.isfile(
             os.path.join(mock_get_data_cache(), "tool1-123")))
 
         # Publish a record without a descriptor-doi
-        bosh(["data", "publish", "-f", "tool2-123.json", "-y",
+        bosh(["data", "publish", "-f", "tool2_123.json", "-y",
               "--sandbox", "--zenodo-token",
               "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertTrue(os.path.isfile(
-            os.path.join(mock_get_data_cache(), "tool2-123.json")))
+            os.path.join(mock_get_data_cache(), "tool2_123.json")))
         self.assertTrue(os.path.isfile(
-            os.path.join(mock_get_data_cache(), "descriptor-tool2-123.json")))
+            os.path.join(mock_get_data_cache(), "descriptor_tool2_123.json")))
 
         # Publish a record without a descriptor-doi but descriptor is published
-        bosh(["data", "publish", "-f", "tool3-123.json", "-y",
+        bosh(["data", "publish", "-f", "tool3_123.json", "-y",
               "--sandbox", "--zenodo-token",
               "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertFalse(os.path.isfile(
@@ -139,10 +151,24 @@ class TestDataHandler(TestCase):
     def test_publish_bulk(self, mock_dir, mock_get, mock_post):
         setup()
 
-        bosh(["data", "publish", "-y",
-              "--sandbox", "--zenodo-token",
+        bosh(["data", "publish", "-y", "--sandbox", "--zenodo-token",
               "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))),
                          2)
 
         cleanup()
+
+    @mock.patch('boutiques.dataHandler.getDataCacheDir',
+                return_value=mock_get_data_cache())
+    @mock.patch('requests.get', side_effect=mock_get_publish_individual())
+    @mock.patch('requests.post', side_effect=mock_post_publish_individual())
+    def test_publish_individual(self, mock_dir, mock_get, mock_post):
+      setup()
+
+      bosh(["data", "publish", "-y", "--individual",
+            "--sandbox", "--zenodo-token",
+            "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
+      self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))),
+                       2)
+
+      cleanup()

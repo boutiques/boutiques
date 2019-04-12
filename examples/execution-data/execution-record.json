@@ -12,7 +12,7 @@
     "str_input": "coin;plop",
     "file_input": {
       "file-name": "setup.py",
-      "hash": "cfca29dcf1578b0d656e8a4e4b8964ca"
+      "md5sum": "cfca29dcf1578b0d656e8a4e4b8964ca"
     },
     "list_int_input": [
       1,

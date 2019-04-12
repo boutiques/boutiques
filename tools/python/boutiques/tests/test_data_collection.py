@@ -72,7 +72,7 @@ class TestDataCollection(TestCase):
         file_input = public_in.get("file_input")
         self.assertIsNotNone(file_input)
         self.assertEqual(file_input.get("file-name"), "setup.py")
-        self.assertIsNotNone(file_input.get("hash"))
+        self.assertIsNotNone(file_input.get("md5sum"))
         public_out = data_collect_dict.get("public-output")
         self.assertIsNotNone(public_out)
         self.assertEqual(public_out.get("stdout"), "This is stdout")
