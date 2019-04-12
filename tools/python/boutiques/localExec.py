@@ -1237,7 +1237,11 @@ class LocalExecutor(object):
                 id = x.get('id')
                 path = public_in_dict.get(id)
                 if path is not None:
-                    public_in_dict[id] = self._buildPublicFile(path)
+                    if isinstance(path, list):
+                        public_in_dict[id] = [ self._buildPublicFile(p)
+                                              for p in path ]
+                    else:
+                        public_in_dict[id] = self._buildPublicFile(path)
 
         return public_in_dict
 
@@ -1265,6 +1269,9 @@ class LocalExecutor(object):
     # Private method to recursively explore directory and hash all files
     def _buildPublicFile(self, path):
         filename = extractFileName(path)
+        # If path is not found, report it
+        if not os.path.exists(path):
+            return {'file-name': filename, 'not_found': True}
         # Directories are expanded recursively
         if os.path.isdir(path):
             contents = os.listdir(path)

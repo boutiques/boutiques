@@ -169,45 +169,42 @@ class Publisher():
         keywords = data['metadata']['keywords']
         if self.descriptor.get('tags'):
             for key, value in self.descriptor.get('tags').items():
-                # Check if value is a string or a list of strings
-                if self.is_str(value):
+                # Tag is of form 'tag-name': true, it is a single-string
+                if isinstance(value, bool):
+                    keywords.append(key)
+                # Tag is of form 'tag-name':'tag-value', it is a key-value pair
+                elif self.is_str(value):
                     keywords.append(key + ":" + value)
-                else:
+                # Tag is of form 'tag-name': ['value1', 'value2'], it is a
+                # list of key-value pairs
+                elif isinstance(value, list):
                     keywords += [key + ":" + item for item in value]
+                else:
+                    # This should never happen as the descriptor is assumed
+                    # valid at this point
+                    raise_error(ValidationError,
+                                'Invalid tag format: {0}:{1}'.format(key, value))
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
         if self.descriptor.get('tests'):
             keywords.append('tested')
         if self.url is not None:
-            if data['metadata'].get('related_identifiers') is None:
-                data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': self.url,
-                'relation': 'hasPart'
-            })
+            self.addHasPart(data, self.url)
         if self.online_platforms is not None:
-            if data['metadata'].get('related_identifiers') is None:
-                data['metadata']['related_identifiers'] = []
             for p in self.online_platforms:
-                data['metadata']['related_identifiers'].append({
-                    'identifier': p,
-                    'relation': 'hasPart'
-                })
+                self.addHasPart(data, p)
         if self.tool_doi is not None:
-            if data['metadata'].get('related_identifiers') is None:
-                data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': self.tool_doi,
-                'relation': 'hasPart'
-            })
+            self.addHasPart(data, self.tool_doi)
         if self.descriptor_url is not None:
-            if data['metadata'].get('related_identifiers') is None:
-                data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': self.descriptor_url,
-                'relation': 'hasPart'
-            })
+            self.addHasPart(data, self.descriptor_url)
+        if self.deprecated_by_doi:  # might be None or False
+            # Add deprecated keyword
+            keywords.append('deprecated')
+            # Add link to new doi if available
+            if self.is_str(self.deprecated_by_doi):
+                self.addHasPart(data, self.deprecated_by_doi)
         return data
+
 
     # checks if value is a string
     # try/except is needed for Python2/3 compatibility
