@@ -1237,7 +1237,11 @@ class LocalExecutor(object):
                 id = x.get('id')
                 path = public_in_dict.get(id)
                 if path is not None:
-                    public_in_dict[id] = self._buildPublicFile(path)
+                    if isinstance(path, list):
+                        public_in_dict[id] = [ self._buildPublicFile(p)
+                                              for p in path ]
+                    else:
+                        public_in_dict[id] = self._buildPublicFile(path)
 
         return public_in_dict
 
