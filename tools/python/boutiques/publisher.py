@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from boutiques.validator import validate_descriptor, ValidationError
+from boutiques.validator import validate_descriptor
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 import json
