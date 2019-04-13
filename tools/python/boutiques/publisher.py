@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from boutiques.validator import validate_descriptor
+from boutiques.validator import validate_descriptor, ValidationError
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 import json
@@ -200,12 +200,6 @@ class Publisher():
             self.addHasPart(data, self.tool_doi)
         if self.descriptor_url is not None:
             self.addHasPart(data, self.descriptor_url)
-        if self.deprecated_by_doi:  # might be None or False
-            # Add deprecated keyword
-            keywords.append('deprecated')
-            # Add link to new doi if available
-            if self.is_str(self.deprecated_by_doi):
-                self.addHasPart(data, self.deprecated_by_doi)
         return data
 
 
@@ -217,3 +211,11 @@ class Publisher():
         except NameError:
             return isinstance(value, str)
         return isinstance(value, basestring)
+
+    def addHasPart(self, data, identifier):
+        if data['metadata'].get('related_identifiers') is None:
+            data['metadata']['related_identifiers'] = []
+            data['metadata']['related_identifiers'].append({
+                'identifier': identifier,
+                'relation': 'hasPart'
+            })
