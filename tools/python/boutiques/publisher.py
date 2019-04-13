@@ -183,7 +183,8 @@ class Publisher():
                     # This should never happen as the descriptor is assumed
                     # valid at this point
                     raise_error(ValidationError,
-                                'Invalid tag format: {0}:{1}'.format(key, value))
+                                'Invalid tag format: {0}:{1}'
+                                .format(key, value))
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
         if self.descriptor.get('tests'):
@@ -198,7 +199,6 @@ class Publisher():
         if self.descriptor_url is not None:
             self.addHasPart(data, self.descriptor_url)
         return data
-
 
     # checks if value is a string
     # try/except is needed for Python2/3 compatibility

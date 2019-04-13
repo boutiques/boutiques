@@ -7,15 +7,18 @@ from boutiques_mocks import *
 import os
 import mock
 import shutil
+import pytest
+import boutiques
 
 
 def setup():
     src = os.path.join(get_tests_dir(), "input-dir", "test-data-cache")
-    shutil.copytree(src, os.path.join(get_tests_dir(), "test-data-cache"))
+    shutil.copytree(src, mock_get_data_cache())
 
 
 def cleanup():
-    shutil.rmtree(mock_get_data_cache())
+    if os.path.isdir(mock_get_data_cache()):
+        shutil.rmtree(mock_get_data_cache())
 
 
 def get_tests_dir():
@@ -52,23 +55,24 @@ def mock_get_publish_bulk():
 
 
 def mock_post_publish_bulk():
-    return([mock_zenodo_deposit(1234567),
-            mock_zenodo_upload_descriptor(),
-            mock_zenodo_upload_descriptor(),
-            mock_zenodo_publish(1234567)])
+    return ([mock_zenodo_deposit(1234567),
+             mock_zenodo_upload_descriptor(),
+             mock_zenodo_upload_descriptor(),
+             mock_zenodo_publish(1234567)])
+
 
 def mock_get_publish_individual():
-  return ([mock_zenodo_test_api_fail(),
-           mock_zenodo_test_api()])
+    return ([mock_zenodo_test_api_fail(),
+             mock_zenodo_test_api()])
 
 
 def mock_post_publish_individual():
-  return([mock_zenodo_deposit(1234567),
-          mock_zenodo_upload_descriptor(),
-          mock_zenodo_publish(1234567),
-          mock_zenodo_deposit(2345678),
-          mock_zenodo_upload_descriptor(),
-          mock_zenodo_publish(2345678)])
+    return ([mock_zenodo_deposit(1234567),
+             mock_zenodo_upload_descriptor(),
+             mock_zenodo_publish(1234567),
+             mock_zenodo_deposit(2345678),
+             mock_zenodo_upload_descriptor(),
+             mock_zenodo_publish(2345678)])
 
 
 class TestDataHandler(TestCase):
@@ -76,16 +80,22 @@ class TestDataHandler(TestCase):
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     def test_inspect(self, mock_dir):
+        cleanup()
         setup()
 
-        bosh(["data", "inspect", "-e"])
-        bosh(["data", "inspect"])
+        boutiques.data("inspect")
+        out, _ = self.capfd.readouterr()
+        self.assertIn("There are 3 unpublished records in the cache", out)
 
-        cleanup()
+        boutiques.data("inspect", "-e")
+        out, _ = self.capfd.readouterr()
+        self.assertIn("summary", out)
+        self.assertIn("descriptor-doi", out)
 
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     def test_delete(self, mock_dir):
+        cleanup()
         setup()
 
         with self.assertRaises(ValueError) as e:
@@ -102,13 +112,12 @@ class TestDataHandler(TestCase):
         bosh(["data", "delete", "-y"])
         self.assertEqual(len(os.listdir(mock_get_data_cache())), 0)
 
-        cleanup()
-
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('requests.get', side_effect=mock_get_publish_single())
     @mock.patch('requests.post', side_effect=mock_post_publish_single())
     def test_publish_single(self, mock_dir, mock_get, mock_post):
+        cleanup()
         setup()
 
         # Publish a record that does not exist
@@ -142,13 +151,12 @@ class TestDataHandler(TestCase):
         self.assertFalse(os.path.isfile(
             os.path.join(mock_get_data_cache(), "descriptor-tool3-123")))
 
-        cleanup()
-
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('requests.get', side_effect=mock_get_publish_bulk())
     @mock.patch('requests.post', side_effect=mock_post_publish_bulk())
     def test_publish_bulk(self, mock_dir, mock_get, mock_post):
+        cleanup()
         setup()
 
         bosh(["data", "publish", "-y", "--sandbox", "--zenodo-token",
@@ -156,19 +164,22 @@ class TestDataHandler(TestCase):
         self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))),
                          2)
 
-        cleanup()
-
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('requests.get', side_effect=mock_get_publish_individual())
     @mock.patch('requests.post', side_effect=mock_post_publish_individual())
     def test_publish_individual(self, mock_dir, mock_get, mock_post):
-      setup()
+        cleanup()
+        setup()
 
-      bosh(["data", "publish", "-y", "--individual",
-            "--sandbox", "--zenodo-token",
-            "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
-      self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))),
-                       2)
+        bosh(["data", "publish", "-y", "--individual",
+              "--sandbox", "--zenodo-token",
+              "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
+        self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))),
+                         2)
 
-      cleanup()
+    # Captures the stdout and stderr during test execution
+    # and returns them as a tuple in readouterr()
+    @pytest.fixture(autouse=True)
+    def capfd(self, capfd):
+        self.capfd = capfd

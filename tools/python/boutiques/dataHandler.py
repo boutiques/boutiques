@@ -136,13 +136,14 @@ class DataHandler(object):
                 desc_path = os.path.join(self.cache_dir, doi)
                 desc_dict = loadJson(desc_path)
                 # Descriptor is published, record needs to be updated
-                if desc_dict.get('doi'):
+                if desc_dict.get('doi') is not None:
                     fl_dict['summary']['descriptor-doi'] = desc_dict['doi']
                     publishable_dict[fl] = fl_dict
                 # Descriptor isn't published, inform user with full prompt
-                print("Record {0} cannot be published as its descriptor is "
-                      "not yet published. ".format(fl))
-                desc_to_publish.add("bosh publish {}".format(desc_path))
+                else:
+                    print("Record {0} cannot be published as its descriptor "
+                          "is not yet published. ".format(fl))
+                    desc_to_publish.add("bosh publish {}".format(desc_path))
             # Descriptor doi is stored correctly in record
             else:
                 publishable_dict[fl] = fl_dict
@@ -152,7 +153,6 @@ class DataHandler(object):
                   "published with following commands:")
             for prompt in desc_to_publish:
                 print("\t"+prompt)
-
         return publishable_dict
 
     def _create_metadata(self, records_dict):
@@ -224,6 +224,7 @@ class DataHandler(object):
             # No records link to descriptor
             if descriptor not in doi_list:
                 self.delete(descriptor, True)
+                self.descriptor_files.remove(descriptor)
 
     # Function to remove file(s) from the cache
     # Option all will clear the data collection cache of all files

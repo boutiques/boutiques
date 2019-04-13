@@ -1238,8 +1238,8 @@ class LocalExecutor(object):
                 path = public_in_dict.get(id)
                 if path is not None:
                     if isinstance(path, list):
-                        public_in_dict[id] = [ self._buildPublicFile(p)
-                                              for p in path ]
+                        public_in_dict[id] = [self._buildPublicFile(p)
+                                              for p in path]
                     else:
                         public_in_dict[id] = self._buildPublicFile(path)
 
@@ -1318,7 +1318,7 @@ class LocalExecutor(object):
         # Filter for descriptors in cache with the same tool name to check
         # if descriptor already in cache
         matching_files = [x for x in data_cache_files
-                          if x.split("_")[1] is tool_name.replace(' ','-')]
+                          if x.split("_")[1] is tool_name.replace(' ', '-')]
         match = None
         for fl in matching_files:
             path = os.path.join(data_cache_dir, fl)

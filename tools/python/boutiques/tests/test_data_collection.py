@@ -126,8 +126,6 @@ class TestDataCollection(TestCase):
         self.assertIsNotNone(summary)
         self.assertEqual(summary.get("descriptor-doi"),
                          "10.5281/zenodo." + str(example_boutiques_tool.id))
-
-
         self.clean_up()
 
     def test_directory_input_output(self):
