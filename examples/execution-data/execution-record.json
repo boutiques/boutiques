@@ -32,11 +32,11 @@
     "output-files": {
       "logfile": {
         "file-name": "log-4-coin;plop.txt",
-        "hash": "8bb2564936980e92ceec8a5759ec34a8"
+        "mid5sum": "8bb2564936980e92ceec8a5759ec34a8"
       },
       "config_file": {
         "file-name": "config.txt",
-        "hash": "ee9cdba358282652236c5bfb61180ef5"
+        "mid5sum": "ee9cdba358282652236c5bfb61180ef5"
       }
     }
   }
