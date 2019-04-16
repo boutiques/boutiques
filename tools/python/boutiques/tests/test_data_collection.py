@@ -69,7 +69,7 @@ class TestDataCollection(TestCase):
         file_input = public_in.get("file_input")
         self.assertIsNotNone(file_input)
         self.assertEqual(file_input.get("file-name"), "setup.py")
-        self.assertIsNotNone(file_input.get("hash"))
+        self.assertIsNotNone(file_input.get("md5sum"))
         public_out = data_collect_dict.get("public-output")
         self.assertIsNotNone(public_out)
         self.assertEqual(public_out.get("stdout"), "This is stdout")
@@ -125,8 +125,7 @@ class TestDataCollection(TestCase):
         summary = data_collect_dict.get("summary")
         self.assertIsNotNone(summary)
         self.assertEqual(summary.get("descriptor-doi"),
-                         "zenodo." + str(example_boutiques_tool.id))
-
+                         "10.5281/zenodo." + str(example_boutiques_tool.id))
         self.clean_up()
 
     def test_directory_input_output(self):
@@ -144,7 +143,7 @@ class TestDataCollection(TestCase):
         self.assertIsNotNone(input_dir)
         files = input_dir.get("files")
         self.assertIsNotNone(files)
-        self.assertEqual(len(files), 3)
+        self.assertEqual(len(files), 2)
 
         public_out = data_collect_dict.get("public-output")
         self.assertIsNotNone(public_out)
@@ -154,6 +153,6 @@ class TestDataCollection(TestCase):
         self.assertIsNotNone(results)
         files = results.get("files")
         self.assertIsNotNone(files)
-        self.assertEqual(len(files), 3)
+        self.assertEqual(len(files), 2)
 
         self.clean_up()

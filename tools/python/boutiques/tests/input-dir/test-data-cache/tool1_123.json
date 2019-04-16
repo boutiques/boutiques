@@ -1,0 +1,8 @@
+{
+  "summary": {
+    "name": "tool1",
+    "descriptor-doi": "10.5281/zenodo.1234567"
+  },
+  "public_invocation": {},
+  "public_output": {}
+}

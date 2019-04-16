@@ -15,6 +15,8 @@ import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info
+from boutiques.dataHandler import getDataCacheDir
+from boutiques.util.utils import extractFileName, loadJson
 
 
 class ExecutorOutput():
@@ -1201,9 +1203,10 @@ class LocalExecutor(object):
     # through various cases
     # userInput may be json string, filename or zenodo id
     def _findDOI(self, userIn):
+        doi_prefix = "10.5281/"
         # DOI in Zenodo reference case
         if userIn.split(".")[0].lower() == "zenodo":
-            return userIn
+            return doi_prefix+userIn
         # File cases
         if os.path.isfile(userIn):
             # Most recent DOI in file if user is publisher
@@ -1217,9 +1220,9 @@ class LocalExecutor(object):
             elif os.path.basename(userIn).split("-")[0].lower() == "zenodo":
                 doi = os.path.basename(userIn).split(".")[0].replace("-", ".")
                 if loadJson(doi) == self.desc_dict:
-                    return doi
-        # TODO: No DOI found, Handle descriptor must be published case
-        return None
+                    return doi_prefix+doi
+        # No DOI found, save descriptor to cache and return filename
+        return self._saveDescriptorToCache()
 
     # Private method to generate public invocation object
     # for data collection file
@@ -1266,6 +1269,9 @@ class LocalExecutor(object):
     # Private method to recursively explore directory and hash all files
     def _buildPublicFile(self, path):
         filename = extractFileName(path)
+        # If path is not found, report it
+        if not os.path.exists(path):
+            return {'file-name': filename, 'not_found': True}
         # Directories are expanded recursively
         if os.path.isdir(path):
             contents = os.listdir(path)
@@ -1276,13 +1282,14 @@ class LocalExecutor(object):
         # Files are hashed
         else:
             md5sum = computeMD5(path)
-            return {'file-name': filename, 'hash': md5sum}
+            return {'file-name': filename, 'md5sum': md5sum}
 
     # Private method to publish data collection objects to file
     # summary, publicInput an publicOutput are combined and
     # written to a file in .cache
     def _saveDataCaptureToCache(self):
         date_time = datetime.datetime.now().isoformat()
+        tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
         # Combine three modules in master dictionary
         data_dict = {'summary': self.summary,
@@ -1291,44 +1298,51 @@ class LocalExecutor(object):
         # Convert dictionary to Json string
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file
-        cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
-        data_cache_dir = os.path.join(cache_dir, "data")
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-        if not os.path.exists(data_cache_dir):
-            os.makedirs(data_cache_dir)
-        filename = os.path.join(data_cache_dir,
-                                "execution-{0}.json".format(date_time))
-        file = open(filename, 'w+')
+        data_cache_dir = getDataCacheDir()
+        filename = "{0}_{1}.json".format(tool_name, date_time)
+        file_path = os.path.join(data_cache_dir, filename)
+        file = open(file_path, 'w+')
         file.write(content)
         file.close()
         if self.debug:
-            print_info("Data capture from execution saved to cache")
+            print_info("Data capture from execution saved to cache as {}"
+                       .format(filename))
 
-
-# Helper function that loads the JSON object coming from either a string,
-# a local file or a file pulled from Zenodo
-def loadJson(userInput, verbose=False):
-    # Check for JSON file (local or from Zenodo)
-    json_file = None
-    if os.path.isfile(userInput):
-        json_file = userInput
-    elif userInput.split(".")[0].lower() == "zenodo":
-        from boutiques.puller import Puller
-        puller = Puller([userInput], verbose)
-        json_file = puller.pull()[0]
-    if json_file is not None:
-        with open(json_file, 'r') as f:
-            return json.loads(f.read())
-    # JSON file not found, so try to parse JSON object
-    e = ("Cannot parse input {}: file not found, "
-         "invalid Zenodo ID, or invalid JSON object").format(userInput)
-    if userInput.isdigit():
-        raise_error(ExecutorError, e)
-    try:
-        return json.loads(userInput)
-    except ValueError:
-        raise_error(ExecutorError, e)
+    # Local function handles case where descriptor is not published
+    # Checks if descriptor already saved to cache, if not then saves
+    # copy for future publication
+    def _saveDescriptorToCache(self):
+        tool_name = self.desc_dict.get('name').replace(' ', '-')
+        data_cache_dir = getDataCacheDir()
+        data_cache_files = os.listdir(data_cache_dir)
+        # Filter for descriptors in cache with the same tool name to check
+        # if descriptor already in cache
+        matching_files = [x for x in data_cache_files
+                          if x.split("_")[1] is tool_name.replace(' ', '-')]
+        match = None
+        for fl in matching_files:
+            path = os.path.join(data_cache_dir, fl)
+            file_dict = loadJson(path)
+            if file_dict == self.desc_dict:
+                match = fl
+                break
+        if match:
+            if self.debug:
+                print_info("Unpublished descriptor match found in data cache "
+                           "as {}".format(match))
+            return match
+        # Write descriptor to data cache and save return filename
+        content = json.dumps(self.desc_dict, indent=4)
+        date_time = datetime.datetime.now().isoformat()
+        filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
+        path = os.path.join(data_cache_dir, filename)
+        file = open(path, 'w+')
+        file.write(content)
+        file.close()
+        if self.debug:
+            print_info("Descriptor from execution saved to cache for future "
+                       "publishing as {}".format(filename))
+        return filename
 
 
 # Adds default values to input dictionary
@@ -1345,7 +1359,9 @@ def addDefaultValues(desc_dict, in_dict):
 # Parses absolute path into filename
 def extractFileName(path):
     # Helps OS path handle case where "/" is at the end of path
-    if path[:-1] == '/':
+    if path is None:
+        return None
+    elif path[:-1] == '/':
         return os.path.basename(path[:-1]) + "/"
     else:
         return os.path.basename(path)
@@ -1353,9 +1369,9 @@ def extractFileName(path):
 
 # Hashes files with MD5,
 # capable of handling large data files
-def computeMD5(filename):
+def computeMD5(filepath):
     hash_md5 = hashlib.md5()
-    with open(filename, "rb") as fhandle:
+    with open(filepath, "rb") as fhandle:
         for chunk in iter(lambda: fhandle.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
