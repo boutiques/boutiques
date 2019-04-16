@@ -150,7 +150,12 @@ class Publisher():
                           '/api/deposit/depositions/%s/actions/newversion'
                           % deposition_id,
                           params={'access_token': self.zenodo_access_token})
-        if(r.status_code != 201):
+        if r.status_code == 403:
+            raise_error(ZenodoError, "You do not have permission to access "
+                                     "this resource. Note that you cannot "
+                                     "publish an update to a tool belonging "
+                                     "to someone else.", r)
+        elif(r.status_code != 201):
             raise_error(ZenodoError, "Deposition of new version failed. Check "
                                      "that the Zenodo ID is correct (if one "
                                      "was provided).", r)
