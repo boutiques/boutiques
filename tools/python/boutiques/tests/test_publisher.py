@@ -59,6 +59,10 @@ def mock_get_auth_fail():
     return mock_zenodo_test_api_fail()
 
 
+def mock_post_no_permission():
+    return mock_zenodo_no_permission()
+
+
 class TestPublisher(TestCase):
 
     def get_examples_dir(self):
@@ -108,9 +112,6 @@ class TestPublisher(TestCase):
         temp_descriptor_updated = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc_updated, temp_descriptor_updated.name)
 
-        with open(temp_descriptor_updated.name, 'r') as fhandle:
-            descriptor_updated = json.load(fhandle)
-
         # Publish the updated version
         new_doi = bosh(["publish",
                         temp_descriptor_updated.name,
@@ -145,24 +146,9 @@ class TestPublisher(TestCase):
                  "--sandbox", "-y", "-v"])
         self.assertIn("Cannot authenticate to Zenodo", str(e.exception))
 
-        # Right token should work
-        self.assertTrue(bosh, ["publish",
-                               op.join(example1_dir,
-                                       "example1_docker.json"),
-                               "--sandbox", "-y", "-v",
-                               "--zenodo-token",
-                               "hAaW2wSBZMskxpfigTYHcuDrC"
-                               "PWr2VeQZgBLErKbfF5RdrKhzzJ"
-                               "i8i2hnN8r"])
-
-        # Now no token should work (config file must have been updated)
-        self.assertTrue(bosh, ["publish",
-                               op.join(example1_dir,
-                                       "example1_docker.json"),
-                               "--sandbox", "-y", "-v"])
-
-    @mock.patch('requests.get', return_value=mock_get_auth_fail())
-    def test_publisher_auth_fail_cli(self, mock_get):
+    # Note that this test does not use mocks as the mocks don't seem
+    # to work with subprocess.Popen.
+    def test_publisher_auth_fail_cli(self):
         example1_dir = op.join(self.get_examples_dir(), "example1")
         command = ("bosh publish " + op.join(example1_dir,
                                              "example1_docker.json") +
@@ -236,3 +222,19 @@ class TestPublisher(TestCase):
             descriptor = json.load(fhandle)
             self.assertNotEqual(doi, old_doi)
             self.assertEqual(descriptor.get('doi'), doi)
+
+    @mock.patch('requests.get', side_effect=mock_get_no_search())
+    @mock.patch('requests.post', return_value=mock_post_no_permission())
+    def test_publisher_auth_no_permission(self, mock_get, mock_post):
+        example1_dir = op.join(self.get_examples_dir(), "example1")
+
+        # Trying to update a tool published by a different
+        # user should inform the user that they do not
+        # have permission to publish an update.
+        with self.assertRaises(ZenodoError) as e:
+            bosh(["publish",
+                  op.join(example1_dir, "example1_docker.json"),
+                  "--sandbox", "--id", "zenodo.12345",
+                  "-y", "-v", "--zenodo-token", "12345"])
+        self.assertIn("You do not have permission to access this "
+                      "resource.", str(e.exception))

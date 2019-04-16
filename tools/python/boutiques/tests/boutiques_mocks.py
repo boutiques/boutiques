@@ -106,3 +106,7 @@ def mock_zenodo_search(mock_records):
         mock_results.append(mock_result)
     mock_json = {"hits": {"hits": mock_results, "total": len(mock_results)}}
     return MockHttpResponse(200, mock_json)
+
+
+def mock_zenodo_no_permission():
+    return MockHttpResponse(403)
