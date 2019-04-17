@@ -1,5 +1,4 @@
 {
-    "author": "me",
     "command-line": "ndmg_pipeline [DTI] [BVAL] [BVEC] [MPRAGE] [ATLAS] [MASK] [OUTDIR] [DESIKAN] [JHU] [TALAIRACH] [AAL] [HARVARDOXFORD] [CPAC200] [CLEAN] [EXTRA1] [EXTRA2] [EXTRA3]",
     "container-image": {
         "entrypoint": false,
@@ -8,7 +7,6 @@
         "type": "docker"
     },
     "description": "dwi connectome estimation pipeline",
-    "doi": "10.5072/zenodo.274033",
     "error-codes": [
         {
             "code": 1,
