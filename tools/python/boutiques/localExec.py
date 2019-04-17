@@ -168,14 +168,6 @@ class LocalExecutor(object):
         if self.con is not None:
             self.con.get('working-directory')
 
-        # Container Implementation check
-        conEngines = ['docker', 'singularity']
-        if (self.con is not None) and self.con['type'] not in conEngines:
-            msg = "Other container types than {0} (e.g. {1})"\
-                  " are not yet supported"
-            raise_error(ValueError, msg.format(", ".join(conEngines),
-                        self.con['type']))
-
         # Generate the command line
         if self.invocation:
             self.readInput(self.invocation)
@@ -342,9 +334,6 @@ class LocalExecutor(object):
                                      ' -W ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conPath) + ' ' + dsname)
-            else:
-                raise_error(ExecutorError, 'Unrecognized container type: '
-                            '\"%s\"' % conType)
             (stdout, stderr), exit_code = self._localExecute(container_command)
         # Otherwise, just run command locally
         else:
@@ -1318,7 +1307,8 @@ class LocalExecutor(object):
         # Filter for descriptors in cache with the same tool name to check
         # if descriptor already in cache
         matching_files = [x for x in data_cache_files
-                          if x.split("_")[1] is tool_name.replace(' ', '-')]
+                          if len(x.split("_")) > 1 and
+                          x.split("_")[1] is tool_name.replace(' ', '-')]
         match = None
         for fl in matching_files:
             path = os.path.join(data_cache_dir, fl)

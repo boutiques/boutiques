@@ -139,6 +139,7 @@ class TestExample1(BaseTest):
         with pytest.raises(LoadError) as e:
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
+                         "-u",
                          invocationStr,
                          "--skip-data-collection")
         self.assertIn("Cannot parse input", str(e))
