@@ -64,10 +64,8 @@ class Publisher():
         self.config_file = os.path.join(os.path.expanduser('~'), ".boutiques")
 
         # Fix Zenodo access token
-        if self.zenodo_access_token is None:
-            self.zenodo_access_token = self.zenodo_helper\
-                .get_zenodo_access_token()
-        self.zenodo_helper.save_zenodo_access_token(self.zenodo_access_token)
+        self.zenodo_access_token = self.zenodo_helper \
+            .verify_zenodo_access_token(self.zenodo_access_token)
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = self.zenodo_helper.get_zenodo_endpoint()
@@ -105,7 +103,6 @@ class Publisher():
                 ret = input(prompt)  # Python 3
             if ret.upper() != "Y":
                 return
-        self.zenodo_helper.zenodo_test_api(self.zenodo_access_token)
 
         if self.id_to_update is not None:
             publish_update = True
@@ -172,11 +169,7 @@ class Publisher():
         keywords = data['metadata']['keywords']
         if self.descriptor.get('tags'):
             for key, value in self.descriptor.get('tags').items():
-                # Tag is of form 'tag-name': true, it is a single-string
-                if isinstance(value, bool):
-                    keywords.append(key)
-                # Tag is of form 'tag-name':'tag-value', it is a key-value pair
-                elif self.is_str(value):
+                if self.is_str(value):
                     keywords.append(key + ":" + value)
                 # Tag is of form 'tag-name': ['value1', 'value2'], it is a
                 # list of key-value pairs
@@ -186,7 +179,8 @@ class Publisher():
                     # This should never happen as the descriptor is assumed
                     # valid at this point
                     raise_error(ValidationError,
-                                'Invalid tag format: {0}:{1}'.format(key, value))
+                                'Invalid tag format: {0}:{1}'
+                                .format(key, value))
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
         if self.descriptor.get('tests'):
@@ -201,7 +195,6 @@ class Publisher():
         if self.descriptor_url is not None:
             self.addHasPart(data, self.descriptor_url)
         return data
-
 
     # checks if value is a string
     # try/except is needed for Python2/3 compatibility

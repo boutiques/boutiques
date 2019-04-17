@@ -4,7 +4,6 @@ import requests
 import sys
 from collections import OrderedDict
 import numbers
-import json
 from operator import itemgetter
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
@@ -27,9 +26,13 @@ class Searcher():
         self.no_trunc = no_trunc
         self.max_results = max_results
 
-        # Return max 10 results by default
+        # Display top 10 results by default
         if max_results is None:
             self.max_results = 10
+
+        # Zenodo will error if asked for more than 9999 results
+        if self.max_results > 9999:
+            self.max_results = 9999
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
@@ -40,18 +43,21 @@ class Searcher():
 
     def search(self):
         results = self.zenodo_search()
+        num_results = len(results.json()["hits"]["hits"])
+        total_results = results.json()["hits"]["total"]
         print_info("Showing %d of %d results."
-                   % (len(results.json()["hits"]["hits"]),
-                      results.json()["hits"]["total"]))
+                   % (num_results if num_results < self.max_results
+                      else self.max_results, total_results))
         if self.verbose:
             return self.create_results_list_verbose(results.json())
         return self.create_results_list(results.json())
 
     def zenodo_search(self):
+        # Get all results
         r = requests.get(self.zenodo_endpoint + '/api/records/?q=%s&'
                          'keywords=boutiques&keywords=schema&'
                          'keywords=version&file_type=json&type=software'
-                         '&page=1&size=%s' % (self.query, self.max_results))
+                         '&page=1&size=%s' % (self.query, 9999))
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
@@ -70,7 +76,8 @@ class Searcher():
             results_list.append(result_dict)
         results_list = sorted(results_list, key=itemgetter('DOWNLOADS'),
                               reverse=True)
-        return results_list
+        # Truncate the list according to the desired maximum number of results
+        return results_list[:self.max_results]
 
     def create_results_list_verbose(self, results):
         results_list = []
@@ -107,7 +114,8 @@ class Searcher():
             results_list.append(result_dict)
         results_list = sorted(results_list, key=itemgetter('DOWNLOADS'),
                               reverse=True)
-        return results_list
+        # Truncate the list according to the desired maximum number of results
+        return results_list[:self.max_results]
 
     def parse_basic_info(self, hit):
         id = "zenodo." + str(hit["id"])

@@ -659,7 +659,7 @@ class LocalExecutor(object):
             mn = self.safeGet(prm['id'], 'min-list-entries') or 2
             mx = self.safeGet(prm['id'], 'max-list-entries') or nl
             isList = self.safeGet(prm['id'], 'list') or False
-            return [str(paramSingle(prm)) for _ in
+            return [paramSingle(prm) for _ in
                     range(rnd.randint(mn, mx))] if isList else paramSingle(prm)
 
         # Returns a list of the ids of parameters that
@@ -1238,8 +1238,8 @@ class LocalExecutor(object):
                 path = public_in_dict.get(id)
                 if path is not None:
                     if isinstance(path, list):
-                        public_in_dict[id] = [ self._buildPublicFile(p)
-                                              for p in path ]
+                        public_in_dict[id] = [self._buildPublicFile(p)
+                                              for p in path]
                     else:
                         public_in_dict[id] = self._buildPublicFile(path)
 
@@ -1282,13 +1282,14 @@ class LocalExecutor(object):
         # Files are hashed
         else:
             md5sum = computeMD5(path)
-            return {'file-name': filename, 'hash': md5sum}
+            return {'file-name': filename, 'md5sum': md5sum}
 
     # Private method to publish data collection objects to file
     # summary, publicInput an publicOutput are combined and
     # written to a file in .cache
     def _saveDataCaptureToCache(self):
         date_time = datetime.datetime.now().isoformat()
+        tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
         # Combine three modules in master dictionary
         data_dict = {'summary': self.summary,
@@ -1298,7 +1299,7 @@ class LocalExecutor(object):
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file
         data_cache_dir = getDataCacheDir()
-        filename = "{0}-{1}.json".format(self.summary['name'], date_time)
+        filename = "{0}_{1}.json".format(tool_name, date_time)
         file_path = os.path.join(data_cache_dir, filename)
         file = open(file_path, 'w+')
         file.write(content)
@@ -1311,13 +1312,13 @@ class LocalExecutor(object):
     # Checks if descriptor already saved to cache, if not then saves
     # copy for future publication
     def _saveDescriptorToCache(self):
-        tool_name = self.desc_dict.get('name')
+        tool_name = self.desc_dict.get('name').replace(' ', '-')
         data_cache_dir = getDataCacheDir()
         data_cache_files = os.listdir(data_cache_dir)
         # Filter for descriptors in cache with the same tool name to check
         # if descriptor already in cache
         matching_files = [x for x in data_cache_files
-                          if x.split("-")[1] is tool_name]
+                          if x.split("_")[1] is tool_name.replace(' ', '-')]
         match = None
         for fl in matching_files:
             path = os.path.join(data_cache_dir, fl)
@@ -1333,7 +1334,7 @@ class LocalExecutor(object):
         # Write descriptor to data cache and save return filename
         content = json.dumps(self.desc_dict, indent=4)
         date_time = datetime.datetime.now().isoformat()
-        filename = "descriptor-{0}-{1}.json".format(tool_name, date_time)
+        filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
         path = os.path.join(data_cache_dir, filename)
         file = open(path, 'w+')
         file.write(content)

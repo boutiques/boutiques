@@ -5,15 +5,12 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
+    example_boutiques_tool
 
 
 def mock_get():
-    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
-                                   "https://zenodo.org/api/files/"
-                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
-                                   "example1_docker.json")
-    return mock_zenodo_search([mock_record])
+    return mock_zenodo_search([example_boutiques_tool])
 
 
 class TestEvaluate(TestCase):
@@ -34,7 +31,7 @@ class TestEvaluate(TestCase):
     def set_examples_from_zenodo(self):
         example1_dir = os.path.join(os.path.dirname(bfile), "schema",
                                     "examples", "example1")
-        self.desc = "zenodo.1472823"
+        self.desc = "zenodo." + str(example_boutiques_tool.id)
         self.invo = os.path.join(example1_dir, "invocation.json")
 
     def test_evaloutput(self):
@@ -94,6 +91,7 @@ class TestEvaluate(TestCase):
                   'config_num': 4,
                   'num_input': None,
                   'file_input': './setup.py',
+                  'file_list_input': ['./setup.py', './requirements.txt'],
                   'enum_input': 'val1',
                   'list_int_input': [1, 2, 3],
                   'flag_input': None}

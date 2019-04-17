@@ -19,6 +19,14 @@ class ZenodoHelper(object):
         self.config_file = os.path.join(os.path.expanduser('~'), ".boutiques")
         self.zenodo_endpoint = self.get_zenodo_endpoint()
 
+    def verify_zenodo_access_token(self, user_input):
+        access_token = user_input
+        if access_token is None:
+            access_token = self.get_zenodo_access_token()
+        self.zenodo_test_api(access_token)
+        self.save_zenodo_access_token(access_token)
+        return access_token
+
     def get_zenodo_access_token(self):
         json_creds = self.read_credentials()
         if json_creds.get(self.config_token_property_name()):
@@ -100,7 +108,12 @@ class ZenodoHelper(object):
                           '/api/deposit/depositions/%s/actions/newversion'
                           % deposition_id,
                           params={'access_token': access_token})
-        if(r.status_code != 201):
+        if r.status_code == 403:
+            raise_error(ZenodoError, "You do not have permission to access "
+                                     "this resource. Note that you cannot "
+                                     "publish an update to a tool belonging "
+                                     "to someone else.", r)
+        elif(r.status_code != 201):
             raise_error(ZenodoError, "Deposition of new version failed. Check "
                                      "that the Zenodo ID is correct (if one "
                                      "was provided).", r)

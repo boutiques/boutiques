@@ -3,7 +3,6 @@ import os
 import requests
 import time
 import hashlib
-from boutiques import __file__ as bfile
 from boutiques.logger import raise_error, print_info
 from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
@@ -16,7 +15,7 @@ class DataHandler(object):
         self.cache_dir = getDataCacheDir()
         self.cache_files = os.listdir(self.cache_dir)
         self.descriptor_files = [fl for fl in self.cache_files
-                                 if fl.split('-')[0] == "descriptor"]
+                                 if fl.split('_')[0] == "descriptor"]
         self.record_files = [fl for fl in self.cache_files
                              if fl not in self.descriptor_files]
 
@@ -29,15 +28,12 @@ class DataHandler(object):
         # Display an example json file
         if self.example:
             # Display the first file in cache
-            if len(self.cache_files) > 0:
-                filename = self.cache_files[0]
+            if len(self.record_files) > 0:
+                filename = self.record_files[0]
                 file_path = os.path.join(self.cache_dir, filename)
                 self._display_file(file_path)
-            # Display the example file
             else:
-                example_fn = os.path.join(bfile, "examples", "execution-data",
-                                          "execution-record.json")
-                self._display_file(example_fn)
+                print("No records in the cache at the moment.")
         # Print information about files in cache
         else:
             print("There are {} unpublished records in the cache"
@@ -71,11 +67,9 @@ class DataHandler(object):
         self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
         self.zenodo_endpoint = self.zenodo_helper.get_zenodo_endpoint()
 
-        # Set Zenodo access token and save to configuration file
-        if self.zenodo_access_token is None:
-            self.zenodo_access_token = self.zenodo_helper\
-                .get_zenodo_access_token()
-        self.zenodo_helper.save_zenodo_access_token(self.zenodo_access_token)
+        # Fix Zenodo access token
+        self.zenodo_access_token = self.zenodo_helper \
+            .verify_zenodo_access_token(self.zenodo_access_token)
 
         # Verify publishing
         if not self.no_int:
@@ -86,7 +80,6 @@ class DataHandler(object):
                 ret = input(prompt)  # Python 3
             if ret.upper() != "Y":
                 return
-        self.zenodo_helper.zenodo_test_api(self.zenodo_access_token)
 
         # Flag for data-set size
         self.bulk_publish = False
@@ -139,17 +132,18 @@ class DataHandler(object):
             fl_dict = loadJson(fl_path)
             doi = fl_dict.get('summary').get('descriptor-doi')
             # Descriptor is not publish, record contains link to file
-            if doi.split("-")[0] == "descriptor":
+            if doi.split("_")[0] == "descriptor":
                 desc_path = os.path.join(self.cache_dir, doi)
                 desc_dict = loadJson(desc_path)
                 # Descriptor is published, record needs to be updated
-                if desc_dict.get('doi'):
+                if desc_dict.get('doi') is not None:
                     fl_dict['summary']['descriptor-doi'] = desc_dict['doi']
                     publishable_dict[fl] = fl_dict
                 # Descriptor isn't published, inform user with full prompt
-                print("Record {0} cannot be published as its descriptor is "
-                      "not yet published. ".format(fl))
-                desc_to_publish.add("bosh publish {}".format(desc_path))
+                else:
+                    print("Record {0} cannot be published as its descriptor "
+                          "is not yet published. ".format(fl))
+                    desc_to_publish.add("bosh publish {}".format(desc_path))
             # Descriptor doi is stored correctly in record
             else:
                 publishable_dict[fl] = fl_dict
@@ -159,7 +153,6 @@ class DataHandler(object):
                   "published with following commands:")
             for prompt in desc_to_publish:
                 print("\t"+prompt)
-
         return publishable_dict
 
     def _create_metadata(self, records_dict):
@@ -218,7 +211,7 @@ class DataHandler(object):
     # longer have dependencies
     def _clean_cache(self, records_dict):
         for record in records_dict.keys():
-            self.delete(record)
+            self.delete(record, True)
         # List remaining records and collect descriptor-doi values
         self.record_files = [fl for fl in os.listdir(self.cache_dir)
                              if fl not in self.descriptor_files]
@@ -230,26 +223,29 @@ class DataHandler(object):
         for descriptor in self.descriptor_files:
             # No records link to descriptor
             if descriptor not in doi_list:
-                self.delete(descriptor)
+                self.delete(descriptor, True)
+                self.descriptor_files.remove(descriptor)
 
     # Function to remove file(s) from the cache
     # Option all will clear the data collection cache of all files
     # or passing in a file will remove only that file
     # Options are mutually exclusive and one is required
-    def delete(self, file=None, all=False):
-        self.all = all
+    def delete(self, file=None, no_int=False):
         self.filename = extractFileName(file)
-        # Check function is not called without any valid option
-        if not self.all and self.filename is None:
-            msg = "Must indicate a file to discard"
-            raise_error(ValueError, msg)
-        # Remove all files in the data cache
-        if all:
-            [os.remove(os.path.join(self.cache_dir, f))
-             for f in self.cache_files]
-            print_info("All files have been removed from the data cache")
+        self.no_int = no_int
+
+        # Verify deletion
+        if not self.no_int:
+            prompt = self._get_delete_prompt()
+            try:
+                ret = raw_input(prompt)  # Python 2
+            except NameError:
+                ret = input(prompt)  # Python 3
+            if ret.upper() != "Y":
+                return
+
         # Remove the file specified by the file option
-        elif file is not None:
+        if file is not None:
             # Check file exists in cache
             self._file_exists_in_cache(file)
             # Remove file from cache
@@ -257,6 +253,11 @@ class DataHandler(object):
             os.remove(file_path)
             print_info("File {} has been removed from the data cache"
                        .format(file))
+        # Remove all files in the data cache
+        else:
+            [os.remove(os.path.join(self.cache_dir, f))
+             for f in self.cache_files]
+            print_info("All files have been removed from the data cache")
 
     def _file_exists_in_cache(self, filename):
         file_path = os.path.join(self.cache_dir, filename)
@@ -264,6 +265,14 @@ class DataHandler(object):
         if not os.path.isfile(file_path):
             msg = "File {} does not exist in the data cache".format(filename)
             raise_error(ValueError, msg)
+
+    def _get_delete_prompt(self):
+        if self.filename is not None:
+            return ("The dataset {} will be deleted from the cache, "
+                    "this cannot be undone. Are you sure? (Y/n) "
+                    .format(self.filename))
+        return ("All records will be removed from the cache. This "
+                "cannot be undone. Are you sure? (Y/n) ")
 
 
 def getDataCacheDir():
