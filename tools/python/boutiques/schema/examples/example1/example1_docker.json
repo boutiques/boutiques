@@ -180,7 +180,8 @@
             "bar1",
             "bar2"
         ],
-        "programming-language": "Python"
+        "programming-language": "Python",
+        "mypackage": true
     },
     "tool-doi": "00.0000/example.0000000",
     "tool-version": "0.0.1",

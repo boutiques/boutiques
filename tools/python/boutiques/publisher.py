@@ -179,12 +179,6 @@ class Publisher():
                 # list of key-value pairs
                 elif isinstance(value, list):
                     keywords += [key + ":" + item for item in value]
-                else:
-                    # This should never happen as the descriptor is assumed
-                    # valid at this point
-                    raise_error(ValidationError,
-                                'Invalid tag format: {0}:{1}'
-                                .format(key, value))
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
         if self.descriptor.get('tests'):
