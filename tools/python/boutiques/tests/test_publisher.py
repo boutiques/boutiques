@@ -190,6 +190,57 @@ class TestPublisher(TestCase):
             descriptor = json.load(fhandle)
             self.assertEqual(descriptor.get('doi'), doi)
 
+    def test_publication_errors(self):
+        # Update an already published descriptor (wrong id)
+        with self.assertRaises(ZenodoError) as e:
+            wrong_id = bosh(["publish",
+                             "whatever.json",
+                             "--sandbox", "-y", "-v",
+                             "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                               "PWr2VeQZgBLErKbfF5RdrKhzzJ"
+                                               "i8i2hnN8r",
+                             "--id", "this_is_a_wrong_id"])
+        self.assertTrue("Zenodo ID must be prefixed by 'zenodo'"
+                        in str(e.exception))
+
+        # Publish a descriptor that doesn't have an author
+        good_desc = op.join(self.get_examples_dir(), "good.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(good_desc, temp_descriptor.name)
+        with self.assertRaises(ZenodoError) as e:
+            no_author = bosh(["publish",
+                              temp_descriptor.name,
+                              "--sandbox", "-y", "-v",
+                              "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                                "PWr2VeQZgBLErKbfF5RdrKhzzJ"
+                                                "i8i2hnN8r"])
+        self.assertTrue("Tool must have an author to be published."
+                        in str(e.exception))
+
+        # Update a descriptor that doesn't have a DOI
+        example1_dir = op.join(self.get_examples_dir(), "example1")
+        example1_desc = op.join(example1_dir, "example1_docker.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(example1_desc, temp_descriptor.name)
+        # Make sure that example1.json doesn't have a DOI yet
+        with open(temp_descriptor.name, 'r') as fhandle:
+            descriptor = json.load(fhandle)
+            self.assertIsNone(descriptor.get('doi'))
+        # Try to update it
+        with self.assertRaises(ZenodoError) as e:
+            doi = bosh(["publish",
+                        temp_descriptor.name,
+                        "--sandbox", "-y", "-v",
+                        "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                          "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                        "--replace"])
+        self.assertTrue("To publish an updated version of a previously "
+                        "published descriptor, the descriptor must"
+                        " contain a DOI"
+                        in str(e.exception))
+
+    
+
     @mock.patch('requests.get', side_effect=mock_get_no_search())
     @mock.patch('requests.post', side_effect=mock_post_publish_update_only())
     @mock.patch('requests.put', return_value=mock_put())
