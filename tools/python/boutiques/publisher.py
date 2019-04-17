@@ -169,11 +169,7 @@ class Publisher():
         keywords = data['metadata']['keywords']
         if self.descriptor.get('tags'):
             for key, value in self.descriptor.get('tags').items():
-                # Tag is of form 'tag-name': true, it is a single-string
-                if isinstance(value, bool):
-                    keywords.append(key)
-                # Tag is of form 'tag-name':'tag-value', it is a key-value pair
-                elif self.is_str(value):
+                if self.is_str(value):
                     keywords.append(key + ":" + value)
                 # Tag is of form 'tag-name': ['value1', 'value2'], it is a
                 # list of key-value pairs
