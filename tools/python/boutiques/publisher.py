@@ -208,7 +208,7 @@ class Publisher():
     def addHasPart(self, data, identifier):
         if data['metadata'].get('related_identifiers') is None:
             data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': identifier,
-                'relation': 'hasPart'
-            })
+        data['metadata']['related_identifiers'].append({
+            'identifier': identifier,
+            'relation': 'hasPart'
+        })
