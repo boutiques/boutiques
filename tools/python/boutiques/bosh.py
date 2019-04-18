@@ -125,6 +125,13 @@ def execute(*params):
         parser.add_argument("--skip-data-collection", action="store_true",
                             help="Skips execution data collection and saving"
                             "to cache.")
+        force_group = parser.add_mutually_exclusive_group()
+        force_group.add_argument("--force-docker", action="store_true",
+                                 help="Tries to run Singularity images with "
+                                 "Docker.")
+        force_group.add_argument("--force-singularity", action="store_true",
+                                 help="Tries to run Docker images with "
+                                 "Singularity.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -141,7 +148,10 @@ def execute(*params):
                                   "stream": results.stream,
                                   "imagePath": results.imagepath,
                                   "skipDataCollect":
-                                      results.skip_data_collection})
+                                      results.skip_data_collection,
+                                  "forceDocker": results.force_docker,
+                                  "forceSingularity":
+                                      results.force_singularity})
         # Execute it
         return executor.execute(results.volumes)
 

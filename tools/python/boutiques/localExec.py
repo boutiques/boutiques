@@ -14,7 +14,7 @@ import hashlib
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
-from boutiques.logger import raise_error, print_info
+from boutiques.logger import raise_error, print_info, print_warning
 from boutiques.dataHandler import getDataCacheDir
 from boutiques.util.utils import extractFileName, loadJson
 
@@ -261,14 +261,19 @@ class LocalExecutor(object):
             # Get the container options
             conOptsString = ""
             if conOpts:
-                for opt in conOpts:
-                    conOptsString += opt + ' '
+                # Ignore container options if forcing Docker or Singularity
+                if self.forceDocker or self.forceSingularity:
+                    print_warning("Ignoring incompatible container options.")
+                else:
+                    for opt in conOpts:
+                        conOptsString += opt + ' '
             # Run it in docker
             mount_strings = [] if not mount_strings else mount_strings
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
                              for m in mount_strings]
             mount_strings.append(op.realpath('./') + ':' + launchDir)
-            if conType == 'docker':
+            if (conType == 'docker' and not self.forceSingularity
+                    or self.forceDocker):
                 envString = " "
                 if envVars:
                     for (key, val) in list(envVars.items()):
@@ -289,7 +294,8 @@ class LocalExecutor(object):
                                      ' -w ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conImage) + ' ' + dsname)
-            elif conType == 'singularity':
+            elif (conType == 'singularity' and not self.forceDocker
+                    or self.forceSingularity):
                 envString = ""
                 if envVars:
                     for (key, val) in list(envVars.items()):
@@ -407,7 +413,8 @@ class LocalExecutor(object):
         # If container is present, alter the command template accordingly
         conName = ""
 
-        if conType == 'docker':
+        if (conType == 'docker' and not self.forceSingularity
+                or self.forceDocker):
             # Pull the docker image
             if self._localExecute("docker pull " + str(conImage))[1]:
                 container_location = "Local copy"
@@ -415,7 +422,8 @@ class LocalExecutor(object):
                 container_location = "Pulled from Docker"
             return (conName, container_location)
 
-        if conType == 'singularity':
+        if (conType == 'singularity' and not self.forceDocker
+                or self.forceSingularity):
             if not conIndex:
                 conIndex = "shub://"
             elif not conIndex.endswith("://"):
