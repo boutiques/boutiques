@@ -239,8 +239,6 @@ class TestPublisher(TestCase):
                         " contain a DOI"
                         in str(e.exception))
 
-    
-
     @mock.patch('requests.get', side_effect=mock_get_no_search())
     @mock.patch('requests.post', side_effect=mock_post_publish_update_only())
     @mock.patch('requests.put', return_value=mock_put())
