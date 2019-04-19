@@ -240,7 +240,9 @@ class LocalExecutor(object):
         container_command = ""
         if conIsPresent:
             # Figure out which container type to use
-            conTypeToUse = self._chooseContainerTypeToUse(conType)
+            conTypeToUse = self._chooseContainerTypeToUse(conType,
+                                                          self.forceSingularity,
+                                                          self.forceDocker)
             # Pull the container
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
@@ -402,7 +404,7 @@ class LocalExecutor(object):
     # Looks for the container image locally and pulls it if not found
     # Returns a tuple containing the container filename (for Singularity)
     # and the container location (local or pulled)
-    def prepare(self, conTypeToUse):
+    def prepare(self, conTypeToUse=None):
         con = self.con
         if con is None:
             return ("", "Descriptor does not specify a container image.")
@@ -412,6 +414,9 @@ class LocalExecutor(object):
 
         # If container is present, alter the command template accordingly
         conName = ""
+
+        if conTypeToUse is None:
+            conTypeToUse = self._chooseContainerTypeToUse(conType)
 
         if conTypeToUse == 'docker':
             # Pull the docker image
@@ -525,13 +530,14 @@ class LocalExecutor(object):
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
-    def _chooseContainerTypeToUse(self, conType):
+    def _chooseContainerTypeToUse(self, conType, forceSing=False,
+                                  forceDocker=False):
         if (self._isDockerInstalled() and
-                (conType == 'docker' and not self.forceSingularity
-                    or self.forceDocker)):
+                (conType == 'docker' and not forceSing
+                    or forceDocker)):
             return "docker"
-        elif (conType == 'singularity' and not self.forceDocker
-                or self.forceSingularity or not self._isDockerInstalled()):
+        elif (conType == 'singularity' and not forceDocker
+                or forceSing or not self._isDockerInstalled()):
             return "singularity"
 
     # Private method that attempts to locally execute the given
