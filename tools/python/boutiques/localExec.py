@@ -239,8 +239,10 @@ class LocalExecutor(object):
         container_location = ""
         container_command = ""
         if conIsPresent:
+            # Figure out which container type to use
+            conTypeToUse = self._chooseContainerTypeToUse(conType)
             # Pull the container
-            (conPath, container_location) = self.prepare()
+            (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = "#!"+self.shell+" -l"+os.linesep+str(command)
@@ -272,8 +274,7 @@ class LocalExecutor(object):
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
                              for m in mount_strings]
             mount_strings.append(op.realpath('./') + ':' + launchDir)
-            if (conType == 'docker' and not self.forceSingularity
-                    or self.forceDocker):
+            if conTypeToUse == 'docker':
                 envString = " "
                 if envVars:
                     for (key, val) in list(envVars.items()):
@@ -294,8 +295,7 @@ class LocalExecutor(object):
                                      ' -w ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conImage) + ' ' + dsname)
-            elif (conType == 'singularity' and not self.forceDocker
-                    or self.forceSingularity):
+            elif conTypeToUse == 'singularity':
                 envString = ""
                 if envVars:
                     for (key, val) in list(envVars.items()):
@@ -402,7 +402,7 @@ class LocalExecutor(object):
     # Looks for the container image locally and pulls it if not found
     # Returns a tuple containing the container filename (for Singularity)
     # and the container location (local or pulled)
-    def prepare(self):
+    def prepare(self, conTypeToUse):
         con = self.con
         if con is None:
             return ("", "Descriptor does not specify a container image.")
@@ -413,8 +413,7 @@ class LocalExecutor(object):
         # If container is present, alter the command template accordingly
         conName = ""
 
-        if (conType == 'docker' and not self.forceSingularity
-                or self.forceDocker):
+        if conTypeToUse == 'docker':
             # Pull the docker image
             if self._localExecute("docker pull " + str(conImage))[1]:
                 container_location = "Local copy"
@@ -422,8 +421,7 @@ class LocalExecutor(object):
                 container_location = "Pulled from Docker"
             return (conName, container_location)
 
-        if (conType == 'singularity' and not self.forceDocker
-                or self.forceSingularity):
+        if conTypeToUse == 'singularity':
             if not conIndex:
                 conIndex = "shub://"
             elif not conIndex.endswith("://"):
@@ -521,6 +519,20 @@ class LocalExecutor(object):
         os.rmdir(lockDir)
         if "SINGULARITY_PULLFOLDER" in os.environ:
             del os.environ["SINGULARITY_PULLFOLDER"]
+
+    def _isDockerInstalled(self):
+        return not subprocess.Popen("type docker", shell=True).wait()
+
+    # Chooses whether to use Docker or Singularity based on the
+    # descriptor, executor options and if Docker is installed.
+    def _chooseContainerTypeToUse(self, conType):
+        if (self._isDockerInstalled() and
+                (conType == 'docker' and not self.forceSingularity
+                    or self.forceDocker)):
+            return "docker"
+        elif (conType == 'singularity' and not self.forceDocker
+                or self.forceSingularity or not self._isDockerInstalled()):
+            return "singularity"
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
