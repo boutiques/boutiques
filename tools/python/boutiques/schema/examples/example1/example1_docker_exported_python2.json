@@ -110,6 +110,7 @@
             "bar1", 
             "bar2"
         ], 
+        "mypackage": true, 
         "programming-language": "Python"
     }, 
     "version": "0.0.1"

@@ -675,7 +675,7 @@
             "type": "object",
             "description": "An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
             "additionalProperties": {
-                "type": ["string", "array"],
+                "type": ["string", "array", "boolean"],
                 "items": {
                     "type": "string"
                 },
