@@ -383,6 +383,11 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/uses-absolute-path",
                         "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs.",
                         "type": "boolean"
+                    },
+                    "surrounding-char": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/surrounding-char",
+                        "description": "Character that will surround the input value on either side, e.g. \".",
+                        "type": "string"
                     }
                 },
                 "required": [
