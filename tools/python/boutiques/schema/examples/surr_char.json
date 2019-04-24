@@ -1,0 +1,32 @@
+{
+    "command-line": "[INPUT_STR] [INPUT_LIST]", 
+    "description": "A command-line with characters surrounding input values", 
+    "inputs": [
+        {
+            "id": "param_str", 
+            "name": "String Input", 
+            "type": "String", 
+            "value-key": "[INPUT_STR]",
+            "command-line-flag": "-s",
+            "surrounding-char": "\""
+        },
+        {
+            "id": "param_list", 
+            "name": "List Input", 
+            "type": "String",
+            "list": true,
+            "value-key": "[INPUT_LIST]",
+            "surrounding-char": "%"
+        }
+    ],
+    "name": "Surrounding Characters Example", 
+    "output-files": [
+        {
+            "id": "output_file", 
+            "name": "output file", 
+            "path-template": "file.txt"
+        }
+    ], 
+    "schema-version": "0.5", 
+    "tool-version": "0.1"
+}

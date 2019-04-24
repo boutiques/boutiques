@@ -386,7 +386,7 @@
                     },
                     "surrounding-char": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/surrounding-char",
-                        "description": "Character that will surround the input value on either side, e.g. \".",
+                        "description": "Character that will surround the input value on either side, e.g. \". May not be used with the Flag type.",
                         "type": "string"
                     }
                 },
@@ -438,7 +438,12 @@
                     "exclusive-minimum": ["minimum"],
                     "exclusive-maximum": ["maximum"],
                     "value-disables": ["value-choices"],
-                    "value-enables": ["value-choices"]
+                    "value-enables": ["value-choices"],
+                    "surrounding-char": {
+                        "properties": {
+                            "type": {"enum": ["String", "File", "Number"]}
+                        }
+                    }
                 },
                 "additionalProperties": false
             },
