@@ -94,7 +94,8 @@ class TestEvaluate(TestCase):
                   'file_list_input': ['./setup.py', './requirements.txt'],
                   'enum_input': 'val1',
                   'list_int_input': [1, 2, 3],
-                  'flag_input': None}
+                  'flag_input': None,
+                  'no_opts': None}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(self.desc, self.invo,
