@@ -263,8 +263,8 @@ class TestExample1(BaseTest):
     def test_example1_exec_docker_force_singularity(self):
         self.clean_up()
         ret = bosh.execute("launch",
-                           self.get_file_path("example1_docker_no_opts.json"),
-                           self.get_file_path("invocation.json"),
+                           self.get_file_path("example1_docker.json"),
+                           self.get_file_path("invocation_no_opts.json"),
                            "--skip-data-collection",
                            "--force-singularity")
 
@@ -280,8 +280,8 @@ class TestExample1(BaseTest):
     def test_example1_exec_singularity_force_docker(self):
         self.clean_up()
         ret = bosh.execute("launch",
-                           self.get_file_path("example1_sing_no_opts.json"),
-                           self.get_file_path("invocation_sing.json"),
+                           self.get_file_path("example1_sing.json"),
+                           self.get_file_path("invocation_sing_no_opts.json"),
                            "--skip-data-collection",
                            "--force-docker")
 
@@ -299,8 +299,8 @@ class TestExample1(BaseTest):
                                                 mock_docker_not_installed):
         self.clean_up()
         ret = bosh.execute("launch",
-                           self.get_file_path("example1_docker_no_opts.json"),
-                           self.get_file_path("invocation.json"),
+                           self.get_file_path("example1_docker.json"),
+                           self.get_file_path("invocation_no_opts.json"),
                            "--skip-data-collection")
 
         self.assert_successful_return(

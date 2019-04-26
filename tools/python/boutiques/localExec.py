@@ -265,8 +265,9 @@ class LocalExecutor(object):
             # Get the container options
             conOptsString = ""
             if conOpts:
-                # Ignore container options if forcing Docker or Singularity
-                if self.forceDocker or self.forceSingularity:
+                # Ignore container options if container type is not the one
+                # specified in the descriptor.
+                if conType != conTypeToUse:
                     print_warning("Ignoring incompatible container options.")
                 else:
                     for opt in conOpts:
@@ -426,7 +427,7 @@ class LocalExecutor(object):
                 container_location = "Pulled from Docker"
             return (conName, container_location)
 
-        if conTypeToUse == 'singularity':
+        elif conTypeToUse == 'singularity':
             if not conIndex:
                 conIndex = "shub://"
             elif not conIndex.endswith("://"):
@@ -480,10 +481,6 @@ class LocalExecutor(object):
             raise_error(ExecutorError, "Unable to retrieve Singularity "
                         "image.")
 
-        # Invalid container type
-        raise_error(ExecutorError, 'Unrecognized container'
-                    ' type: \"%s\"' % conType)
-
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName, imageDir):
         return conName in os.listdir(imageDir)
@@ -536,8 +533,7 @@ class LocalExecutor(object):
                 (conType == 'docker' and not forceSing
                     or forceDocker)):
             return "docker"
-        elif (conType == 'singularity' and not forceDocker
-                or forceSing or not self._isDockerInstalled()):
+        else:
             return "singularity"
 
     # Private method that attempts to locally execute the given

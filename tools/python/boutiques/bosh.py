@@ -128,7 +128,8 @@ def execute(*params):
         force_group = parser.add_mutually_exclusive_group()
         force_group.add_argument("--force-docker", action="store_true",
                                  help="Tries to run Singularity images with "
-                                 "Docker.")
+                                 "Docker. This only works if the image is on"
+                                 "Docker Hub, i.e. has index docker://")
         force_group.add_argument("--force-singularity", action="store_true",
                                  help="Tries to run Docker images with "
                                  "Singularity.")
