@@ -14,7 +14,7 @@ import hashlib
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
-from boutiques.logger import raise_error, print_info
+from boutiques.logger import raise_error, print_info, print_warning
 from boutiques.dataHandler import getDataCacheDir
 from boutiques.util.utils import extractFileName, loadJson
 
@@ -239,8 +239,12 @@ class LocalExecutor(object):
         container_location = ""
         container_command = ""
         if conIsPresent:
+            # Figure out which container type to use
+            conTypeToUse = self._chooseContainerTypeToUse(conType,
+                                                          self.forceSingularity,
+                                                          self.forceDocker)
             # Pull the container
-            (conPath, container_location) = self.prepare()
+            (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = "#!"+self.shell+" -l"+os.linesep+str(command)
@@ -261,14 +265,19 @@ class LocalExecutor(object):
             # Get the container options
             conOptsString = ""
             if conOpts:
-                for opt in conOpts:
-                    conOptsString += opt + ' '
+                # Ignore container options if container type is not the one
+                # specified in the descriptor.
+                if conType != conTypeToUse:
+                    print_warning("Ignoring incompatible container options.")
+                else:
+                    for opt in conOpts:
+                        conOptsString += opt + ' '
             # Run it in docker
             mount_strings = [] if not mount_strings else mount_strings
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
                              for m in mount_strings]
             mount_strings.append(op.realpath('./') + ':' + launchDir)
-            if conType == 'docker':
+            if conTypeToUse == 'docker':
                 envString = " "
                 if envVars:
                     for (key, val) in list(envVars.items()):
@@ -289,7 +298,7 @@ class LocalExecutor(object):
                                      ' -w ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conImage) + ' ' + dsname)
-            elif conType == 'singularity':
+            elif conTypeToUse == 'singularity':
                 envString = ""
                 if envVars:
                     for (key, val) in list(envVars.items()):
@@ -396,7 +405,7 @@ class LocalExecutor(object):
     # Looks for the container image locally and pulls it if not found
     # Returns a tuple containing the container filename (for Singularity)
     # and the container location (local or pulled)
-    def prepare(self):
+    def prepare(self, conTypeToUse=None):
         con = self.con
         if con is None:
             return ("", "Descriptor does not specify a container image.")
@@ -407,7 +416,10 @@ class LocalExecutor(object):
         # If container is present, alter the command template accordingly
         conName = ""
 
-        if conType == 'docker':
+        if conTypeToUse is None:
+            conTypeToUse = self._chooseContainerTypeToUse(conType)
+
+        if conTypeToUse == 'docker':
             # Pull the docker image
             if self._localExecute("docker pull " + str(conImage))[1]:
                 container_location = "Local copy"
@@ -415,7 +427,7 @@ class LocalExecutor(object):
                 container_location = "Pulled from Docker"
             return (conName, container_location)
 
-        if conType == 'singularity':
+        elif conTypeToUse == 'singularity':
             if not conIndex:
                 conIndex = "shub://"
             elif not conIndex.endswith("://"):
@@ -469,10 +481,6 @@ class LocalExecutor(object):
             raise_error(ExecutorError, "Unable to retrieve Singularity "
                         "image.")
 
-        # Invalid container type
-        raise_error(ExecutorError, 'Unrecognized container'
-                    ' type: \"%s\"' % conType)
-
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName, imageDir):
         return conName in os.listdir(imageDir)
@@ -513,6 +521,20 @@ class LocalExecutor(object):
         os.rmdir(lockDir)
         if "SINGULARITY_PULLFOLDER" in os.environ:
             del os.environ["SINGULARITY_PULLFOLDER"]
+
+    def _isDockerInstalled(self):
+        return not subprocess.Popen("type docker", shell=True).wait()
+
+    # Chooses whether to use Docker or Singularity based on the
+    # descriptor, executor options and if Docker is installed.
+    def _chooseContainerTypeToUse(self, conType, forceSing=False,
+                                  forceDocker=False):
+        if (self._isDockerInstalled() and
+                (conType == 'docker' and not forceSing
+                    or forceDocker)):
+            return "docker"
+        else:
+            return "singularity"
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
