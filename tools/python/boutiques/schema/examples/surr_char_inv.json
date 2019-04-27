@@ -1,4 +1,6 @@
 {
   "param_str": "foo",
-  "param_list": ["foo", "bar"]
+  "param_list": ["string with a ; in it", "string2"],
+  "param_file": "file name with space.tex",
+  "param_num": 1
 }

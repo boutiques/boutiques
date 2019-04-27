@@ -908,7 +908,7 @@ class LocalExecutor(object):
                     if escape:
                         val = escape_string(val)
                     if surr_char is not None:
-                        val = surr_char + str(in_out_dict[param_id]) + surr_char
+                        val = surr_char + str(val) + surr_char
                 # Add flags and separator if necessary
                 flag = self.safeGet(param_id, 'command-line-flag')
                 if (use_flags and flag is not None):

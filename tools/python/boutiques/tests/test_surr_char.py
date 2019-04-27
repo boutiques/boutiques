@@ -20,4 +20,6 @@ class TestSurrChar(TestCase):
                            os.path.join(self.get_examples_dir(),
                                         "surr_char_inv.json"))
         self.assertIn("\"foo\"", ret.stdout)
-        self.assertIn("%foo bar%", ret.stdout)
+        self.assertIn(".'string with a ; in it' string2.", ret.stdout)
+        self.assertIn("%'file name with space.tex'%", ret.stdout)
+        self.assertIn("*1*", ret.stdout)
