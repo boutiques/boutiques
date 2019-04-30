@@ -208,6 +208,14 @@ interfaces are entirely consistent with those exposed on the command-line, so yo
 
 Whether you're working from the shell or a Python script, `bosh` will treat you exactly the same.
 
+And if it's easier for you, you can even generate Python functions that launch your tools directly!
+For instance, this will launch FSL's mcflirt from your Python program:
+
+    > from boutiques.descriptor2func import function
+    > mcflirt = function('zenodo.2602109')
+    > mcflirt(in_file='/home/glatard/data/test.nii.gz')
+
+
 # Contributing
 
 Excited by the project and want to get involved?! *Please* check out our [contributing guide](./CONTRIBUTING.md), and look through the
