@@ -19,7 +19,7 @@ def function(descriptor, name=None, mode='launch'):
             raise Exception("Unsupported mode: {}".format(mode))
 
     if name is None:
-        f.__name__ = descriptor_json['name']
+        f.__name__ = str(descriptor_json['name'])
     else:
         f.__name__ = name
     f.__doc__ = prettyprint(descriptor)
