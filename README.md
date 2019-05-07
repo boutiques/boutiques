@@ -181,13 +181,12 @@ or which of our inputs are numbers and optional, we could do the following two q
 ### Publish Your Tool
 
 Congratulations on successfully running your analysis! So excited about your tool, you now want to share this descriptor with the world. This is
-the step which requires our GitHub libraries for Python which you got in the installation above - we're going to make a fork of the
-[Zenodo](https://zenodo.org/search?page=1&size=20&keywords=boutiques&keywords=schema&keywords=version&file_type=json&type=software) repository, add your tool, and get everying queued up for you to submit a Pull Request
-back with the brand new addition. There is a fair bit of metadata we'll collect here, but the basics will be run with the following, assuming
-your descriptor lives in a Git-repo available at `/utility/belt/`, your name is `Batman`, and your tool lives at the url `http://thebatcave.io`
-(sorry to anyone who owns this url...):
+the step which requires our GitHub libraries for Python which you got in the 
+installation above - it will push your tool on the
+[Zenodo](https://zenodo.org/search?page=1&size=20&keywords=boutiques&keywords=schema&keywords=version&file_type=json&type=software)
+resource-sharing portal allowing other to use it:
 
-    $ bosh publish /utility/belt/ Batman http://thebatcave.io
+    $ bosh publish descriptor.json
 
 Your tool is now being shared in a packaged and fully described fashion, making it easier than ever to reproduce and extend your work! As always,
 learn more about this feature with `bosh publish -h`.
