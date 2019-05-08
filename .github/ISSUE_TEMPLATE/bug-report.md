@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
+title: 'Description of the bug'
 labels: bug
 assignees: ''
 
@@ -9,7 +9,7 @@ assignees: ''
 
 <!--- Provide a general summary of the issue in the Title above -->
 
-### Related issues:
+#### Related issues:
 <!--- Link to issues that would be solved with this feature -->
 
 ## Expected Behavior
@@ -23,9 +23,9 @@ assignees: ''
 
 ## Environment
 <!--- Information about the execution environment -->
-- 
-- 
-- 
+* 
+* 
+* 
 
 ## Steps to Reproduce
 <!--- Provide a link to a live example, or an unambiguous set of steps to -->

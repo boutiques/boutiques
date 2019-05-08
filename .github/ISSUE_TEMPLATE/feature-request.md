@@ -1,7 +1,7 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
+title: 'Description of the feature'
 labels: enhancement
 assignees: ''
 
@@ -10,7 +10,7 @@ assignees: ''
 ## Purpose
 <!--- A clear and concise description of what the problem is. -->
 
-### Related issues:
+#### Related issues:
 <!--- Link to issues that would be solved with this feature -->
 
 ## Context
@@ -19,7 +19,7 @@ assignees: ''
 
 <!--- Provide a general summary of the issue in the Title above -->
 
-## Prefered solution
+## Preferred solution
 <!--- A clear and concise description of what you want to happen. -->
 
 ## Alternatives solutions
