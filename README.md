@@ -180,9 +180,7 @@ or which of our inputs are numbers and optional, we could do the following two q
 
 ### Publish Your Tool
 
-Congratulations on successfully running your analysis! So excited about your tool, you now want to share this descriptor with the world. This is
-the step which requires our GitHub libraries for Python which you got in the 
-installation above - it will push your tool on the
+Congratulations on successfully running your analysis! So excited about your tool, you now want to share this descriptor with the world. Use the `publish` function in `bosh` - it will push your tool on the
 [Zenodo](https://zenodo.org/search?page=1&size=20&keywords=boutiques&keywords=schema&keywords=version&file_type=json&type=software)
 resource-sharing portal allowing other to use it:
 
