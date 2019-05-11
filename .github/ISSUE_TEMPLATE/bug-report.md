@@ -9,7 +9,7 @@ assignees: ''
 
 <!--- Provide a general summary of the issue in the Title above -->
 
-#### Related issues:
+#### Related issues
 <!--- Link to issues that would be solved with this feature -->
 
 ## Expected Behavior
@@ -18,7 +18,7 @@ assignees: ''
 ## Current Behavior
 <!--- Tell us what happens instead of the expected behavior -->
 
-## Possible Solution
+## Possible Solution (optional)
 <!--- Not obligatory, but suggest a fix/reason for the bug, -->
 
 ## Environment
@@ -35,14 +35,16 @@ assignees: ''
 1.
 1.
 
-## Context
+## Context (optional)
+<!--- Not obligatory-->
 <!--- How has this issue affected you? What are you trying to accomplish? -->
 <!--- Providing context helps us come up with a solution that is most useful in the real world -->
 
 <!--- Provide a general summary of the issue in the Title above -->
 
-## Detailed Description
+## Detailed Description (optional)
+<!--- Not obligatory-->
 <!--- Provide a detailed description of the change or addition you are proposing -->
 
-## Possible Implementation
+## Possible Implementation (optional)
 <!--- Not obligatory, but suggest an idea for implementing addition or change -->
