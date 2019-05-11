@@ -10,7 +10,7 @@ assignees: ''
 ## Purpose
 <!--- A clear and concise description of what the problem is. -->
 
-#### Related issues:
+#### Related issues
 <!--- Link to issues that would be solved with this feature -->
 
 ## Context
@@ -19,11 +19,13 @@ assignees: ''
 
 <!--- Provide a general summary of the issue in the Title above -->
 
-## Preferred solution
+## Preferred solution (optional)
+<!--- Not obligatory -->
 <!--- A clear and concise description of what you want to happen. -->
 
-## Alternatives solutions
+## Alternatives solutions (optional)
+<!--- Not obligatory -->
 <!--- A clear and concise description of any alternative solutions or features you've considered. -->
 
-## Possible Implementation
+## Possible Implementation (optional)
 <!--- Not obligatory, but suggest an idea for implementing addition or change -->
