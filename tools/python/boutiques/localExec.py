@@ -888,10 +888,10 @@ class LocalExecutor(object):
             if clk is None:
                 continue
             if param_id in list(in_out_dict.keys()):  # param has a value
-                surr_char = self.safeGet(param_id, 'surrounding-char')
+                use_quotes = self.safeGet(param_id, 'use-quotes')
                 val = in_out_dict[param_id]
                 if type(val) is list:
-                    s_val = "" if surr_char is None else surr_char
+                    s_val = "\"" if use_quotes else ""
                     list_sep = self.safeGet(param_id, 'list-separator')
                     if list_sep is None:
                         list_sep = " "
@@ -903,12 +903,12 @@ class LocalExecutor(object):
                             s_val += s
                         else:
                             s_val += s + list_sep
-                    val = s_val if surr_char is None else s_val + surr_char
+                    val = s_val + "\"" if use_quotes else s_val
                 else:
                     if escape:
                         val = escape_string(val)
-                    if surr_char is not None:
-                        val = surr_char + str(val) + surr_char
+                    if use_quotes:
+                        val = "\"" + str(val) + "\""
                 # Add flags and separator if necessary
                 flag = self.safeGet(param_id, 'command-line-flag')
                 if (use_flags and flag is not None):

@@ -1,6 +1,6 @@
 {
     "command-line": "[INPUT_STR] [INPUT_LIST] [INPUT_FILE] [INPUT_NUM]", 
-    "description": "A command-line with characters surrounding input values", 
+    "description": "A command-line with double quotes surrounding the input values", 
     "inputs": [
         {
             "id": "param_str", 
@@ -8,7 +8,7 @@
             "type": "String", 
             "value-key": "[INPUT_STR]",
             "command-line-flag": "-s",
-            "surrounding-char": "\""
+            "use-quotes": true
         },
         {
             "id": "param_list", 
@@ -16,24 +16,24 @@
             "type": "String",
             "list": true,
             "value-key": "[INPUT_LIST]",
-            "surrounding-char": "."
+            "use-quotes": true
         },
         {
             "id": "param_file", 
             "name": "File Input", 
             "type": "File",
             "value-key": "[INPUT_FILE]",
-            "surrounding-char": "%"
+            "use-quotes": true
         },
         {
             "id": "param_num", 
             "name": "Number Input", 
             "type": "Number",
             "value-key": "[INPUT_NUM]",
-            "surrounding-char": "*"
+            "use-quotes": true
         }
     ],
-    "name": "Surrounding Characters Example", 
+    "name": "Use Quotes Example", 
     "output-files": [
         {
             "id": "output_file", 

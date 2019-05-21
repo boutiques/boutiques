@@ -384,10 +384,10 @@
                         "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs.",
                         "type": "boolean"
                     },
-                    "surrounding-char": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/surrounding-char",
-                        "description": "Character that will surround the input value on either side, e.g. \". May not be used with the Flag type.",
-                        "type": "string"
+                    "use-quotes": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/use-quotes",
+                        "description": "Include double quotes around the entire input when generating the command line.",
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -439,7 +439,7 @@
                     "exclusive-maximum": ["maximum"],
                     "value-disables": ["value-choices"],
                     "value-enables": ["value-choices"],
-                    "surrounding-char": {
+                    "use-quotes": {
                         "properties": {
                             "type": {"enum": ["String", "File", "Number"]}
                         }
