@@ -1,5 +1,6 @@
 import os
 import json
+import simplejson
 from boutiques.logger import raise_error
 
 
@@ -31,13 +32,13 @@ def loadJson(userInput, verbose=False):
         json_file = puller.pull()[0]
     if json_file is not None:
         with open(json_file, 'r') as f:
-            return json.loads(f.read())
+            return simplejson.loads(f.read())
     # JSON file not found, so try to parse JSON object
     e = ("Cannot parse input {}: file not found, "
          "invalid Zenodo ID, or invalid JSON object").format(userInput)
     if userInput.isdigit():
         raise_error(LoadError, e)
     try:
-        return json.loads(userInput)
+        return simplejson.loads(userInput)
     except ValueError:
         raise_error(LoadError, e)
