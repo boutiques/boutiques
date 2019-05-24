@@ -7,7 +7,7 @@ from boutiques import __file__ as bfile
 import boutiques.creator as bc
 import subprocess
 import os.path as op
-import json
+import simplejson
 import os
 import pytest
 
@@ -82,7 +82,7 @@ class TestCreator(TestCase):
                                   '--suboptionflag2'])
         invo = creatorObj.createInvocation(args)
         with open(invof, 'w') as fhandle:
-            fhandle.write(json.dumps(invo, indent=4))
+            fhandle.write(simplejson.dumps(invo, indent=4))
 
         self.assertIsNone(bosh(['validate', fil]))
         self.assertIsNone(bosh(['invocation', fil, '-i', invof]))

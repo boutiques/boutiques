@@ -2,7 +2,7 @@
 
 import os
 import sys
-import json
+import simplejson
 import random as rnd
 import string
 import math
@@ -1307,7 +1307,7 @@ class LocalExecutor(object):
                      'public-invocation': self.public_in,
                      'public-output': self.public_out}
         # Convert dictionary to Json string
-        content = json.dumps(data_dict, indent=4)
+        content = simplejson.dumps(data_dict, indent=4)
         # Write collected data to file
         data_cache_dir = getDataCacheDir()
         filename = "{0}_{1}.json".format(tool_name, date_time)
@@ -1344,7 +1344,7 @@ class LocalExecutor(object):
                            "as {}".format(match))
             return match
         # Write descriptor to data cache and save return filename
-        content = json.dumps(self.desc_dict, indent=4)
+        content = simplejson.dumps(self.desc_dict, indent=4)
         date_time = datetime.datetime.now().isoformat()
         filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
         path = os.path.join(data_cache_dir, filename)

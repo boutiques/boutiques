@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json
+import simplejson
 import os
 import stat
 from Pegasus.DAX3 import ADAG, Job, File, Link
@@ -8,7 +8,7 @@ from Pegasus.DAX3 import ADAG, Job, File, Link
 class DockerApp(object):
 
 	def __init__(self, appfile, map, transfer=False):
-		self.data = json.load(open(appfile))
+		self.data = simplejson.load(open(appfile))
 		self.map = map
 		self.transfer = transfer
 		if not os.path.exists("wrappers"):

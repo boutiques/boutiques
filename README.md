@@ -85,9 +85,9 @@ code block on runtime:
     invoc = newDescriptor.createInvocation(args)
 
     # Then, if you want to save them to a file...
-    import json
+    import simplejson
     with open('my-inputs.json', 'w') as fhandle:
-        fhandle.write(json.dumps(invoc, indent=4))
+        fhandle.write(simplejson.dumps(invoc, indent=4))
 
 
 ### Validation

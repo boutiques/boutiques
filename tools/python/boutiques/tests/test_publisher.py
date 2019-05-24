@@ -1,7 +1,7 @@
 from boutiques import __file__ as bfile
 from boutiques.publisher import ZenodoError
 from boutiques.bosh import bosh
-import json
+import simplejson
 import subprocess
 import shutil
 import tempfile
@@ -81,7 +81,7 @@ class TestPublisher(TestCase):
 
         # Make sure that example1.json doesn't have a DOI yet
         with open(temp_descriptor.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = simplejson.load(fhandle)
             self.assertIsNone(descriptor.get('doi'))
 
         # Test publication of a descriptor that doesn't have a DOI
@@ -94,7 +94,7 @@ class TestPublisher(TestCase):
 
         # Now descriptor should have a DOI
         with open(temp_descriptor.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = simplejson.load(fhandle)
             self.assertEqual(descriptor.get('doi'), doi)
 
         # Test publication of a descriptor that already has a DOI
@@ -122,7 +122,7 @@ class TestPublisher(TestCase):
 
         # Updated version of descriptor should have a new DOI
         with open(temp_descriptor_updated.name, 'r') as fhandle:
-            descriptor_updated = json.load(fhandle)
+            descriptor_updated = simplejson.load(fhandle)
             self.assertNotEqual(new_doi, doi)
             self.assertEqual(descriptor_updated.get('doi'), new_doi)
 
@@ -173,7 +173,7 @@ class TestPublisher(TestCase):
 
         # Make sure that example1.json doesn't have a DOI yet
         with open(temp_descriptor.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = simplejson.load(fhandle)
             self.assertIsNone(descriptor.get('doi'))
 
         # Publish an updated version of an already published descriptor
@@ -187,7 +187,7 @@ class TestPublisher(TestCase):
 
         # Now descriptor should have a DOI
         with open(temp_descriptor.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = simplejson.load(fhandle)
             self.assertEqual(descriptor.get('doi'), doi)
 
     def test_publication_errors(self):
@@ -224,7 +224,7 @@ class TestPublisher(TestCase):
         shutil.copyfile(example1_desc, temp_descriptor.name)
         # Make sure that example1.json doesn't have a DOI yet
         with open(temp_descriptor.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = simplejson.load(fhandle)
             self.assertIsNone(descriptor.get('doi'))
         # Try to update it
         with self.assertRaises(ZenodoError) as e:
@@ -252,7 +252,7 @@ class TestPublisher(TestCase):
 
         # Make sure that descriptor has a DOI
         with open(temp_descriptor.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = simplejson.load(fhandle)
             self.assertIsNotNone(descriptor.get('doi'))
             old_doi = descriptor['doi']
 
@@ -268,7 +268,7 @@ class TestPublisher(TestCase):
         # Now descriptor should have a DOI which should be different
         # than the old DOI
         with open(temp_descriptor.name, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = simplejson.load(fhandle)
             self.assertNotEqual(doi, old_doi)
             self.assertEqual(descriptor.get('doi'), doi)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-import json
+import simplejson
 import requests
 from boutiques.logger import raise_error, print_info
 
@@ -44,7 +44,7 @@ class ZenodoHelper(object):
         json_creds = self.read_credentials()
         json_creds[self.config_token_property_name()] = access_token
         with open(self.config_file, 'w') as f:
-            f.write(json.dumps(json_creds, indent=4, sort_keys=True))
+            f.write(simplejson.dumps(json_creds, indent=4, sort_keys=True))
         if (self.verbose):
             print_info("Zenodo access token saved in {0}".
                        format(self.config_file))
@@ -65,7 +65,7 @@ class ZenodoHelper(object):
     def read_credentials(self):
         try:
             with open(self.config_file, "r") as f:
-                json_creds = json.load(f)
+                json_creds = simplejson.load(f)
         except IOError:
             json_creds = {}
         except ValueError:
@@ -92,7 +92,7 @@ class ZenodoHelper(object):
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
                           params={'access_token': access_token},
                           json={},
-                          data=json.dumps(data),
+                          data=simplejson.dumps(data),
                           headers=headers)
         if(r.status_code != 201):
             raise_error(ZenodoError, "Deposition failed", r)
@@ -140,7 +140,7 @@ class ZenodoHelper(object):
         r = requests.put(self.zenodo_endpoint+'/api/deposit/depositions/%s'
                          % new_deposition_id,
                          params={'access_token': access_token},
-                         data=json.dumps(data),
+                         data=simplejson.dumps(data),
                          headers=headers)
         if(r.status_code != 200):
             raise_error(ZenodoError, "Cannot update metadata of new version", r)

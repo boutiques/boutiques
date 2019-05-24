@@ -7,7 +7,7 @@ from boutiques import __file__ as bofile
 from jsonschema.exceptions import ValidationError
 from boutiques.validator import DescriptorValidationError
 import os.path as op
-import json
+import simplejson
 import os
 
 
@@ -29,6 +29,6 @@ class TestBIDS(TestCase):
 
     def test_bids_invalid(self):
         fil = op.join(op.split(bofile)[0], 'schema/examples/bids_bad2.json')
-        descriptor = json.load(open(fil))
+        descriptor = simplejson.load(open(fil))
         self.assertRaises(DescriptorValidationError, validate_bids,
                           descriptor, False)

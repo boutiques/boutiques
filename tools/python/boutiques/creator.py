@@ -5,7 +5,6 @@ import tempfile
 import argparse
 import sys
 import os
-import json
 import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
@@ -44,9 +43,9 @@ class CreateDescriptor(object):
             self.parseParser(**kwargs)
 
     def save(self, filename):
-        import json
         with open(filename, "w") as f:
-            f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+            f.write(simplejson.dumps(self.descriptor,
+                                     indent=4, sort_keys=True))
 
     def createInvocation(self, arguments):
         argdict = vars(arguments)
@@ -85,7 +84,7 @@ class CreateDescriptor(object):
             raise_error(CreatorError, "Cannot inspect Docker image {0}: {1} "
                         "{2} {3}".format(docker_image_name, stdout,
                                          os.linesep, stderr))
-        image_attrs = json.loads(stdout.decode("utf-8"))[0]
+        image_attrs = simplejson.loads(stdout.decode("utf-8"))[0]
         if (image_attrs.get('ContainerConfig')):
             container_config = image_attrs['ContainerConfig']
             entrypoint = container_config.get('Entrypoint')

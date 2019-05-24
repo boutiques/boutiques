@@ -2,7 +2,7 @@
 
 import os
 from unittest import TestCase
-import json
+import simplejson
 from boutiques import __file__ as bfile
 import boutiques as bosh
 import mock
@@ -61,7 +61,7 @@ class TestSimulate(TestCase):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         desc_json = open(os.path.join(example1_dir,
                                       "example1_docker.json")).read()
-        test_json = json.loads(desc_json)
+        test_json = simplejson.loads(desc_json)
         del test_json['groups']
         target_input = [i for i in test_json["inputs"]
                         if i["id"] == "num_input"][0]
@@ -70,49 +70,57 @@ class TestSimulate(TestCase):
         # Test inclusive lower bound
         target_input["exclusive-minimum"] = False
         mock_random.return_value = -0.001
+        test_json_str = simplejson.dumps(test_json)
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
-                                                     json.dumps(test_json),
+                                                     test_json_str,
                                                      "-j"])
         mock_random.return_value = 0
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
-        self.assertIsInstance(json.loads(ret), dict)
+        test_json_str = simplejson.dumps(test_json)
+        ret = bosh.bosh(args=["example", test_json_str]).stdout
+        self.assertIsInstance(simplejson.loads(ret), dict)
 
         # Test exclusive lower bound
         target_input["exclusive-minimum"] = True
+        test_json_str = simplejson.dumps(test_json)
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
-                                                     json.dumps(test_json),
+                                                     test_json_str,
                                                      "-j"])
         mock_random.return_value = 0.001
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
-        self.assertIsInstance(json.loads(ret), dict)
+        test_json_str = simplejson.dumps(test_json)
+        ret = bosh.bosh(args=["example", test_json_str]).stdout
+        self.assertIsInstance(simplejson.loads(ret), dict)
 
         # Test inclusive upper bound
         target_input["exclusive-maximum"] = False
         mock_random.return_value = 1.001
+        test_json_str = simplejson.dumps(test_json)
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
-                                                     json.dumps(test_json),
+                                                     test_json_str,
                                                      "-j"])
         mock_random.return_value = 1
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
-        self.assertIsInstance(json.loads(ret), dict)
+        test_json_str = simplejson.dumps(test_json)
+        ret = bosh.bosh(args=["example", test_json_str]).stdout
+        self.assertIsInstance(simplejson.loads(ret), dict)
 
         # Test exclusive upper bound
         target_input["exclusive-maximum"] = True
+        test_json_str = simplejson.dumps(test_json)
         self.assertRaises(SystemExit, bosh.execute, ["simulate",
-                                                     json.dumps(test_json),
+                                                     test_json_str,
                                                      "-j"])
         mock_random.return_value = 0.999
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
-        self.assertIsInstance(json.loads(ret), dict)
+        test_json_str = simplejson.dumps(test_json)
+        ret = bosh.bosh(args=["example", test_json_str]).stdout
+        self.assertIsInstance(simplejson.loads(ret), dict)
 
     def test_success_json(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")
         desc_json = open(os.path.join(example1_dir,
                                       "example1_docker.json")).read()
         ret = bosh.execute("simulate", desc_json, "-j").stdout
-        self.assertIsInstance(json.loads(ret), dict)
+        self.assertIsInstance(simplejson.loads(ret), dict)
         ret = bosh.bosh(args=["example", desc_json]).stdout
-        self.assertIsInstance(json.loads(ret), dict)
+        self.assertIsInstance(simplejson.loads(ret), dict)
 
     def test_failing_bad_descriptor_invo_combos(self):
         example1_dir = os.path.join(self.get_examples_dir(), "example1")

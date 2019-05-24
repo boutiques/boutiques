@@ -42,9 +42,10 @@ class TestValidator(TestCase):
         command = ("bosh validate " + fil)
         process = subprocess.Popen(command, shell=True,
                                    stderr=subprocess.PIPE)
-        stderr = process.stderr.readlines()[-1].decode("utf-8").strip()
-        self.assertEqual(stderr, 'simplejson.errors.JSONDecodeError: Expecting \',\' delimiter or \'}\': line 9 column 2 (char 243)')
-    
+        stderr = process.stderr.read()[-59:].decode("utf-8").strip()
+        self.assertEqual(stderr, 'Expecting \',\' delimiter or \'}\': line 9' +
+                         ' column 2 (char 243)')
+
     def test_invalid_json(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/test_exclusive_'
                                           'minimum.json')

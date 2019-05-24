@@ -7,7 +7,7 @@ from boutiques.util.utils import loadJson
 from boutiques.logger import raise_error
 import boutiques
 import yaml
-import json
+import simplejson
 import os
 import os.path as op
 
@@ -84,7 +84,8 @@ class Importer():
             del descriptor["walltime-estimate"]
 
         with open(self.output_descriptor, 'w') as fhandle:
-            fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
+            fhandle.write(simplejson.dumps(descriptor,
+                                           indent=4, sort_keys=True))
         validate_descriptor(self.output_descriptor)
 
     def get_entry_point(self, input_descriptor):
@@ -376,7 +377,7 @@ class Importer():
 
         # Write descriptor
         with open(self.output_descriptor, 'w') as f:
-            f.write(json.dumps(bout_desc, indent=4, sort_keys=True))
+            f.write(simplejson.dumps(bout_desc, indent=4, sort_keys=True))
         validate_descriptor(self.output_descriptor)
 
         if self.input_invocation is None:
@@ -398,6 +399,7 @@ class Importer():
                 input_value = cwl_inputs[input_name]['path']
             boutiques_invocation[input_name] = input_value
         with open(self.output_invocation, 'w') as f:
-            f.write(json.dumps(boutiques_invocation, indent=4, sort_keys=True))
+            f.write(simplejson.dumps(boutiques_invocation,
+                                     indent=4, sort_keys=True))
         boutiques.invocation(self.output_descriptor,
                              "-i", self.output_invocation)

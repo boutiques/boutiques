@@ -1,5 +1,4 @@
 import os
-import json
 import simplejson
 from boutiques.logger import raise_error
 

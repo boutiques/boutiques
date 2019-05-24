@@ -1,4 +1,4 @@
-import json
+import simplejson
 import tempfile
 import os.path as op
 from boutiques.util.utils import loadJson
@@ -18,7 +18,7 @@ def fetch_tests(descriptor_input):
     for test in descriptor["tests"]:
 
         # We first extract the invocation and put it inside a temporary file.
-        invocation_JSON = json.dumps(test["invocation"])
+        invocation_JSON = simplejson.dumps(test["invocation"])
         temp_invocation_JSON = tempfile.NamedTemporaryFile(suffix=".json",
                                                            delete=False)
         temp_invocation_JSON.write(invocation_JSON.encode())

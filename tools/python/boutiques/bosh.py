@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import jsonschema
-import json
+import simplejson
 import os
 import sys
 import os.path as op
@@ -185,7 +185,8 @@ def execute(*params):
             executor.generateRandomParams(1)
 
         if results.json:
-            sout = [json.dumps(executor.in_dict, indent=4, sort_keys=True)]
+            sout = [simplejson.dumps(executor.in_dict,
+                                     indent=4, sort_keys=True)]
             print(sout[0])
         else:
             executor.printCmdLine()
@@ -361,7 +362,8 @@ def invocation(*params):
         if result.write_schema:
             descriptor["invocation-schema"] = invSchema
             with open(result.descriptor, "w") as f:
-                f.write(json.dumps(descriptor, indent=4, sort_keys=True))
+                f.write(simplejson.dumps(descriptor,
+                                         indent=4, sort_keys=True))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
         data = addDefaultValues(descriptor, loadJson(result.invocation))
@@ -425,7 +427,7 @@ def test(*params):
 
         # Check if the invocation is valid.
         invocation(result.descriptor, "--invocation",
-                   json.dumps(invocation_JSON))
+                   simplejson.dumps(invocation_JSON))
 
     # Invocations have been properly validated. We can launch the actual tests.
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")

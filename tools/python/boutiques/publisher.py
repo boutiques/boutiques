@@ -3,7 +3,7 @@
 from boutiques.validator import validate_descriptor, ValidationError
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
-import json
+import simplejson
 import requests
 import os
 
@@ -30,7 +30,8 @@ class Publisher():
 
         # Validate and load descriptor
         validate_descriptor(descriptor_file_name)
-        self.descriptor = json.loads(open(self.descriptor_file_name).read())
+        descriptor_file = open(self.descriptor_file_name).read()
+        self.descriptor = simplejson.loads(descriptor_file)
 
         # Get relevant descriptor properties
         self.url = self.descriptor.get('url')
@@ -76,7 +77,7 @@ class Publisher():
             del self.descriptor['doi']
 
         with open(self.descriptor_file_name, 'w') as fhandle:
-            fhandle.write(json.dumps(self.descriptor, indent=4))
+            fhandle.write(simplejson.dumps(self.descriptor, indent=4))
 
         data = {'filename': os.path.basename(self.descriptor_file_name)}
         files = {'file': open(self.descriptor_file_name, 'rb')}
@@ -149,7 +150,7 @@ class Publisher():
             self.zenodo_access_token, deposition_id, "Descriptor")
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
-            f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+            f.write(simplejson.dumps(self.descriptor, indent=4, sort_keys=True))
 
     def create_metadata(self):
         data = {

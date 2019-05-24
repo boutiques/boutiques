@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json
+import simplejson
 import os
 import uuid
 from boutiques.util.utils import loadJson
@@ -84,4 +84,5 @@ class Exporter():
             carmin_desc['errorCodesAndMessages'].append(obj)
 
         with open(output_file, 'w') as fhandle:
-            fhandle.write(json.dumps(carmin_desc, indent=4, sort_keys=True))
+            fhandle.write(simplejson.dumps(carmin_desc,
+                                           indent=4, sort_keys=True))
