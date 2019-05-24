@@ -19,7 +19,7 @@ class TestUseQuotes(TestCase):
                            "-i",
                            os.path.join(self.get_examples_dir(),
                                         "use_quotes_inv.json"))
-        self.assertIn("\"foo\"", ret.stdout)
+        self.assertIn("\"'f\\\"oo'\"", ret.stdout)
         self.assertIn("\"'string with a ; in it' string2\"", ret.stdout)
         self.assertIn("\"'file name with space.tex'\"", ret.stdout)
         self.assertIn("\"1\"", ret.stdout)

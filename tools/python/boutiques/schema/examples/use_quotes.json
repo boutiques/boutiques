@@ -1,5 +1,5 @@
 {
-    "command-line": "[INPUT_STR] [INPUT_LIST] [INPUT_FILE] [INPUT_NUM]", 
+    "command-line": "echo [INPUT_STR] [INPUT_LIST] [INPUT_FILE] [INPUT_NUM]", 
     "description": "A command-line with double quotes surrounding the input values", 
     "inputs": [
         {
