@@ -20,7 +20,7 @@ node_js:
 - 5
 
 env:
-- SINGVER=2.4.6
+- SINGVER=2.6.1
 
 before_install:
 - sudo apt-get update -qq

@@ -304,39 +304,7 @@ class LocalExecutor(object):
                     for (key, val) in list(envVars.items()):
                         envString += "SINGULARITYENV_{0}='{1}' ".format(key,
                                                                         val)
-                # TODO: Singularity 2.4.6 default configuration binds: /proc,
-                # /sys, /dev, ${HOME}, /tmp, /var/tmp, /etc/localtime, and
-                # /etc/hosts. This means that any path down-stream shouldn't
-                # be bound on the command-line, as this will currently raise
-                # an exception. See:
-                #   https://github.com/singularityware/singularity/issues/1469
-                #
-                # Previous bind string:
-                #   singularity_mounts = " -B ".join(m for m in mount_strings)
-
-                def_mounts = ["/proc", "/sys", "/dev", "/tmp", "/var/tmp",
-                              "/etc/localtime", "/etc/hosts",
-                              op.realpath(op.expanduser('~')),
-                              op.expanduser('~')]
-
-                # Ensures the set of paths provided has no overlap
-                compaths = list()
-                for idxm, m in enumerate(mount_strings):
-                    for n in mount_strings[idxm:]:
-                        if n != m:
-                            tmp = op.dirname(op.commonprefix([n, m]))
-                            if tmp != '/':
-                                compaths += [tmp]
-                    if not any(m.startswith(c) for c in compaths):
-                        compaths += [m]
-                mount_strings = set(compaths)
-
-                # Only adds mount points for those not already included
-                singularity_mounts = ""
-                for m in mount_strings:
-                    if not any(d in m for d in def_mounts):
-                        singularity_mounts += "-B {0} ".format(m)
-
+                singularity_mounts = " -B ".join(m for m in mount_strings)
                 container_command = (envString + 'singularity exec '
                                      '--cleanenv ' +
                                      singularity_mounts +
