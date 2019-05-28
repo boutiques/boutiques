@@ -24,7 +24,7 @@ env:
 
 before_install:
 - sudo apt-get update -qq
-- sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential
+- sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential libarchive-dev
 - npm install jsonlint -g 
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity boutiques/example1:test
