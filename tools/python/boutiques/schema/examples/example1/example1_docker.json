@@ -1,4 +1,4 @@
-{
+    {
     "author": "Test author",
     "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FILE_LIST_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT] [NO_OPTS]",
     "container-image": {
@@ -178,7 +178,7 @@
             ],
             "id": "config_file",
             "name": "Configuration file",
-            "path-template": "./config.txt",
+            "path-template": "./subdir1/subdir2/config.txt",
             "value-key": "[CONFIG_FILE]"
         }
     ],
