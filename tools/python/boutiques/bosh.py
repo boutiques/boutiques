@@ -560,10 +560,11 @@ def data(*params):
 
 
 def bosh(args=None):
-    parser = ArgumentParser(description="Boutiques shell.",
-                            add_help=False,
+    parser = ArgumentParser(add_help=False,
                             formatter_class=RawTextHelpFormatter)
-    helptext = '''
+    helptext = r'''
+               BOUTIQUES COMMANDS
+
 TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
 * export: export a descriptor to other formats.
@@ -591,14 +592,13 @@ OTHER
 * invocation: generate the invocation schema for a given descriptor.
 * version: print the Boutiques version.
 '''
-    parser = ArgumentParser(description="Driver for Bosh functions",
-                            add_help=False)
     parser.add_argument("function", action="store", nargs="?",
                         help=helptext,
-                        choices=["create", "validate", "exec", "import",
+                        choices=sorted(
+                                ["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
                                  "test", "example", "search", "pull", "data",
-                                 "pprint", "version"])
+                                 "pprint", "version"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
