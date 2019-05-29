@@ -165,14 +165,21 @@ def execute(*params):
                             help="Input JSON complying to invocation.")
         parser.add_argument("-j", "--json", action="store_true",
                             help="Flag to generate invocation in JSON format.")
+        parser.add_argument("-c", "--complete", action="store_true",
+                            help="Include optional parameters.")
         results = parser.parse_args(params)
+
         descriptor = results.descriptor
 
         # Do some basic input scrubbing
         inp = results.input
 
-        valid = invocation(descriptor, '-i', inp) if inp else\
-            invocation(descriptor)
+        arguments = [descriptor]
+        if inp:
+            arguments.append('-i', inp)
+        if results.complete:
+            arguments.append('-c')
+        valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -349,8 +356,11 @@ def invocation(*params):
                         help="If descriptor doesn't have an invocation "
                         "schema, creates one and writes it to the descriptor"
                         " file ")
+    parser.add_argument("-c", "--complete", action="store_true",
+                        help="Include optional parameters.")
+    parser.add_argument
     result = parser.parse_args(params)
-
+    print(result.complete)
     validate(result.descriptor)
     descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
