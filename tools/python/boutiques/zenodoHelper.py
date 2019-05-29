@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-import json
+import simplejson as json
 import requests
 from boutiques.logger import raise_error, print_info
 

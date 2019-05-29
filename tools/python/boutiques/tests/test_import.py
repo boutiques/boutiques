@@ -4,7 +4,6 @@ from unittest import TestCase
 from boutiques import bosh
 from boutiques import __file__ as bfile
 from jsonschema.exceptions import ValidationError
-import json
 import os
 import os.path as op
 from os.path import join as opj

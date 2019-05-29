@@ -2,7 +2,7 @@
 
 import os
 from unittest import TestCase
-import json
+import simplejson as json
 from boutiques import __file__ as bfile
 import boutiques as bosh
 import mock
