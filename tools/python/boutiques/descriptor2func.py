@@ -3,7 +3,7 @@ from boutiques import validate, execute, prettyprint
 import json
 
 
-def function(descriptor, name=None):
+def function(descriptor):
     '''
     Returns a function to invoke bosh.execute on a descriptor.
     args:
@@ -37,10 +37,7 @@ def function(descriptor, name=None):
                            '-i', json.dumps(kwargs), *args)
         return execute(mode, descriptor, *args)
 
-    if name is None:
-        f.__name__ = str(descriptor_json['name'])
-    else:
-        f.__name__ = name
+    f.__name__ = str(descriptor_json['name'])
 
     # Documentation
     doc = []

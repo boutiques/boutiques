@@ -176,6 +176,7 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     @mock.patch('requests.get', return_value=mock_get())
     def test_example1_exec_docker_from_zenodo_desc2func(self, mock_get):
+        # No mode provided, defaults to 'launch'
         self.clean_up()
         from boutiques.descriptor2func import function
         example_tool = function("zenodo." + str(example_boutiques_tool.id))
@@ -191,6 +192,7 @@ class TestExample1(BaseTest):
                                       ["log-4-coin;plop.txt"], 2,
                                       self.assert_reflected_output)
 
+        # Launch mode
         self.clean_up()
         ret = example_tool('launch',
                            str_input_list=['a', 'b', 'c'],
@@ -204,6 +206,7 @@ class TestExample1(BaseTest):
                                       ["log-4-coin;plop.txt"], 2,
                                       self.assert_reflected_output)
 
+        # Simulate with invocation
         self.clean_up()
         ret = example_tool('simulate',
                            str_input_list=['a', 'b', 'c'],
@@ -216,6 +219,11 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
                             ret,
                             aditional_assertions=self.assert_only_stdout)
+
+        # Simulate without invocation
+        self.clean_up()
+        ret = example_tool('simulate')
+        self.assertIn('exampleTool1.py -c', ret.stdout)
 
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
