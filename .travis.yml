@@ -20,7 +20,7 @@ node_js:
 - 5
 
 env:
-- SINGVER=2.4.6
+- SINGVER=3.1.1
 
 before_install:
 - sudo apt-get update -qq
@@ -39,6 +39,8 @@ before_install:
 - cat /etc/singularity/singularity.conf
 - cd ${TRAVIS_BUILD_DIR}/tools/python/
 - mv ${IMGNAME} ./boutiques-example1-test.simg
+- ls -l ./boutiques-example1-test.simg
+- md5sum ./boutiques-example1-test.simg
 
 install:
 - pip install --upgrade setuptools
