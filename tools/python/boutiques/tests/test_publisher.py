@@ -1,7 +1,7 @@
 from boutiques import __file__ as bfile
 from boutiques.publisher import ZenodoError
 from boutiques.bosh import bosh
-import json
+import simplejson as json
 import subprocess
 import shutil
 import tempfile

@@ -7,7 +7,7 @@ from boutiques.util.utils import loadJson
 from boutiques.logger import raise_error
 import boutiques
 import yaml
-import json
+import simplejson as json
 import os
 import os.path as op
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import jsonschema
-import json
+import simplejson as json
 import os
 import sys
 import os.path as op

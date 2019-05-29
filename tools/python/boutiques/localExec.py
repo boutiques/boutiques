@@ -2,7 +2,7 @@
 
 import os
 import sys
-import json
+import simplejson as json
 import random as rnd
 import string
 import math

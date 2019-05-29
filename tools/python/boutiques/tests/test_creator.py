@@ -7,7 +7,7 @@ from boutiques import __file__ as bfile
 import boutiques.creator as bc
 import subprocess
 import os.path as op
-import json
+import simplejson as json
 import os
 import pytest
 
