@@ -139,6 +139,7 @@ class TestExample1(BaseTest):
         with pytest.raises(LoadError) as e:
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
+                         "-u",
                          invocationStr,
                          "--skip-data-collection")
         self.assertIn("Cannot parse input", str(e))
@@ -301,6 +302,58 @@ class TestExample1(BaseTest):
                          self.get_file_path("invocation.json")),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output_nonutf8)
+
+    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
+                        reason="Singularity not installed")
+    def test_example1_exec_docker_force_singularity(self):
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           self.get_file_path("example1_docker.json"),
+                           self.get_file_path("invocation_no_opts.json"),
+                           "--skip-data-collection",
+                           "--force-singularity")
+
+        self.assert_successful_return(
+            ret, ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
+        self.assertIn("Local (boutiques-example1-test.simg)",
+                      ret.container_location)
+        self.assertIn("singularity exec", ret.container_command)
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_exec_singularity_force_docker(self):
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           self.get_file_path("example1_sing.json"),
+                           self.get_file_path("invocation_sing_no_opts.json"),
+                           "--skip-data-collection",
+                           "--force-docker")
+
+        self.assert_successful_return(
+            ret, ["log-4.txt"], 2,
+            self.assert_reflected_output)
+        self.assertIn("Local copy", ret.container_location)
+        self.assertIn("docker run", ret.container_command)
+
+    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
+                        reason="Singularity not installed")
+    @mock.patch('boutiques.localExec.LocalExecutor._isDockerInstalled',
+                return_value=False)
+    def test_example1_exec_docker_not_installed(self,
+                                                mock_docker_not_installed):
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           self.get_file_path("example1_docker.json"),
+                           self.get_file_path("invocation_no_opts.json"),
+                           "--skip-data-collection")
+
+        self.assert_successful_return(
+            ret, ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
+        self.assertIn("Local (boutiques-example1-test.simg)",
+                      ret.container_location)
+        self.assertIn("singularity exec", ret.container_command)
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()

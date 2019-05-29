@@ -81,6 +81,14 @@
             "type": "Boolean"
         }, 
         {
+            "description": "Don't check for container options (needed for certain test cases)", 
+            "id": "no_opts", 
+            "isOptional": true, 
+            "isReturnedValue": false, 
+            "name": "No container opts", 
+            "type": "Boolean"
+        }, 
+        {
             "description": "The output log file from the example tool", 
             "id": "logfile", 
             "isOptional": false, 
@@ -110,6 +118,7 @@
             "bar1", 
             "bar2"
         ], 
+        "mypackage": true, 
         "programming-language": "Python"
     }, 
     "version": "0.0.1"

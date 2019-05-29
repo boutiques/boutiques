@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from boutiques.validator import validate_descriptor
+from boutiques.validator import validate_descriptor, ValidationError
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 import json
@@ -169,18 +169,16 @@ class Publisher():
         keywords = data['metadata']['keywords']
         if self.descriptor.get('tags'):
             for key, value in self.descriptor.get('tags').items():
+                # Tag is of form 'tag-name': true, it is a single-string
+                if isinstance(value, bool):
+                    keywords.append(key)
+                # Tag is of form 'tag-name':'tag-value', it is a key-value pair
                 if self.is_str(value):
                     keywords.append(key + ":" + value)
                 # Tag is of form 'tag-name': ['value1', 'value2'], it is a
                 # list of key-value pairs
                 elif isinstance(value, list):
                     keywords += [key + ":" + item for item in value]
-                else:
-                    # This should never happen as the descriptor is assumed
-                    # valid at this point
-                    raise_error(ValidationError,
-                                'Invalid tag format: {0}:{1}'
-                                .format(key, value))
         if self.descriptor.get('container-image'):
             keywords.append(self.descriptor['container-image']['type'])
         if self.descriptor.get('tests'):
@@ -196,7 +194,7 @@ class Publisher():
             self.addHasPart(data, self.descriptor_url)
         return data
 
-    # checks if value is a string
+    # Check if value is a string
     # try/except is needed for Python2/3 compatibility
     def is_str(self, value):
         try:
@@ -208,7 +206,7 @@ class Publisher():
     def addHasPart(self, data, identifier):
         if data['metadata'].get('related_identifiers') is None:
             data['metadata']['related_identifiers'] = []
-            data['metadata']['related_identifiers'].append({
-                'identifier': identifier,
-                'relation': 'hasPart'
-            })
+        data['metadata']['related_identifiers'].append({
+            'identifier': identifier,
+            'relation': 'hasPart'
+        })

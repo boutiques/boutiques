@@ -1,6 +1,6 @@
 {
     "author": "Test author",
-    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FILE_LIST_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
+    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FILE_LIST_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT] [NO_OPTS]",
     "container-image": {
         "container-opts": [
             "-e",
@@ -134,6 +134,15 @@
             ],
             "type": "Flag",
             "value-key": "[FLAG_INPUT]"
+        },
+        {
+            "command-line-flag": "--no-opts",
+            "id": "no_opts",
+            "name": "No container opts",
+            "description": "Don't check for container options (needed for certain test cases)",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[NO_OPTS]"
         }
     ],
     "name": "Example Boutiques Tool",
@@ -180,9 +189,33 @@
             "bar1",
             "bar2"
         ],
-        "programming-language": "Python"
+        "programming-language": "Python",
+        "mypackage": true
     },
     "tool-doi": "00.0000/example.0000000",
     "tool-version": "0.0.1",
-    "url": "http://example.com"
+    "url": "http://example.com",
+    "tests": [
+        {
+            "name": "my_test",
+            "invocation": {
+                    "str_input_list" : [ "fo '; echo FAIL", "bar" ],
+                    "str_input" : "coin;plop",
+                    "file_input" : "./setup.py",
+                    "file_list_input": ["./setup.py", "./requirements.txt"],
+                    "list_int_input": [1, 2, 3],
+                    "config_num" : 4,
+                    "enum_input" : "val1"
+            },
+            "assertions": {
+                "exit-code": 0,
+                "output-files": [
+                    {
+                        "id": "logfile",
+                        "md5-reference": "8bb2564936980e92ceec8a5759ec34a8"
+                    }
+                ]
+            }
+        }
+    ]
 }

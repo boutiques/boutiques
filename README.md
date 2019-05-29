@@ -21,8 +21,8 @@ Simple! Just open your favourite terminal and type:
 
     $ pip install boutiques
 
-Alongside installing the Boutiques package, this will also ensure the dependencies are installed: `simplejson`, `jsonschema`, 
-`requests`, `pytest`, `termcolor`, `pyyaml`, `tabulate` and `mock`. 
+Alongside installing the Boutiques package, this will also ensure the dependencies are installed: `simplejson`, `jsonschema`,
+`requests`, `pytest`, `termcolor`, `pyyaml`, `tabulate` and `mock`.
 
 If you want the latest changes that aren't officially released yet, you can also install directly from GitHub:
 
@@ -36,14 +36,14 @@ you feel like you're getting stuck. Let's consider a few common use-cases...
 
 ### Search For Tools
 
-Perhaps someone has already described the tool you are looking for and 
-you could reuse their work. For instance, if you are looking for a tool 
+Perhaps someone has already described the tool you are looking for and
+you could reuse their work. For instance, if you are looking for a tool
 from the FSL suite, try:
 
     $ bosh search fsl
 
-Search returns a list of identifiers for tools matching your query. You 
-can use these identifiers in any `bosh` command transparently. Even 
+Search returns a list of identifiers for tools matching your query. You
+can use these identifiers in any `bosh` command transparently. Even
 better, these identifiers are [Digital Object Identifiers](https://www.doi.org)
 hosted on [Zenodo](https://zenodo.org/), they will never change and can't
 be deleted!
@@ -180,14 +180,11 @@ or which of our inputs are numbers and optional, we could do the following two q
 
 ### Publish Your Tool
 
-Congratulations on successfully running your analysis! So excited about your tool, you now want to share this descriptor with the world. This is
-the step which requires our GitHub libraries for Python which you got in the installation above - we're going to make a fork of the
-[NeuroLinks](https://brainhack101.github.io/neurolinks) repository, add your tool, and get everying queued up for you to submit a Pull Request
-back with the brand new addition. There is a fair bit of metadata we'll collect here, but the basics will be run with the following, assuming
-your descriptor lives in a Git-repo available at `/utility/belt/`, your name is `Batman`, and your tool lives at the url `http://thebatcave.io`
-(sorry to anyone who owns this url...):
+Congratulations on successfully running your analysis! So excited about your tool, you now want to share this descriptor with the world. Use the `publish` function in `bosh` - it will push your tool on the
+[Zenodo](https://zenodo.org/search?page=1&size=20&keywords=boutiques&keywords=schema&keywords=version&file_type=json&type=software)
+resource-sharing portal allowing other to use it:
 
-    $ bosh publish /utility/belt/ Batman http://thebatcave.io
+    $ bosh publish descriptor.json
 
 Your tool is now being shared in a packaged and fully described fashion, making it easier than ever to reproduce and extend your work! As always,
 learn more about this feature with `bosh publish -h`.

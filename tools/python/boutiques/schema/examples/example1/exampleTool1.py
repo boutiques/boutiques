@@ -31,7 +31,7 @@ def main(args=None):
                         nargs=1, help='A string in {"val1", "val2", "val3"}.')
     parser.add_argument('output_file',
                          help='The output file.')
-   
+    parser.add_argument('--no-opts', action='store_true', help='Ignore container options.')
 
     results=parser.parse_args() if args is None else parser.parse_args(args)
 
@@ -48,11 +48,12 @@ def main(args=None):
         sys.stderr.write("error: ENVAR environment variable must be set to 'theValue'.\n")
         sys.exit(1)
 
-    homeDir = os.getenv("HOME")
-    if homeDir != os.getenv("PWD"):
-        sys.stderr.write("error: HOME environment variable must be set to the current"
-                         " working directory.\n")
-        sys.exit(1)
+    if not results.no_opts:
+        homeDir = os.getenv("HOME")
+        if homeDir != os.getenv("PWD"):
+            sys.stderr.write("error: HOME environment variable must be set to the current"
+                             " working directory.\n")
+            sys.exit(1)
 
     with(open(results.config_file,'r')) as co:
         config_string = co.read()
