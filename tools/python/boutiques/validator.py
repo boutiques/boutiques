@@ -2,7 +2,7 @@
 
 import simplejson
 import os.path as op
-import json
+import simplejson as json
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
@@ -25,7 +25,7 @@ def validate_descriptor(json_file, **kwargs):
 
     # Load schema
     with open(schema_file) as fhandle:
-        schema = simplejson.load(fhandle)
+        schema = json.load(fhandle)
 
     # Load descriptor
     descriptor = loadJson(json_file)
