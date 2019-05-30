@@ -177,8 +177,6 @@ def execute(*params):
         arguments = [descriptor]
         if inp:
             arguments.append('-i', inp)
-        if results.complete:
-            arguments.append('-c')
         valid = invocation(*arguments)
 
         # Generate object that will perform the commands
@@ -187,7 +185,8 @@ def execute(*params):
                                  {"forcePathType": True,
                                   "destroyTempScripts": True,
                                   "changeUser": True,
-                                  "skipDataCollect": True})
+                                  "skipDataCollect": True,
+                                  "requireComplete": results.complete})
         if not inp:
             executor.generateRandomParams(1)
 
@@ -356,11 +355,7 @@ def invocation(*params):
                         help="If descriptor doesn't have an invocation "
                         "schema, creates one and writes it to the descriptor"
                         " file ")
-    parser.add_argument("-c", "--complete", action="store_true",
-                        help="Include optional parameters.")
-    parser.add_argument
     result = parser.parse_args(params)
-    print(result.complete)
     validate(result.descriptor)
     descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):

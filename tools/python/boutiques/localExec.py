@@ -750,9 +750,10 @@ class LocalExecutor(object):
         # Start actual dictionary filling part
         # Clear the dictionary
         self.in_dict = {}
-        # Fill in the required parameters
-        for reqp in [r for r in self.inputs if not r.get('optional')]:
-            self.in_dict[reqp['id']] = makeParam(reqp)
+        # Fill in the parameters depending on require complete
+        for params in [r for r in self.inputs
+                       if not r.get('optional') or self.requireComplete]:
+            self.in_dict[params['id']] = makeParam(params)
 
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
