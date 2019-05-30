@@ -176,7 +176,8 @@ def execute(*params):
 
         arguments = [descriptor]
         if inp:
-            arguments.append('-i', inp)
+            arguments.append('-i')
+            arguments.append(inp)
         valid = invocation(*arguments)
 
         # Generate object that will perform the commands
