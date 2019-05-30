@@ -754,6 +754,13 @@ class LocalExecutor(object):
         for params in [r for r in self.inputs
                        if not r.get('optional') or self.requireComplete]:
             self.in_dict[params['id']] = makeParam(params)
+            # Check for mutex between in_dict and last in param
+            for group, mbs in [(x, x["members"]) for x in self.groups
+                               if x.get('mutually-exclusive')]:
+                if len(set.intersection(set(mbs),
+                                        set(self.in_dict.keys()))) > 1:
+                    # Delete last in param
+                    del self.in_dict[params['id']]
 
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
