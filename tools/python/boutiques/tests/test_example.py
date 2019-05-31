@@ -7,17 +7,33 @@ from boutiques.validator import DescriptorValidationError
 import subprocess
 import os.path as op
 import os
+import simplejson as json
 
 
 class TestExample(TestCase):
 
-    def test_example_complete_mutex_params(self):
-        schema = op.join(op.split(bfile)[0], 'schema/examples/good.json')
-        command = ("bosh example " + schema + " -c")
+    def test_example_complete(self):
+        descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
+                                                 'example-invocation/'
+                                                 'example_descriptor.json')
+        command = ("bosh example " + descriptor + " -c")
         process = subprocess.Popen(command, shell=True,
-                                   stderr=subprocess.PIPE)
-        expected = op.join(op.split(bfile)[0],
-                           'schema/examples/good_invocation.json')
+                                   stdout=subprocess.PIPE)
+        output = json.loads(process.stdout.read())
+
+        self.assertTrue(output["a1"] or output["a2"])
+        self.assertDictContainsSubset({"b1": "b1", "b2": "b2", "c1": "c1",
+                                       "c2": "c2"}, output)
+
+    def test_example(self):
+        descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
+                                                 'example-invocation/'
+                                                 'example_descriptor.json')
+        command = ("bosh example " + descriptor)
         process = subprocess.Popen(command, shell=True,
-                                   stderr=subprocess.PIPE)
-        print(expected)
+                                   stdout=subprocess.PIPE)
+        output = json.loads(process.stdout.read())
+
+        # Can't assert more than the required params because
+        # params are randomly selected
+        self.assertDictContainsSubset({"b1": "b1", "c2": "c2"}, output)
