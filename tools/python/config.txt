@@ -1,3 +1,0 @@
-# This is a demo configuration file
-numInput=4
-strInput=str_str_input_MU

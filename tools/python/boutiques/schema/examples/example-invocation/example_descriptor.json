@@ -1,0 +1,116 @@
+{
+    "command-line": "test", 
+    "container-image": {
+        "entrypoint": false, 
+        "image": "neurodata/ndmg:v0.0.41-1", 
+        "index": "index.docker.io", 
+        "type": "docker"
+    }, 
+    "description": "test descriptor for bosh example", 
+    "error-codes": [
+        {
+            "code": 1, 
+            "description": "crashed"
+        }, 
+        {
+            "code": 12, 
+            "description": "crashed badly"
+        }
+    ], 
+    "groups": [
+        {
+            "all-or-none": true, 
+            "id": "all_or_none_a1_b2", 
+            "members": [
+                "a1",
+                "b2"
+            ], 
+            "name": "these guys have to be toggled together"
+        }, 
+        {
+            "mutually-exclusive": true,
+            "id": "mutex_b1_b2", 
+            "members": [
+                "b1",
+                "b2"
+            ], 
+            "name": "group of mutually-exclusive inputs"
+        }, 
+        {
+            "mutually-exclusive": true,
+            "one-is-required": true,
+            "id": "mutex_a1_a2", 
+            "members": [
+                "a1",
+                "a2"
+            ],
+            "name": "Needs one and only one of the two"
+        }, 
+        {
+            "one-is-required": true,
+            "id": "one_is_required_c1", 
+            "members": [
+                "c1"
+            ], 
+            "name": "Group of all used parcellations"
+        }
+    ], 
+    "inputs": [
+        {
+            "id": "a1", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["a1"]
+        },
+        {
+            "id": "a2", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["a2"]
+        },
+        {
+            "id": "b1", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["b1"]
+        },
+        {
+            "id": "b2", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["b2"]
+        },
+        {
+            "id": "c1", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["c1"]
+        },
+        {
+            "id": "c2", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["c2"]
+        }
+    ],
+    "name": "test", 
+    "output-files": [
+        {
+            "id": "test", 
+            "name": "test", 
+            "optional": true, 
+            "path-template": "test", 
+            "path-template-stripped-extensions": [
+                ".test"
+            ]
+        }
+    ], 
+    "schema-version": "0.5", 
+    "tool-version": "v0.0.41-1"
+}

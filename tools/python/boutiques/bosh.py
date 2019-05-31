@@ -466,6 +466,32 @@ def search(*params):
     return searcher.search()
 
 
+def example(*params):
+    parser = ArgumentParser("Generates example invocation from a valid"
+                            "descriptor")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor as a JSON file, "
+                        "JSON string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("-c", "--complete", action="store_true",
+                        help="Include optional parameters.")
+    results = parser.parse_args(params)
+
+    descriptor = results.descriptor
+    valid = invocation(descriptor)
+
+    # Generate object that will perform the commands
+    from boutiques.localExec import LocalExecutor
+    executor = LocalExecutor(descriptor, None,
+                             {"forcePathType": True,
+                              "destroyTempScripts": True,
+                              "changeUser": True,
+                              "skipDataCollect": True,
+                              "requireComplete": results.complete})
+    executor.generateRandomParams(1)
+
+    return json.dumps(executor.in_dict, indent=4, sort_keys=True)
+
+
 def pull(*params):
     parser = ArgumentParser("Ensures that Zenodo descriptors are locally "
                             "cached, downloading them if needed.")
@@ -636,9 +662,8 @@ def bosh(args=None):
             return bosh_return(out, out.exit_code,
                                hide=bool(out.container_location == 'hide'))
         elif func == "example":
-            out = execute('simulate', '-j', *params)
-            return bosh_return(out, out.exit_code,
-                               hide=bool(out.container_location == 'hide'))
+            out = example(*params)
+            return bosh_return(out)
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)

@@ -507,9 +507,9 @@ class LocalExecutor(object):
                                                 sing_command)
         if return_code:
             message = ("Could not pull Singularity"
-                       " image: " + os.linesep + " * Pull command: "
-                       + sing_command + os.linesep + " * Error: "
-                       + stderr.decode("utf-8"))
+                       " image: " + os.linesep + " * Pull command: " +
+                       sing_command + os.linesep + " * Error: " +
+                       stderr.decode("utf-8"))
             raise_error(ExecutorError, message)
         os.rename(op.join(imageDir, conNameTmp), op.join(imageDir, conName))
         conPath = op.abspath(op.join(imageDir, conName))
@@ -530,8 +530,8 @@ class LocalExecutor(object):
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
                                   forceDocker=False):
         if (self._isDockerInstalled() and
-                (conType == 'docker' and not forceSing
-                    or forceDocker)):
+                (conType == 'docker' and not forceSing or
+                 forceDocker)):
             return "docker"
         else:
             return "singularity"
@@ -1072,8 +1072,8 @@ class LocalExecutor(object):
             # If the input parameter is bad, it adds 'msg' to the list of errors
             def check(keyname, isGood, msg, value):  # Checks input values
                 # No need to check constraints if they were not specified
-                dontCheck = ((keyname not in list(targ.keys()))
-                             or (targ[keyname] is False))
+                dontCheck = ((keyname not in list(targ.keys())) or
+                             (targ[keyname] is False))
                 # Keyname = None is a flag to check the type
                 if (keyname is not None) and dontCheck:
                     return
