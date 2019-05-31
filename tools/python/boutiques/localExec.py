@@ -948,7 +948,11 @@ class LocalExecutor(object):
                 template = template.replace(clk, str(val))
             else:  # param has no value
                 if unfound_keys == "remove":
-                    template = template.replace(clk, '')
+                    if template.index(clk) is not 0 and \
+                       template[template.index(clk) - 1].isspace():
+                        template = template.replace(' ' + clk, '')
+                    else:
+                        template = template.replace(clk, '')
                 elif unfound_keys == "clear":
                     if clk in template:
                         return ""
