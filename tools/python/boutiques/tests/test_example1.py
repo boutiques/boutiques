@@ -355,7 +355,6 @@ class TestExample1(BaseTest):
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation_no_opts.json"),
                            "--skip-data-collection")
-
         self.assert_successful_return(
             ret, ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)

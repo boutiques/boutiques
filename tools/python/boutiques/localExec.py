@@ -976,6 +976,9 @@ class LocalExecutor(object):
             template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
+            dirs = os.path.dirname(fileName)
+            if dirs and not os.path.exists(dirs):
+                os.makedirs(dirs)
             file = open(fileName, 'w')
             file.write(template)
             file.close()
