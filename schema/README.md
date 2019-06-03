@@ -1688,7 +1688,7 @@ Estimated wall time of a task in seconds.
 
 ## tags
 
-An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.
+A set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.
 
 `tags`
 * is optional
