@@ -16,6 +16,12 @@
             "description": "Tool version.",
             "type": "string"
         },
+        "bids-exec-version": {
+            "id": "http://github.com/boutiques/boutiques-schema/bids-exec-version",
+            "minLength": 1,
+            "description": "When the tool is a BIDS app, version of the BIDSExecution specification it complies too.",
+            "type": "string"
+        },
         "description": {
             "id": "http://github.com/boutiques/boutiques-schema/description",
             "minLength": 1,
