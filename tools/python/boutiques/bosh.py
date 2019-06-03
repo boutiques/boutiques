@@ -165,14 +165,20 @@ def execute(*params):
                             help="Input JSON complying to invocation.")
         parser.add_argument("-j", "--json", action="store_true",
                             help="Flag to generate invocation in JSON format.")
+        parser.add_argument("-c", "--complete", action="store_true",
+                            help="Include optional parameters.")
         results = parser.parse_args(params)
+
         descriptor = results.descriptor
 
         # Do some basic input scrubbing
         inp = results.input
 
-        valid = invocation(descriptor, '-i', inp) if inp else\
-            invocation(descriptor)
+        arguments = [descriptor]
+        if inp:
+            arguments.append('-i')
+            arguments.append(inp)
+        valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -180,7 +186,8 @@ def execute(*params):
                                  {"forcePathType": True,
                                   "destroyTempScripts": True,
                                   "changeUser": True,
-                                  "skipDataCollect": True})
+                                  "skipDataCollect": True,
+                                  "requireComplete": results.complete})
         if not inp:
             executor.generateRandomParams(1)
 
@@ -350,7 +357,6 @@ def invocation(*params):
                         "schema, creates one and writes it to the descriptor"
                         " file ")
     result = parser.parse_args(params)
-
     validate(result.descriptor)
     descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
@@ -458,6 +464,32 @@ def search(*params):
                         result.max, result.no_trunc, result.exact)
 
     return searcher.search()
+
+
+def example(*params):
+    parser = ArgumentParser("Generates example invocation from a valid"
+                            "descriptor")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor as a JSON file, "
+                        "JSON string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("-c", "--complete", action="store_true",
+                        help="Include optional parameters.")
+    results = parser.parse_args(params)
+
+    descriptor = results.descriptor
+    valid = invocation(descriptor)
+
+    # Generate object that will perform the commands
+    from boutiques.localExec import LocalExecutor
+    executor = LocalExecutor(descriptor, None,
+                             {"forcePathType": True,
+                              "destroyTempScripts": True,
+                              "changeUser": True,
+                              "skipDataCollect": True,
+                              "requireComplete": results.complete})
+    executor.generateRandomParams(1)
+
+    return json.dumps(executor.in_dict, indent=4, sort_keys=True)
 
 
 def pull(*params):
@@ -588,17 +620,19 @@ DATA COLLECTION
 * data: manage execution data collection.
 
 OTHER
-* evaluate: given an invocation and a descriptor, queries execution properties.
-* invocation: generate or validate inputs against the invocation schema for a given descriptor.
+* evaluate: given an invocation and a descriptor,queries execution properties.
+* invocation: generate or validate inputs against the invocation schema
+* for a given descriptor.
 * version: print the Boutiques version.
 '''
     parser.add_argument("function", action="store", nargs="?",
                         help=helptext,
                         choices=sorted(
-                                ["create", "validate", "exec", "import",
-                                 "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "data",
-                                 "pprint", "version"]))
+                                ["create", "validate", "exec",
+                                 "import", "export", "publish",
+                                 "invocation", "evaluate", "test",
+                                 "example", "search", "pull",
+                                 "data", "pprint", "version"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -642,9 +676,8 @@ OTHER
             return bosh_return(out, out.exit_code,
                                hide=bool(out.container_location == 'hide'))
         elif func == "example":
-            out = execute('simulate', '-j', *params)
-            return bosh_return(out, out.exit_code,
-                               hide=bool(out.container_location == 'hide'))
+            out = example(*params)
+            return bosh_return(out)
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)

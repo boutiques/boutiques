@@ -475,9 +475,9 @@ class LocalExecutor(object):
                                                 sing_command)
         if return_code:
             message = ("Could not pull Singularity"
-                       " image: " + os.linesep + " * Pull command: "
-                       + sing_command + os.linesep + " * Error: "
-                       + stderr.decode("utf-8"))
+                       " image: " + os.linesep + " * Pull command: " +
+                       sing_command + os.linesep + " * Error: " +
+                       stderr.decode("utf-8"))
             raise_error(ExecutorError, message)
         os.rename(op.join(imageDir, conNameTmp), op.join(imageDir, conName))
         conPath = op.abspath(op.join(imageDir, conName))
@@ -498,8 +498,8 @@ class LocalExecutor(object):
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
                                   forceDocker=False):
         if (self._isDockerInstalled() and
-                (conType == 'docker' and not forceSing
-                    or forceDocker)):
+                (conType == 'docker' and not forceSing or
+                 forceDocker)):
             return "docker"
         else:
             return "singularity"
@@ -718,9 +718,17 @@ class LocalExecutor(object):
         # Start actual dictionary filling part
         # Clear the dictionary
         self.in_dict = {}
-        # Fill in the required parameters
-        for reqp in [r for r in self.inputs if not r.get('optional')]:
-            self.in_dict[reqp['id']] = makeParam(reqp)
+        # Fill in the parameters depending on require complete
+        for params in [r for r in self.inputs
+                       if not r.get('optional') or self.requireComplete]:
+            self.in_dict[params['id']] = makeParam(params)
+            # Check for mutex between in_dict and last in param
+            for group, mbs in [(x, x["members"]) for x in self.groups
+                               if x.get('mutually-exclusive')]:
+                if len(set.intersection(set(mbs),
+                                        set(self.in_dict.keys()))) > 1:
+                    # Delete last in param
+                    del self.in_dict[params['id']]
 
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
@@ -764,7 +772,8 @@ class LocalExecutor(object):
                 continue
             # Fill in the target(s) otherwise
             for r in result:
-                self.in_dict[r['id']] = makeParam(r)
+                if self.requireComplete is None or self.requireComplete:
+                    self.in_dict[r['id']] = makeParam(r)
 
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
@@ -1035,8 +1044,8 @@ class LocalExecutor(object):
             # If the input parameter is bad, it adds 'msg' to the list of errors
             def check(keyname, isGood, msg, value):  # Checks input values
                 # No need to check constraints if they were not specified
-                dontCheck = ((keyname not in list(targ.keys()))
-                             or (targ[keyname] is False))
+                dontCheck = ((keyname not in list(targ.keys())) or
+                             (targ[keyname] is False))
                 # Keyname = None is a flag to check the type
                 if (keyname is not None) and dontCheck:
                     return
