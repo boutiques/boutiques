@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import re
+import subprocess
 from unittest import TestCase
 import simplejson as json
 from boutiques import __file__ as bfile
@@ -155,3 +157,29 @@ class TestSimulate(TestCase):
                                                      os.path.join(
                                                        example1_dir,
                                                        "example1_docker.json")])
+
+    def test_collapsing_whitespace_optionals(self):
+        descriptor = os.path.join(os.path.split(bfile)[0],
+                                  'schema/examples/'
+                                  'example-invocation/'
+                                  'example_descriptor.json')
+        command = ("bosh exec simulate " + descriptor + " -c")
+        process = subprocess.Popen(command, shell=True,
+                                   stdout=subprocess.PIPE)
+        output = str(process.stdout.read())
+        command = re.search(r"(test[ \da-z]+)", output).group(0)
+
+        self.assertEqual("test a1 b1 b2 c1 c2", command)
+
+    def test_collapsing_whitespace_requireds(self):
+        descriptor = os.path.join(os.path.split(bfile)[0],
+                                  'schema/examples/'
+                                  'example-invocation/'
+                                  'example_descriptor.json')
+        command = ("bosh exec simulate " + descriptor)
+        process = subprocess.Popen(command, shell=True,
+                                   stdout=subprocess.PIPE)
+        output = str(process.stdout.read())
+        command = re.search(r"(test[ \da-z]+)", output).group(0)
+
+        self.assertEqual("test b1 c2", command)
