@@ -589,7 +589,7 @@ DATA COLLECTION
 
 OTHER
 * evaluate: given an invocation and a descriptor, queries execution properties.
-* invocation: generate the invocation schema for a given descriptor.
+* invocation: generate or validate inputs against the invocation schema for a given descriptor.
 * version: print the Boutiques version.
 '''
     parser.add_argument("function", action="store", nargs="?",
