@@ -568,7 +568,7 @@ def bosh(args=None):
 TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
 * export: export a descriptor to other formats.
-* import: create a descriptor for a BIDS app or updates a descriptor from \
+* import: create a descriptor for a BIDS app or update a descriptor from \
     an older version of the schema.
 * validate: validate an existing boutiques descriptor.
 
