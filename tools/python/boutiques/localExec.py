@@ -804,7 +804,8 @@ class LocalExecutor(object):
                 continue
             # Fill in the target(s) otherwise
             for r in result:
-                self.in_dict[r['id']] = makeParam(r)
+                if self.requireComplete is None or self.requireComplete:
+                    self.in_dict[r['id']] = makeParam(r)
 
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
