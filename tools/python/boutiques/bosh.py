@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import jsonschema
-import json
+import simplejson as json
 import os
 import sys
 import os.path as op
@@ -16,7 +16,8 @@ from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
-from boutiques.localExec import loadJson, addDefaultValues
+from boutiques.localExec import addDefaultValues
+from boutiques.util.utils import loadJson
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
@@ -121,6 +122,17 @@ def execute(*params):
         parser.add_argument("--imagepath", action="store",
                             help="Path to Singularity image. "
                             "If not specified, will use current directory.")
+        parser.add_argument("--skip-data-collection", action="store_true",
+                            help="Skips execution data collection and saving"
+                            "to cache.")
+        force_group = parser.add_mutually_exclusive_group()
+        force_group.add_argument("--force-docker", action="store_true",
+                                 help="Tries to run Singularity images with "
+                                 "Docker. This only works if the image is on"
+                                 "Docker Hub, i.e. has index docker://")
+        force_group.add_argument("--force-singularity", action="store_true",
+                                 help="Tries to run Docker images with "
+                                 "Singularity.")
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -135,7 +147,12 @@ def execute(*params):
                                   "debug": results.debug,
                                   "changeUser": results.user,
                                   "stream": results.stream,
-                                  "imagePath": results.imagepath})
+                                  "imagePath": results.imagepath,
+                                  "skipDataCollect":
+                                      results.skip_data_collection,
+                                  "forceDocker": results.force_docker,
+                                  "forceSingularity":
+                                      results.force_singularity})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -148,21 +165,29 @@ def execute(*params):
                             help="Input JSON complying to invocation.")
         parser.add_argument("-j", "--json", action="store_true",
                             help="Flag to generate invocation in JSON format.")
+        parser.add_argument("-c", "--complete", action="store_true",
+                            help="Include optional parameters.")
         results = parser.parse_args(params)
+
         descriptor = results.descriptor
 
         # Do some basic input scrubbing
         inp = results.input
 
-        valid = invocation(descriptor, '-i', inp) if inp else\
-            invocation(descriptor)
+        arguments = [descriptor]
+        if inp:
+            arguments.append('-i')
+            arguments.append(inp)
+        valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor, inp,
                                  {"forcePathType": True,
                                   "destroyTempScripts": True,
-                                  "changeUser": True})
+                                  "changeUser": True,
+                                  "skipDataCollect": True,
+                                  "requireComplete": results.complete})
         if not inp:
             executor.generateRandomParams(1)
 
@@ -207,7 +232,8 @@ def execute(*params):
                                  {"forcePathType": True,
                                   "debug": results.debug,
                                   "stream": results.stream,
-                                  "imagePath": results.imagepath})
+                                  "imagePath": results.imagepath,
+                                  "skipDataCollect": True})
         container_location = executor.prepare()[1]
         print("Container location: " + container_location)
 
@@ -331,7 +357,6 @@ def invocation(*params):
                         "schema, creates one and writes it to the descriptor"
                         " file ")
     result = parser.parse_args(params)
-
     validate(result.descriptor)
     descriptor = loadJson(result.descriptor)
     if descriptor.get("invocation-schema"):
@@ -372,7 +397,8 @@ def evaluate(*params):
     executor = LocalExecutor(result.descriptor, result.invocation,
                              {"forcePathType": True,
                               "destroyTempScripts": True,
-                              "changeUser": True})
+                              "changeUser": True,
+                              "skipDataCollect": True})
 
     from boutiques.evaluate import evaluateEngine
     query_results = []
@@ -423,7 +449,7 @@ def search(*params):
     parser.add_argument("--sandbox", action="store_true",
                         help="search Zenodo's sandbox instead of "
                         "production server. Recommended for tests.")
-    parser.add_argument("-m", "--max", action="store",
+    parser.add_argument("-m", "--max", action="store", type=int,
                         help="Specify the maximum number of results "
                         "to be returned. Default is 10.")
     parser.add_argument("-nt", "--no-trunc", action="store_true",
@@ -440,12 +466,40 @@ def search(*params):
     return searcher.search()
 
 
-def pull(*params):
-    parser = ArgumentParser("Download a descriptor from Zenodo.")
+def example(*params):
+    parser = ArgumentParser("Generates example invocation from a valid"
+                            "descriptor")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor as a JSON file, "
+                        "JSON string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("-c", "--complete", action="store_true",
+                        help="Include optional parameters.")
+    results = parser.parse_args(params)
 
-    parser.add_argument("zid", action="store", help="Zenodo ID "
-                        "of the descriptor to pull, prefixed by "
-                        "'zenodo.', e.g. zenodo.123456")
+    descriptor = results.descriptor
+    valid = invocation(descriptor)
+
+    # Generate object that will perform the commands
+    from boutiques.localExec import LocalExecutor
+    executor = LocalExecutor(descriptor, None,
+                             {"forcePathType": True,
+                              "destroyTempScripts": True,
+                              "changeUser": True,
+                              "skipDataCollect": True,
+                              "requireComplete": results.complete})
+    executor.generateRandomParams(1)
+
+    return json.dumps(executor.in_dict, indent=4, sort_keys=True)
+
+
+def pull(*params):
+    parser = ArgumentParser("Ensures that Zenodo descriptors are locally "
+                            "cached, downloading them if needed.")
+
+    parser.add_argument("zids", nargs="+", action="store", help="One or "
+                        "more Zenodo IDs for the descriptor(s) to pull, "
+                        "prefixed by 'zenodo.', e.g. zenodo.123456 "
+                        "zenodo.123457")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print information messages")
     parser.add_argument("--sandbox", action="store_true",
@@ -455,37 +509,130 @@ def pull(*params):
     result = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.zid, result.verbose, result.sandbox)
+    puller = Puller(result.zids, result.verbose, result.sandbox)
     return puller.pull()
 
 
+def data(*params):
+    parser = ArgumentParser("Manage execution data collection.", add_help=False)
+
+    parser.add_argument("action", action="store",
+                        help="Manage execution data records. Inspect: displays "
+                        "the unpublished records currently in the cache. "
+                        "Publish: publishes contents of cache to Zenodo as "
+                        "a public data set. Requires a Zenodo access token, "
+                        "see http://developers.zenodo.org/#authentication. "
+                        "Delete: remove one or more records from the cache.",
+                        choices=["inspect", "publish", "delete"])
+    parser.add_argument("--help", "-h", action="store_true",
+                        help="show this help message and exit")
+
+    helps = any([True for ht in ["--help", "-h"] if ht in params])
+    if len(params) <= 1 and helps:
+        parser.print_help()
+        raise SystemExit
+
+    args, params = parser.parse_known_args(params)
+    action = args.action
+    params += ["--help"] if args.help is True else []
+
+    if action == "inspect":
+        parser = ArgumentParser("Displays contents of cache")
+        parser.add_argument("-e", "--example", action="store_true",
+                            help="Display example data file contents.")
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.inspect(results.example)
+
+    if action == "publish":
+        parser = ArgumentParser("Publishes record(s) to a Zenodo data set.")
+        parser.add_argument("-a", "--author", action="store",
+                            help="Set the author name for the data set "
+                            "publication. Defaults to anonymous.")
+        parser.add_argument("-f", "--file", action="store",
+                            help="Filename of record to publish alone as a "
+                            "data set.")
+        parser.add_argument("-i", "--individually", action="store_true",
+                            help="Publishes all data files in cache as "
+                            "independent data sets, By Default will publish "
+                            "files in bulk data sets.")
+        parser.add_argument("--no-int", '-y', action="store_true",
+                            help="disable interactive input.")
+        parser.add_argument("-v", "--verbose", action="store_true",
+                            help="print information messages.")
+        parser.add_argument("--sandbox", action="store_true",
+                            help="publish to Zenodo's sandbox instead of "
+                            "production server. Recommended for tests.")
+        parser.add_argument("--zenodo-token", action="store",
+                            help="Zenodo API token to use for authentication. "
+                            "If not used, token will be read from "
+                            "configuration file or requested interactively.")
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.publish(results.file, results.zenodo_token,
+                                   results.author, results.individually,
+                                   results.sandbox, results.no_int,
+                                   results.verbose)
+
+    if action == "delete":
+        parser = ArgumentParser("Delete data record(s) in cache.")
+        parser.add_argument("-f", "--file", action="store",
+                            help="Filename of record to delete.")
+        parser.add_argument("--no-int", '-y', action="store_true",
+                            help="disable interactive input.")
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.delete(results.file, results.no_int)
+
+
 def bosh(args=None):
-    parser = ArgumentParser(description="Driver for Bosh functions",
-                            add_help=False)
+    parser = ArgumentParser(add_help=False,
+                            formatter_class=RawTextHelpFormatter)
+    helptext = r'''
+               BOUTIQUES COMMANDS
+
+TOOL CREATION
+* create: create a Boutiques descriptor from scratch.
+* export: export a descriptor to other formats.
+* import: create a descriptor for a BIDS app or update a descriptor from \
+    an older version of the schema.
+* validate: validate an existing boutiques descriptor.
+
+TOOL USAGE & EXECUTION
+* example: generate example command-line for descriptor.
+* pprint: generate pretty help text from a descriptor.
+* exec: launch or simulate an execution given a descriptor and a set of inputs.
+* test: run pytest on a descriptor detailing tests.
+
+TOOL SEARCH & PUBLICATION
+* publish: create an entry in Zenodo for the descriptor and adds the DOI \
+    created by Zenodo to the descriptor.
+* pull: download a descriptor from Zenodo.
+* search: search Zenodo for descriptors.
+
+DATA COLLECTION
+* data: manage execution data collection.
+
+OTHER
+* evaluate: given an invocation and a descriptor,queries execution properties.
+* invocation: generate or validate inputs against the invocation schema
+* for a given descriptor.
+* version: print the Boutiques version.
+'''
     parser.add_argument("function", action="store", nargs="?",
-                        help="The tool within boutiques/bosh you wish to run. "
-                        "Create: creates an Boutiques descriptor from scratch. "
-                        "Validate: validates an existing boutiques descriptor. "
-                        "Exec: launches or simulates an execution given a "
-                        "descriptor and a set of inputs. Import: creates a "
-                        "descriptor for a BIDS app or updates a descriptor "
-                        "from an older version of the schema. Export: exports a"
-                        "descriptor to other formats. Publish: creates"
-                        "an entry in Zenodo for the descriptor and "
-                        "adds the DOI created by Zenodo to the descriptor. "
-                        "Invocation: generates the invocation schema for a "
-                        "given descriptor. Evaluate: given an invocation and a "
-                        "descriptor, queries execution properties. "
-                        "Test: run pytest on a descriptor detailing tests. "
-                        "Example: Generates example command-line for descriptor"
-                        ". Search: search Zenodo for descriptors. "
-                        "Pull: download a descriptor from Zenodo. "
-                        "Pprint: generate pretty help text from a descriptor."
-                        "Version: prints the version of this tool.",
-                        choices=["create", "validate", "exec", "import",
-                                 "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "pprint",
-                                 "version"])
+                        help=helptext,
+                        choices=sorted(
+                                ["create", "validate", "exec",
+                                 "import", "export", "publish",
+                                 "invocation", "evaluate", "test",
+                                 "example", "search", "pull",
+                                 "data", "pprint", "version"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -529,9 +676,8 @@ def bosh(args=None):
             return bosh_return(out, out.exit_code,
                                hide=bool(out.container_location == 'hide'))
         elif func == "example":
-            out = execute('simulate', '-j', *params)
-            return bosh_return(out, out.exit_code,
-                               hide=bool(out.container_location == 'hide'))
+            out = example(*params)
+            return bosh_return(out)
         elif func == "import":
             out = importer(*params)
             return bosh_return(out)
@@ -560,6 +706,9 @@ def bosh(args=None):
         elif func == "pull":
             out = pull(*params)
             return bosh_return(out, hide=True)
+        elif func == "data":
+            out = data(*params)
+            return bosh_return(out)
         elif func == "version":
             from boutiques.__version__ import VERSION
             return bosh_return(VERSION)

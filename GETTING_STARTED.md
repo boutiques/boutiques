@@ -46,7 +46,7 @@ From within your virtual environment in the `boutiques/tools/python` directory:
 - From the `boutiques/tools/python` directory, build the example Docker image with the following command:
   - Note: skip the following step if you do not have Docker installed.
   - `docker build -t boutiques/example1:test ./boutiques/schema/examples/example1`
-- Once the Docker image is built, convert it to a Singularity image. Again, from within the `boutiques/python/tools` directory:
+- Once the Docker image is built, convert it to a Singularity image. Again, from within the `boutiques/tools/python` directory:
   - Note: skip the following steps if you do not have Singularity installed.
   - `docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity boutiques/example1:test`
   - `IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)`

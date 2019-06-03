@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import json
+import simplejson as json
 import os
 import uuid
-from boutiques.localExec import loadJson
+from boutiques.util.utils import loadJson
 from boutiques.logger import raise_error
 
 

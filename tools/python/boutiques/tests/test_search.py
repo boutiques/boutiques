@@ -44,40 +44,41 @@ class TestSearch(TestCase):
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_all(self, mocked_get):
         results = bosh(["search"])
-        assert(len(results) > 0)
-        assert(list(results[0].keys()) == ["ID", "TITLE", "DESCRIPTION",
-                                           "DOWNLOADS"])
+        self.assertGreater(len(results), 0)
+        self.assertEqual(list(results[0].keys()),
+                         ["ID", "TITLE", "DESCRIPTION",
+                          "DOWNLOADS"])
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_query(self, mock_get):
         results = bosh(["search", "Example Tool 5"])
-        assert(len(results) > 0)
-        assert(any(d['TITLE'] == 'Example Tool 5' for d in results))
-        assert(any(d['TITLE'] == 'foo-Example Tool 5' for d in results))
-        assert(any(d['TITLE'] == 'Example Tool 5-bar' for d in results))
+        self.assertGreater(len(results), 0)
+        self.assertIn('Example Tool 5', [d['TITLE'] for d in results])
+        self.assertIn('foo-Example Tool 5', [d['TITLE'] for d in results])
+        self.assertIn('Example Tool 5-bar', [d['TITLE'] for d in results])
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_exact_match(self, mock_get):
         results = bosh(["search", "Example Tool 5", "--exact"])
-        print(results)
-        assert(len(results) > 0)
-        assert(any(d['TITLE'] == 'Example Tool 5' for d in results))
-        assert(not any(d['TITLE'] == 'foo-Example Tool 5' for d in results))
-        assert(not any(d['TITLE'] == 'Example Tool 5-bar' for d in results))
+        self.assertGreater(len(results), 0)
+        self.assertIn('Example Tool 5', [d['TITLE'] for d in results])
+        self.assertNotIn('foo-Example Tool 5', [d['TITLE'] for d in results])
+        self.assertNotIn('Example Tool 5-bar', [d['TITLE'] for d in results])
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_verbose(self, mock_get):
         results = bosh(["search", "-v"])
-        assert(len(results) > 0)
-        assert(list(results[0].keys()) == ["ID", "TITLE", "DESCRIPTION",
-                                           "DOWNLOADS", "AUTHOR", "VERSION",
-                                           "DOI", "SCHEMA VERSION",
-                                           "CONTAINER", "TAGS"])
+        self.assertGreater(len(results), 0)
+        self.assertEqual(list(results[0].keys()),
+                         ["ID", "TITLE", "DESCRIPTION",
+                          "DOWNLOADS", "AUTHOR", "VERSION",
+                          "DOI", "SCHEMA VERSION",
+                          "CONTAINER", "TAGS"])
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_specify_max_results(self, mock_get):
         results = bosh(["search", "-m", "20"])
-        assert(len(results) == 20)
+        self.assertEqual(len(results), 20)
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_sorts_by_num_downloads(self, mock_get):
@@ -85,15 +86,14 @@ class TestSearch(TestCase):
         downloads = []
         for r in results:
             downloads.append(r["DOWNLOADS"])
-        assert(all(downloads[i] >= downloads[i+1]
-               for i in range(len(downloads)-1)))
+        self.assertEqual(sorted(downloads, reverse=True), downloads)
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_truncates_long_text(self, mock_get):
         results = bosh(["search"])
         for r in results:
             for k, v in r.items():
-                assert(len(str(v)) <= 43)
+                self.assertLessEqual(len(str(v)), 43)
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_search_no_trunc(self, mock_get):
@@ -107,4 +107,4 @@ class TestSearch(TestCase):
             else:
                 continue
             break
-        assert(has_no_trunc)
+        self.assertTrue(has_no_trunc)

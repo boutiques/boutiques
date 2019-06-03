@@ -7,7 +7,7 @@ from boutiques import __file__ as bfile
 import boutiques.creator as bc
 import subprocess
 import os.path as op
-import json
+import simplejson as json
 import os
 import pytest
 
@@ -19,17 +19,17 @@ class TestCreator(TestCase):
     def test_success_template(self):
         fil = 'creator_output.json'
         descriptor = bosh(['create', fil])
-        assert bosh(['validate', fil]) is None
+        self.assertIsNone(bosh(['validate', fil]))
 
     def test_success_docker(self):
         fil = 'creator_output.json'
         descriptor = bosh(['create', '-d', 'mysql:latest', fil])
-        assert bosh(['validate', fil]) is None
+        self.assertIsNone(bosh(['validate', fil]))
 
     def test_success_docker_sing_import(self):
         fil = 'creator_output.json'
         descriptor = bosh(['create', '-d', 'mysql:latest', '-u', fil])
-        assert bosh(['validate', fil]) is None
+        self.assertIsNone(bosh(['validate', fil]))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
@@ -84,5 +84,5 @@ class TestCreator(TestCase):
         with open(invof, 'w') as fhandle:
             fhandle.write(json.dumps(invo, indent=4))
 
-        assert bosh(['validate', fil]) is None
-        assert bosh(['invocation', fil, '-i', invof]) is None
+        self.assertIsNone(bosh(['validate', fil]))
+        self.assertIsNone(bosh(['invocation', fil, '-i', invof]))

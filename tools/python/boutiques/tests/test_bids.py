@@ -7,7 +7,7 @@ from boutiques import __file__ as bofile
 from jsonschema.exceptions import ValidationError
 from boutiques.validator import DescriptorValidationError
 import os.path as op
-import json
+import simplejson as json
 import os
 
 

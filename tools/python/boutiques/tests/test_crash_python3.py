@@ -16,7 +16,7 @@ class TestCrashPython3(TestCase):
                             "schema", "examples")
 
     def test_no_container(self):
-        command = ("bosh exec launch "
+        command = ("bosh exec launch --skip-data-collection "
                    "{0} {1}".format(opj(self.get_examples_dir(),
                                         "crash3.json"),
                                     opj(self.get_examples_dir(),
@@ -26,5 +26,4 @@ class TestCrashPython3(TestCase):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         stdout = process.stdout.read().decode("utf-8").strip()
-        print(stdout)
-        self.assertTrue("Could not pull Singularity image" in stdout)
+        self.assertIn("Could not pull Singularity image", stdout)

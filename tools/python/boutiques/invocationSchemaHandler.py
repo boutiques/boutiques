@@ -4,7 +4,6 @@
 # validation for Boutiques application descriptors
 # Requires jsonschema 2.5
 
-import json
 import jsonschema
 import os
 import sys

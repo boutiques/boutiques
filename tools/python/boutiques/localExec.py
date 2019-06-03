@@ -1,20 +1,22 @@
 #!/usr/bin/env python
 
-import argparse
 import os
 import sys
-import json
+import simplejson as json
 import random as rnd
 import string
 import math
 import random
 import subprocess
 import time
-import pwd
+import datetime
+import hashlib
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
-from boutiques.logger import raise_error, print_info
+from boutiques.logger import raise_error, print_info, print_warning
+from boutiques.dataHandler import getDataCacheDir
+from boutiques.util.utils import extractFileName, loadJson
 
 
 class ExecutorOutput():
@@ -24,11 +26,11 @@ class ExecutorOutput():
                  container_command,
                  container_location):
         try:
-            self.stdout = stdout.decode("utf=8")
+            self.stdout = decodeByteStr(stdout)
         except AttributeError as e:
             self.stdout = stdout
         try:
-            self.stderr = stderr.decode("utf=8")
+            self.stderr = decodeByteStr(stderr)
         except AttributeError as e:
             self.stderr = stderr
         self.exit_code = exit_code
@@ -148,6 +150,10 @@ class LocalExecutor(object):
         if self.shell is None:
             self.shell = "/bin/sh"
 
+        # Generate Summary for data collection
+        if not self.skipDataCollect:
+            self.summary = self._generateSummary(desc)
+
         # Helpers Functions
         # The set of input parameters from the json descriptor
         self.inputs = self.desc_dict['inputs']  # Struct: [{id:}..,{id:}]
@@ -161,14 +167,6 @@ class LocalExecutor(object):
         self.launchDir = None
         if self.con is not None:
             self.con.get('working-directory')
-
-        # Container Implementation check
-        conEngines = ['docker', 'singularity']
-        if (self.con is not None) and self.con['type'] not in conEngines:
-            msg = "Other container types than {0} (e.g. {1})"\
-                  " are not yet supported"
-            raise_error(ValueError, msg.format(", ".join(conEngines),
-                        self.con['type']))
 
         # Generate the command line
         if self.invocation:
@@ -241,8 +239,12 @@ class LocalExecutor(object):
         container_location = ""
         container_command = ""
         if conIsPresent:
+            # Figure out which container type to use
+            conTypeToUse = self._chooseContainerTypeToUse(conType,
+                                                          self.forceSingularity,
+                                                          self.forceDocker)
             # Pull the container
-            (conPath, container_location) = self.prepare()
+            (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = "#!"+self.shell+" -l"+os.linesep+str(command)
@@ -263,14 +265,19 @@ class LocalExecutor(object):
             # Get the container options
             conOptsString = ""
             if conOpts:
-                for opt in conOpts:
-                    conOptsString += opt + ' '
+                # Ignore container options if container type is not the one
+                # specified in the descriptor.
+                if conType != conTypeToUse:
+                    print_warning("Ignoring incompatible container options.")
+                else:
+                    for opt in conOpts:
+                        conOptsString += opt + ' '
             # Run it in docker
             mount_strings = [] if not mount_strings else mount_strings
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
                              for m in mount_strings]
             mount_strings.append(op.realpath('./') + ':' + launchDir)
-            if conType == 'docker':
+            if conTypeToUse == 'docker':
                 envString = " "
                 if envVars:
                     for (key, val) in list(envVars.items()):
@@ -291,54 +298,19 @@ class LocalExecutor(object):
                                      ' -w ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conImage) + ' ' + dsname)
-            elif conType == 'singularity':
+            elif conTypeToUse == 'singularity':
                 envString = ""
                 if envVars:
                     for (key, val) in list(envVars.items()):
                         envString += "SINGULARITYENV_{0}='{1}' ".format(key,
                                                                         val)
-                # TODO: Singularity 2.4.6 default configuration binds: /proc,
-                # /sys, /dev, ${HOME}, /tmp, /var/tmp, /etc/localtime, and
-                # /etc/hosts. This means that any path down-stream shouldn't
-                # be bound on the command-line, as this will currently raise
-                # an exception. See:
-                #   https://github.com/singularityware/singularity/issues/1469
-                #
-                # Previous bind string:
-                #   singularity_mounts = " -B ".join(m for m in mount_strings)
-
-                def_mounts = ["/proc", "/sys", "/dev", "/tmp", "/var/tmp",
-                              "/etc/localtime", "/etc/hosts",
-                              op.realpath(op.expanduser('~')),
-                              op.expanduser('~')]
-
-                # Ensures the set of paths provided has no overlap
-                compaths = list()
-                for idxm, m in enumerate(mount_strings):
-                    for n in mount_strings[idxm:]:
-                        if n != m:
-                            tmp = op.dirname(op.commonprefix([n, m]))
-                            if tmp != '/':
-                                compaths += [tmp]
-                    if not any(m.startswith(c) for c in compaths):
-                        compaths += [m]
-                mount_strings = set(compaths)
-
-                # Only adds mount points for those not already included
-                singularity_mounts = ""
-                for m in mount_strings:
-                    if not any(d in m for d in def_mounts):
-                        singularity_mounts += "-B {0} ".format(m)
-
+                singularity_mounts = '-B ' + ' '.join(mount_strings)
                 container_command = (envString + 'singularity exec '
                                      '--cleanenv ' +
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conPath) + ' ' + dsname)
-            else:
-                raise_error(ExecutorError, 'Unrecognized container type: '
-                            '\"%s\"' % conType)
             (stdout, stderr), exit_code = self._localExecute(container_command)
         # Otherwise, just run command locally
         else:
@@ -353,7 +325,9 @@ class LocalExecutor(object):
 
         # Check for output files
         missing_files = []
+        missing_files_dict = {}
         output_files = []
+        output_files_dict = {}
         all_files = evaluateEngine(self, "output-files")
         required_files = evaluateEngine(self, "output-files/optional=False")
         optional_files = evaluateEngine(self, "output-files/optional=True")
@@ -362,9 +336,11 @@ class LocalExecutor(object):
             fd = FileDescription(f, file_name, False)
             if op.exists(file_name):
                 output_files.append(fd)
+                output_files_dict[f] = file_name
             else:  # file does not exist
                 if f in required_files.keys():
                     missing_files.append(fd)
+                    missing_files_dict[f] = file_name
 
         # Set error messages
         desc_err = ''
@@ -374,19 +350,30 @@ class LocalExecutor(object):
                     desc_err = err_elem['description']
                     break
 
-        return ExecutorOutput(stdout,
-                              stderr,
-                              exit_code,
-                              desc_err,
-                              output_files,
-                              missing_files,
-                              command,
-                              container_command, container_location)
+        executor_output = ExecutorOutput(stdout,
+                                         stderr,
+                                         exit_code,
+                                         desc_err,
+                                         output_files,
+                                         missing_files,
+                                         command,
+                                         container_command,
+                                         container_location)
+
+        if not self.skipDataCollect:
+            # Generate public output
+            self.public_out = self._generatePublicOutput(executor_output,
+                                                         output_files_dict,
+                                                         missing_files_dict)
+            # Write data collection to file
+            self._saveDataCaptureToCache()
+
+        return executor_output
 
     # Looks for the container image locally and pulls it if not found
     # Returns a tuple containing the container filename (for Singularity)
     # and the container location (local or pulled)
-    def prepare(self):
+    def prepare(self, conTypeToUse=None):
         con = self.con
         if con is None:
             return ("", "Descriptor does not specify a container image.")
@@ -397,7 +384,10 @@ class LocalExecutor(object):
         # If container is present, alter the command template accordingly
         conName = ""
 
-        if conType == 'docker':
+        if conTypeToUse is None:
+            conTypeToUse = self._chooseContainerTypeToUse(conType)
+
+        if conTypeToUse == 'docker':
             # Pull the docker image
             if self._localExecute("docker pull " + str(conImage))[1]:
                 container_location = "Local copy"
@@ -405,7 +395,7 @@ class LocalExecutor(object):
                 container_location = "Pulled from Docker"
             return (conName, container_location)
 
-        if conType == 'singularity':
+        elif conTypeToUse == 'singularity':
             if not conIndex:
                 conIndex = "shub://"
             elif not conIndex.endswith("://"):
@@ -459,10 +449,6 @@ class LocalExecutor(object):
             raise_error(ExecutorError, "Unable to retrieve Singularity "
                         "image.")
 
-        # Invalid container type
-        raise_error(ExecutorError, 'Unrecognized container'
-                    ' type: \"%s\"' % conType)
-
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName, imageDir):
         return conName in os.listdir(imageDir)
@@ -489,9 +475,9 @@ class LocalExecutor(object):
                                                 sing_command)
         if return_code:
             message = ("Could not pull Singularity"
-                       " image: " + os.linesep + " * Pull command: "
-                       + sing_command + os.linesep + " * Error: "
-                       + stderr.decode("utf-8"))
+                       " image: " + os.linesep + " * Pull command: " +
+                       sing_command + os.linesep + " * Error: " +
+                       stderr.decode("utf-8"))
             raise_error(ExecutorError, message)
         os.rename(op.join(imageDir, conNameTmp), op.join(imageDir, conName))
         conPath = op.abspath(op.join(imageDir, conName))
@@ -503,6 +489,20 @@ class LocalExecutor(object):
         os.rmdir(lockDir)
         if "SINGULARITY_PULLFOLDER" in os.environ:
             del os.environ["SINGULARITY_PULLFOLDER"]
+
+    def _isDockerInstalled(self):
+        return not subprocess.Popen("type docker", shell=True).wait()
+
+    # Chooses whether to use Docker or Singularity based on the
+    # descriptor, executor options and if Docker is installed.
+    def _chooseContainerTypeToUse(self, conType, forceSing=False,
+                                  forceDocker=False):
+        if (self._isDockerInstalled() and
+                (conType == 'docker' and not forceSing or
+                 forceDocker)):
+            return "docker"
+        else:
+            return "singularity"
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
@@ -553,6 +553,13 @@ class LocalExecutor(object):
         # nd = number of random characters to use in generating strings,
         # nl = max number of random list items
         nd, nl = 2, 5
+        # number_decimals = the number of decimal places to round to
+        # on randomly generated floating point numbers
+        number_decimals = 3
+        # epsilon = an upper bound on the relative error due to
+        # rounding for the chosen number of decimals, making sure
+        # excluded values aren't rounded to by accident.
+        epsilon = 1.0/(10**number_decimals)
 
         def randDigs():
             # Generate random string of digits
@@ -601,12 +608,13 @@ class LocalExecutor(object):
                 minv, maxv = float(minv), float(maxv)
             # Apply exclusive boundary constraints, if any
             if self.safeGet(param_id, 'exclusive-minimum'):
-                minv += 1 if isInt else 0.001
+                minv += 1 if isInt else epsilon
             if self.safeGet(param_id, 'exclusive-maximum'):
-                maxv -= 1 if isInt else 0.001
+                maxv -= 1 if isInt else epsilon
             # Returns a random int or a random float, depending on the type of p
             return (rnd.randint(minv, maxv)
-                    if isInt else round(rnd.uniform(minv, maxv), nd))
+                    if isInt else round(rnd.uniform(minv, maxv),
+                                        number_decimals))
 
         # Generate a random parameter value based on the input
         # type (where prm \in self.inputs)
@@ -630,7 +638,7 @@ class LocalExecutor(object):
             mn = self.safeGet(prm['id'], 'min-list-entries') or 2
             mx = self.safeGet(prm['id'], 'max-list-entries') or nl
             isList = self.safeGet(prm['id'], 'list') or False
-            return [str(paramSingle(prm)) for _ in
+            return [paramSingle(prm) for _ in
                     range(rnd.randint(mn, mx))] if isList else paramSingle(prm)
 
         # Returns a list of the ids of parameters that
@@ -710,9 +718,17 @@ class LocalExecutor(object):
         # Start actual dictionary filling part
         # Clear the dictionary
         self.in_dict = {}
-        # Fill in the required parameters
-        for reqp in [r for r in self.inputs if not r.get('optional')]:
-            self.in_dict[reqp['id']] = makeParam(reqp)
+        # Fill in the parameters depending on require complete
+        for params in [r for r in self.inputs
+                       if not r.get('optional') or self.requireComplete]:
+            self.in_dict[params['id']] = makeParam(params)
+            # Check for mutex between in_dict and last in param
+            for group, mbs in [(x, x["members"]) for x in self.groups
+                               if x.get('mutually-exclusive')]:
+                if len(set.intersection(set(mbs),
+                                        set(self.in_dict.keys()))) > 1:
+                    # Delete last in param
+                    del self.in_dict[params['id']]
 
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
@@ -756,7 +772,8 @@ class LocalExecutor(object):
                 continue
             # Fill in the target(s) otherwise
             for r in result:
-                self.in_dict[r['id']] = makeParam(r)
+                if self.requireComplete is None or self.requireComplete:
+                    self.in_dict[r['id']] = makeParam(r)
 
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
@@ -812,6 +829,10 @@ class LocalExecutor(object):
         # Input dictionary
         if self.debug:
             print_info("Input: " + str(self.in_dict))
+
+        # Generate public invocation
+        if not self.skipDataCollect:
+            self.public_in = self._generatePublicInvocation()
 
         # Add default values for required parameters,
         # if no value has been given
@@ -964,6 +985,9 @@ class LocalExecutor(object):
             template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
+            dirs = os.path.dirname(fileName)
+            if dirs and not os.path.exists(dirs):
+                os.makedirs(dirs)
             file = open(fileName, 'w')
             file.write(template)
             file.close()
@@ -971,7 +995,7 @@ class LocalExecutor(object):
     # Private method to build the actual command line by substitution,
     # using the input data
     def _generateCmdLineFromInDict(self):
-        # Genrate output file names
+        # Generate output file names
         self._generateOutputFileNames()
         # it is required to call the method twice in case path
         # templates contain output keys
@@ -1020,8 +1044,8 @@ class LocalExecutor(object):
             # If the input parameter is bad, it adds 'msg' to the list of errors
             def check(keyname, isGood, msg, value):  # Checks input values
                 # No need to check constraints if they were not specified
-                dontCheck = ((keyname not in list(targ.keys()))
-                             or (targ[keyname] is False))
+                dontCheck = ((keyname not in list(targ.keys())) or
+                             (targ[keyname] is False))
                 # Keyname = None is a flag to check the type
                 if (keyname is not None) and dontCheck:
                     return
@@ -1100,7 +1124,10 @@ class LocalExecutor(object):
                         else:
                             replacementFiles.append(ftarg)
                     # Replace old val with the new one
-                    self.in_dict[key] = " ".join(replacementFiles)
+                    if len(replacementFiles) == 1:
+                        self.in_dict[key] = replacementFiles[0]
+                    else:
+                        self.in_dict[key] = replacementFiles
             # List length constraints are satisfied
             if isList:
                 check('min-list-entries',
@@ -1155,30 +1182,159 @@ class LocalExecutor(object):
                 message += ("\t" + err + "\n")
             raise_error(ExecutorError, message)
 
+    # Private method to generate summary object of data
+    # collection file containing the tool name and descriptor DOI
+    def _generateSummary(self, desc):
+        summary = {}
+        summary['name'] = self.desc_dict['name']
+        summary['descriptor-doi'] = self._findDOI(desc)
+        return summary
 
-# Helper function that loads the JSON object coming from either a string,
-# a local file or a file pulled from Zenodo
-def loadJson(userInput, verbose=False):
-    # Check for JSON file (local or from Zenodo)
-    json_file = None
-    if os.path.isfile(userInput):
-        json_file = userInput
-    elif userInput.split(".")[0].lower() == "zenodo":
-        from boutiques.puller import Puller
-        puller = Puller(userInput, verbose)
-        json_file = puller.pull()
-    if json_file is not None:
-        with open(json_file, 'r') as f:
-            return json.loads(f.read())
-    # JSON file not found, so try to parse JSON object
-    e = ("Cannot parse input {}: file not found, "
-         "invalid Zenodo ID, or invalid JSON object").format(userInput)
-    if userInput.isdigit():
-        raise_error(ExecutorError, e)
-    try:
-        return json.loads(userInput)
-    except ValueError:
-        raise_error(ExecutorError, e)
+    # Private method to attempt to find descriptor DOI
+    # through various cases
+    # userInput may be json string, filename or zenodo id
+    def _findDOI(self, userIn):
+        doi_prefix = "10.5281/"
+        # DOI in Zenodo reference case
+        if userIn.split(".")[0].lower() == "zenodo":
+            return doi_prefix+userIn
+        # File cases
+        if os.path.isfile(userIn):
+            # Most recent DOI in file if user is publisher
+            # Include check to ensure descriptor is unmodified
+            if self.desc_dict.get('doi') is not None:
+                doi = self.desc_dict.get('doi')
+                if loadJson(doi) == self.desc_dict:
+                    return doi
+            # DOI in filename if descriptor pulled from Zenodo
+            # Include check to ensure descriptor is as published
+            elif os.path.basename(userIn).split("-")[0].lower() == "zenodo":
+                doi = os.path.basename(userIn).split(".")[0].replace("-", ".")
+                if loadJson(doi) == self.desc_dict:
+                    return doi_prefix+doi
+        # No DOI found, save descriptor to cache and return filename
+        return self._saveDescriptorToCache()
+
+    # Private method to generate public invocation object
+    # for data collection file
+    # absolute paths are stripped to filenames and hashes are generated for
+    # each input of type File, all other inputs are recorded as submitted
+    def _generatePublicInvocation(self):
+        public_in_dict = self.in_dict.copy()
+        # Replace file type inputs with object containing
+        # input file hash and filename
+        for x in self.inputs:
+            if x.get('type') == "File":
+                id = x.get('id')
+                path = public_in_dict.get(id)
+                if path is not None:
+                    if isinstance(path, list):
+                        public_in_dict[id] = [self._buildPublicFile(p)
+                                              for p in path]
+                    else:
+                        public_in_dict[id] = self._buildPublicFile(path)
+
+        return public_in_dict
+
+    # Private method to generate public output object for data collection file
+    # hashes are generated for each output file.
+    def _generatePublicOutput(self,
+                              exec_output,
+                              out_files_dict,
+                              missing_files_dict):
+        public_out_dict = {}
+        public_out_dict['stdout'] = exec_output.stdout
+        public_out_dict['stderr'] = exec_output.stderr
+        public_out_dict['exit-code'] = exec_output.exit_code
+        public_out_dict['error-message'] = exec_output.error_message
+        public_out_dict['shell-command'] = exec_output.shell_command
+        public_out_dict['missing-files'] = missing_files_dict
+
+        # Iterate through output files to generate output objects
+        # and generate objects with hash of files
+        out_files_dict = {id: self._buildPublicFile(filename)
+                          for id, filename in out_files_dict.items()}
+        public_out_dict['output-files'] = out_files_dict
+        return public_out_dict
+
+    # Private method to recursively explore directory and hash all files
+    def _buildPublicFile(self, path):
+        filename = extractFileName(path)
+        # If path is not found, report it
+        if not os.path.exists(path):
+            return {'file-name': filename, 'not_found': True}
+        # Directories are expanded recursively
+        if os.path.isdir(path):
+            contents = os.listdir(path)
+            # Recursive call to expand directory
+            files = [self._buildPublicFile(os.path.join(path, x))
+                     for x in contents]
+            return {'file-name': filename, 'files': files}
+        # Files are hashed
+        else:
+            md5sum = computeMD5(path)
+            return {'file-name': filename, 'md5sum': md5sum}
+
+    # Private method to publish data collection objects to file
+    # summary, publicInput an publicOutput are combined and
+    # written to a file in .cache
+    def _saveDataCaptureToCache(self):
+        date_time = datetime.datetime.now().isoformat()
+        tool_name = self.summary['name'].replace(' ', '-')
+        self.summary['date-time'] = date_time
+        # Combine three modules in master dictionary
+        data_dict = {'summary': self.summary,
+                     'public-invocation': self.public_in,
+                     'public-output': self.public_out}
+        # Convert dictionary to Json string
+        content = json.dumps(data_dict, indent=4)
+        # Write collected data to file
+        data_cache_dir = getDataCacheDir()
+        filename = "{0}_{1}.json".format(tool_name, date_time)
+        file_path = os.path.join(data_cache_dir, filename)
+        file = open(file_path, 'w+')
+        file.write(content)
+        file.close()
+        if self.debug:
+            print_info("Data capture from execution saved to cache as {}"
+                       .format(filename))
+
+    # Local function handles case where descriptor is not published
+    # Checks if descriptor already saved to cache, if not then saves
+    # copy for future publication
+    def _saveDescriptorToCache(self):
+        tool_name = self.desc_dict.get('name').replace(' ', '-')
+        data_cache_dir = getDataCacheDir()
+        data_cache_files = os.listdir(data_cache_dir)
+        # Filter for descriptors in cache with the same tool name to check
+        # if descriptor already in cache
+        matching_files = [x for x in data_cache_files
+                          if len(x.split("_")) > 1 and
+                          x.split("_")[1] is tool_name.replace(' ', '-')]
+        match = None
+        for fl in matching_files:
+            path = os.path.join(data_cache_dir, fl)
+            file_dict = loadJson(path)
+            if file_dict == self.desc_dict:
+                match = fl
+                break
+        if match:
+            if self.debug:
+                print_info("Unpublished descriptor match found in data cache "
+                           "as {}".format(match))
+            return match
+        # Write descriptor to data cache and save return filename
+        content = json.dumps(self.desc_dict, indent=4)
+        date_time = datetime.datetime.now().isoformat()
+        filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
+        path = os.path.join(data_cache_dir, filename)
+        file = open(path, 'w+')
+        file.write(content)
+        file.close()
+        if self.debug:
+            print_info("Descriptor from execution saved to cache for future "
+                       "publishing as {}".format(filename))
+        return filename
 
 
 # Adds default values to input dictionary
@@ -1190,3 +1346,38 @@ def addDefaultValues(desc_dict, in_dict):
         if in_dict.get(in_param['id']) is None:
             in_dict[in_param['id']] = in_param.get("default-value")
     return in_dict
+
+
+# Parses absolute path into filename
+def extractFileName(path):
+    # Helps OS path handle case where "/" is at the end of path
+    if path is None:
+        return None
+    elif path[:-1] == '/':
+        return os.path.basename(path[:-1]) + "/"
+    else:
+        return os.path.basename(path)
+
+
+# Hashes files with MD5,
+# capable of handling large data files
+def computeMD5(filepath):
+    hash_md5 = hashlib.md5()
+    with open(filepath, "rb") as fhandle:
+        for chunk in iter(lambda: fhandle.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+# Decodes a byte string, handling non utf-8 characters according to
+# Python version.
+def decodeByteStr(byteStr):
+    if sys.version_info[0] < 3:
+        # ignore non-decodable chars
+        return byteStr.decode("utf=8", "ignore")
+    elif sys.version_info[0] == 3 and sys.version_info[1] == 4:
+        # replace non-decodable chars with a replacement character
+        return byteStr.decode("utf=8", "replace")
+    else:
+        # replace non-decodable chars with escape sequence
+        return byteStr.decode("utf=8", "backslashreplace")

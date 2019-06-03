@@ -30,7 +30,7 @@ Simple! Just open your favourite terminal and type:
 
 ::
 
-    $ pip install boutiques
+   $ pip install boutiques
 
 Alongside installing the Boutiques package, this will also ensure the
 dependencies are installed: ``simplejson``, ``jsonschema``,
@@ -42,16 +42,16 @@ can also install directly from GitHub:
 
 ::
 
-    $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques&subdirectory=tools/python"
+   $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques&subdirectory=tools/python"
 
 Command-Line API
 ----------------
 
 The command-line API for Boutiques can be accessed through your new
-favourite command, ***``bosh``***. The Boutiques Shell (``bosh``)
-provides an access point to all of the tools wrapped within Boutiques
-and has some ``--help`` text to keep you moving forward if you feel like
-you’re getting stuck. Let’s consider a few common use-cases…
+favourite command, **``bosh``**. The Boutiques Shell (``bosh``) provides
+an access point to all of the tools wrapped within Boutiques and has
+some ``--help`` text to keep you moving forward if you feel like you’re
+getting stuck. Let’s consider a few common use-cases…
 
 Search For Tools
 ~~~~~~~~~~~~~~~~
@@ -62,7 +62,7 @@ from the FSL suite, try:
 
 ::
 
-    $ bosh search fsl
+   $ bosh search fsl
 
 Search returns a list of identifiers for tools matching your query. You
 can use these identifiers in any ``bosh`` command transparently. Even
@@ -82,7 +82,7 @@ BIDS app at ``/awesome/app/``, you would run:
 
 ::
 
-    $ bosh import bids descriptor.json /awesome/app/
+   $ bosh import bids descriptor.json /awesome/app/
 
 Very exciting, you now have a Boutiques descriptor for your app! If you
 aren’t in one of those unique cases, unfortunately you’ll still need to
@@ -100,7 +100,7 @@ interface:
 
 ::
 
-    $ bosh create my-new-descriptor.json
+   $ bosh create my-new-descriptor.json
 
 However, if you want a bit more of a head start and your tool is built
 in Python using the ``argparse`` library, we can help more! In the
@@ -109,9 +109,9 @@ lines to get yourself a minimal corresponding descriptor:
 
 ::
 
-    import boutiques.creator as bc
-    newDescriptor = bc.CreateDescriptor(myparser, execname="/command/to/run/exec")
-    newDescriptor.save("my-new-descriptor.json")
+   import boutiques.creator as bc
+   newDescriptor = bc.CreateDescriptor(myparser, execname="/command/to/run/exec")
+   newDescriptor.save("my-new-descriptor.json")
 
 There are additional custom arguments which can be supplied to this
 script, such as tags for your tool. It is also worth noting that no
@@ -126,13 +126,13 @@ on runtime:
 
 ::
 
-    args = myparser.parse_args()
-    invoc = newDescriptor.createInvocation(args)
+   args = myparser.parse_args()
+   invoc = newDescriptor.createInvocation(args)
 
-    # Then, if you want to save them to a file...
-    import json
-    with open('my-inputs.json', 'w') as fhandle:
-        fhandle.write(json.dumps(invoc, indent=4))
+   # Then, if you want to save them to a file...
+   import json
+   with open('my-inputs.json', 'w') as fhandle:
+       fhandle.write(json.dumps(invoc, indent=4))
 
 Validation
 ~~~~~~~~~~
@@ -146,7 +146,7 @@ validate your schema like this:
 
 ::
 
-    $ bosh validate descriptor.json
+   $ bosh validate descriptor.json
 
 Depending on the status of your descriptor, ``bosh`` will either tell
 you it’s A-OK or tell you where the problems are and what you should
@@ -164,7 +164,7 @@ tool. You can do this using the ``exec`` function in ``bosh``:
 
 ::
 
-    $ bosh exec simulate descriptor.json -r -n 5
+   $ bosh exec simulate descriptor.json -r -n 5
 
 You just simulated 5 sets of random inputs which were dumped to our
 terminal for you to validate. If anything seems fishy, you can update
@@ -190,7 +190,7 @@ assumption, nowadays? We hope so:
 
 ::
 
-    $ bosh exec launch descriptor.json invocation.json
+   $ bosh exec launch descriptor.json invocation.json
 
 You just launched your tool! You should be seeing outputs to your
 terminal, and by default your current working directory will be mounted
@@ -211,40 +211,40 @@ output ``logfile`` with the right MD5 hash.
 
 ::
 
-    "tests": [
-            {
-             "name": "test1",
-             "invocation": {
-                    "config_num": 4,
-                    "enum_input": "val1",
-                    "file_input": "/tests/image.nii.gz",
-                    "list_int_input": [
-                        1,
-                        2,
-                        3
-                    ],
-                    "str_input": [
-                        "foo",
-                        "bar"
-                    ]
-                },
-                "assertions": {
-                    "exit-code": 0,
-                    "output-files": [
-                        {
-                            "id": "logfile",
-                            "md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
-                        }
-                    ]
-                }
-        }
-    ]
+   "tests": [
+           {
+            "name": "test1",
+            "invocation": {
+                   "config_num": 4,
+                   "enum_input": "val1",
+                   "file_input": "/tests/image.nii.gz",
+                   "list_int_input": [
+                       1,
+                       2,
+                       3
+                   ],
+                   "str_input": [
+                       "foo",
+                       "bar"
+                   ]
+               },
+               "assertions": {
+                   "exit-code": 0,
+                   "output-files": [
+                       {
+                           "id": "logfile",
+                           "md5-reference": "0868f0b9bf25d4e6a611be8f02a880b5"
+                       }
+                   ]
+               }
+       }
+   ]
 
 You can then test your descriptor by simply typing:
 
 ::
 
-    $ bosh test descriptor.json
+   $ bosh test descriptor.json
 
 Evaluate Your Usage
 ~~~~~~~~~~~~~~~~~~~
@@ -258,31 +258,35 @@ could do the following two queries, respectively:
 
 ::
 
-    $ bosh evaluate descriptor.json invocation.json output-files/id=my_batmobile inputs/type=Number,optional=True
-    [{"my_batmobile": "/the/batcave/batmobile.car"}, {"bad_guys": "0", "times_saved_gotham": "5000"}]
+   $ bosh evaluate descriptor.json invocation.json output-files/id=my_batmobile inputs/type=Number,optional=True
+   [{"my_batmobile": "/the/batcave/batmobile.car"}, {"bad_guys": "0", "times_saved_gotham": "5000"}]
 
 Publish Your Tool
 ~~~~~~~~~~~~~~~~~
 
 Congratulations on successfully running your analysis! So excited about
-your tool, you now want to share this descriptor with the world. This is
-the step which requires our GitHub libraries for Python which you got in
-the installation above - we’re going to make a fork of the
-`NeuroLinks <https://brainhack101.github.io/neurolinks>`__ repository,
-add your tool, and get everying queued up for you to submit a Pull
-Request back with the brand new addition. There is a fair bit of
-metadata we’ll collect here, but the basics will be run with the
-following, assuming your descriptor lives in a Git-repo available at
-``/utility/belt/``, your name is ``Batman``, and your tool lives at the
-url ``http://thebatcave.io`` (sorry to anyone who owns this url…):
+your tool, you now want to share this descriptor with the world. Use the
+``publish`` function in ``bosh`` - it will push your tool on the
+`Zenodo <https://zenodo.org/search?page=1&size=20&keywords=boutiques&keywords=schema&keywords=version&file_type=json&type=software>`__
+resource-sharing portal allowing other to use it:
 
 ::
 
-    $ bosh publish /utility/belt/ Batman http://thebatcave.io
+   $ bosh publish descriptor.json
 
 Your tool is now being shared in a packaged and fully described fashion,
 making it easier than ever to reproduce and extend your work! As always,
 learn more about this feature with ``bosh publish -h``.
+
+Execution Records
+~~~~~~~~~~~~~~~~~
+
+Want to check up on what happened during a previous analysis? The
+details of each execution are captured and recorded in a publicly safe
+format so that you can review past analysis runs. These records are
+stored in the Boutiques cache and capture each executions’ descriptor,
+invocation and output results. Input and output file hashes are included
+to easily compare results between different analyses.
 
 Python API
 ----------
@@ -295,11 +299,21 @@ your schema:
 
 ::
 
-    > import boutiques
-    > boutiques.validate('descriptor.json')
+   > import boutiques
+   > boutiques.validate('descriptor.json')
 
 Whether you’re working from the shell or a Python script, ``bosh`` will
 treat you exactly the same.
+
+And if it’s easier for you, you can even generate Python functions that
+launch your tools directly! For instance, this will launch FSL’s mcflirt
+from your Python program:
+
+::
+
+   > from boutiques.descriptor2func import function
+   > mcflirt = function('zenodo.2602109')
+   > mcflirt(in_file='/home/glatard/data/test.nii.gz')
 
 Contributing
 ============
@@ -311,14 +325,3 @@ particular, those tagged with
 “`beginner <https://github.com/boutiques/boutiques/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20label%3Abeginner>`__”)
 to start seeing where you can lend a hand. We look forward to approving
 your amazing contributions!
-
-.. |DOI| image:: https://zenodo.org/badge/32616811.svg
-   :target: https://zenodo.org/badge/latestdoi/32616811
-.. |PyPI| image:: https://img.shields.io/pypi/v/boutiques.svg
-   :target: https://pypi.python.org/pypi/boutiques
-.. |PyPI| image:: https://img.shields.io/pypi/pyversions/boutiques.svg
-   :target: https://pypi.python.org/pypi/boutiques
-.. |Build Status| image:: https://travis-ci.org/boutiques/boutiques.svg?branch=develop
-   :target: https://travis-ci.org/boutiques/boutiques
-.. |Coverage Status| image:: https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop
-   :target: https://coveralls.io/github/boutiques/boutiques?branch=develop
