@@ -172,6 +172,59 @@ class TestExample1(BaseTest):
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    @mock.patch('requests.get', return_value=mock_get())
+    def test_example1_exec_docker_from_zenodo_desc2func(self, mock_get):
+        # No mode provided, defaults to 'launch'
+        self.clean_up()
+        from boutiques.descriptor2func import function
+        example_tool = function("zenodo." + str(example_boutiques_tool.id))
+        ret = example_tool(str_input_list=['a', 'b', 'c'],
+                           str_input="coin;plop",
+                           file_input='./setup.py',
+                           file_list_input=['./setup.py', 'requirements.txt'],
+                           list_int_input=[1, 2, 3],
+                           config_num=4,
+                           enum_input='val1')
+        print(ret)
+        self.assert_successful_return(ret,
+                                      ["log-4-coin;plop.txt"], 2,
+                                      self.assert_reflected_output)
+
+        # Launch mode
+        self.clean_up()
+        ret = example_tool('launch',
+                           str_input_list=['a', 'b', 'c'],
+                           str_input="coin;plop",
+                           file_input='./setup.py',
+                           file_list_input=['./setup.py', 'requirements.txt'],
+                           list_int_input=[1, 2, 3],
+                           config_num=4,
+                           enum_input='val1')
+        self.assert_successful_return(ret,
+                                      ["log-4-coin;plop.txt"], 2,
+                                      self.assert_reflected_output)
+
+        # Simulate with invocation
+        self.clean_up()
+        ret = example_tool('simulate',
+                           str_input_list=['a', 'b', 'c'],
+                           str_input="coin;plop",
+                           file_input='./setup.py',
+                           file_list_input=['./setup.py', 'requirements.txt'],
+                           list_int_input=[1, 2, 3],
+                           config_num=4,
+                           enum_input='val1')
+        self.assert_successful_return(
+                            ret,
+                            aditional_assertions=self.assert_only_stdout)
+
+        # Simulate without invocation
+        self.clean_up()
+        ret = example_tool('simulate')
+        self.assertIn('exampleTool1.py -c', ret.stdout)
+
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed")
@@ -302,7 +355,6 @@ class TestExample1(BaseTest):
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation_no_opts.json"),
                            "--skip-data-collection")
-
         self.assert_successful_return(
             ret, ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
