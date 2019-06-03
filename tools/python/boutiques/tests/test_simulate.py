@@ -181,5 +181,4 @@ class TestSimulate(TestCase):
                                    stdout=subprocess.PIPE)
         output = str(process.stdout.read())
         command = re.search(r"(test[ \da-z]+)", output).group(0)
-
         self.assertEqual("test b1 c2", command)
