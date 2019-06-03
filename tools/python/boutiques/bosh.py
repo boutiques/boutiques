@@ -620,17 +620,19 @@ DATA COLLECTION
 * data: manage execution data collection.
 
 OTHER
-* evaluate: given an invocation and a descriptor, queries execution properties.
-* invocation: generate or validate inputs against the invocation schema for a given descriptor.
+* evaluate: given an invocation and a descriptor,queries execution properties.
+* invocation: generate or validate inputs against the invocation schema
+* for a given descriptor.
 * version: print the Boutiques version.
 '''
     parser.add_argument("function", action="store", nargs="?",
                         help=helptext,
                         choices=sorted(
-                                ["create", "validate", "exec", "import",
-                                 "export", "publish", "invocation", "evaluate",
-                                 "test", "example", "search", "pull", "data",
-                                 "pprint", "version"]))
+                                ["create", "validate", "exec",
+                                 "import", "export", "publish",
+                                 "invocation", "evaluate", "test",
+                                 "example", "search", "pull",
+                                 "data", "pprint", "version"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
