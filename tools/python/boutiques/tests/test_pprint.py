@@ -14,4 +14,4 @@ class TestPPrint(TestCase):
         fil = op.join(op.split(bfile)[0],
                       'schema/examples/test_pretty_print.json')
         prettystring = bosh.prettyprint(fil)
-        assert(isinstance(prettystring, string_types))
+        self.assertIsInstance(prettystring, string_types)

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import requests
+import sys
 from collections import OrderedDict
-import json
+import numbers
 from operator import itemgetter
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
@@ -25,9 +26,13 @@ class Searcher():
         self.no_trunc = no_trunc
         self.max_results = max_results
 
-        # Return max 10 results by default
+        # Display top 10 results by default
         if max_results is None:
             self.max_results = 10
+
+        # Zenodo will error if asked for more than 9999 results
+        if self.max_results > 9999:
+            self.max_results = 9999
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = "https://sandbox.zenodo.org" if\
@@ -38,22 +43,25 @@ class Searcher():
 
     def search(self):
         results = self.zenodo_search()
+        num_results = len(results.json()["hits"]["hits"])
+        total_results = results.json()["hits"]["total"]
         print_info("Showing %d of %d results."
-                   % (len(results.json()["hits"]["hits"]),
-                      results.json()["hits"]["total"]))
+                   % (num_results if num_results < self.max_results
+                      else self.max_results, total_results))
         if self.verbose:
             return self.create_results_list_verbose(results.json())
         return self.create_results_list(results.json())
 
     def zenodo_search(self):
+        # Get all results
         r = requests.get(self.zenodo_endpoint + '/api/records/?q=%s&'
                          'keywords=boutiques&keywords=schema&'
                          'keywords=version&file_type=json&type=software'
-                         '&page=1&size=%s' % (self.query, self.max_results))
+                         '&page=1&size=%s' % (self.query, 9999))
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
-            print_info("Search successful.", r)
+            print_info("Search successful for query \"%s\"" % self.query, r)
         return r
 
     def create_results_list(self, results):
@@ -68,7 +76,8 @@ class Searcher():
             results_list.append(result_dict)
         results_list = sorted(results_list, key=itemgetter('DOWNLOADS'),
                               reverse=True)
-        return results_list
+        # Truncate the list according to the desired maximum number of results
+        return results_list[:self.max_results]
 
     def create_results_list_verbose(self, results):
         results_list = []
@@ -91,12 +100,22 @@ class Searcher():
                                       ("SCHEMA VERSION", schema_version),
                                       ("CONTAINER", container),
                                       ("TAGS", other_tags)])
+            if sys.stdout.encoding.lower != "UTF-8":
+                for k, v in list(result_dict.items()):
+                    if sys.version_info[0] < 3:
+                        if isinstance(v, unicode):
+                            result_dict[k] = v.encode('ascii',
+                                                      'xmlcharrefreplace')
+                    elif isinstance(v, str):
+                        result_dict[k] = \
+                            v.encode('ascii', 'xmlcharrefreplace').decode()
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
             results_list.append(result_dict)
         results_list = sorted(results_list, key=itemgetter('DOWNLOADS'),
                               reverse=True)
-        return results_list
+        # Truncate the list according to the desired maximum number of results
+        return results_list[:self.max_results]
 
     def parse_basic_info(self, hit):
         id = "zenodo." + str(hit["id"])
@@ -109,7 +128,9 @@ class Searcher():
     # greater than max_length
     def truncate(self, d, max_length):
         for k, v in list(d.items()):
-            if len(str(v)) > max_length:
+            if isinstance(v, numbers.Number):
+                v = str(v)
+            if len(v) > max_length:
                 d[k] = v[:max_length] + "..."
         return d
 

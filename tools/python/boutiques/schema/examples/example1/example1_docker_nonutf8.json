@@ -1,0 +1,188 @@
+{
+    "author": "Test author",
+    "command-line": "exampleTool1_nonutf8.py [CONFIG_FILE] [STRING_INPUT_LIST] [STRING_INPUT] [FILE_LIST_INPUT] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
+    "container-image": {
+        "container-opts": [
+            "-e",
+            "HOME=$PWD"
+        ],
+        "image": "boutiques/example1:test",
+        "type": "docker"
+    },
+    "description": "This property describes the tool or application",
+    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/examples/example1/example1_docker.json",
+    "environment-variables": [
+        {
+            "name": "ENVAR",
+            "value": "theValue"
+        }
+    ],
+    "error-codes": [
+        {
+            "code": 2,
+            "description": "File does not exist!"
+        }
+    ],
+    "groups": [
+        {
+            "description": "This group forces us to choose exactly one of the file or the enum input to use.",
+            "id": "an_example_group",
+            "members": [
+                "num_input",
+                "enum_input"
+            ],
+            "mutually-exclusive": true,
+            "name": "Example group 1",
+            "one-is-required": true
+        }
+    ],
+    "inputs": [
+        {
+            "command-line-flag": "-i",
+            "default-value": [
+                "aStringValue"
+            ],
+            "description": "Describe the use and meaning of the parameter",
+            "id": "str_input_list",
+            "list": true,
+            "max-list-entries": 3,
+            "min-list-entries": 1,
+            "name": "A list of string inputs",
+            "type": "String",
+            "value-key": "[STRING_INPUT_LIST]"
+        },
+        {
+            "command-line-flag": "-s",
+            "default-value": "aStringValue",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "str_input",
+            "name": "A string input",
+            "type": "String",
+            "value-key": "[STRING_INPUT]"
+        },
+        {
+            "command-line-flag": "-l",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "list_int_input",
+            "integer": true,
+            "list": true,
+            "min-list-entries": 1,
+            "name": "A list of ints",
+            "type": "Number",
+            "value-key": "[INT_LIST_INPUT]"
+        },
+        {
+            "id": "config_num",
+            "name": "A number put in the configuration file",
+            "type": "Number",
+            "value-choices": [
+                4
+            ],
+            "value-key": "[CONFIG_NUMBER]"
+        },
+        {
+            "command-line-flag": "-n",
+            "command-line-flag-separator": "=",
+            "exclusive-minimum": true,
+            "id": "num_input",
+            "maximum": 1,
+            "minimum": 0,
+            "name": "A number input",
+            "optional": true,
+            "type": "Number",
+            "value-key": "[NUMBER_INPUT]"
+        },
+        {
+            "id": "file_input",
+            "name": "A file input",
+            "optional": true,
+            "type": "File",
+            "value-key": "[FILE_INPUT]"
+        },
+        {
+            "command-line-flag": "-t",
+            "id": "file_list_input",
+            "list": true,
+            "name": "A file list input",
+            "optional": true,
+            "type": "File",
+            "value-key": "[FILE_LIST_INPUT]"
+        },
+        {
+            "command-line-flag": "-e",
+            "id": "enum_input",
+            "name": "An enum input",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "val1",
+                "val2",
+                "val3"
+            ],
+            "value-key": "[ENUM_INPUT]"
+        },
+        {
+            "command-line-flag": "-f",
+            "disables-inputs": [
+                "num_input"
+            ],
+            "id": "flag_input",
+            "name": "A flag input",
+            "optional": true,
+            "requires-inputs": [
+                "file_input"
+            ],
+            "type": "Flag",
+            "value-key": "[FLAG_INPUT]"
+        }
+    ],
+    "name": "Example Boutiques Tool",
+    "online-platform-urls": [
+        "http://somewhere.org/good_tool",
+        "https://someplace.com/bad_tool"
+    ],
+    "output-files": [
+        {
+            "description": "The output log file from the example tool",
+            "id": "logfile",
+            "name": "Log file",
+            "path-template": "log-[CONFIG_NUMBER]-[STRING_INPUT].txt",
+            "path-template-stripped-extensions": [
+                ".txt",
+                ".csv"
+            ],
+            "value-key": "[LOG]"
+        },
+        {
+            "id": "output_files",
+            "list": true,
+            "name": "outfiles",
+            "optional": true,
+            "path-template": "output/*_exampleOutputTag.resultType"
+        },
+        {
+            "command-line-flag": "-c",
+            "file-template": [
+                "# This is a demo configuration file",
+                "numInput=[CONFIG_NUMBER]",
+                "strInput=[STRING_INPUT]"
+            ],
+            "id": "config_file",
+            "name": "Configuration file",
+            "path-template": "./config.txt",
+            "value-key": "[CONFIG_FILE]"
+        }
+    ],
+    "schema-version": "0.5",
+    "tags": {
+        "domain": "testing",
+        "foo": [
+            "bar1",
+            "bar2"
+        ],
+        "programming-language": "Python"
+    },
+    "tool-doi": "00.0000/example.0000000",
+    "tool-version": "0.0.1",
+    "url": "http://example.com"
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json
+import simplejson as json
 import os
 import stat
 from Pegasus.DAX3 import ADAG, Job, File, Link

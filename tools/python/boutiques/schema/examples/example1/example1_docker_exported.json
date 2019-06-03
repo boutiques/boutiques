@@ -60,6 +60,13 @@
             "type": "File"
         },
         {
+            "id": "file_list_input",
+            "isOptional": true,
+            "isReturnedValue": false,
+            "name": "A file list input",
+            "type": "List"
+        },
+        {
             "id": "enum_input",
             "isOptional": true,
             "isReturnedValue": false,
@@ -71,6 +78,14 @@
             "isOptional": true,
             "isReturnedValue": false,
             "name": "A flag input",
+            "type": "Boolean"
+        },
+        {
+            "description": "Don't check for container options (needed for certain test cases)",
+            "id": "no_opts",
+            "isOptional": true,
+            "isReturnedValue": false,
+            "name": "No container opts",
             "type": "Boolean"
         },
         {
@@ -103,6 +118,7 @@
             "bar1",
             "bar2"
         ],
+        "mypackage": true,
         "programming-language": "Python"
     },
     "version": "0.0.1"

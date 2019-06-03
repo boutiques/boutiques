@@ -1,0 +1,10 @@
+{
+    "str_input_list" : [ "fo '; echo FAIL", "bar" ],
+    "str_input" : "coin;plop",
+    "file_input" : "./setup.py",
+    "file_list_input": ["./setup.py", "./requirements.txt"],
+    "list_int_input": [1, 2, 3],
+    "config_num" : 4,
+    "enum_input" : "val1",
+    "no_opts": true
+}

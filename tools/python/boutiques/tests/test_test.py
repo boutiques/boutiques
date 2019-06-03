@@ -8,7 +8,8 @@ from boutiques import bosh
 from jsonschema.exceptions import ValidationError
 import sys
 import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
+    example_boutiques_tool
 if sys.version_info < (2, 7):
     from unittest2 import TestCase
 else:
@@ -16,11 +17,7 @@ else:
 
 
 def mock_get():
-    mock_record = MockZenodoRecord(1472823, "Example Boutiques Tool", "",
-                                   "https://zenodo.org/api/files/"
-                                   "e5628764-fc57-462e-9982-65f8d6fdb487/"
-                                   "example1_docker.json")
-    return mock_zenodo_search([mock_record])
+    return mock_zenodo_search([example_boutiques_tool])
 
 
 class TestTest(TestCase):
@@ -48,7 +45,7 @@ class TestTest(TestCase):
     @mock.patch('requests.get', return_value=mock_get())
     def test_test_good_from_zenodo(self, mock_get):
         self.assertFalse(bosh(["test",
-                               "zenodo.1472823"]))
+                               "zenodo." + str(example_boutiques_tool.id)]))
 
     def test_test_invalid(self):
         with self.assertRaises(ValidationError) as context:

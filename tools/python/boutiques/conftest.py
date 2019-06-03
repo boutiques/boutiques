@@ -1,7 +1,7 @@
-import json
+import simplejson as json
 import tempfile
 import os.path as op
-from boutiques.localExec import loadJson
+from boutiques.util.utils import loadJson
 
 
 def pytest_addoption(parser):
