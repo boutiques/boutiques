@@ -4,7 +4,7 @@ from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 
 
-class TestExample2(BaseTest):
+class TestExample3(BaseTest):
 
     def setUp(self):
         self.setup("example3")
