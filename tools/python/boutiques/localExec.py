@@ -933,7 +933,7 @@ class LocalExecutor(object):
                     sep = self.safeGet(param_id,
                                        'command-line-flag-separator')
                     if sep is None:
-                        sep = '@@'
+                        sep = ' '
                     # special case for flag-type inputs
                     if self.safeGet(param_id, 'type') == 'Flag':
                         val = '' if val is False else flag
@@ -943,12 +943,12 @@ class LocalExecutor(object):
                 if (self.safeGet(param_id, 'type') == 'File' or
                         self.safeGet(param_id, 'type') == 'String'):
                     for extension in stripped_extensions:
-                        if (' ' + extension) in stripped_extensions:
-                            val = val.replace(' ' + extension, "")
-                        else:
-                            val = val.replace(extension, "")
+                            val = val.replace(extension, '')
                 # Here val can be a number so we need to cast it
-                template = template.replace(clk, str(val))
+                if val is not None and val is not "":
+                    template = template.replace(clk, str(val))
+                else:
+                    template = template.replace(' ' + clk, str(val))
             else:  # param has no value
                 if unfound_keys == "remove":
                     if (' ' + clk) in template:
@@ -1035,9 +1035,6 @@ class LocalExecutor(object):
         template = self._replaceKeysInTemplate(template, True,
                                                "remove", [], True)
         # Return substituted command line
-        print(json.dumps(self.desc_dict['command-line'], indent=4, sort_keys=True))
-        print("@@@@@@@@@@@@@@@@@@@@")
-        print(json.dumps(template, indent=4, sort_keys=True))
         return template
 
     # Print the command line result
