@@ -560,33 +560,45 @@ def data(*params):
 
 
 def bosh(args=None):
-    parser = ArgumentParser(description="Driver for Bosh functions",
-                            add_help=False)
+    parser = ArgumentParser(add_help=False,
+                            formatter_class=RawTextHelpFormatter)
+    helptext = r'''
+               BOUTIQUES COMMANDS
+
+TOOL CREATION
+* create: create a Boutiques descriptor from scratch.
+* export: export a descriptor to other formats.
+* import: create a descriptor for a BIDS app or update a descriptor from \
+    an older version of the schema.
+* validate: validate an existing boutiques descriptor.
+
+TOOL USAGE & EXECUTION
+* example: generate example command-line for descriptor.
+* pprint: generate pretty help text from a descriptor.
+* exec: launch or simulate an execution given a descriptor and a set of inputs.
+* test: run pytest on a descriptor detailing tests.
+
+TOOL SEARCH & PUBLICATION
+* publish: create an entry in Zenodo for the descriptor and adds the DOI \
+    created by Zenodo to the descriptor.
+* pull: download a descriptor from Zenodo.
+* search: search Zenodo for descriptors.
+
+DATA COLLECTION
+* data: manage execution data collection.
+
+OTHER
+* evaluate: given an invocation and a descriptor, queries execution properties.
+* invocation: generate or validate inputs against the invocation schema for a given descriptor.
+* version: print the Boutiques version.
+'''
     parser.add_argument("function", action="store", nargs="?",
-                        help="The tool within boutiques/bosh you wish to run. "
-                        "Create: creates an Boutiques descriptor from scratch. "
-                        "Validate: validates an existing boutiques descriptor. "
-                        "Exec: launches or simulates an execution given a "
-                        "descriptor and a set of inputs. Import: creates a "
-                        "descriptor for a BIDS app or updates a descriptor "
-                        "from an older version of the schema. Export: exports a"
-                        "descriptor to other formats. Publish: creates"
-                        "an entry in Zenodo for the descriptor and "
-                        "adds the DOI created by Zenodo to the descriptor. "
-                        "Invocation: generates the invocation schema for a "
-                        "given descriptor. Evaluate: given an invocation and a "
-                        "descriptor, queries execution properties. "
-                        "Test: run pytest on a descriptor detailing tests. "
-                        "Example: Generates example command-line for descriptor"
-                        ". Search: search Zenodo for descriptors. "
-                        "Pull: download a descriptor from Zenodo. "
-                        "Data: manage execution data collection. "
-                        "Pprint: generate pretty help text from a descriptor."
-                        "Version: prints the version of this tool.",
-                        choices=["create", "validate", "exec", "import",
+                        help=helptext,
+                        choices=sorted(
+                                ["create", "validate", "exec", "import",
                                  "export", "publish", "invocation", "evaluate",
                                  "test", "example", "search", "pull", "data",
-                                 "pprint", "version"])
+                                 "pprint", "version"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
