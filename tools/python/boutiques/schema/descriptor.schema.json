@@ -673,7 +673,7 @@
     "tags": {
             "id": "http://github.com/boutiques/boutiques-schema/tags",
             "type": "object",
-            "description": "An set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
+            "description": "A set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
             "additionalProperties": {
                 "type": ["string", "array", "boolean"],
                 "items": {
