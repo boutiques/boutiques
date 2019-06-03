@@ -573,7 +573,7 @@ TOOL CREATION
 * validate: validate an existing boutiques descriptor.
 
 TOOL USAGE & EXECUTION
-* example: Generate example command-line for descriptor.
+* example: generate example command-line for descriptor.
 * pprint: generate pretty help text from a descriptor.
 * exec: launch or simulate an execution given a descriptor and a set of inputs.
 * test: run pytest on a descriptor detailing tests.
