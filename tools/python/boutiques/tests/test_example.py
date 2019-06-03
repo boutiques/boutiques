@@ -21,9 +21,9 @@ class TestExample(TestCase):
                                    stdout=subprocess.PIPE)
         output = json.loads(process.stdout.read())
 
-        self.assertTrue(output["a1"] or output["a2"])
-        self.assertDictContainsSubset({"b1": "b1", "b2": "b2", "c1": "c1",
-                                       "c2": "c2"}, output)
+        self.assertDictEqual({"a1": "a1",
+                              "b1": "b1", "b2": "b2",
+                              "c1": "c1", "c2": "c2"}, output)
 
     def test_example(self):
         descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
@@ -34,6 +34,4 @@ class TestExample(TestCase):
                                    stdout=subprocess.PIPE)
         output = json.loads(process.stdout.read())
 
-        # Can't assert more than the required params because
-        # params are randomly selected
-        self.assertDictContainsSubset({"b1": "b1", "c2": "c2"}, output)
+        self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
