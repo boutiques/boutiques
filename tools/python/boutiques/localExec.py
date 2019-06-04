@@ -920,7 +920,7 @@ class LocalExecutor(object):
                 if (self.safeGet(param_id, 'type') == 'File' or
                         self.safeGet(param_id, 'type') == 'String'):
                     for extension in stripped_extensions:
-                            val = val.replace(extension, '')
+                        val = val.replace(extension, '')
                 # Here val can be a number so we need to cast it
                 if val is not None and val is not "":
                     template = template.replace(clk, str(val))
