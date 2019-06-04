@@ -894,7 +894,7 @@ class LocalExecutor(object):
                     if list_sep is None:
                         list_sep = ' '
                     for x in val:
-                        s = str(x).strip()
+                        s = str(x)
                         if escape:
                             s = escape_string(str(x))
                         if val.index(x) == len(val)-1:
