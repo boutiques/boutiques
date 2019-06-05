@@ -294,7 +294,7 @@ class PrettyPrinter():
             inp_kwargs['help'] = textwrap.dedent(inp_descr)
             if inp_descr.split("\n")[4].find("Optional: False") is not -1:
                 required = self.parser.add_argument_group('required arguments')
-                required.add_argument(*inp_args, **inp_kwargs, required=True)
+                required.add_argument(*inp_args, **inp_kwargs)
             else:
                 self.parser.add_argument(*inp_args, **inp_kwargs)
 
