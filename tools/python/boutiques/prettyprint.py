@@ -16,14 +16,13 @@ class PrettyPrinter():
     def createHelpText(self):
         self.createLUT()
         self.descMetadata()
+        self.parser = ArgumentParser(description=self.helptext,
+                                     formatter_class=RawTextHelpFormatter,
+                                     add_help=False)
 
         # Add container information - if applicable
         if self.desc.get("container-image"):
             self.descContainer()
-
-        # Add output information - if applicable
-        if self.desc.get("output-files"):
-            self.descOutputs()
 
         # Add group information - if applicable
         if self.desc.get("groups"):
@@ -36,6 +35,10 @@ class PrettyPrinter():
         # Add error codes - if applicable
         if self.desc.get("error-codes"):
             self.descErrors()
+
+        # Add output information - if applicable
+        if self.desc.get("output-files"):
+            self.descOutputs()
 
         self.descInputs()
 
@@ -117,8 +120,8 @@ class PrettyPrinter():
                                 "".format("\n\t ".join(
                                                     output["file-template"]
                                                   )))
-            output_info += "\n"
-        self._addSegment(output_info)
+
+        self.parser.epilog = "\n\n{0}\n\n{1}".format(self.sep, output_info)
 
     def descGroups(self):
         groups = self.desc["groups"]
@@ -161,9 +164,6 @@ class PrettyPrinter():
         self._addSegment(ecod_info)
 
     def descInputs(self):
-        self.parser = ArgumentParser(description=self.helptext,
-                                     formatter_class=RawTextHelpFormatter,
-                                     add_help=False)
         inputs = self.CLfields
 
         # For every command-line key (i.e. input)...
