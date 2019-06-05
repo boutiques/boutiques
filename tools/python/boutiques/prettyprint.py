@@ -291,12 +291,11 @@ class PrettyPrinter():
                 inp_descr += inp_desc_footer
 
             # Add the newly created argument to parser depending on optionality
+            inp_kwargs['help'] = textwrap.dedent(inp_descr)
             if inp_descr.split("\n")[4].find("Optional: False") is not -1:
                 required = self.parser.add_argument_group('required arguments')
-                inp_kwargs['help'] = textwrap.dedent(inp_descr)
                 required.add_argument(*inp_args, **inp_kwargs, required=True)
             else:
-                inp_kwargs['help'] = textwrap.dedent(inp_descr)
                 self.parser.add_argument(*inp_args, **inp_kwargs)
 
     def _addSegment(self, segment):
