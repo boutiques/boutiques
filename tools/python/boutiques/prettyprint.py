@@ -11,22 +11,16 @@ class PrettyPrinter():
     def __init__(self, descriptor):
         self.sep = "".join(["="] * 80)
         self.desc = descriptor
+        self.epilog = ""
         self.createHelpText()
 
     def createHelpText(self):
         self.createLUT()
         self.descMetadata()
-        self.parser = ArgumentParser(description=self.helptext,
-                                     formatter_class=RawTextHelpFormatter,
-                                     add_help=False)
 
         # Add container information - if applicable
         if self.desc.get("container-image"):
             self.descContainer()
-
-        # Add group information - if applicable
-        if self.desc.get("groups"):
-            self.descGroups()
 
         # Add system requirements - if applicable
         if self.desc.get("suggested-resources"):
@@ -36,12 +30,16 @@ class PrettyPrinter():
         if self.desc.get("error-codes"):
             self.descErrors()
 
+        # Add group information - if applicable
+        if self.desc.get("groups"):
+            self.descGroups()
+
         # Add output information - if applicable
         if self.desc.get("output-files"):
             self.descOutputs()
 
         self.descInputs()
-
+        self.parser.epilog = self.epilog
         self.docstring = self.parser.format_help()
         self.docstring = "\n\n".join(self.docstring.split("\n\n")[1:])
 
@@ -122,9 +120,9 @@ class PrettyPrinter():
             else:
                 output_info += temp_info
 
-        self.parser.epilog = "\n\n{0}\n\n{1}".format(self.sep, config_info) \
+        self.epilog = "\n\n{0}\n\n{1}".format(self.sep, config_info) \
             if config_info is not "Config Files:" else ""
-        self.parser.epilog += "\n\n{0}\n\n{1}".format(self.sep, output_info)
+        self.epilog += "\n\n{0}\n\n{1}".format(self.sep, output_info)
 
     def descGroups(self):
         groups = self.desc["groups"]
@@ -167,6 +165,9 @@ class PrettyPrinter():
         self._addSegment(ecod_info)
 
     def descInputs(self):
+        self.parser = ArgumentParser(description=self.helptext,
+                                     formatter_class=RawTextHelpFormatter,
+                                     add_help=False)
         inputs = self.CLfields
         required = self.parser.add_argument_group('required arguments')
 
