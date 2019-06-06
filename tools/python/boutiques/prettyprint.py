@@ -171,7 +171,12 @@ class PrettyPrinter():
             # Re-initialize an empty argument
             inp_args = []
             inp_kwargs = {}
-            inp_descr = ""
+            opt_inp_descr = ""
+            req_inp_descr = ""
+            opt_inp_desc_header = ""
+            opt_inp_desc_footer = ""
+            req_inp_desc_header = ""
+            req_inp_desc_footer = ""
 
             # Get all inputs with the command-line key
             inps = [inps
@@ -194,18 +199,26 @@ class PrettyPrinter():
             else:
                 inp_args += [clkey]
 
-            # If multiple inputs share a command-line key
-            if len(inps) > 1:
-                inp_descr += "Multiple Options...\n"
-                inp_desc_header = "Option {0}:\n"
-                inp_desc_footer = "\n"
-            else:
-                inp_desc_header = ""
-                inp_desc_footer = ""
+            # If multiple inputs of the same optionality
+            # share a command-line key
+            multi_opt = sum(bool(inp.get("optional")) for inp in inps) > 1
+            multi_req = sum(not bool(inp.get("optional")) for inp in inps) > 1
+
+            if multi_opt:
+                opt_inp_descr += "Multiple Options...\n"
+                opt_inp_desc_header = "Option {0}:\n"
+                opt_inp_desc_footer = "\n"
+            if multi_req:
+                req_inp_descr += "Multiple Options...\n"
+                req_inp_desc_header = "Option {0}:\n"
+                req_inp_desc_footer = "\n"
 
             # For every input with the clkey (usually just 1)...
             for i_inp, inp in enumerate(inps):
-                inp_descr += inp_desc_header.format(i_inp + 1)
+                if bool(inp.get("optional")):
+                    opt_inp_descr += opt_inp_desc_header.format(i_inp + 1)
+                else:
+                    req_inp_descr += req_inp_desc_header.format(i_inp + 1)
 
                 # Grab basic input fields first
                 tmp_inp_descr = ("ID: {0}\nValue Key: {1}\nType: {2}\n"
@@ -285,17 +298,25 @@ class PrettyPrinter():
                     descr_text = "Description: {0}".format(inp["description"])
                 else:
                     descr_text = ""
-                inp_descr += tmp_inp_descr + textwrap.fill(descr_text,
-                                                           subsequent_indent=" "
-                                                           )
-                inp_descr += inp_desc_footer
 
-            # Add the newly created argument to parser depending on optionality
-            inp_kwargs['help'] = textwrap.dedent(inp_descr)
-            if inp_descr.split("\n")[4].find("Optional: False") is not -1:
+                if bool(inp.get("optional")):
+                    opt_inp_descr += tmp_inp_descr \
+                     + textwrap.fill(descr_text, subsequent_indent=" ") \
+                     + opt_inp_desc_footer
+                else:
+                    req_inp_descr += tmp_inp_descr \
+                     + textwrap.fill(descr_text, subsequent_indent=" ") \
+                     + req_inp_desc_footer
+
+            # Add args for required inputs
+            if req_inp_descr is not "":
+                inp_kwargs['help'] = textwrap.dedent(req_inp_descr)
                 required = self.parser.add_argument_group('required arguments')
                 required.add_argument(*inp_args, **inp_kwargs)
-            else:
+
+            # Add args for optional inputs
+            if opt_inp_descr is not "":
+                inp_kwargs['help'] = textwrap.dedent(opt_inp_descr)
                 self.parser.add_argument(*inp_args, **inp_kwargs)
 
     def _addSegment(self, segment):
