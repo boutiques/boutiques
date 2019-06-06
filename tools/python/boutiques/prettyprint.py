@@ -97,7 +97,7 @@ class PrettyPrinter():
         config_info = "Config Files:"
         for output in outputs:
             required = "Optional" if output.get("optional") else "Required"
-            temp_info = "\n\tName: {0} ({1})".format(output["name"], required)
+            temp_info = "\n  Name: {0} ({1})".format(output["name"], required)
             temp_info += "\n\tFormat: {0}".format(output["path-template"])
 
             # Identifies input dependencies based on filename
@@ -123,8 +123,8 @@ class PrettyPrinter():
                 output_info += temp_info
 
         self.parser.epilog = "\n\n{0}\n\n{1}".format(self.sep, config_info) \
-            if config_info is not None else ""
-        self.parser.epilog = "\n\n{0}\n\n{1}".format(self.sep, output_info)
+            if config_info is not "Config Files:" else ""
+        self.parser.epilog += "\n\n{0}\n\n{1}".format(self.sep, output_info)
 
     def descGroups(self):
         groups = self.desc["groups"]
@@ -168,6 +168,7 @@ class PrettyPrinter():
 
     def descInputs(self):
         inputs = self.CLfields
+        required = self.parser.add_argument_group('required arguments')
 
         # For every command-line key (i.e. input)...
         for clkey in self.lut.keys():
@@ -314,7 +315,6 @@ class PrettyPrinter():
             # Add args for required inputs
             if req_inp_descr is not "":
                 inp_kwargs['help'] = textwrap.dedent(req_inp_descr)
-                required = self.parser.add_argument_group('required arguments')
                 required.add_argument(*inp_args, **inp_kwargs)
 
             # Add args for optional inputs
