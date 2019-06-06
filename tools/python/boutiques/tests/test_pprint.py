@@ -53,3 +53,16 @@ class TestPPrint(TestCase):
         self.assertFalse("Optional: False" in positional_inputs)
         self.assertFalse("Optional: False" in optional_inputs)
         self.assertFalse("Optional: True" in required_inputs)
+
+    def test_output_config_separation(self):
+        self.maxDiff = None
+        fil = op.join(op.split(bfile)[0],
+                      'schema/examples/test_pretty_print.json')
+        prettystring = bosh.prettyprint(fil)
+        categories = prettystring.split("=" * 80)
+        configs = categories[7]
+        outputs = categories[8]
+        self.assertTrue("Config Files:" in configs)
+        self.assertTrue("Template:" in configs)
+        self.assertTrue("Output Files:" in outputs)
+        self.assertFalse("Template:" in outputs)
