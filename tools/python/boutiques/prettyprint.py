@@ -94,33 +94,36 @@ class PrettyPrinter():
     def descOutputs(self):
         outputs = self.desc["output-files"]
         output_info = "Output Files:"
+        config_info = "Config Files:"
         for output in outputs:
             required = "Optional" if output.get("optional") else "Required"
-            output_info += "\n\tName: {0} ({1})".format(output["name"],
-                                                        required)
-            output_info += "\n\tFormat: {0}".format(output["path-template"])
+            temp_info = "\n\tName: {0} ({1})".format(output["name"], required)
+            temp_info += "\n\tFormat: {0}".format(output["path-template"])
 
             # Identifies input dependencies based on filename
             depids = ["/".join(self.lut[inp])
                       for inp in self.lut.keys()
                       if inp in output["path-template"]]
             if depids:
-                output_info += ("\n\tFilename depends on Input IDs: "
-                                "{0}".format(", ".join(depids)))
+                temp_info += ("\n\tFilename depends on Input IDs: "
+                              "{0}".format(", ".join(depids)))
 
             # Gets stripped extensions
             if output.get("path-template-stripped-extensions"):
                 exts = ", ".join(output["path-template-stripped-extensions"])
-                output_info += ("\n\tStripped extensions (before substitution):"
-                                " {0}".format(exts))
+                temp_info += ("\n\tStripped extensions (before substitution):"
+                              " {0}".format(exts))
 
             # If a config file, add the template
             if output.get("file-template"):
-                output_info += ("\n\tTemplate:\n\t {0}"
-                                "".format("\n\t ".join(
-                                                    output["file-template"]
-                                                  )))
+                temp_info += ("\n\tTemplate:\n\t {0}"
+                              "".format("\n\t ".join(output["file-template"])))
+                config_info += temp_info
+            else:
+                output_info += temp_info
 
+        self.parser.epilog = "\n\n{0}\n\n{1}".format(self.sep, config_info) \
+            if config_info is not None else ""
         self.parser.epilog = "\n\n{0}\n\n{1}".format(self.sep, output_info)
 
     def descGroups(self):
