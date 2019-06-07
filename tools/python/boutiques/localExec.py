@@ -429,7 +429,9 @@ class LocalExecutor(object):
 
         elif conTypeToUse == 'singularity':
             if not conIndex:
-                conIndex = "shub://"
+                conIndex = "docker://"
+            elif not conIndex.startswith(r"[a-z,A-Z,0-9]+://"):
+                conIndex = "docker://" + conIndex + "/"
             elif not conIndex.endswith("://"):
                 conIndex = conIndex + "://"
 
