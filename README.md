@@ -19,7 +19,7 @@ capabilities is available
 and a more complete description is
 [here](https://academic.oup.com/gigascience/article/7/5/giy016/4951979).
 
-## Installation
+# Installation
 
 Simple! Just open your favourite terminal and type:
 
@@ -32,7 +32,7 @@ If you want the latest changes that aren't officially released yet, you can also
 
     $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques&subdirectory=tools/python"
 
-## Tutorial
+# Tutorial
 
 Our
 [tutorial](https://github.com/boutiques/boutiques-tutorial/blob/master/notebooks/tutorial.ipynb)
@@ -43,6 +43,6 @@ and Python APIs. Give it a try!
 
 Excited by the project and want to get involved?! *Please* check out our [contributing guide](./CONTRIBUTING.md), and look through the
 [issues](https://github.com/boutiques/boutiques/issues/) (in particular, those tagged with
-"[beginner](https://github.com/boutiques/boutiques/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aopen%20label%3Abeginner)") to start seeing where
+"[good first issue](https://github.com/boutiques/boutiques/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)") to start seeing where
 you can lend a hand. We look forward to approving your amazing contributions!
 
