@@ -808,6 +808,13 @@ class LocalExecutor(object):
             # Add new command line
             self.cmd_line.append(self._generateCmdLineFromInDict())
 
+    def cleanedParamFlags(self, validParams):
+        output = {}
+        for key in validParams:
+            if type(validParams[key]) is not bool or validParams[key]:
+                output[key] = validParams[key]
+        return output
+
     # Read in parameter input file or string
     def readInput(self, infile):
 
