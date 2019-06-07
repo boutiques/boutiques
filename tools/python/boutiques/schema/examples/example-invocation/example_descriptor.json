@@ -1,0 +1,89 @@
+{
+    "command-line": "test", 
+    "container-image": {
+        "entrypoint": false, 
+        "image": "neurodata/ndmg:v0.0.41-1", 
+        "index": "index.docker.io", 
+        "type": "docker"
+    },
+    "description": "test descriptor for bosh example", 
+    "error-codes": [
+        {
+            "code": 1, 
+            "description": "crashed"
+        }, 
+        {
+            "code": 12, 
+            "description": "crashed badly"
+        }
+    ], 
+    "groups": [
+        {
+            "mutually-exclusive": true,
+            "id": "mutex_a1_a2", 
+            "members": [
+                "a1",
+                "a2"
+            ],
+            "name": "group of mutually-exclusive inputs"
+        }
+    ], 
+    "inputs": [
+        {
+            "id": "a1", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["a1"]
+        },
+        {
+            "id": "a2", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["a2"]
+        },
+        {
+            "id": "b1", 
+            "name": "test", 
+            "optional": false, 
+            "type": "String",
+            "value-choices": ["b1"]
+        },
+        {
+            "id": "b2", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["b2"]
+        },
+        {
+            "id": "c1", 
+            "name": "test", 
+            "optional": true, 
+            "type": "String",
+            "value-choices": ["c1"]
+        },
+        {
+            "id": "c2", 
+            "name": "test", 
+            "optional": false, 
+            "type": "String",
+            "value-choices": ["c2"]
+        }
+    ],
+    "name": "test", 
+    "output-files": [
+        {
+            "id": "test", 
+            "name": "test", 
+            "optional": true, 
+            "path-template": "test", 
+            "path-template-stripped-extensions": [
+                ".test"
+            ]
+        }
+    ], 
+    "schema-version": "0.5", 
+    "tool-version": "v0.0.41-1"
+}

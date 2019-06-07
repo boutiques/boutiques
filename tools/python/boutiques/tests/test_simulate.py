@@ -74,7 +74,7 @@ class TestSimulate(TestCase):
                                                      json.dumps(test_json),
                                                      "-j"])
         mock_random.return_value = 0
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        ret = bosh.bosh(args=["example", json.dumps(test_json)])
         self.assertIsInstance(json.loads(ret), dict)
 
         # Test exclusive lower bound
@@ -83,7 +83,7 @@ class TestSimulate(TestCase):
                                                      json.dumps(test_json),
                                                      "-j"])
         mock_random.return_value = 0.001
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        ret = bosh.bosh(args=["example", json.dumps(test_json)])
         self.assertIsInstance(json.loads(ret), dict)
 
         # Test inclusive upper bound
@@ -93,7 +93,7 @@ class TestSimulate(TestCase):
                                                      json.dumps(test_json),
                                                      "-j"])
         mock_random.return_value = 1
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        ret = bosh.bosh(args=["example", json.dumps(test_json)])
         self.assertIsInstance(json.loads(ret), dict)
 
         # Test exclusive upper bound
@@ -102,7 +102,7 @@ class TestSimulate(TestCase):
                                                      json.dumps(test_json),
                                                      "-j"])
         mock_random.return_value = 0.999
-        ret = bosh.bosh(args=["example", json.dumps(test_json)]).stdout
+        ret = bosh.bosh(args=["example", json.dumps(test_json)])
         self.assertIsInstance(json.loads(ret), dict)
 
     def test_success_json(self):
@@ -111,7 +111,7 @@ class TestSimulate(TestCase):
                                       "example1_docker.json")).read()
         ret = bosh.execute("simulate", desc_json, "-j").stdout
         self.assertIsInstance(json.loads(ret), dict)
-        ret = bosh.bosh(args=["example", desc_json]).stdout
+        ret = bosh.bosh(args=["example", desc_json])
         self.assertIsInstance(json.loads(ret), dict)
 
     def test_failing_bad_descriptor_invo_combos(self):
