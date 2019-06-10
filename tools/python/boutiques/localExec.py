@@ -396,12 +396,13 @@ class LocalExecutor(object):
             return (conName, container_location)
 
         elif conTypeToUse == 'singularity':
+            if conType == 'docker':
+                # We're running a Docker image in Singularity
+                conIndex = "docker://" + conIndex
             if not conIndex:
-                conIndex = "docker://"
-            elif not conIndex.startswith(r"[a-z,A-Z,0-9]+://"):
-                conIndex = "docker://" + conIndex + "/"
-            elif not conIndex.endswith("://"):
-                conIndex = conIndex + "://"
+                conIndex = "shub://"
+            if not conIndex.endswith("/"):
+                    conIndex = conIndex + "/"
 
             if self.imagePath:
                 conName = op.basename(self.imagePath)
