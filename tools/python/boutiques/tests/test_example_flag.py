@@ -17,7 +17,7 @@ class TestExampleFlag(TestCase):
                            os.path.join(ex_dir, "example-flag.json"),
                            "-i",
                            os.path.join(ex_dir, "i1.json"))
-        self.assertEqual(ret.shell_command.strip(), "/bin/true -t -f")
+        self.assertEqual(ret.shell_command.strip(), "/bin/true -a -b")
 
     def test_example_flag_2(self):
         ex_dir = os.path.join(os.path.dirname(bfile),
@@ -29,20 +29,13 @@ class TestExampleFlag(TestCase):
         self.assertEqual(ret.shell_command.strip(), "/bin/true")
 
     def test_example_flag_3(self):
+        self.maxDiff = None
         ex_dir = os.path.join(os.path.dirname(bfile),
                               "schema", "examples", "example-flag")
         ret = bosh.execute("simulate",
                            os.path.join(ex_dir, "example-flag.json"),
                            "-i",
                            os.path.join(ex_dir, "i3.json"))
-        self.assertEqual(ret.shell_command.strip(), "/bin/true -t")
 
-    def test_example_flag_4(self):
-        ex_dir = os.path.join(os.path.dirname(bfile),
-                              "schema", "examples", "example-flag")
-        ret = bosh.execute("simulate",
-                           os.path.join(ex_dir, "example-flag.json"),
-                           "-i",
-                           os.path.join(ex_dir, "i4.json"))
-        self.assertEqual(
-            ret.shell_command.replace("  ", " ").strip(), "/bin/true -f")
+        self.assertEqual(ret.shell_command.replace("  ", " ").strip(),
+                         "/bin/true -b")
