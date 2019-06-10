@@ -70,6 +70,20 @@
             "optional": false, 
             "type": "String",
             "value-choices": ["c2"]
+        },
+        {
+            "command-line-flag": "-d1",
+            "id": "d1",
+            "name": "test_flag",
+            "optional": true,
+            "type": "Flag"
+        },
+        {
+            "command-line-flag": "-d2",
+            "id": "d2",
+            "name": "test_flag2",
+            "optional": true,
+            "type": "Flag"
         }
     ],
     "name": "test", 
