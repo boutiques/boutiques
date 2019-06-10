@@ -49,7 +49,7 @@ class TestExample(TestCase):
 
         process = subprocess.Popen(command, shell=True,
                                    stderr=subprocess.PIPE)
-        error = process.stderr.read()
+        error = process.stderr.read().decode("utf-8")
 
         self.assertIn("d2 (False) flag is set to true or otherwise omitted",
                       error)
