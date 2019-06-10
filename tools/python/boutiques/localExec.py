@@ -625,8 +625,10 @@ class LocalExecutor(object):
                 return randStr(prm['id'])
             if prm['type'] == 'Number':
                 return randNum(prm)
+            # Since a flag can't be False, it's either there or not,
+            # there's no point in setting it to False.
             if prm['type'] == 'Flag':
-                return rnd.choice([True, False])
+                return True
             if prm['type'] == 'File':
                 return randFile(prm['id'])
 
@@ -807,13 +809,6 @@ class LocalExecutor(object):
                 raise e  # Pass on (throw) the caught exception
             # Add new command line
             self.cmd_line.append(self._generateCmdLineFromInDict())
-
-    def cleanedParamFlags(self, validParams):
-        output = {}
-        for key in validParams:
-            if type(validParams[key]) is not bool or validParams[key]:
-                output[key] = validParams[key]
-        return output
 
     # Read in parameter input file or string
     def readInput(self, infile):
@@ -1095,6 +1090,9 @@ class LocalExecutor(object):
                 check(None,
                       lambda x, y: type(x) == bool,
                       "is not a valid flag value", val)
+                check(None,
+                      lambda x, y: x,
+                      "flag is set to true or otherwise omitted", val)
             elif targ["type"] == "File":
                 # Check path-type (absolute vs relative)
                 if not self.forcePathType:

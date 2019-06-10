@@ -488,8 +488,7 @@ def example(*params):
                               "skipDataCollect": True,
                               "requireComplete": results.complete})
     executor.generateRandomParams(1)
-    params = executor.cleanedParamFlags(executor.in_dict)
-    return json.dumps(params, indent=4, sort_keys=True)
+    return json.dumps(executor.in_dict, indent=4, sort_keys=True)
 
 
 def pull(*params):
