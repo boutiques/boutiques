@@ -125,12 +125,7 @@ class customParser():
 
         # can loop through to compare extracted params with extc_dict
         # and add param to argparser for each prm
-        for prm in pattern.flat():
-            print(prm.name, end='')
-            if prm.value is not None:
-                print(" - ", end='')
-                print(prm.value)
-            else:
-                print()
+        for prm in pattern.flat() + collected:
+            print(prm)
 
 customParser().docoptToArgumentParser(__doc__)
