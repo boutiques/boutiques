@@ -396,13 +396,15 @@ class LocalExecutor(object):
             return (conName, container_location)
 
         elif conTypeToUse == 'singularity':
-            if conType == 'docker':
+            if not conIndex and conType == 'docker':
                 # We're running a Docker image in Singularity
+                conIndex = "docker://"
+            elif conType == 'docker':
                 conIndex = "docker://" + conIndex
             if not conIndex:
                 conIndex = "shub://"
-            if not conIndex.endswith("/"):
-                    conIndex = conIndex + "/"
+            """elif not conIndex.endswith("://"):
+                conIndex = conIndex + "://"""
 
             if self.imagePath:
                 conName = op.basename(self.imagePath)
@@ -466,6 +468,7 @@ class LocalExecutor(object):
         pull_loc = "\"{0}\" {1}{2}".format(conNameTmp,
                                            conIndex,
                                            conImage)
+        print(pull_loc)
         container_location = ("Pulled from {1}{2} ({0} not found "
                               "in current working "
                               "directory or specified "
