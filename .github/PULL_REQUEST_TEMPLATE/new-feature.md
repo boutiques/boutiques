@@ -11,6 +11,7 @@ assignees: ''
 <!--- Task to do for an approval of the pull request -->
 - [ ] **DO** Unit tests pass.
 - [ ] **DO** Created unit test for the feature.
+- [ ] **DO** If feature adds a new `bosh` command, added a section to the [tutorial](https://github.com/boutiques/tutorial).
 - [ ] **TRY** API is well documented (refer to
 [PEP 257](https://www.python.org/dev/peps/pep-0257/)).
 
