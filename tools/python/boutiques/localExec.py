@@ -403,8 +403,8 @@ class LocalExecutor(object):
                 conIndex = "docker://" + conIndex
             if not conIndex:
                 conIndex = "shub://"
-            """elif not conIndex.endswith("://"):
-                conIndex = conIndex + "://"""
+            if not conIndex.endswith("/"):
+                conIndex = conIndex + "/"
 
             if self.imagePath:
                 conName = op.basename(self.imagePath)
