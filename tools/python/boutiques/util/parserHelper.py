@@ -17,16 +17,13 @@ Options:
   --participant_label=<subjects>  String or Comma separated list of participants to process. Defaults to all.
   --task_label=<tasks>            String or Comma separated list of fmri tasks to process. Defaults to all.
   --session_label=<sessions>      String or Comma separated list of sessions to process. Defaults to all.
-
   --anat_only                     Only run the anatomical pipeline.
   --rerun-if-incomplete           Will delete and rerun ciftify workflows if incomplete outputs are found.
-
   --read-from-derivatives PATH    Indicates pre-ciftify will be read from
                                   the indicated derivatives path and freesurfer/fmriprep will not be run
   --func-preproc-dirname STR      Name derivatives folder where func derivatives are found [default: fmriprep]
   --func-preproc-desc TAG         The bids desc tag [default: preproc] assigned to the preprocessed file
   --older-fmriprep                Read from fmriprep derivatives that are version 1.1.8 or older
-
   --fmriprep-workdir PATH         Path to working directory for fmriprep
   --fs-license FILE               The freesurfer license file
   --n_cpus INT                    Number of cpu's available. Defaults to the value
@@ -34,7 +31,6 @@ Options:
   --ignore-fieldmaps              Will ignore available fieldmaps and use syn-sdc for fmriprep
   --no-SDC                        Will not do fmriprep distortion correction at all (NOT recommended)
   --fmriprep-args="args"          Additional user arguments that may be added to fmriprep stages
-
   --resample-to-T1w32k            Resample the Meshes to 32k Native (T1w) Space
   --surf-reg REGNAME              Registration sphere prefix [default: MSMSulc]
   --no-symlinks                   Will not create symbolic links to the zz_templates folder
@@ -46,7 +42,6 @@ Options:
   --ciftify-conf YAML             EXPERT OPTION. Path to a yaml configuration file. Overrides
                                   the default settings in
                                   ciftify/data/ciftify_workflow_settings.yaml
-
   -v,--verbose                    Verbose logging
   --debug                         Debug logging in Erin's very verbose style
   -n,--dry-run                    Dry run
@@ -84,23 +79,58 @@ copied into the subject folder insteadself.
 Written by Erin W Dickie
 """
 
-from docopt import docopt
+import re
+import sys
+import docopt as dcpt
+from argparse import ArgumentParser
 
 
 class customParser():
     # Idea1: create a translator docopt -> argparse
     # Idea2: create a universal any -> parser -> any
+        # IMPLEMENTATION 1:
+            # use docopt's return dict to extract prms from docopt docstring
+            # match prm-1 prm+1 for specifications
+            # addArg for each prm
+            # !! how to build custom groups: 
+            #   [] optional
+            #   () required
+            #   ... one or more
+            #   | mutually exclusive
+        # IMPLEMENTATION 2:
+            # parse line by line with "mode switch" at usage, args, options
+        # IMPLEMENTATION 3:
+            # !?hack!? docopt's pycode
+
     def __init__(self):
         self.positional_arguments = {}
         self.optional_arguments = {}
         self.required_arguments = {}
 
     def docoptToArgumentParser(self, docopt_str):
-        # used to validate imported parser
-        expected_args_dict = docopt(docopt_str)
-        print(expected_args_dict)
+        # initial doc validation
+        extc_dict = dcpt.docopt(docopt_str)
 
+        usage_sections = dcpt.parse_section('usage:', docopt_str)
 
-test = customParser()
+        options = dcpt.parse_defaults(docopt_str)
+        pattern = dcpt.parse_pattern(
+            dcpt.formal_usage(usage_sections[0]), options)
+        argv = dcpt.parse_argv(dcpt.Tokens(sys.argv[1:]), list(options), False)
+        pattern_options = set(pattern.flat(dcpt.Option))
+        for options_shortcut in pattern.flat(dcpt.OptionsShortcut):
+            doc_options = dcpt.parse_defaults(docopt_str)
+            options_shortcut.children = list(set(doc_options) - pattern_options)
+        matched, left, collected = pattern.fix().match(argv)
 
-test.docoptToArgumentParser(__doc__)
+        # can loop through to compare extracted params with extc_dict
+        # and add param to argparser for each prm
+        for prm in pattern.flat():
+            print(prm.name, end='')
+            if prm.value is not None:
+                print(" - ", end='')
+                print(prm.value)
+            else:
+                print()
+
+customParser().docoptToArgumentParser(__doc__)
