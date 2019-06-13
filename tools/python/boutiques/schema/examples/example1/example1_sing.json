@@ -57,6 +57,7 @@
 	    "id": "file_list",
 	    "name": "File list",
 	    "type": "File",
+	    "optional": true,
 	    "value-key": "[FILE_LIST]"
 	},
         {
