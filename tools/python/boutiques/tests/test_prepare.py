@@ -65,7 +65,7 @@ class TestPrepare(TestCase):
         ret = bosh.execute("prepare",
                            os.path.join(example1_dir,
                                         "example1_sing.json"))
-        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
+        self.assertIn("Local (boutiques-example1-latest.simg)", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -101,10 +101,10 @@ class TestPrepare(TestCase):
         with pytest.raises(ExecutorError) as e:
             bosh.execute("prepare",
                          os.path.join(example1_dir,
-                                      "example1_sing.json"),
+                                      "example1_sing_crash_pull.json"),
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
-                                      "boutiques-example1-test.simg"))
+                                      "boutiques-example1-latest.simg"))
         self.assertIn("Could not pull Singularity image", str(e))
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir())
@@ -178,11 +178,11 @@ class TestPrepare(TestCase):
         # Try to pull it and mock that the pull was successful.
         ret = bosh.execute("prepare",
                            os.path.join(example1_dir,
-                                        "example1_sing.json"),
+                                        "example1_sing_crash_pull.json"),
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
-        self.assertIn("Pulled from docker://boutiques/example1:test",
+        self.assertIn("Pulled from docker://boutiques/example1crashcrashcrash:test",
                       ret.stdout)
 
     def test_prepare_no_container(self):
