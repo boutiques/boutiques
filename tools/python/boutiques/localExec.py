@@ -892,7 +892,7 @@ class LocalExecutor(object):
                     s_val = ""
                     list_sep = self.safeGet(param_id, 'list-separator')
                     if list_sep is None:
-                        list_sep = " "
+                        list_sep = ' '
                     for x in val:
                         s = str(x)
                         if escape:
@@ -920,12 +920,18 @@ class LocalExecutor(object):
                 if (self.safeGet(param_id, 'type') == 'File' or
                         self.safeGet(param_id, 'type') == 'String'):
                     for extension in stripped_extensions:
-                        val = val.replace(extension, "")
+                        val = val.replace(extension, '')
                 # Here val can be a number so we need to cast it
-                template = template.replace(clk, str(val))
+                if val is not None and val is not "":
+                    template = template.replace(clk, str(val))
+                else:
+                    template = template.replace(' ' + clk, str(val))
             else:  # param has no value
                 if unfound_keys == "remove":
-                    template = template.replace(clk, '')
+                    if (' ' + clk) in template:
+                        template = template.replace(' ' + clk, '')
+                    else:
+                        template = template.replace(clk, '')
                 elif unfound_keys == "clear":
                     if clk in template:
                         return ""
