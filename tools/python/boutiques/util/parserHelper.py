@@ -85,6 +85,21 @@ import docopt as dcpt
 from argparse import ArgumentParser
 
 
+class genericArgument():
+    name = ""
+    description = ""
+    required = False
+
+
+class positionalArgument(genericArgument):
+    required = True
+
+
+class optionalArgument(genericArgument):
+    flag = ""
+    full_flag = ""
+
+
 class customParser():
     # Idea1: create a translator docopt -> argparse
     # Idea2: create a universal any -> parser -> any
@@ -101,13 +116,15 @@ class customParser():
             # parse line by line with "mode switch" at usage, args, options
         # IMPLEMENTATION 3:
             # !?hack!? docopt's pycode
+            #   Argparse's nargs="?" nargs="*"
 
     def __init__(self):
         self.positional_arguments = {}
         self.optional_arguments = {}
-        self.required_arguments = {}
+        self.descriptions = ""
+        self.help = ""
 
-    def docoptToArgumentParser(self, docopt_str):
+    def docoptToParser(self, docopt_str):
         # initial doc validation
         extc_dict = dcpt.docopt(docopt_str)
 
@@ -125,7 +142,17 @@ class customParser():
 
         # can loop through to compare extracted params with extc_dict
         # and add param to argparser for each prm
-        for prm in pattern.flat() + collected:
+        for prm in pattern.flat():
             print(prm)
+
+    def getArgparseParser(self):
+        parser = ArgumentParser(self.descriptions,
+                                add_help=if self.help is not None else False)
+        if self.help is not None:
+            parser.add_argument("--help", "-h", action="store_true", self.help)
+
+        for opt in self.positional_arguments:
+            parser.positional_arguments(opt.name, action="store")
+
 
 customParser().docoptToArgumentParser(__doc__)
