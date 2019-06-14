@@ -26,6 +26,15 @@
                 "a2"
             ],
             "name": "group of mutually-exclusive inputs"
+        },
+        {
+            "mutually-exclusive": true,
+            "id": "mutex_a2_b2", 
+            "members": [
+                "a2",
+                "b2"
+            ],
+            "name": "group of mutually-exclusive inputs"
         }
     ], 
     "inputs": [
