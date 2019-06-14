@@ -581,7 +581,7 @@
                     },
                     "command-line-flag": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
-                        "description": "Option flag of the output, involved in the value-key substitution. All flags are assumed to be optional. The optional property cannot be set to false. Examples: -o, --output",
+                        "description": "Option flag of the output, involved in the value-key substitution. Examples: -o, --output",
                         "type": "string"
                     },
                     "command-line-flag-separator": {
