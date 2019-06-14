@@ -470,7 +470,6 @@ class LocalExecutor(object):
         pull_loc = "\"{0}\" {1}{2}".format(conNameTmp,
                                            conIndex,
                                            conImage)
-        print(pull_loc)
         container_location = ("Pulled from {1}{2} ({0} not found "
                               "in current working "
                               "directory or specified "
