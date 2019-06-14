@@ -39,3 +39,21 @@ class TestExampleFlag(TestCase):
 
         self.assertEqual(ret.shell_command.replace("  ", " ").strip(),
                          "/bin/true -b")
+
+    def test_example_flag_4(self):
+        self.maxDiff = None
+        test_desc = os.path.join(
+            os.path.split(bfile)[0],
+            'schema/examples/example-flag/example-flag.json')
+        test_invocation = os.path.join(
+            os.path.split(bfile)[0],
+            'schema/examples/example-flag/i4.json')
+        command = ("bosh exec simulate " +
+                   test_desc + " -i " + test_invocation)
+
+        process = subprocess.Popen(command, shell=True,
+                                   stderr=subprocess.PIPE)
+        stderr = process.stderr.read()[-60:].decode("utf-8").strip()
+        self.assertTrue(
+            "dash_b (False) flag is set to true or otherwise omitted" in
+            stderr)
