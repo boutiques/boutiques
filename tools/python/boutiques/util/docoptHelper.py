@@ -79,9 +79,11 @@ Written by Erin W Dickie
 
 import re
 import sys
+import os.path as op
 import docopt as dcpt
 import simplejson as json
 from argparse import ArgumentParser
+from boutiques import __file__ as bfile
 
 
 class docoptHelper():
@@ -91,32 +93,22 @@ class docoptHelper():
 
         self.positional_arguments = {}
         self.optional_arguments = {}
-        self.dcpt_cmdl = ""
-        self.dcpt_args = ""
-        self.dcpt_opts = ""
         self.descriptions = ""
         self.help = ""
 
-    def importDocopt(self, docopt_str):
-        # initial doc validation
-        extc_dict = dcpt.docopt(docopt_str)
-
-        self.dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
-        self.dcpt_args = dcpt.parse_section('arguments:', docopt_str)
-        self.dcpt_opts = dcpt.parse_section('options:', docopt_str)
-
+    def importDocopt(self, docopt_str, dcpt_cmdl):
         options = dcpt.parse_defaults(docopt_str)
+
         pattern = dcpt.parse_pattern(
-            dcpt.formal_usage(self.dcpt_cmdl[0]), options)
+            dcpt.formal_usage(dcpt_cmdl[0]), options)
         argv = dcpt.parse_argv(dcpt.Tokens(sys.argv[1:]), list(options), False)
         pattern_options = set(pattern.flat(dcpt.Option))
+
         for options_shortcut in pattern.flat(dcpt.OptionsShortcut):
             doc_options = dcpt.parse_defaults(docopt_str)
             options_shortcut.children = list(set(doc_options) - pattern_options)
         matched, left, collected = pattern.fix().match(argv)
 
-        # can loop through to compare extracted params with extc_dict
-        # and add param to argparser for each prm
         for prm in pattern.flat():
             if type(prm) is dcpt.Argument:
                 self.positional_arguments[prm.name] = {"value": prm.value}
@@ -131,11 +123,11 @@ class docoptHelper():
                     "Unrecognized argument of type {0}\n\"{1}\": {2}".format(
                         type(prm), prm.name, prm.value))
 
-    def extractCommandLine(self):
-        self.descriptor["command-line"] = self.dcpt_cmdl[0].split()[1]
+    def extractCommandLine(self, dcpt_cmdl):
+        self.descriptor["command-line"] = dcpt_cmdl[0].split()[1]
 
         # Match params in command line with extracted pos_args
-        for arg in self.dcpt_cmdl[0].split()[2:]:
+        for arg in dcpt_cmdl[0].split()[2:]:
             if arg == "[options]":
                 for opt in [opt[2:] for opt in self.optional_arguments]:
                     self.descriptor["command-line"] += \
@@ -146,11 +138,11 @@ class docoptHelper():
             else:
                 print("{0} not added to command line".format(arg))
 
-    def extractDescription(self):
-        self.descriptions = __doc__ \
-            .replace("".join(self.dcpt_cmdl), "") \
-            .replace("".join(self.dcpt_args), "") \
-            .replace("".join(self.dcpt_opts), "")
+    def extractDescription(self, docopt_str, dcpt_cmdl, dcpt_args, dcpt_opts):
+        self.descriptions = docopt_str \
+            .replace("".join(dcpt_cmdl), "") \
+            .replace("".join(dcpt_args), "") \
+            .replace("".join(dcpt_opts), "")
         self.descriptor["description"] = self.descriptions
 
     def extractInputs(self):
@@ -165,12 +157,26 @@ class docoptHelper():
             }
             self.descriptor["inputs"].append(newInp)
 
-    def generateDescriptor(self):
-        self.importDocopt(__doc__)
-        self.extractCommandLine()
-        self.extractDescription()
+    def generateDescriptor(self, docopt_str):
+        extc_dict = dcpt.docopt(docopt_str)
+
+        dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
+        dcpt_args = dcpt.parse_section('arguments:', docopt_str)
+        dcpt_opts = dcpt.parse_section('options:', docopt_str)
+
+        self.importDocopt(docopt_str, dcpt_cmdl)
+        self.extractCommandLine(dcpt_cmdl)
+        self.extractDescription(
+            docopt_str, dcpt_cmdl, dcpt_args, dcpt_opts)
         self.extractInputs()
 
         print(json.dumps(self.descriptor, indent=4))
 
-docoptHelper().generateDescriptor()
+
+sample_docopt_path = op.join(op.split(bfile)[0], 'schema/examples/'
+                             'docopt_to_argparse/'
+                             'sample_docopt.txt')
+with open(sample_docopt_path, "r") as myfile:
+    sample_docopt = myfile.read()
+
+docoptHelper().generateDescriptor(sample_docopt)
