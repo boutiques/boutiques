@@ -235,8 +235,10 @@ class TestExample1(BaseTest):
                          self.get_file_path("example1_sing.json"),
                          self.get_file_path("invocation_sing.json"),
                          "--skip-data-collection",
-                         "-v","{}:/test_mount1".format(self.get_file_path("example1_sing_mount1")),
-                         "-v","{}:/test_mount2".format(self.get_file_path("example1_sing_mount2"))),
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_sing_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_sing_mount2"))),
             ["log-4.txt"], 2,
             self.assert_reflected_output)
 
@@ -246,8 +248,10 @@ class TestExample1(BaseTest):
                          self.get_file_path("example1_sing.json"),
                          "-x",
                          self.get_file_path("invocation_sing.json"),
-                         "-v","{}:/test_mount1".format(self.get_file_path("example1_sing_mount1")),
-                         "-v","{}:/test_mount2".format(self.get_file_path("example1_sing_mount2"))),
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_sing_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_sing_mount2"))),
             ["log-4.txt"], 2,
             self.assert_reflected_output)
 

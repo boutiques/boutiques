@@ -1,5 +1,5 @@
 {
-    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [FILE_LIST]  [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
+    "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [MOUNT_LIST]  [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT]",
     "container-image": {
         "image": "boutiques/example1crashcrashcrash:test", 
         "index": "docker://",
@@ -51,13 +51,13 @@
         }, 
 	{
 	    "command-line-flag": "-t",
-	    "description": "List of files/directories",
+	    "description": "List of files/directories to be mounted in the container",
 	    "list": true,
-	    "id": "file_list",
-	    "name": "File list",
+	    "id": "mount_list",
+	    "name": "Mount list",
 	    "type": "File",
 	    "optional": true,
-	    "value-key": "[FILE_LIST]"
+	    "value-key": "[MOUNT_LIST]"
 	},
         {
             "id": "config_num", 
