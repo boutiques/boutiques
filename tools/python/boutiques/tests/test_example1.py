@@ -46,7 +46,7 @@ class TestExample1(BaseTest):
                            "--skip-data-collection",
                            "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
-                            "-v", "{}:/test_mount2".format(
+                           "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2")))
 
         # Make sure stdout and stderr are not printed on the fly
