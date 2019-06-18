@@ -8,9 +8,23 @@ from boutiques import __file__ as bfile
 
 
 class docoptHelper():
+    TYPE_MAPPINGS = {
+        "REGNAME": "String",
+        "PATH": "File",
+        "FILE": "File",
+        "INT": "Number",
+        "FWHM": "String",
+        "STR": "String",
+        "TAG": "String",
+        "YAML": "String"
+    }
 
-    def __init__(self):
-        self.descriptor = {}
+    def __init__(self, base_descriptor=None):
+        if base_descriptor is not None:
+            with open(base_descriptor, "r") as base_desc:
+                self.descriptor = json.load(base_desc)
+        else:
+            self.descriptor = {}
 
         self.positional_arguments = {}
         self.optional_arguments = {}
@@ -30,13 +44,14 @@ class docoptHelper():
 
         for prm in pattern.flat():
             if type(prm) is dcpt.Argument:
-                self.positional_arguments[prm.name[1:-1]] = {"value": prm.value}
+                self.positional_arguments[prm.name[1:-1]] = {
+                    "default": prm.value}
             elif type(prm) is dcpt.Option:
-                self.optional_arguments[prm.name[2:]] =\
-                    {"value": prm.value,
-                     "short": prm.short,
-                     "long:": prm.long,
-                     "argcount": prm.argcount}
+                self.optional_arguments[prm.name[2:]] = {
+                    "default": prm.value,
+                    "short": prm.short,
+                    "long": prm.long,
+                    "argcount": prm.argcount}
             else:
                 raise EnvironmentError(
                     "Unrecognized argument of type {0}\n\"{1}\": {2}".format(
@@ -96,24 +111,38 @@ class docoptHelper():
         self.descriptor["inputs"] = []
 
         # Add positional arguments, optionality depends on type
-        for inp in {**self.positional_arguments, **self.optional_arguments}:
+        joint_args = {**self.positional_arguments, **self.optional_arguments}
+        for inp in joint_args:
             newInp = {
-                "id": inp,
-                "name": inp.replace("_", " "),
-                "description":
-                {**self.positional_arguments, **self.optional_arguments}[inp]
-                .get('description'),
+                "id": inp.replace("-", "_"),
+                "name": inp,
+                "description": joint_args[inp].get('description'),
                 "optional": inp in self.optional_arguments,
                 "type": "String" if inp in self.positional_arguments else None,
                 "value-key": "[{0}]".format(inp.upper())
             }
             self.descriptor['inputs'].append(newInp)
 
+        # Additional fields for non-flag inputs
         for inp in [inp for inp in self.descriptor['inputs']
                     if inp['type'] is None]:
-            inp['type'] = self.optional_arguments[inp['id']].get('type') if\
-                self.optional_arguments[inp['id']].get('type') is not None else\
-                "Flag"
+            if self.optional_arguments[inp['name']].get('type') is not None:
+                # non flag params can have defaults
+                if joint_args[inp['name']]['default'] is not None:
+                    inp['default-value'] = joint_args[inp['name']]['default']
+                # Get input type for optional arguments
+                docopt_type = self.optional_arguments[inp['name']].get('type')
+                if docopt_type[0] == "<" and docopt_type[-1] == ">":
+                    inp['type'] = "String"
+                    inp['list'] = True
+                elif docopt_type in self.TYPE_MAPPINGS:
+                    inp['type'] = self.TYPE_MAPPINGS[docopt_type]
+                else:
+                    inp['type'] = "String"
+            else:
+                inp['type'] = "Flag"
+                inp['command-line-flag'] =\
+                    self.optional_arguments[inp['name']].get('long')
 
     def generateDescriptor(self, docopt_str):
         extc_dict = dcpt.docopt(docopt_str)
@@ -130,11 +159,14 @@ class docoptHelper():
         return self.descriptor
 
 
-sample_docopt_path = op.join(op.split(bfile)[0], 'schema/examples/'
-                             'docopt_to_argparse/'
-                             'sample_docopt.txt')
-with open(sample_docopt_path, "r") as myfile:
+sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
+                     'docopt_to_argparse/')
+with open(sample_dir + "sample_docopt.txt", "r") as myfile:
     sample_docopt = myfile.read()
-desc = docoptHelper().generateDescriptor(sample_docopt)
 
-print(json.dumps(desc.get("inputs"), indent=4))
+desc = docoptHelper(base_descriptor=(
+    sample_dir + "defaults_docopt_descriptor.json"))\
+    .generateDescriptor(sample_docopt)
+
+with open(sample_dir + "sample_descriptor_output.json", "w+") as output:
+    output.write(json.dumps(desc, indent=4))
