@@ -7,6 +7,7 @@ import subprocess
 import pytest
 from boutiques import __file__ as bfile
 from boutiques.localExec import loadJson
+from boutiques.util.BaseTest import BaseTest
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
     example_boutiques_tool
 import boutiques as bosh
@@ -29,7 +30,7 @@ def retrieve_data_record():
     return data_collect_dict
 
 
-class TestDataCollection(TestCase):
+class TestDataCollection(BaseTest):
 
     def get_examples_dir(self):
         return os.path.join(os.path.dirname(bfile),
@@ -56,7 +57,11 @@ class TestDataCollection(TestCase):
                      os.path.join(example1_dir,
                                   "example1_docker.json"),
                      os.path.join(example1_dir,
-                                  "invocation.json"))
+                                  "invocation.json"),
+                     "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                     "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")
@@ -102,7 +107,11 @@ class TestDataCollection(TestCase):
                                   "example1_docker.json"),
                      os.path.join(example1_dir,
                                   "invocation.json"),
-                     "--skip-data-collection")
+                     "--skip-data-collection",
+                     "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                     "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
 
         new_size = 0
         if os.path.exists(cache_dir):
@@ -134,7 +143,11 @@ class TestDataCollection(TestCase):
                      os.path.join(example1_dir,
                                   "dir_input.json"),
                      os.path.join(example1_dir,
-                                  "dir_invocation.json"))
+                                  "dir_invocation.json"),
+                     "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                     "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
         data_collect_dict = retrieve_data_record()
 
         public_in = data_collect_dict.get("public-invocation")
