@@ -65,7 +65,7 @@ class TestPrepare(TestCase):
         ret = bosh.execute("prepare",
                            os.path.join(example1_dir,
                                         "example1_sing.json"))
-        self.assertIn("Local (boutiques-example1-latest.simg)", ret.stdout)
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
@@ -182,7 +182,8 @@ class TestPrepare(TestCase):
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
-        self.assertIn("Pulled from docker://boutiques/example1crashcrashcrash:test",
+        self.assertIn("Pulled from "
+                      "docker://boutiques/example1crashcrashcrash:test",
                       ret.stdout)
 
     def test_prepare_no_container(self):

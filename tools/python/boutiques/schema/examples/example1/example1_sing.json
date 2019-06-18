@@ -1,7 +1,7 @@
 {
     "command-line": "exampleTool1.py [CONFIG_FILE] [STRING_INPUT] [FILE_LIST] [FLAG_INPUT] [NUMBER_INPUT] [ENUM_INPUT] [FILE_INPUT] [LOG] [INT_LIST_INPUT] [NO_OPTS]", 
     "container-image": {
-        "image": "boutiques/example1:latest", 
+        "image": "boutiques/example1:test", 
         "index": "docker://",
         "type": "singularity",
         "container-opts": ["--home", "$PWD:$PWD"]
@@ -54,8 +54,8 @@
 	    "command-line-flag": "-t",
 	    "description": "List of files/directories",
 	    "list": true,
-	    "id": "file_list",
-	    "name": "File list",
+	    "id": "file_list_input",
+	    "name": "File list input",
 	    "type": "File",
 	    "optional": true,
 	    "value-key": "[FILE_LIST]"

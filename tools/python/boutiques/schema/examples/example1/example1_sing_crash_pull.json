@@ -46,15 +46,15 @@
             "min-list-entries": 1, 
             "name": "A list of ints", 
             "type": "Number",
-	    "integer": true,
+            "integer": true,
             "value-key": "[INT_LIST_INPUT]"
         }, 
 	{
 	    "command-line-flag": "-t",
 	    "description": "List of files/directories",
 	    "list": true,
-	    "id": "file_list",
-	    "name": "File list",
+	    "id": "file_list_input",
+	    "name": "File list input",
 	    "type": "File",
 	    "optional": true,
 	    "value-key": "[FILE_LIST]"
