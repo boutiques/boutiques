@@ -1,82 +1,3 @@
-"""
-Runs a combination of fmriprep and ciftify pipelines from BIDS specification
-
-Usage:
-  fmriprep_ciftify.py <bids_dir> <output_dir> <analysis_level> [options]
-
-Arguments:
-    <bids_dir>               The directory with the input dataset formatted
-                             according to the BIDS standard.
-    <output_dir>             The directory where the output files should be stored.
-                             If you are running ciftify on a partially run analyses see below.
-    <analysis_level>         Analysis level to run (participant or group)
-
-Options:
-  --participant_label=<subjects>  String or Comma separated list of participants to process. Defaults to all.
-  --task_label=<tasks>            String or Comma separated list of fmri tasks to process. Defaults to all.
-  --session_label=<sessions>      String or Comma separated list of sessions to process. Defaults to all.
-  --anat_only                     Only run the anatomical pipeline.
-  --rerun-if-incomplete           Will delete and rerun ciftify workflows if incomplete outputs are found.
-  --read-from-derivatives PATH    Indicates pre-ciftify will be read from
-                                  the indicated derivatives path and freesurfer/fmriprep will not be run
-  --func-preproc-dirname STR      Name derivatives folder where func derivatives are found [default: fmriprep]
-  --func-preproc-desc TAG         The bids desc tag [default: preproc] assigned to the preprocessed file
-  --older-fmriprep                Read from fmriprep derivatives that are version 1.1.8 or older
-  --fmriprep-workdir PATH         Path to working directory for fmriprep
-  --fs-license FILE               The freesurfer license file
-  --n_cpus INT                    Number of cpu's available. Defaults to the value
-                                  of the OMP_NUM_THREADS environment variable
-  --ignore-fieldmaps              Will ignore available fieldmaps and use syn-sdc for fmriprep
-  --no-SDC                        Will not do fmriprep distortion correction at all (NOT recommended)
-  --fmriprep-args="args"          Additional user arguments that may be added to fmriprep stages
-  --resample-to-T1w32k            Resample the Meshes to 32k Native (T1w) Space
-  --surf-reg REGNAME              Registration sphere prefix [default: MSMSulc]
-  --no-symlinks                   Will not create symbolic links to the zz_templates folder
-  --SmoothingFWHM FWHM            Full Width at Half MAX for optional fmri cifti smoothing
-  --MSM-config PATH               EXPERT OPTION. The path to the configuration file to use for
-                                  MSMSulc mode. By default, the configuration file
-                                  is ciftify/data/hcp_config/MSMSulcStrainFinalconf
-                                  This setting is ignored when not running MSMSulc mode.
-  --ciftify-conf YAML             EXPERT OPTION. Path to a yaml configuration file. Overrides
-                                  the default settings in
-                                  ciftify/data/ciftify_workflow_settings.yaml
-  -v,--verbose                    Verbose logging
-  --debug                         Debug logging in Erin's very verbose style
-  -n,--dry-run                    Dry run
-  -h,--help                       Print help
-
-DETAILS
-
-Adapted from modules of the Human Connectome
-Project's minimal proprocessing pipeline. Please cite:
-
-Glasser MF, Sotiropoulos SN, Wilson JA, Coalson TS, Fischl B, Andersson JL, Xu J,
-Jbabdi S, Webster M, Polimeni JR, Van Essen DC, Jenkinson M, WU-Minn HCP Consortium.
-The minimal preprocessing pipelines for the Human Connectome Project. Neuroimage. 2013 Oct 15;80:105-24.
-PubMed PMID: 23668970; PubMed Central PMCID: PMC3720813.
-
-The default outputs are condensed to include in 4 mesh "spaces" in the following directories:
-  + T1w/Native: The freesurfer "native" output meshes
-  + MNINonLinear/Native: The T1w/Native mesh warped to MNINonLinear
-  + MNINonLinear/fsaverage_LR32k
-     + the surface registered space used for fMRI and multi-modal analysis
-     + This 32k mesh has approx 2mm vertex spacing
-  + MNINonLinear_164k_fs_LR (in the MNINonLinear folder):
-     + the surface registered space used for HCP's anatomical analysis
-     + This 164k mesh has approx 0.9mm vertex spacing
-
-In addition, the optional flag '--resample-to-T1w32k' can be used to output an
-additional T1w/fsaverage_LR32k folder that occur in the HCP Consortium Projects.
-These outputs can be critical for those building masks for DWI tract tracing.
-
-By default, some to the template files needed for resampling surfaces and viewing
-flatmaps will be symbolic links from a folder ($CIFTIFY_WORKDIR/zz_templates) to the
-subject's output folder. If the --no-symlinks flag is indicated, these files will be
-copied into the subject folder insteadself.
-
-Written by Erin W Dickie
-"""
-
 import re
 import sys
 import os.path as op
@@ -96,11 +17,11 @@ class docoptHelper():
         self.descriptions = ""
         self.help = ""
 
-    def importDocopt(self, docopt_str, dcpt_cmdl):
+    def _importDocopt(self, docopt_str):
         options = dcpt.parse_defaults(docopt_str)
 
         pattern = dcpt.parse_pattern(
-            dcpt.formal_usage(dcpt_cmdl[0]), options)
+            dcpt.formal_usage(self.dcpt_cmdl[0]), options)
         argv = dcpt.parse_argv(dcpt.Tokens(sys.argv[1:]), list(options), False)
         pattern_options = set(pattern.flat(dcpt.Option))
 
@@ -111,9 +32,9 @@ class docoptHelper():
 
         for prm in pattern.flat():
             if type(prm) is dcpt.Argument:
-                self.positional_arguments[prm.name] = {"value": prm.value}
+                self.positional_arguments[prm.name[1:-1]] = {"value": prm.value}
             elif type(prm) is dcpt.Option:
-                self.optional_arguments[prm.name] = \
+                self.optional_arguments[prm.name[2:]] =\
                     {"value": prm.value,
                      "short": prm.short,
                      "long:": prm.long,
@@ -123,54 +44,82 @@ class docoptHelper():
                     "Unrecognized argument of type {0}\n\"{1}\": {2}".format(
                         type(prm), prm.name, prm.value))
 
-    def extractCommandLine(self, dcpt_cmdl):
-        self.descriptor["command-line"] = dcpt_cmdl[0].split()[1]
+        # using docopt code to extract description and type
+        for s in self.dcpt_opts:
+            _, _, s = s.partition(':')  # get rid of "options:"
+            split = re.split('\n[ \t]*(-\S+?)', '\n' + s)[1:]
+            split = [s1 + s2 for s1, s2 in zip(split[::2], split[1::2])]
+            for opt_str in [s for s in split if s.startswith('-')]:
+                opt = dcpt.Option.parse(opt_str)
+                opt_segs = opt_str.partition('  ')
+                self.optional_arguments[opt.name[2:]]["description"] =\
+                    ''.join(opt_segs[2:])\
+                    .replace("\n", "")\
+                    .replace("  ", "")\
+                    .strip()
+                # if type is specified
+                if opt.argcount > 0:
+                    for typ in [seg for seg in opt_segs[0]
+                                .replace(',', ' ')
+                                .replace('=', ' ')
+                                .split() if seg[0] != "-"]:
+                        self.optional_arguments[opt.name[2:]]["type"] = typ
+
+    def _loadCommandLine(self):
+        self.descriptor["command-line"] = self.dcpt_cmdl[0].split()[1]
 
         # Match params in command line with extracted pos_args
-        for arg in dcpt_cmdl[0].split()[2:]:
+        for arg in self.dcpt_cmdl[0].split()[2:]:
             if arg == "[options]":
-                for opt in [opt[2:] for opt in self.optional_arguments]:
-                    self.descriptor["command-line"] += \
+                for opt in self.optional_arguments:
+                    self.descriptor["command-line"] +=\
                         " [{0}]".format(opt.upper())
-            elif arg[1:-1] in [prm[1:-1] for prm in self.positional_arguments]:
-                self.descriptor["command-line"] += \
-                    " [{0}]".format(arg.upper()[1:-1])
+            elif arg[1:-1] in self.positional_arguments:
+                self.descriptor["command-line"] +=\
+                    " [{0}]".format(arg[1:-1].upper())
             else:
                 print("{0} not added to command line".format(arg))
 
-    def extractDescription(self, docopt_str, dcpt_cmdl, dcpt_args, dcpt_opts):
-        self.descriptions = docopt_str \
-            .replace("".join(dcpt_cmdl), "") \
-            .replace("".join(dcpt_args), "") \
-            .replace("".join(dcpt_opts), "")
+    def _loadDescription(self, docopt_str):
+        self.descriptions = docopt_str\
+            .replace("".join(self.dcpt_cmdl), "")\
+            .replace("".join(self.dcpt_args), "")\
+            .replace("".join(self.dcpt_opts), "")
         self.descriptor["description"] = self.descriptions
 
-    def extractInputs(self):
+    def _loadInputs(self):
         self.descriptor["inputs"] = []
-        for inp in [inp[1:-1] for inp in self.positional_arguments]:
+
+        # Add positional arguments, optionality depends on type
+        for inp in {**self.positional_arguments, **self.optional_arguments}:
             newInp = {
                 "id": inp,
                 "name": inp.replace("_", " "),
-                "optional": "TODO",
-                "type": "TODO",
+                "optional": inp in self.optional_arguments,
+                "type": "String" if inp in self.positional_arguments else None,
                 "value-key": "[{0}]".format(inp.upper())
             }
-            self.descriptor["inputs"].append(newInp)
+            self.descriptor['inputs'].append(newInp)
+
+        for inp in [inp for inp in self.descriptor['inputs']
+                    if inp['type'] is None]:
+            inp['type'] = self.optional_arguments[inp['id']].get('type') if\
+                self.optional_arguments[inp['id']].get('type') is not None else\
+                "Flag"
 
     def generateDescriptor(self, docopt_str):
         extc_dict = dcpt.docopt(docopt_str)
 
-        dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
-        dcpt_args = dcpt.parse_section('arguments:', docopt_str)
-        dcpt_opts = dcpt.parse_section('options:', docopt_str)
+        self.dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
+        self.dcpt_args = dcpt.parse_section('arguments:', docopt_str)
+        self.dcpt_opts = dcpt.parse_section('options:', docopt_str)
 
-        self.importDocopt(docopt_str, dcpt_cmdl)
-        self.extractCommandLine(dcpt_cmdl)
-        self.extractDescription(
-            docopt_str, dcpt_cmdl, dcpt_args, dcpt_opts)
-        self.extractInputs()
+        self._importDocopt(docopt_str)
+        self._loadCommandLine()
+        self._loadDescription(docopt_str)
+        self._loadInputs()
 
-        print(json.dumps(self.descriptor, indent=4))
+        return self.descriptor
 
 
 sample_docopt_path = op.join(op.split(bfile)[0], 'schema/examples/'
@@ -178,5 +127,5 @@ sample_docopt_path = op.join(op.split(bfile)[0], 'schema/examples/'
                              'sample_docopt.txt')
 with open(sample_docopt_path, "r") as myfile:
     sample_docopt = myfile.read()
-
-docoptHelper().generateDescriptor(sample_docopt)
+desc = docoptHelper().generateDescriptor(sample_docopt)
+print(json.dumps(desc, indent=4))
