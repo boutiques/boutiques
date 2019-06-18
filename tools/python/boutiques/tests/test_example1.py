@@ -328,6 +328,23 @@ class TestExample1(BaseTest):
                       ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
 
+    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
+                        reason="Singularity not installed")
+    def test_example1_exec_docker_Index_force_singularity(self):
+        self.clean_up()
+        ret = bosh.execute("launch",
+                           self.get_file_path("example1_docker_w_index.json"),
+                           self.get_file_path("invocation_no_opts.json"),
+                           "--skip-data-collection",
+                           "--force-singularity")
+
+        self.assert_successful_return(
+            ret, ["log-4-coin;plop.txt"], 2,
+            self.assert_reflected_output)
+        self.assertIn("Local (boutiques-example1-test.simg)",
+                      ret.container_location)
+        self.assertIn("singularity exec", ret.container_command)
+
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_singularity_force_docker(self):
