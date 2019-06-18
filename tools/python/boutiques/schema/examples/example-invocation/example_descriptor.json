@@ -1,5 +1,5 @@
 {
-    "command-line": "test", 
+    "command-line": "test [a1] [a2] [b1] [b2] [c1] [c2]", 
     "container-image": {
         "entrypoint": false, 
         "image": "neurodata/ndmg:v0.0.41-1", 
@@ -34,42 +34,48 @@
             "name": "test", 
             "optional": true, 
             "type": "String",
-            "value-choices": ["a1"]
+            "value-choices": ["a1"],
+            "value-key": "[a1]"
         },
         {
             "id": "a2", 
             "name": "test", 
             "optional": true, 
             "type": "String",
-            "value-choices": ["a2"]
+            "value-choices": ["a2"],
+            "value-key": "[a2]"
         },
         {
             "id": "b1", 
             "name": "test", 
             "optional": false, 
             "type": "String",
-            "value-choices": ["b1"]
+            "value-choices": ["b1"],
+            "value-key": "[b1]"
         },
         {
             "id": "b2", 
             "name": "test", 
             "optional": true, 
             "type": "String",
-            "value-choices": ["b2"]
+            "value-choices": ["b2"],
+            "value-key": "[b2]"
         },
         {
             "id": "c1", 
             "name": "test", 
             "optional": true, 
             "type": "String",
-            "value-choices": ["c1"]
+            "value-choices": ["c1"],
+            "value-key": "[c1]"
         },
         {
             "id": "c2", 
             "name": "test", 
             "optional": false, 
             "type": "String",
-            "value-choices": ["c2"]
+            "value-choices": ["c2"],
+            "value-key": "[c2]"
         }
     ],
     "name": "test", 
