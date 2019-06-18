@@ -65,7 +65,7 @@ class TestPrepare(TestCase):
         ret = bosh.execute("prepare",
                            os.path.join(example1_dir,
                                         "example1_sing.json"))
-        self.assertIn("Local (boutiques-example1-test   .simg)", ret.stdout)
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")

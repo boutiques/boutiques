@@ -43,7 +43,11 @@ class TestExample1(BaseTest):
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation.json"),
-                           "--skip-data-collection")
+                           "--skip-data-collection",
+                           "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                            "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
@@ -61,7 +65,11 @@ class TestExample1(BaseTest):
                          self.get_file_path("example1_docker.json"),
                          "-x",
                          self.get_file_path("invocation.json"),
-                         "--skip-data-collection"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -73,7 +81,11 @@ class TestExample1(BaseTest):
                            self.get_file_path("example1_docker.json"),
                            "-s",
                            self.get_file_path("invocation.json"),
-                           "--skip-data-collection")
+                           "--skip-data-collection",
+                           "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                           "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
 
         # Make sure stdout and stderr are printed on the fly for
         # streaming mode
@@ -93,7 +105,11 @@ class TestExample1(BaseTest):
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
                          invocationStr,
-                         "--skip-data-collection"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -103,6 +119,10 @@ class TestExample1(BaseTest):
                          self.get_file_path("example1_docker.json"),
                          "-x",
                          self.get_file_path("invocation.json"),
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")),
                          "--skip-data-collection"),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
@@ -116,7 +136,11 @@ class TestExample1(BaseTest):
             bosh.execute("launch",
                          descStr,
                          self.get_file_path("invocation.json"),
-                         "--skip-data-collection"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -126,7 +150,11 @@ class TestExample1(BaseTest):
                          self.get_file_path("example1_docker.json"),
                          "-x",
                          self.get_file_path("invocation.json"),
-                         "--skip-data-collection"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -152,7 +180,11 @@ class TestExample1(BaseTest):
         ret = bosh.execute("launch",
                            "zenodo." + str(example_boutiques_tool.id),
                            self.get_file_path("invocation.json"),
-                           "--skip-data-collection")
+                           "--skip-data-collection",
+                           "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                           "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
 
         # Make sure stdout and stderr are not printed on the fly
         # for non-streaming mode
@@ -168,7 +200,11 @@ class TestExample1(BaseTest):
             bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
                          "-x",
                          self.get_file_path("invocation.json"),
-                         "--skip-data-collection"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
@@ -236,9 +272,9 @@ class TestExample1(BaseTest):
                          self.get_file_path("invocation_sing.json"),
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_sing_mount1")),
+                             self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_sing_mount2"))),
+                             self.get_file_path("example1_mount2"))),
             ["log-4.txt"], 2,
             self.assert_reflected_output)
 
@@ -249,9 +285,9 @@ class TestExample1(BaseTest):
                          "-x",
                          self.get_file_path("invocation_sing.json"),
                          "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_sing_mount1")),
+                             self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_sing_mount2"))),
+                             self.get_file_path("example1_mount2"))),
             ["log-4.txt"], 2,
             self.assert_reflected_output)
 
@@ -265,7 +301,11 @@ class TestExample1(BaseTest):
                              "example1_sing_crash_pull.json"),
                          self.get_file_path(
                              "invocation_sing.json"),
-                         "--skip-data-collection")
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
         self.assertIn("Could not pull Singularity image", str(e))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -277,7 +317,11 @@ class TestExample1(BaseTest):
                          self.get_file_path("example1_docker.json"),
                          self.get_file_path(
                              "invocation_missing_script.json"),
-                         "--skip-data-collection"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
             2, "File does not exist!", ["log-4-pwet.txt"], 1)
 
     def test_example1_exec_fail_cli(self):
@@ -285,7 +329,11 @@ class TestExample1(BaseTest):
         command = ("bosh exec launch " +
                    self.get_file_path("example1_docker.json") + " " +
                    self.get_file_path("invocation_missing_script.json") +
-                   " --skip-data-collection")
+                   " --skip-data-collection",
+                   "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -304,7 +352,11 @@ class TestExample1(BaseTest):
         self.clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker_nonutf8.json"),
-                           self.get_file_path("invocation.json"))
+                           self.get_file_path("invocation.json"),
+                           "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                           "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
 
         self.assert_successful_return(
             ret, ["log-4-coin;plop.txt"], 2,
@@ -315,7 +367,11 @@ class TestExample1(BaseTest):
             bosh.execute("launch",
                          self.get_file_path("example1_docker_nonutf8.json"),
                          "-x",
-                         self.get_file_path("invocation.json")),
+                         self.get_file_path("invocation.json"),
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output_nonutf8)
 
@@ -327,7 +383,11 @@ class TestExample1(BaseTest):
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation_no_opts.json"),
                            "--skip-data-collection",
-                           "--force-singularity")
+                           "--force-singularity",
+                           "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                           "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
 
         self.assert_successful_return(
             ret, ["log-4-coin;plop.txt"], 2,
@@ -344,7 +404,11 @@ class TestExample1(BaseTest):
                            self.get_file_path("example1_sing.json"),
                            self.get_file_path("invocation_sing_no_opts.json"),
                            "--skip-data-collection",
-                           "--force-docker")
+                           "--force-docker",
+                           "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                           "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
 
         self.assert_successful_return(
             ret, ["log-4.txt"], 2,
@@ -362,7 +426,11 @@ class TestExample1(BaseTest):
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation_no_opts.json"),
-                           "--skip-data-collection")
+                           "--skip-data-collection",
+                           "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                           "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
         self.assert_successful_return(
             ret, ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
