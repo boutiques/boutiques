@@ -14,8 +14,6 @@ class docoptHelper():
 
         self.positional_arguments = {}
         self.optional_arguments = {}
-        self.descriptions = ""
-        self.help = ""
 
     def _importDocopt(self, docopt_str):
         options = dcpt.parse_defaults(docopt_str)
@@ -44,26 +42,32 @@ class docoptHelper():
                     "Unrecognized argument of type {0}\n\"{1}\": {2}".format(
                         type(prm), prm.name, prm.value))
 
-        # using docopt code to extract description and type
-        for s in self.dcpt_opts:
-            _, _, s = s.partition(':')  # get rid of "options:"
-            split = re.split('\n[ \t]*(-\S+?)', '\n' + s)[1:]
+        # using docopt code to extract description and type from args
+        for line in (self.dcpt_opts + self.dcpt_args):
+            _, _, s = line.partition(':')  # get rid of "options:"
+            split = re.split('\n[ \t]*(-\S+?)', '\n' + s)[1:] if\
+                line in self.dcpt_opts else\
+                re.split('\n[ \t]*(<\S+?)', '\n' + s)[1:]
             split = [s1 + s2 for s1, s2 in zip(split[::2], split[1::2])]
-            for opt_str in [s for s in split if s.startswith('-')]:
-                opt = dcpt.Option.parse(opt_str)
-                opt_segs = opt_str.partition('  ')
-                self.optional_arguments[opt.name[2:]]["description"] =\
-                    ''.join(opt_segs[2:])\
-                    .replace("\n", "")\
-                    .replace("  ", "")\
-                    .strip()
-                # if type is specified
-                if opt.argcount > 0:
-                    for typ in [seg for seg in opt_segs[0]
+            # parse each line of Arguments and Options
+            for arg_str in [s for s in split if (s.startswith('-') or
+                            s.startswith('<'))]:
+                arg = dcpt.Option.parse(arg_str) if arg_str.startswith('-')\
+                    else dcpt.Argument.parse(arg_str)
+                arg_segs = arg_str.partition('  ')
+                arg_name = arg.name[2:] if type(arg) is dcpt.Option else\
+                    arg.name[1:-1]
+                # Add description field to arguments dicts
+                {**self.optional_arguments, **self.positional_arguments}[
+                    arg_name]["description"] = ''.join(arg_segs[2:])\
+                    .replace("\n", " ").replace("  ", "").strip()
+                # if type is specified add type field to optional arguments
+                if type(arg) is dcpt.Option and arg.argcount > 0:
+                    for typ in [seg for seg in arg_segs[0]
                                 .replace(',', ' ')
                                 .replace('=', ' ')
                                 .split() if seg[0] != "-"]:
-                        self.optional_arguments[opt.name[2:]]["type"] = typ
+                        self.optional_arguments[arg_name]["type"] = typ
 
     def _loadCommandLine(self):
         self.descriptor["command-line"] = self.dcpt_cmdl[0].split()[1]
@@ -84,7 +88,8 @@ class docoptHelper():
         self.descriptions = docopt_str\
             .replace("".join(self.dcpt_cmdl), "")\
             .replace("".join(self.dcpt_args), "")\
-            .replace("".join(self.dcpt_opts), "")
+            .replace("".join(self.dcpt_opts), "")\
+            .replace("\n\n", "\n").strip()
         self.descriptor["description"] = self.descriptions
 
     def _loadInputs(self):
@@ -95,6 +100,9 @@ class docoptHelper():
             newInp = {
                 "id": inp,
                 "name": inp.replace("_", " "),
+                "description":
+                {**self.positional_arguments, **self.optional_arguments}[inp]
+                .get('description'),
                 "optional": inp in self.optional_arguments,
                 "type": "String" if inp in self.positional_arguments else None,
                 "value-key": "[{0}]".format(inp.upper())
@@ -128,4 +136,5 @@ sample_docopt_path = op.join(op.split(bfile)[0], 'schema/examples/'
 with open(sample_docopt_path, "r") as myfile:
     sample_docopt = myfile.read()
 desc = docoptHelper().generateDescriptor(sample_docopt)
-print(json.dumps(desc, indent=4))
+
+print(json.dumps(desc.get("inputs"), indent=4))
