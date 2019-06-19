@@ -1,0 +1,234 @@
+{
+    "command-line": "naval_fate",
+    "container-image": {
+        "entrypoint": false,
+        "image": "INSERT_IMAGE",
+        "index": "INSERT_INDEX",
+        "type": "docker"
+    },
+    "description": "Naval Fate.",
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "INSERT_DESCRIPTION"
+        }
+    ],
+    "groups": [
+        {
+            "all-or-none": false,
+            "id": "together_group",
+            "members": [],
+            "name": "Toggled together"
+        },
+        {
+            "mutually-exclusive": false,
+            "id": "mutex_group",
+            "members": [],
+            "name": "Mutually-exclusive inputs"
+        },
+        {
+            "one-is-required": false,
+            "id": "at_least_one",
+            "members": [],
+            "name": "At least one must be present"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "name",
+            "name": "name",
+            "description": null,
+            "optional": false,
+            "type": "String",
+            "value-key": "[NAME]"
+        },
+        {
+            "id": "x",
+            "name": "x",
+            "description": null,
+            "optional": false,
+            "type": "String",
+            "value-key": "[X]"
+        },
+        {
+            "id": "y",
+            "name": "y",
+            "description": null,
+            "optional": false,
+            "type": "String",
+            "value-key": "[Y]"
+        },
+        {
+            "id": "speed",
+            "name": "speed",
+            "description": "Speed in knots [default: 10].",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SPEED]",
+            "default-value": "10",
+            "list": true
+        },
+        {
+            "id": "moored",
+            "name": "moored",
+            "description": "Moored (anchored) mine.",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[MOORED]",
+            "command-line-flag": "--moored"
+        },
+        {
+            "id": "drifting",
+            "name": "drifting",
+            "description": "Drifting mine.",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[DRIFTING]",
+            "command-line-flag": "--drifting"
+        },
+        {
+            "id": "help",
+            "name": "help",
+            "description": "Show this screen.",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[HELP]",
+            "command-line-flag": "--help"
+        },
+        {
+            "id": "version",
+            "name": "version",
+            "description": "Show version.",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[VERSION]",
+            "command-line-flag": "--version"
+        },
+        {
+            "id": "ship",
+            "name": "ship",
+            "description": null,
+            "optional": true,
+            "type": null,
+            "value-key": "[SHIP]"
+        },
+        {
+            "id": "new",
+            "name": "new",
+            "description": null,
+            "optional": true,
+            "type": null,
+            "value-key": "[NEW]"
+        },
+        {
+            "id": "move",
+            "name": "move",
+            "description": null,
+            "optional": true,
+            "type": null,
+            "value-key": "[MOVE]"
+        },
+        {
+            "id": "shoot",
+            "name": "shoot",
+            "description": null,
+            "optional": true,
+            "type": null,
+            "value-key": "[SHOOT]"
+        },
+        {
+            "id": "mine",
+            "name": "mine",
+            "description": null,
+            "optional": true,
+            "type": null,
+            "value-key": "[MINE]"
+        },
+        {
+            "id": "set",
+            "name": "set",
+            "description": null,
+            "optional": true,
+            "type": null,
+            "value-key": "[SET]"
+        },
+        {
+            "id": "remove",
+            "name": "remove",
+            "description": null,
+            "optional": true,
+            "type": null,
+            "value-key": "[REMOVE]"
+        }
+    ],
+    "invocation-schema": {
+        "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#",
+        "additionalProperties": false,
+        "allOf": [
+            {
+                "anyOf": [
+                    {
+                        "required": [
+                            "INSERT_ID"
+                        ]
+                    }
+                ]
+            },
+            {
+                "anyOf": [
+                    {
+                        "required": [
+                            "INSERT_ID"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "dependencies": {
+            "INSERT_ID": {
+                "properties": {
+                    "INSERT_ID": {
+                        "not": {}
+                    }
+                }
+            }
+        },
+        "description": "INSERT_SCHEMA_DESCRIPTION",
+        "properties": {
+            "INSERT_ID": {
+                "enum": [
+                    "INSERT_CHOICE"
+                ]
+            }
+        },
+        "required": [
+            "INSERT_ID"
+        ],
+        "title": "INSERT_TITLE",
+        "type": "INSERT_TYPE"
+    },
+    "name": "INSERT_NAME",
+    "output-files": [
+        {
+            "id": "INSERT_ID",
+            "name": "INSERT_NAME",
+            "optional": true,
+            "path-template": "INSERT_PATH ex:[OUTDIR]/reg_dti/[DTI]_aligned.nii.gz",
+            "path-template-stripped-extensions": [
+                "INSERT_EXTENSION"
+            ]
+        }
+    ],
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 12,
+        "walltime-estimate": 3600
+    },
+    "tags": {
+        "domain": "testing",
+        "status": "experimental",
+        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
+    },
+    "tool-version": "INSERT_TOOL_VERSION"
+}

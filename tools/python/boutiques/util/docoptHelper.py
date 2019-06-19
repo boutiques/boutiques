@@ -28,6 +28,7 @@ class docoptHelper():
 
         self.positional_arguments = {}
         self.optional_arguments = {}
+        self.commands = {}
 
     def _importDocopt(self, docopt_str):
         options = dcpt.parse_defaults(docopt_str)
@@ -45,6 +46,9 @@ class docoptHelper():
         for prm in pattern.flat():
             if type(prm) is dcpt.Argument:
                 self.positional_arguments[prm.name[1:-1]] = {
+                    "default": prm.value}
+            elif type(prm) is dcpt.Command:
+                self.commands[prm.name] = {
                     "default": prm.value}
             elif type(prm) is dcpt.Option:
                 self.optional_arguments[prm.name[2:]] = {
@@ -85,19 +89,48 @@ class docoptHelper():
                         self.optional_arguments[arg_name]["type"] = typ
 
     def _loadCommandLine(self):
-        self.descriptor["command-line"] = self.dcpt_cmdl[0].split()[1]
+        command = self.dcpt_cmdl[0].split()[1]
+        self.descriptor["command-line"] = command
 
+        for arg in [arg for arg in self.dcpt_cmdl[0].split()[2:] if
+                    arg != command]:
+            if arg[0] == "(" and arg[-1] == ")":
+                if arg[1:-1].split("|"):
+                    for option_arg in arg[1:-1].split("|"):
+                        print("required arg option: " + option_arg)
+                else:
+                    print("required arg: " + arg)
+            elif arg[0] == "[" and arg[-1] == "]":
+                if arg[1:-1].split("|"):
+                    for option_arg in arg[1:-1].split("|"):
+                        print("optional arg option: " + option_arg)
+                else:
+                    print("optional arg: " + arg)
+            else:
+                print(arg)
+
+        print(self.descriptor["command-line"])
+        '''
         # Match params in command line with extracted pos_args
-        for arg in self.dcpt_cmdl[0].split()[2:]:
+        for arg in [arg for arg in self.dcpt_cmdl[0].split()[2:] if
+                    arg != command]:
             if arg == "[options]":
                 for opt in self.optional_arguments:
                     self.descriptor["command-line"] +=\
                         " [{0}]".format(opt.upper())
+            elif (arg[2:] in self.optional_arguments and
+                  arg[2:].upper() not in self.descriptor["command-line"]):
+                self.descriptor["command-line"] +=\
+                    " [{0}]".format(arg[2:].upper())
             elif arg[1:-1] in self.positional_arguments:
                 self.descriptor["command-line"] +=\
                     " [{0}]".format(arg[1:-1].upper())
+            elif arg in self.commands:
+                self.descriptor["command-line"] +=\
+                    " [{0}]".format(arg.upper())
             else:
                 print("{0} not added to command line".format(arg))
+        '''
 
     def _loadDescription(self, docopt_str):
         self.descriptions = docopt_str\
@@ -110,22 +143,26 @@ class docoptHelper():
     def _loadInputs(self):
         self.descriptor["inputs"] = []
 
-        # Add positional arguments, optionality depends on type
-        joint_args = {**self.positional_arguments, **self.optional_arguments}
-        for inp in joint_args:
+        # Add arguments, optionality depends on type
+        joint_args = {**self.positional_arguments,
+                      **self.optional_arguments,
+                      **self.commands}
+        for inp in [arg for arg in joint_args if not any(i['id'] == arg for
+                    i in self.descriptor['inputs'])]:
             newInp = {
                 "id": inp.replace("-", "_"),
                 "name": inp,
                 "description": joint_args[inp].get('description'),
-                "optional": inp in self.optional_arguments,
+                "optional": inp in self.optional_arguments or
+                inp in self.commands,
                 "type": "String" if inp in self.positional_arguments else None,
                 "value-key": "[{0}]".format(inp.upper())
             }
             self.descriptor['inputs'].append(newInp)
 
-        # Additional fields for non-flag inputs
+        # Additional fields for optional inputs
         for inp in [inp for inp in self.descriptor['inputs']
-                    if inp['type'] is None]:
+                    if inp['name'] in self.optional_arguments]:
             if self.optional_arguments[inp['name']].get('type') is not None:
                 # non flag params can have defaults
                 if joint_args[inp['name']]['default'] is not None:
@@ -145,8 +182,6 @@ class docoptHelper():
                     self.optional_arguments[inp['name']].get('long')
 
     def generateDescriptor(self, docopt_str):
-        extc_dict = dcpt.docopt(docopt_str)
-
         self.dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
         self.dcpt_args = dcpt.parse_section('arguments:', docopt_str)
         self.dcpt_opts = dcpt.parse_section('options:', docopt_str)
@@ -161,12 +196,12 @@ class docoptHelper():
 
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
-with open(sample_dir + "sample_docopt.txt", "r") as myfile:
+with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
     sample_docopt = myfile.read()
 
 desc = docoptHelper(base_descriptor=(
     sample_dir + "defaults_docopt_descriptor.json"))\
     .generateDescriptor(sample_docopt)
 
-with open(sample_dir + "sample_descriptor_output.json", "w+") as output:
+with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
     output.write(json.dumps(desc, indent=4))
