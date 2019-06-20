@@ -488,7 +488,6 @@ def example(*params):
                               "skipDataCollect": True,
                               "requireComplete": results.complete})
     executor.generateRandomParams(1)
-
     return json.dumps(executor.in_dict, indent=4, sort_keys=True)
 
 

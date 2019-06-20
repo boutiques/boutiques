@@ -632,8 +632,10 @@ class LocalExecutor(object):
                 return randStr(prm['id'])
             if prm['type'] == 'Number':
                 return randNum(prm)
+            # Since a flag can't be False, it's either there or not,
+            # there's no point in setting it to False.
             if prm['type'] == 'Flag':
-                return rnd.choice([True, False])
+                return True
             if prm['type'] == 'File':
                 return randFile(prm['id'])
 
@@ -727,7 +729,8 @@ class LocalExecutor(object):
         self.in_dict = {}
         # Fill in the parameters depending on require complete
         for params in [r for r in self.inputs
-                       if not r.get('optional') or self.requireComplete]:
+                       if (not r.get('optional') and r.get('type') != "Flag") or
+                       self.requireComplete]:
             self.in_dict[params['id']] = makeParam(params)
             # Check for mutex between in_dict and last in param
             for group, mbs in [(x, x["members"]) for x in self.groups
@@ -744,7 +747,9 @@ class LocalExecutor(object):
             # in case a previous choice disabled that one
             while True:
                 # Pick a random parameter
-                choice = self.byId(rnd.choice(grp['members']))
+                mbrId = rnd.choice([mbr for mbr in grp['members'] if
+                                   self.byId(mbr)['type'] != 'Flag'])
+                choice = self.byId(mbrId)
                 # see if it and its mutual requirements can be filled
                 res = checkMutualRequirements(choice)
                 if res is False:
@@ -755,7 +760,8 @@ class LocalExecutor(object):
                 break  # If we were allowed to add a parameter, we can stop
         # Choose a random number of times to try to fill optional inputs
         opts = [p for p in self.inputs
-                if self.safeGet(p['id'], '') in [None, True]]
+                if self.safeGet(p['id'], '') in [None, True] and
+                p['type'] != "Flag"]
         # Loop a random number of times, each time
         #  attempting to fill a random parameter
         for _ in range(rnd.randint(int(len(opts) / 2 + 1), len(opts) * 2)):
@@ -1101,6 +1107,9 @@ class LocalExecutor(object):
                 check(None,
                       lambda x, y: type(x) == bool,
                       "is not a valid flag value", val)
+                check(None,
+                      lambda x, y: x,
+                      "flag is set to true or otherwise omitted", val)
             elif targ["type"] == "File":
                 # Check path-type (absolute vs relative)
                 if not self.forcePathType:

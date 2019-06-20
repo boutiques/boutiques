@@ -26,6 +26,15 @@
                 "a2"
             ],
             "name": "group of mutually-exclusive inputs"
+        },
+        {
+            "mutually-exclusive": true,
+            "id": "mutex_a2_b2", 
+            "members": [
+                "a2",
+                "b2"
+            ],
+            "name": "group of mutually-exclusive inputs"
         }
     ], 
     "inputs": [
@@ -76,6 +85,20 @@
             "type": "String",
             "value-choices": ["c2"],
             "value-key": "[c2]"
+        },
+        {
+            "command-line-flag": "-d1",
+            "id": "d1",
+            "name": "test_flag",
+            "optional": true,
+            "type": "Flag"
+        },
+        {
+            "command-line-flag": "-d2",
+            "id": "d2",
+            "name": "test_flag2",
+            "optional": true,
+            "type": "Flag"
         }
     ],
     "name": "test", 
