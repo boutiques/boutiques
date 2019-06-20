@@ -34,14 +34,12 @@ class docoptHelper():
     def _traversePattern(self, node):
         if isinstance(node, dcpt.BranchPattern):
             # group[type(node).__name__] = {}
-            print(type(node).__name__, end='')
-            print("{")
+            print("\"{0}\": {{".format(type(node).__name__))
             for child in node.children:
                 self._traversePattern(child)
             print("}")
         else:
-            print(node, end='')
-            print(",")
+            print("\"{0}\": \"{1}\",".format(type(node).__name__, node.name))
 
     def _importDocopt(self, docopt_str):
         options = dcpt.parse_defaults(docopt_str)
@@ -168,8 +166,7 @@ class docoptHelper():
                 "id": inp.replace("-", "_"),
                 "name": inp,
                 "description": joint_args[inp].get('description'),
-                "optional": inp in self.optional_arguments or
-                inp in self.commands,
+                "optional": True,
                 "type": "String" if inp in self.positional_arguments else None,
                 "value-key": "[{0}]".format(inp.upper())
             }
