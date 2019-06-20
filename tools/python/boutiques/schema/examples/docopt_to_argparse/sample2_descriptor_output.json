@@ -1,5 +1,5 @@
 {
-    "command-line": "naval_fate",
+    "command-line": "naval_fate [SHIP] [NEW] [NAME] [MOVE] [X] [Y] [SPEED] [SHOOT] [MINE] [SET] [REMOVE] [MOORED] [DRIFTING] [HELP] [VERSION]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -15,22 +15,47 @@
     ],
     "groups": [
         {
-            "all-or-none": false,
-            "id": "together_group",
-            "members": [],
-            "name": "Toggled together"
+            "id": "together_grp_0",
+            "members": [
+                "ship",
+                "new",
+                "name"
+            ],
+            "all-or-none": true,
+            "name": "ship_new_name"
         },
         {
-            "mutually-exclusive": false,
-            "id": "mutex_group",
-            "members": [],
-            "name": "Mutually-exclusive inputs"
+            "id": "together_grp_1",
+            "members": [
+                "ship",
+                "name",
+                "move",
+                "x",
+                "y"
+            ],
+            "all-or-none": true,
+            "name": "ship_name_move_x_y"
         },
         {
-            "one-is-required": false,
-            "id": "at_least_one",
-            "members": [],
-            "name": "At least one must be present"
+            "id": "together_grp_2",
+            "members": [
+                "ship",
+                "shoot",
+                "x",
+                "y"
+            ],
+            "all-or-none": true,
+            "name": "ship_shoot_x_y"
+        },
+        {
+            "id": "together_grp_3",
+            "members": [
+                "mine",
+                "x",
+                "y"
+            ],
+            "all-or-none": true,
+            "name": "mine_x_y"
         }
     ],
     "inputs": [
@@ -38,7 +63,7 @@
             "id": "name",
             "name": "name",
             "description": null,
-            "optional": false,
+            "optional": true,
             "type": "String",
             "value-key": "[NAME]"
         },
@@ -46,7 +71,7 @@
             "id": "x",
             "name": "x",
             "description": null,
-            "optional": false,
+            "optional": true,
             "type": "String",
             "value-key": "[X]"
         },
@@ -54,7 +79,7 @@
             "id": "y",
             "name": "y",
             "description": null,
-            "optional": false,
+            "optional": true,
             "type": "String",
             "value-key": "[Y]"
         },
@@ -65,8 +90,7 @@
             "optional": true,
             "type": "String",
             "value-key": "[SPEED]",
-            "default-value": "10",
-            "list": true
+            "default-value": "10"
         },
         {
             "id": "moored",

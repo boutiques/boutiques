@@ -26,20 +26,10 @@ class docoptHelper():
         else:
             self.descriptor = {}
 
-        self.groups = {}
+        self.groups = []
         self.positional_arguments = {}
         self.optional_arguments = {}
         self.commands = {}
-
-    def _traversePattern(self, node):
-        if isinstance(node, dcpt.BranchPattern):
-            # group[type(node).__name__] = {}
-            print("\"{0}\": {{".format(type(node).__name__))
-            for child in node.children:
-                self._traversePattern(child)
-            print("}")
-        else:
-            print("\"{0}\": \"{1}\",".format(type(node).__name__, node.name))
 
     def _importDocopt(self, docopt_str):
         options = dcpt.parse_defaults(docopt_str)
@@ -53,8 +43,6 @@ class docoptHelper():
             doc_options = dcpt.parse_defaults(docopt_str)
             options_shortcut.children = list(set(doc_options) - pattern_options)
         matched, left, collected = pattern.fix().match(argv)
-
-        self._traversePattern(pattern)
 
         for prm in pattern.flat():
             if type(prm) is dcpt.Argument:
@@ -104,46 +92,50 @@ class docoptHelper():
     def _loadCommandLine(self):
         command = self.dcpt_cmdl[0].split()[1]
         self.descriptor["command-line"] = command
-        '''
-        for arg in [arg for arg in self.dcpt_cmdl[0].split()[2:] if
+
+        for arg in [arg for arg in self.dcpt_cmdl[0].split()[1:] if
                     arg != command]:
-            if arg[0] == "(" and arg[-1] == ")":
+            if arg == "[options]":
+                for opt in self.optional_arguments:
+                    self.descriptor["command-line"] +=\
+                            self._generateCmdKey(opt)
+            elif arg[0] == "(" and arg[-1] == ")":
                 if arg[1:-1].split("|"):
                     for option_arg in arg[1:-1].split("|"):
-                        print("required arg option: " + option_arg)
+                        self.descriptor["command-line"] +=\
+                            self._generateCmdKey(option_arg)
                 else:
                     print("required arg: " + arg)
             elif arg[0] == "[" and arg[-1] == "]":
                 if arg[1:-1].split("|"):
                     for option_arg in arg[1:-1].split("|"):
-                        print("optional arg option: " + option_arg)
+                        self.descriptor["command-line"] +=\
+                            self._generateCmdKey(option_arg)
                 else:
-                    print("optional arg: " + arg)
+                    self.descriptor["command-line"] += self._generateCmdKey(arg)
             else:
-                print(arg)
+                self.descriptor["command-line"] += self._generateCmdKey(arg)
 
-        print(self.descriptor["command-line"])
-        
-        # Match params in command line with extracted pos_args
-        for arg in [arg for arg in self.dcpt_cmdl[0].split()[2:] if
-                    arg != command]:
-            if arg == "[options]":
-                for opt in self.optional_arguments:
-                    self.descriptor["command-line"] +=\
-                        " [{0}]".format(opt.upper())
-            elif (arg[2:] in self.optional_arguments and
-                  arg[2:].upper() not in self.descriptor["command-line"]):
-                self.descriptor["command-line"] +=\
-                    " [{0}]".format(arg[2:].upper())
-            elif arg[1:-1] in self.positional_arguments:
-                self.descriptor["command-line"] +=\
-                    " [{0}]".format(arg[1:-1].upper())
-            elif arg in self.commands:
-                self.descriptor["command-line"] +=\
-                    " [{0}]".format(arg.upper())
-            else:
-                print("{0} not added to command line".format(arg))
-        '''
+    def _parseParam(self, param):
+        if len(param.split("=")) > 1:
+            param = param.split("=")[0]
+
+        if param[2:] in self.optional_arguments:
+            return param[2:]
+        elif param[1:-1] in self.positional_arguments:
+            return param[1:-1]
+        elif param in self.commands or param in self.optional_arguments:
+            return param
+        elif param[1:-4] in self.positional_arguments:
+            return param[1:-4]
+        else:
+            return ""
+
+    def _generateCmdKey(self, param):
+        cmdKey = " [{0}]".format(self._parseParam(param).upper())
+        return "" if cmdKey == " []" or\
+            cmdKey in self.descriptor["command-line"]\
+            else cmdKey
 
     def _loadDescription(self, docopt_str):
         self.descriptions = docopt_str\
@@ -181,10 +173,7 @@ class docoptHelper():
                     inp['default-value'] = joint_args[inp['name']]['default']
                 # Get input type for optional arguments
                 docopt_type = self.optional_arguments[inp['name']].get('type')
-                if docopt_type[0] == "<" and docopt_type[-1] == ">":
-                    inp['type'] = "String"
-                    inp['list'] = True
-                elif docopt_type in self.TYPE_MAPPINGS:
+                if docopt_type in self.TYPE_MAPPINGS:
                     inp['type'] = self.TYPE_MAPPINGS[docopt_type]
                 else:
                     inp['type'] = "String"
@@ -192,6 +181,24 @@ class docoptHelper():
                 inp['type'] = "Flag"
                 inp['command-line-flag'] =\
                     self.optional_arguments[inp['name']].get('long')
+
+    def _extractGroups(self):
+        # extract together groups
+        for idx, usage_line in enumerate(self.dcpt_cmdl[0].split("\n")[1:]):
+            usage_group = {"id": "together_grp_{0}".format(idx),
+                           "members": [],
+                           "all-or-none": True,
+                           "name": ""}
+            for arg in [arg for arg in usage_line.split()[1:] if
+                        self._parseParam(arg) != ""]:
+                usage_group['members'].append(self._parseParam(arg))
+            usage_group['name'] = "_".join(usage_group['members'])
+
+            # add to groups if there's more than one member
+            if len(usage_group['members']) > 1:
+                self.groups.append(usage_group)
+
+        self.descriptor['groups'] = self.groups
 
     def generateDescriptor(self, docopt_str):
         self.dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
@@ -202,18 +209,19 @@ class docoptHelper():
         self._loadCommandLine()
         self._loadDescription(docopt_str)
         self._loadInputs()
+        self._extractGroups()
 
         return self.descriptor
 
 
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
-with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
+with open(sample_dir + "sample_docopt.txt", "r") as myfile:
     sample_docopt = myfile.read()
 
 desc = docoptHelper(base_descriptor=(
     sample_dir + "defaults_docopt_descriptor.json"))\
     .generateDescriptor(sample_docopt)
 
-with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
+with open(sample_dir + "sample_descriptor_output.json", "w+") as output:
     output.write(json.dumps(desc, indent=4))
