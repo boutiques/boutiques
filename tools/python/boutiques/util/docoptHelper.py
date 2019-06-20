@@ -26,9 +26,22 @@ class docoptHelper():
         else:
             self.descriptor = {}
 
+        self.groups = {}
         self.positional_arguments = {}
         self.optional_arguments = {}
         self.commands = {}
+
+    def _traversePattern(self, node):
+        if isinstance(node, dcpt.BranchPattern):
+            # group[type(node).__name__] = {}
+            print(type(node).__name__, end='')
+            print("{")
+            for child in node.children:
+                self._traversePattern(child)
+            print("}")
+        else:
+            print(node, end='')
+            print(",")
 
     def _importDocopt(self, docopt_str):
         options = dcpt.parse_defaults(docopt_str)
@@ -42,6 +55,8 @@ class docoptHelper():
             doc_options = dcpt.parse_defaults(docopt_str)
             options_shortcut.children = list(set(doc_options) - pattern_options)
         matched, left, collected = pattern.fix().match(argv)
+
+        self._traversePattern(pattern)
 
         for prm in pattern.flat():
             if type(prm) is dcpt.Argument:
@@ -91,7 +106,7 @@ class docoptHelper():
     def _loadCommandLine(self):
         command = self.dcpt_cmdl[0].split()[1]
         self.descriptor["command-line"] = command
-
+        '''
         for arg in [arg for arg in self.dcpt_cmdl[0].split()[2:] if
                     arg != command]:
             if arg[0] == "(" and arg[-1] == ")":
@@ -110,7 +125,7 @@ class docoptHelper():
                 print(arg)
 
         print(self.descriptor["command-line"])
-        '''
+        
         # Match params in command line with extracted pos_args
         for arg in [arg for arg in self.dcpt_cmdl[0].split()[2:] if
                     arg != command]:
