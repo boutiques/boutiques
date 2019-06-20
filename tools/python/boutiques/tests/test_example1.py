@@ -404,8 +404,10 @@ class TestExample1(BaseTest):
                            self.get_file_path("example1_docker_w_index.json"),
                            self.get_file_path("invocation_no_opts.json"),
                            "--skip-data-collection",
-                           "-v","{}:/test_mount1".format(self.get_file_path("example1_sing_mount1")),
-                           "-v","{}:/test_mount2".format(self.get_file_path("example1_sing_mount2")),
+                           "-v", "{}:/test_mount1".format(
+                               self.get_file_path("example1_mount1")),
+                           "-v", "{}:/test_mount2".format(
+                               self.get_file_path("example1_mount2")),
                            "--force-singularity")
 
         self.assert_successful_return(
