@@ -88,6 +88,21 @@ class docoptHelper():
                                 .replace('=', ' ')
                                 .split() if seg[0] != "-"]:
                         self.optional_arguments[arg_name]["type"] = typ
+        self._extractHierarchy(pattern)
+
+    def _extractHierarchy(self, pattern):
+        for root in pattern.children:
+            if type(root).__name__ == "Either" and len(root.children) > 1:
+                for usage in root.children:
+                    # Add arguments to list of required inputs for
+                    # preceeding command
+                    preceeding_cmd_idx = 0
+                    for cmd_idx, arg in enumerate(usage.children):
+                        if type(arg).__name__ == "Command":
+                            preceeding_cmd_idx = cmd_idx
+                            print(preceeding_cmd_idx)
+                        elif type(arg).__name__ == "Argument":
+                            "Add argument to command's requires-inputs field"
 
     def _parseParam(self, param):
         if len(param.split("=")) > 1:
@@ -139,8 +154,6 @@ class docoptHelper():
                         "requires-inputs": inps,
                         "value-key": "[{0}]".format("_".join(inps).upper())
                     })
-
-    def inputIsOption
 
     def _loadInputs(self):
         joint_args = {**self.positional_arguments,
