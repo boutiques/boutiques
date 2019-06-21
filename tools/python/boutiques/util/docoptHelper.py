@@ -89,33 +89,6 @@ class docoptHelper():
                                 .split() if seg[0] != "-"]:
                         self.optional_arguments[arg_name]["type"] = typ
 
-    def _loadCommandLine(self):
-        command = self.dcpt_cmdl[0].split()[1]
-        self.descriptor["command-line"] = command
-
-        for arg in [arg for arg in self.dcpt_cmdl[0].split()[1:] if
-                    arg != command]:
-            if arg == "[options]":
-                for opt in self.optional_arguments:
-                    self.descriptor["command-line"] +=\
-                            self._generateCmdKey(opt)
-            elif arg[0] == "(" and arg[-1] == ")":
-                if arg[1:-1].split("|"):
-                    for option_arg in arg[1:-1].split("|"):
-                        self.descriptor["command-line"] +=\
-                            self._generateCmdKey(option_arg)
-                else:
-                    print("required arg: " + arg)
-            elif arg[0] == "[" and arg[-1] == "]":
-                if arg[1:-1].split("|"):
-                    for option_arg in arg[1:-1].split("|"):
-                        self.descriptor["command-line"] +=\
-                            self._generateCmdKey(option_arg)
-                else:
-                    self.descriptor["command-line"] += self._generateCmdKey(arg)
-            else:
-                self.descriptor["command-line"] += self._generateCmdKey(arg)
-
     def _parseParam(self, param):
         if len(param.split("=")) > 1:
             param = param.split("=")[0]
@@ -145,10 +118,31 @@ class docoptHelper():
             .replace("\n\n", "\n").strip()
         self.descriptor["description"] = self.descriptions
 
-    def _loadInputs(self):
-        self.descriptor["inputs"] = []
+    # Concatenate choices into one input
+    def _loadInputChoices(self):
+        for usg_line in self.dcpt_usgs:
+            usg_line = usg_line.replace(" | ", "|").split()[1:]
+            for arg in usg_line:
+                inps = re.sub("[\[\]\(\)<>\.]", "", arg).split("|")
+                if len(inps) > 1:
+                    inps = [self._parseParam(inp)
+                            .replace("-", "_") for inp in inps]
+                    # Invalid input in list, most likely due to shorthand flag
+                    if "" in inps:
+                        continue
+                    self.descriptor['inputs'].append({
+                        "id": "_".join(inps),
+                        "name": "_".join(inps),
+                        "description": " or ".join(inps),
+                        "optional": True,
+                        "type": "String",
+                        "requires-inputs": inps,
+                        "value-key": "[{0}]".format("_".join(inps).upper())
+                    })
 
-        # Add arguments, optionality depends on type
+    def inputIsOption
+
+    def _loadInputs(self):
         joint_args = {**self.positional_arguments,
                       **self.optional_arguments,
                       **self.commands}
@@ -162,6 +156,9 @@ class docoptHelper():
                 "type": "String" if inp in self.positional_arguments else None,
                 "value-key": "[{0}]".format(inp.upper())
             }
+
+            
+
             self.descriptor['inputs'].append(newInp)
 
         # Additional fields for optional inputs
@@ -182,46 +179,28 @@ class docoptHelper():
                 inp['command-line-flag'] =\
                     self.optional_arguments[inp['name']].get('long')
 
-    def _extractGroups(self):
-        # extract together groups
-        for idx, usage_line in enumerate(self.dcpt_cmdl[0].split("\n")[1:]):
-            usage_group = {"id": "together_grp_{0}".format(idx),
-                           "members": [],
-                           "all-or-none": True,
-                           "name": ""}
-            for arg in [arg for arg in usage_line.split()[1:] if
-                        self._parseParam(arg) != ""]:
-                usage_group['members'].append(self._parseParam(arg))
-            usage_group['name'] = "_".join(usage_group['members'])
-
-            # add to groups if there's more than one member
-            if len(usage_group['members']) > 1:
-                self.groups.append(usage_group)
-
-        self.descriptor['groups'] = self.groups
-
     def generateDescriptor(self, docopt_str):
         self.dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
+        self.dcpt_usgs = self.dcpt_cmdl[0].split("\n")[1:]
         self.dcpt_args = dcpt.parse_section('arguments:', docopt_str)
         self.dcpt_opts = dcpt.parse_section('options:', docopt_str)
 
         self._importDocopt(docopt_str)
-        self._loadCommandLine()
         self._loadDescription(docopt_str)
+        self._loadInputChoices()
         self._loadInputs()
-        self._extractGroups()
 
         return self.descriptor
 
 
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
-with open(sample_dir + "sample_docopt.txt", "r") as myfile:
+with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
     sample_docopt = myfile.read()
 
 desc = docoptHelper(base_descriptor=(
     sample_dir + "defaults_docopt_descriptor.json"))\
     .generateDescriptor(sample_docopt)
 
-with open(sample_dir + "sample_descriptor_output.json", "w+") as output:
+with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
     output.write(json.dumps(desc, indent=4))

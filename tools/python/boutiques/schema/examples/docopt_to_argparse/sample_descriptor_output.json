@@ -1,5 +1,5 @@
 {
-    "command-line": "fmriprep_ciftify.py [BIDS_DIR] [OUTPUT_DIR] [ANALYSIS_LEVEL] [SESSION_LABEL] [ANAT_ONLY] [FMRIPREP-ARGS] [DEBUG] [RERUN-IF-INCOMPLETE] [FUNC-PREPROC-DIRNAME] [TASK_LABEL] [SMOOTHINGFWHM] [MSM-CONFIG] [NO-SYMLINKS] [FS-LICENSE] [RESAMPLE-TO-T1W32K] [OLDER-FMRIPREP] [FMRIPREP-WORKDIR] [FUNC-PREPROC-DESC] [NO-SDC] [CIFTIFY-CONF] [IGNORE-FIELDMAPS] [READ-FROM-DERIVATIVES] [VERBOSE] [N_CPUS] [DRY-RUN] [PARTICIPANT_LABEL] [SURF-REG] [HELP]",
+    "command-line": "fmriprep_ciftify.py [BIDS_DIR] [OUTPUT_DIR] [ANALYSIS_LEVEL] [RERUN-IF-INCOMPLETE] [SMOOTHINGFWHM] [SESSION_LABEL] [FS-LICENSE] [VERBOSE] [TASK_LABEL] [CIFTIFY-CONF] [IGNORE-FIELDMAPS] [FUNC-PREPROC-DESC] [RESAMPLE-TO-T1W32K] [N_CPUS] [ANAT_ONLY] [DEBUG] [FMRIPREP-WORKDIR] [MSM-CONFIG] [PARTICIPANT_LABEL] [FUNC-PREPROC-DIRNAME] [NO-SYMLINKS] [NO-SDC] [HELP] [SURF-REG] [OLDER-FMRIPREP] [FMRIPREP-ARGS] [DRY-RUN] [READ-FROM-DERIVATIVES]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -51,40 +51,6 @@
             "value-key": "[ANALYSIS_LEVEL]"
         },
         {
-            "id": "session_label",
-            "name": "session_label",
-            "description": "String or Comma separated list of sessions to process. Defaults to all.",
-            "optional": true,
-            "type": "String",
-            "value-key": "[SESSION_LABEL]"
-        },
-        {
-            "id": "anat_only",
-            "name": "anat_only",
-            "description": "Only run the anatomical pipeline.",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[ANAT_ONLY]",
-            "command-line-flag": "--anat_only"
-        },
-        {
-            "id": "fmriprep_args",
-            "name": "fmriprep-args",
-            "description": "Additional user arguments that may be added to fmriprep stages",
-            "optional": true,
-            "type": "String",
-            "value-key": "[FMRIPREP-ARGS]"
-        },
-        {
-            "id": "debug",
-            "name": "debug",
-            "description": "Debug logging in Erin's very verbose style",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[DEBUG]",
-            "command-line-flag": "--debug"
-        },
-        {
             "id": "rerun_if_incomplete",
             "name": "rerun-if-incomplete",
             "description": "Will delete and rerun ciftify workflows if incomplete outputs are found.",
@@ -92,23 +58,6 @@
             "type": "Flag",
             "value-key": "[RERUN-IF-INCOMPLETE]",
             "command-line-flag": "--rerun-if-incomplete"
-        },
-        {
-            "id": "func_preproc_dirname",
-            "name": "func-preproc-dirname",
-            "description": "Name derivatives folder where func derivatives are found [default: fmriprep]",
-            "optional": true,
-            "type": "String",
-            "value-key": "[FUNC-PREPROC-DIRNAME]",
-            "default-value": "fmriprep"
-        },
-        {
-            "id": "task_label",
-            "name": "task_label",
-            "description": "String or Comma separated list of fmri tasks to process. Defaults to all.",
-            "optional": true,
-            "type": "String",
-            "value-key": "[TASK_LABEL]"
         },
         {
             "id": "SmoothingFWHM",
@@ -119,21 +68,12 @@
             "value-key": "[SMOOTHINGFWHM]"
         },
         {
-            "id": "MSM_config",
-            "name": "MSM-config",
-            "description": "EXPERT OPTION. The path to the configuration file to use for MSMSulc mode. By default, the configuration file is ciftify/data/hcp_config/MSMSulcStrainFinalconf This setting is ignored when not running MSMSulc mode.",
+            "id": "session_label",
+            "name": "session_label",
+            "description": "String or Comma separated list of sessions to process. Defaults to all.",
             "optional": true,
-            "type": "File",
-            "value-key": "[MSM-CONFIG]"
-        },
-        {
-            "id": "no_symlinks",
-            "name": "no-symlinks",
-            "description": "Will not create symbolic links to the zz_templates folder",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[NO-SYMLINKS]",
-            "command-line-flag": "--no-symlinks"
+            "type": "String",
+            "value-key": "[SESSION_LABEL]"
         },
         {
             "id": "fs_license",
@@ -144,48 +84,21 @@
             "value-key": "[FS-LICENSE]"
         },
         {
-            "id": "resample_to_T1w32k",
-            "name": "resample-to-T1w32k",
-            "description": "Resample the Meshes to 32k Native (T1w) Space",
+            "id": "verbose",
+            "name": "verbose",
+            "description": "Verbose logging",
             "optional": true,
             "type": "Flag",
-            "value-key": "[RESAMPLE-TO-T1W32K]",
-            "command-line-flag": "--resample-to-T1w32k"
+            "value-key": "[VERBOSE]",
+            "command-line-flag": "--verbose"
         },
         {
-            "id": "older_fmriprep",
-            "name": "older-fmriprep",
-            "description": "Read from fmriprep derivatives that are version 1.1.8 or older",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[OLDER-FMRIPREP]",
-            "command-line-flag": "--older-fmriprep"
-        },
-        {
-            "id": "fmriprep_workdir",
-            "name": "fmriprep-workdir",
-            "description": "Path to working directory for fmriprep",
-            "optional": true,
-            "type": "File",
-            "value-key": "[FMRIPREP-WORKDIR]"
-        },
-        {
-            "id": "func_preproc_desc",
-            "name": "func-preproc-desc",
-            "description": "The bids desc tag [default: preproc] assigned to the preprocessed file",
+            "id": "task_label",
+            "name": "task_label",
+            "description": "String or Comma separated list of fmri tasks to process. Defaults to all.",
             "optional": true,
             "type": "String",
-            "value-key": "[FUNC-PREPROC-DESC]",
-            "default-value": "preproc"
-        },
-        {
-            "id": "no_SDC",
-            "name": "no-SDC",
-            "description": "Will not do fmriprep distortion correction at all (NOT recommended)",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[NO-SDC]",
-            "command-line-flag": "--no-SDC"
+            "value-key": "[TASK_LABEL]"
         },
         {
             "id": "ciftify_conf",
@@ -205,21 +118,22 @@
             "command-line-flag": "--ignore-fieldmaps"
         },
         {
-            "id": "read_from_derivatives",
-            "name": "read-from-derivatives",
-            "description": "Indicates pre-ciftify will be read from the indicated derivatives path and freesurfer/fmriprep will not be run",
+            "id": "func_preproc_desc",
+            "name": "func-preproc-desc",
+            "description": "The bids desc tag [default: preproc] assigned to the preprocessed file",
             "optional": true,
-            "type": "File",
-            "value-key": "[READ-FROM-DERIVATIVES]"
+            "type": "String",
+            "value-key": "[FUNC-PREPROC-DESC]",
+            "default-value": "preproc"
         },
         {
-            "id": "verbose",
-            "name": "verbose",
-            "description": "Verbose logging",
+            "id": "resample_to_T1w32k",
+            "name": "resample-to-T1w32k",
+            "description": "Resample the Meshes to 32k Native (T1w) Space",
             "optional": true,
             "type": "Flag",
-            "value-key": "[VERBOSE]",
-            "command-line-flag": "--verbose"
+            "value-key": "[RESAMPLE-TO-T1W32K]",
+            "command-line-flag": "--resample-to-T1w32k"
         },
         {
             "id": "n_cpus",
@@ -230,13 +144,38 @@
             "value-key": "[N_CPUS]"
         },
         {
-            "id": "dry_run",
-            "name": "dry-run",
-            "description": "Dry run",
+            "id": "anat_only",
+            "name": "anat_only",
+            "description": "Only run the anatomical pipeline.",
             "optional": true,
             "type": "Flag",
-            "value-key": "[DRY-RUN]",
-            "command-line-flag": "--dry-run"
+            "value-key": "[ANAT_ONLY]",
+            "command-line-flag": "--anat_only"
+        },
+        {
+            "id": "debug",
+            "name": "debug",
+            "description": "Debug logging in Erin's very verbose style",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[DEBUG]",
+            "command-line-flag": "--debug"
+        },
+        {
+            "id": "fmriprep_workdir",
+            "name": "fmriprep-workdir",
+            "description": "Path to working directory for fmriprep",
+            "optional": true,
+            "type": "File",
+            "value-key": "[FMRIPREP-WORKDIR]"
+        },
+        {
+            "id": "MSM_config",
+            "name": "MSM-config",
+            "description": "EXPERT OPTION. The path to the configuration file to use for MSMSulc mode. By default, the configuration file is ciftify/data/hcp_config/MSMSulcStrainFinalconf This setting is ignored when not running MSMSulc mode.",
+            "optional": true,
+            "type": "File",
+            "value-key": "[MSM-CONFIG]"
         },
         {
             "id": "participant_label",
@@ -245,6 +184,42 @@
             "optional": true,
             "type": "String",
             "value-key": "[PARTICIPANT_LABEL]"
+        },
+        {
+            "id": "func_preproc_dirname",
+            "name": "func-preproc-dirname",
+            "description": "Name derivatives folder where func derivatives are found [default: fmriprep]",
+            "optional": true,
+            "type": "String",
+            "value-key": "[FUNC-PREPROC-DIRNAME]",
+            "default-value": "fmriprep"
+        },
+        {
+            "id": "no_symlinks",
+            "name": "no-symlinks",
+            "description": "Will not create symbolic links to the zz_templates folder",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[NO-SYMLINKS]",
+            "command-line-flag": "--no-symlinks"
+        },
+        {
+            "id": "no_SDC",
+            "name": "no-SDC",
+            "description": "Will not do fmriprep distortion correction at all (NOT recommended)",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[NO-SDC]",
+            "command-line-flag": "--no-SDC"
+        },
+        {
+            "id": "help",
+            "name": "help",
+            "description": "Print help",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[HELP]",
+            "command-line-flag": "--help"
         },
         {
             "id": "surf_reg",
@@ -256,13 +231,38 @@
             "default-value": "MSMSulc"
         },
         {
-            "id": "help",
-            "name": "help",
-            "description": "Print help",
+            "id": "older_fmriprep",
+            "name": "older-fmriprep",
+            "description": "Read from fmriprep derivatives that are version 1.1.8 or older",
             "optional": true,
             "type": "Flag",
-            "value-key": "[HELP]",
-            "command-line-flag": "--help"
+            "value-key": "[OLDER-FMRIPREP]",
+            "command-line-flag": "--older-fmriprep"
+        },
+        {
+            "id": "fmriprep_args",
+            "name": "fmriprep-args",
+            "description": "Additional user arguments that may be added to fmriprep stages",
+            "optional": true,
+            "type": "String",
+            "value-key": "[FMRIPREP-ARGS]"
+        },
+        {
+            "id": "dry_run",
+            "name": "dry-run",
+            "description": "Dry run",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[DRY-RUN]",
+            "command-line-flag": "--dry-run"
+        },
+        {
+            "id": "read_from_derivatives",
+            "name": "read-from-derivatives",
+            "description": "Indicates pre-ciftify will be read from the indicated derivatives path and freesurfer/fmriprep will not be run",
+            "optional": true,
+            "type": "File",
+            "value-key": "[READ-FROM-DERIVATIVES]"
         }
     ],
     "invocation-schema": {

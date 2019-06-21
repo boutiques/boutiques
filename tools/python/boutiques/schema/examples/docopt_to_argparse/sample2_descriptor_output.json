@@ -1,5 +1,5 @@
 {
-    "command-line": "naval_fate [SHIP] [NEW] [NAME] [MOVE] [X] [Y] [SPEED] [SHOOT] [MINE] [SET] [REMOVE] [MOORED] [DRIFTING] [HELP] [VERSION]",
+    "command-line": "",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -15,50 +15,49 @@
     ],
     "groups": [
         {
-            "id": "together_grp_0",
-            "members": [
-                "ship",
-                "new",
-                "name"
-            ],
-            "all-or-none": true,
-            "name": "ship_new_name"
+            "all-or-none": false,
+            "id": "together_group",
+            "members": [],
+            "name": "Toggled together"
         },
         {
-            "id": "together_grp_1",
-            "members": [
-                "ship",
-                "name",
-                "move",
-                "x",
-                "y"
-            ],
-            "all-or-none": true,
-            "name": "ship_name_move_x_y"
+            "mutually-exclusive": false,
+            "id": "mutex_group",
+            "members": [],
+            "name": "Mutually-exclusive inputs"
         },
         {
-            "id": "together_grp_2",
-            "members": [
-                "ship",
-                "shoot",
-                "x",
-                "y"
-            ],
-            "all-or-none": true,
-            "name": "ship_shoot_x_y"
-        },
-        {
-            "id": "together_grp_3",
-            "members": [
-                "mine",
-                "x",
-                "y"
-            ],
-            "all-or-none": true,
-            "name": "mine_x_y"
+            "one-is-required": false,
+            "id": "at_least_one",
+            "members": [],
+            "name": "At least one must be present"
         }
     ],
     "inputs": [
+        {
+            "id": "set_remove",
+            "name": "set_remove",
+            "description": "set or remove",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "set",
+                "remove"
+            ],
+            "value-key": "[SET_REMOVE]"
+        },
+        {
+            "id": "moored_drifting",
+            "name": "moored_drifting",
+            "description": "moored or drifting",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "moored",
+                "drifting"
+            ],
+            "value-key": "[MOORED_DRIFTING]"
+        },
         {
             "id": "name",
             "name": "name",
