@@ -35,30 +35,6 @@
     ],
     "inputs": [
         {
-            "id": "set_remove",
-            "name": "set_remove",
-            "description": "set or remove",
-            "optional": true,
-            "type": "String",
-            "requires-inputs": [
-                "set",
-                "remove"
-            ],
-            "value-key": "[SET_REMOVE]"
-        },
-        {
-            "id": "moored_drifting",
-            "name": "moored_drifting",
-            "description": "moored or drifting",
-            "optional": true,
-            "type": "String",
-            "requires-inputs": [
-                "moored",
-                "drifting"
-            ],
-            "value-key": "[MOORED_DRIFTING]"
-        },
-        {
             "id": "name",
             "name": "name",
             "description": null,
@@ -133,7 +109,10 @@
             "description": null,
             "optional": true,
             "type": null,
-            "value-key": "[SHIP]"
+            "value-key": "[SHIP]",
+            "requires-inputs": [
+                "name"
+            ]
         },
         {
             "id": "new",
@@ -141,7 +120,11 @@
             "description": null,
             "optional": true,
             "type": null,
-            "value-key": "[NEW]"
+            "value-key": "[NEW]",
+            "requires-inputs": [
+                "ship",
+                "list_of_name"
+            ]
         },
         {
             "id": "move",
@@ -149,7 +132,12 @@
             "description": null,
             "optional": true,
             "type": null,
-            "value-key": "[MOVE]"
+            "value-key": "[MOVE]",
+            "requires-inputs": [
+                "ship",
+                "x",
+                "y"
+            ]
         },
         {
             "id": "shoot",
@@ -157,7 +145,12 @@
             "description": null,
             "optional": true,
             "type": null,
-            "value-key": "[SHOOT]"
+            "value-key": "[SHOOT]",
+            "requires-inputs": [
+                "ship",
+                "x",
+                "y"
+            ]
         },
         {
             "id": "mine",
@@ -165,7 +158,12 @@
             "description": null,
             "optional": true,
             "type": null,
-            "value-key": "[MINE]"
+            "value-key": "[MINE]",
+            "requires-inputs": [
+                "set_remove",
+                "x",
+                "y"
+            ]
         },
         {
             "id": "set",
@@ -182,6 +180,39 @@
             "optional": true,
             "type": null,
             "value-key": "[REMOVE]"
+        },
+        {
+            "id": "list_of_name",
+            "name": "list_of_name",
+            "description": "list of names",
+            "optional": true,
+            "type": "String",
+            "list": true,
+            "value-key": "[LIST_OF_NAME]"
+        },
+        {
+            "id": "set_remove",
+            "name": "set_remove",
+            "description": "set or remove",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "set",
+                "remove"
+            ],
+            "value-key": "[SET_REMOVE]"
+        },
+        {
+            "id": "moored_drifting",
+            "name": "moored_drifting",
+            "description": "moored or drifting",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "--moored",
+                "--drifting"
+            ],
+            "value-key": "[MOORED_DRIFTING]"
         }
     ],
     "invocation-schema": {
