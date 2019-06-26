@@ -19,24 +19,28 @@ class docoptHelper():
         "YAML": "String"
     }
 
-    def __init__(self, base_descriptor=None):
+    def __init__(self, docopt_str, base_descriptor=None):
         if base_descriptor is not None:
             with open(base_descriptor, "r") as base_desc:
                 self.descriptor = json.load(base_desc)
         else:
             self.descriptor = {}
 
-        self.groups = []
+        self.docopt_str = docopt_str
         self.positional_arguments = {}
         self.optional_arguments = {}
         self.commands = {}
-        self.pattern = None
 
-    def _importDocopt(self, docopt_str):
+        self.dcpt_usgs = dcpt.parse_section(
+            'usage:', docopt_str)[0].split("\n")[1:]
+        self.dcpt_args = dcpt.parse_section('arguments:', docopt_str)
+        self.dcpt_opts = dcpt.parse_section('options:', docopt_str)
         options = dcpt.parse_defaults(docopt_str)
 
         self.pattern = dcpt.parse_pattern(
-            dcpt.formal_usage(self.dcpt_cmdl[0]), options)
+            dcpt.formal_usage(dcpt.parse_section('usage:', docopt_str)[0]),
+            options)
+
         argv = dcpt.parse_argv(dcpt.Tokens(sys.argv[1:]), list(options), False)
         pattern_options = set(self.pattern.flat(dcpt.Option))
 
@@ -45,6 +49,7 @@ class docoptHelper():
             options_shortcut.children = list(set(doc_options) - pattern_options)
         matched, left, collected = self.pattern.fix().match(argv)
 
+    def loadArguments(self):
         for prm in self.pattern.flat():
             if type(prm) is dcpt.Argument:
                 self.positional_arguments[prm.name[1:-1]] = {
@@ -63,6 +68,15 @@ class docoptHelper():
                     "Unrecognized argument of type {0}\n\"{1}\": {2}".format(
                         type(prm), prm.name, prm.value))
 
+    def loadDocoptDescription(self):
+        self.descriptor["description"] = self.docopt_str\
+            .replace("".join(dcpt.parse_section(
+                'usage:', self.docopt_str)), "")\
+            .replace("".join(self.dcpt_args), "")\
+            .replace("".join(self.dcpt_opts), "")\
+            .replace("\n\n", "\n").strip()
+
+    def loadDescriptionAndType(self):
         # using docopt code to extract description and type from args
         for line in (self.dcpt_opts + self.dcpt_args):
             _, _, s = line.partition(':')  # get rid of "options:"
@@ -89,6 +103,77 @@ class docoptHelper():
                                 .replace('=', ' ')
                                 .split() if seg[0] != "-"]:
                         self.optional_arguments[arg_name]["type"] = typ
+
+    def generateInputs(self):
+        joint_args = {**self.positional_arguments,
+                      **self.optional_arguments,
+                      **self.commands}
+        for inp in [arg for arg in joint_args if not any(i['id'] == arg for
+                    i in self.descriptor['inputs'])]:
+            newInp = {
+                "id": inp.replace("-", "_"),
+                "name": inp,
+                "description": joint_args[inp].get('description'),
+                "optional": True,
+                "type": "String" if inp in self.positional_arguments else None,
+                "value-key": "[{0}]".format(inp.upper())
+            }
+
+            self.descriptor['inputs'].append(newInp)
+
+        # Additional fields for optional inputs
+        for inp in [inp for inp in self.descriptor['inputs']
+                    if inp['name'] in self.optional_arguments]:
+            if self.optional_arguments[inp['name']].get('type') is not None:
+                # non flag params can have defaults
+                if joint_args[inp['name']]['default'] is not None:
+                    inp['default-value'] = joint_args[inp['name']]['default']
+                # Get input type for optional arguments
+                docopt_type = self.optional_arguments[inp['name']].get('type')
+                if docopt_type in self.TYPE_MAPPINGS:
+                    inp['type'] = self.TYPE_MAPPINGS[docopt_type]
+                else:
+                    inp['type'] = "String"
+            else:
+                inp['type'] = "Flag"
+                inp['command-line-flag'] =\
+                    self.optional_arguments[inp['name']].get('long')
+
+    def generateRules(self, node):
+        child_node_type = type(node.children[0]).__name__
+        # Traversing reached usage level
+        if hasattr(node, 'children') and (child_node_type == "Either" or
+                                          child_node_type == "Required"):
+            for child in node.children:
+                self.generateRules(child)
+        else:
+            self._loadRestrictionsFromUsage(node)
+
+    def _loadRestrictionsFromUsage(self, usage):
+        preceeding_cmd_idx = 0
+        root_cmd = None
+        if type(usage.children[0]).__name__ == "Command":
+            root_cmd = usage.children[0]
+        for cmd_idx, arg in enumerate(usage.children):
+            arg_type = type(arg).__name__
+            if arg_type == "Command":
+                preceeding_cmd_idx = cmd_idx
+            elif arg_type == "Command":
+                self._addRestrictions(
+                    arg, root_cmd=root_cmd,
+                    preceeding_cmd=usage.children[preceeding_cmd_idx])
+            elif arg_type == "Argument":
+                self._addRestrictions(
+                    arg, root_cmd=root_cmd,
+                    preceeding_cmd=usage.children[preceeding_cmd_idx])
+            elif arg_type == "Option":
+                self._addRestrictions(
+                    arg, root_cmd=root_cmd,
+                    preceeding_cmd=usage.children[preceeding_cmd_idx])
+
+    def _addRestrictions(self, node, root_cmd=None, preceeding_cmd=None):
+        print("name: {0}, root: {1}, pre: {2}".format(
+            node.name, root_cmd, preceeding_cmd))
 
     def _extractHierarchy(self):
         for root in self.pattern.children:
@@ -241,71 +326,19 @@ class docoptHelper():
             cmdKey in self.descriptor["command-line"]\
             else cmdKey
 
-    def _loadDescription(self, docopt_str):
-        self.descriptions = docopt_str\
-            .replace("".join(self.dcpt_cmdl), "")\
-            .replace("".join(self.dcpt_args), "")\
-            .replace("".join(self.dcpt_opts), "")\
-            .replace("\n\n", "\n").strip()
-        self.descriptor["description"] = self.descriptions
-
-    def _loadInputs(self):
-        joint_args = {**self.positional_arguments,
-                      **self.optional_arguments,
-                      **self.commands}
-        for inp in [arg for arg in joint_args if not any(i['id'] == arg for
-                    i in self.descriptor['inputs'])]:
-            newInp = {
-                "id": inp.replace("-", "_"),
-                "name": inp,
-                "description": joint_args[inp].get('description'),
-                "optional": True,
-                "type": "String" if inp in self.positional_arguments else None,
-                "value-key": "[{0}]".format(inp.upper())
-            }
-
-            self.descriptor['inputs'].append(newInp)
-
-        # Additional fields for optional inputs
-        for inp in [inp for inp in self.descriptor['inputs']
-                    if inp['name'] in self.optional_arguments]:
-            if self.optional_arguments[inp['name']].get('type') is not None:
-                # non flag params can have defaults
-                if joint_args[inp['name']]['default'] is not None:
-                    inp['default-value'] = joint_args[inp['name']]['default']
-                # Get input type for optional arguments
-                docopt_type = self.optional_arguments[inp['name']].get('type')
-                if docopt_type in self.TYPE_MAPPINGS:
-                    inp['type'] = self.TYPE_MAPPINGS[docopt_type]
-                else:
-                    inp['type'] = "String"
-            else:
-                inp['type'] = "Flag"
-                inp['command-line-flag'] =\
-                    self.optional_arguments[inp['name']].get('long')
-
-    def generateDescriptor(self, docopt_str):
-        self.dcpt_cmdl = dcpt.parse_section('usage:', docopt_str)
-        self.dcpt_usgs = self.dcpt_cmdl[0].split("\n")[1:]
-        self.dcpt_args = dcpt.parse_section('arguments:', docopt_str)
-        self.dcpt_opts = dcpt.parse_section('options:', docopt_str)
-
-        self._importDocopt(docopt_str)
-        self._loadDescription(docopt_str)
-        self._loadInputs()
-        self._extractHierarchy()
-
-        return self.descriptor
-
-
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
 with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
     sample_docopt = myfile.read()
 
-desc = docoptHelper(base_descriptor=(
-    sample_dir + "defaults_docopt_descriptor.json"))\
-    .generateDescriptor(sample_docopt)
+helper = docoptHelper(sample_docopt, base_descriptor=(
+    sample_dir + "defaults_docopt_descriptor.json"))
+helper.loadDocoptDescription()
+helper.loadArguments()
+helper.generateInputs()
+helper.loadDescriptionAndType()
+helper._extractHierarchy()
+helper.generateRules(helper.pattern)
 
 with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
-    output.write(json.dumps(desc, indent=4))
+    output.write(json.dumps(helper.descriptor, indent=4))

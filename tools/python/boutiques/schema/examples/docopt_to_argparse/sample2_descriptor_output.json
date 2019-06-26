@@ -61,16 +61,16 @@
         {
             "id": "speed",
             "name": "speed",
-            "description": "Speed in knots [default: 10].",
+            "description": null,
             "optional": true,
-            "type": "String",
+            "type": "Flag",
             "value-key": "[SPEED]",
-            "default-value": "10"
+            "command-line-flag": "--speed"
         },
         {
             "id": "moored",
             "name": "moored",
-            "description": "Moored (anchored) mine.",
+            "description": null,
             "optional": true,
             "type": "Flag",
             "value-key": "[MOORED]",
@@ -79,7 +79,7 @@
         {
             "id": "drifting",
             "name": "drifting",
-            "description": "Drifting mine.",
+            "description": null,
             "optional": true,
             "type": "Flag",
             "value-key": "[DRIFTING]",
@@ -88,7 +88,7 @@
         {
             "id": "help",
             "name": "help",
-            "description": "Show this screen.",
+            "description": null,
             "optional": true,
             "type": "Flag",
             "value-key": "[HELP]",
@@ -97,7 +97,7 @@
         {
             "id": "version",
             "name": "version",
-            "description": "Show version.",
+            "description": null,
             "optional": true,
             "type": "Flag",
             "value-key": "[VERSION]",

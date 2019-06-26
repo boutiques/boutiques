@@ -1,0 +1,38 @@
+{
+    "Required": {
+        "Required": {
+            "Argument": "<bids_dir>",
+            "Argument": "<output_dir>",
+            "Argument": "<analysis_level>",
+            "Optional": {
+                "OptionsShortcut": {
+                    "Option": "--no-SDC",
+                    "Option": "--session_label",
+                    "Option": "--fs-license",
+                    "Option": "--func-preproc-dirname",
+                    "Option": "--ciftify-conf",
+                    "Option": "--fmriprep-workdir",
+                    "Option": "--read-from-derivatives",
+                    "Option": "--verbose",
+                    "Option": "--task_label",
+                    "Option": "--participant_label",
+                    "Option": "--rerun-if-incomplete",
+                    "Option": "--fmriprep-args",
+                    "Option": "--older-fmriprep",
+                    "Option": "--dry-run",
+                    "Option": "--ignore-fieldmaps",
+                    "Option": "--no-symlinks",
+                    "Option": "--debug",
+                    "Option": "--SmoothingFWHM",
+                    "Option": "--help",
+                    "Option": "--func-preproc-desc",
+                    "Option": "--surf-reg",
+                    "Option": "--n_cpus",
+                    "Option": "--anat_only",
+                    "Option": "--resample-to-T1w32k",
+                    "Option": "--MSM-config"
+                }
+            }
+        }
+    }
+}
