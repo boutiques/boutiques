@@ -104,48 +104,13 @@ class docoptHelper():
                                 .split() if seg[0] != "-"]:
                         self.optional_arguments[arg_name]["type"] = typ
 
-    def generateInputs(self):
-        joint_args = {**self.positional_arguments,
-                      **self.optional_arguments,
-                      **self.commands}
-        for inp in [arg for arg in joint_args if not any(i['id'] == arg for
-                    i in self.descriptor['inputs'])]:
-            newInp = {
-                "id": inp.replace("-", "_"),
-                "name": inp,
-                "description": joint_args[inp].get('description'),
-                "optional": True,
-                "type": "String" if inp in self.positional_arguments else None,
-                "value-key": "[{0}]".format(inp.upper())
-            }
-
-            self.descriptor['inputs'].append(newInp)
-
-        # Additional fields for optional inputs
-        for inp in [inp for inp in self.descriptor['inputs']
-                    if inp['name'] in self.optional_arguments]:
-            if self.optional_arguments[inp['name']].get('type') is not None:
-                # non flag params can have defaults
-                if joint_args[inp['name']]['default'] is not None:
-                    inp['default-value'] = joint_args[inp['name']]['default']
-                # Get input type for optional arguments
-                docopt_type = self.optional_arguments[inp['name']].get('type')
-                if docopt_type in self.TYPE_MAPPINGS:
-                    inp['type'] = self.TYPE_MAPPINGS[docopt_type]
-                else:
-                    inp['type'] = "String"
-            else:
-                inp['type'] = "Flag"
-                inp['command-line-flag'] =\
-                    self.optional_arguments[inp['name']].get('long')
-
-    def generateRules(self, node):
+    def generateInputs(self, node):
         child_node_type = type(node.children[0]).__name__
         # Traversing reached usage level
         if hasattr(node, 'children') and (child_node_type == "Either" or
                                           child_node_type == "Required"):
             for child in node.children:
-                self.generateRules(child)
+                self.generateInputs(child)
         else:
             self._loadRestrictionsFromUsage(node)
 
@@ -156,154 +121,63 @@ class docoptHelper():
             root_cmd = usage.children[0]
         for cmd_idx, arg in enumerate(usage.children):
             arg_type = type(arg).__name__
-            if arg_type == "Command":
-                preceeding_cmd_idx = cmd_idx
+            if hasattr(arg, "children"):
+                # Has sub-arguments, maybe recurse into _loadRtrctnsFrmUsg
+                # but have to deal with children in subtype
+                if arg_type == "Optional" and type(arg.children[0]).__name__ ==\
+                  "OptionsShortcut":
+                    for option in arg.children[0].children:
+                        self._addInput(option)
             elif arg_type == "Command":
+                self._addInput(arg)
                 self._addRestrictions(
                     arg, root_cmd=root_cmd,
                     preceeding_cmd=usage.children[preceeding_cmd_idx])
+                preceeding_cmd_idx = cmd_idx
             elif arg_type == "Argument":
+                self._addInput(arg)
                 self._addRestrictions(
                     arg, root_cmd=root_cmd,
                     preceeding_cmd=usage.children[preceeding_cmd_idx])
             elif arg_type == "Option":
+                self._addInput(arg)
                 self._addRestrictions(
                     arg, root_cmd=root_cmd,
                     preceeding_cmd=usage.children[preceeding_cmd_idx])
+            elif arg_type == "Optional":
+                print("Optional")
+            elif arg_type == "OptionsShortcut":
+                print("OptionsShortcut")
+
+    def _addInput(self, arg):
+        joint_args = {**self.positional_arguments,
+                      **self.optional_arguments,
+                      **self.commands}
+        arg_name = self._parseParam(arg.name)
+
+        if not any(x['name'] == arg_name for x in self.descriptor['inputs']):
+            new_inp = {
+                "id": arg_name.replace("-", "_"),
+                "name": arg_name,
+                "description": joint_args[arg_name].get('description'),
+                "optional": True,
+                "value-key": "[{0}]".format(arg_name).upper()
+            }
+            if 'type' in joint_args[arg_name]:
+                new_inp['type'] = joint_args[arg_name]['type']
+            elif arg_name in self.optional_arguments:
+                new_inp['type'] = "Flag"
+                new_inp['command-line-flag'] = joint_args[arg_name]['long']
+            else:
+                new_inp['type'] = "String"
+            self.descriptor['inputs'].append(new_inp)
 
     def _addRestrictions(self, node, root_cmd=None, preceeding_cmd=None):
-        print("name: {0}, root: {1}, pre: {2}".format(
-            node.name, root_cmd, preceeding_cmd))
-
-    def _extractHierarchy(self):
-        for root in self.pattern.children:
-            # Many usages
-            if type(root).__name__ == "Either" and len(root.children) > 1:
-                for usage in root.children:
-                    # Add arguments to list of required inputs for
-                    # preceeding command
-                    preceeding_cmd_idx = 0
-                    for cmd_idx, arg in enumerate(usage.children):
-                        if type(arg).__name__ == "Command":
-                            if cmd_idx > 0:
-                                parent_name = self._parseParam(usage.children[
-                                    preceeding_cmd_idx].name)
-                                command = next((x for x in
-                                                self.descriptor[
-                                                    "inputs"]
-                                                if x["name"] ==
-                                                arg.name),
-                                               None)
-                                if "requires-inputs" not in command:
-                                    command["requires-inputs"] = [
-                                            parent_name
-                                        ]
-                                else:
-                                    command["requires-inputs"]\
-                                        .append("list_of_{0}".format(
-                                            parent_name))
-                            preceeding_cmd_idx = cmd_idx
-                        elif type(arg).__name__ == "Argument":
-                            parent_name = self._parseParam(usage.children[
-                                preceeding_cmd_idx].name)
-                            leading_command = next((x for x in
-                                                    self.descriptor["inputs"]
-                                                    if x["name"] ==
-                                                    parent_name),
-                                                   None)
-                            if "requires-inputs" not in leading_command:
-                                leading_command["requires-inputs"] = [
-                                        self._parseParam(arg.name)
-                                    ]
-                            else:
-                                leading_command["requires-inputs"]\
-                                    .append(self._parseParam(arg.name))
-                        elif (type(arg).__name__ == "Required" and
-                              len(arg.children) == 1 and
-                              type(arg.children[0]).__name__ == "Either"):
-                            inps = [self._parseParam(inp.name)
-                                    .replace("-", "_") for inp in
-                                    arg.children[0].children]
-                            # Invalid input in list, most likely due to flag
-                            if "" in inps:
-                                continue
-                            self.descriptor['inputs'].append({
-                                "id": "_".join(inps),
-                                "name": "_".join(inps),
-                                "description": " or ".join(inps),
-                                "optional": True,
-                                "type": "String",
-                                "value-choices": [inp.name for inp in
-                                                  arg.children[0].children],
-                                "value-key": "[{0}]".format("_".join(
-                                    inps).upper())
-                            })
-                            parent_name = self._parseParam(usage.children[
-                                preceeding_cmd_idx].name)
-                            leading_command = next((x for x in
-                                                    self.descriptor["inputs"]
-                                                    if x["name"] ==
-                                                    parent_name),
-                                                   None)
-                            if "requires-inputs" not in leading_command:
-                                leading_command["requires-inputs"] = [
-                                        "_".join(inps)
-                                    ]
-                            else:
-                                leading_command["requires-inputs"]\
-                                    .append("_".join(inps))
-                        elif (type(arg).__name__ == "Optional" and
-                              len(arg.children) == 1 and
-                              type(arg.children[0]).__name__ == "Either"):
-                                inps = [self._parseParam(inp.name)
-                                        .replace("-", "_") for inp in
-                                        arg.children[0].children]
-                                # Invalid input in list, most likely due to flag
-                                if "" in inps:
-                                    continue
-                                self.descriptor['inputs'].append({
-                                    "id": "_".join(inps),
-                                    "name": "_".join(inps),
-                                    "description": " or ".join(inps),
-                                    "optional": True,
-                                    "type": "String",
-                                    "value-choices": [inp.name for inp in
-                                                      arg.children[0].children],
-                                    "value-key": "[{0}]".format("_".join(
-                                        inps).upper())
-                                })
-                        elif type(arg).__name__ == "OneOrMore":
-                            # Create list_item value in inputs, clone of item
-                            # but list = true
-                            parent_name = self._parseParam(usage.children[
-                                preceeding_cmd_idx].name)
-                            inp_name = self._parseParam(arg.children[0].name)
-                            self.descriptor['inputs'].append({
-                                "id": "list_of_{0}".format(inp_name)
-                                .replace("-", "_"),
-                                "name": "list_of_{0}".format(inp_name),
-                                "description": "list of {0}s".format(inp_name),
-                                "optional": True,
-                                "type": "String",
-                                "list": True,
-                                "value-key": "[{0}]".format(
-                                    "list_of_{0}".format(inp_name).upper())
-                            })
-                            parent_name = self._parseParam(usage.children[
-                                preceeding_cmd_idx].name)
-                            leading_command = next((x for x in
-                                                    self.descriptor["inputs"]
-                                                    if x["name"] ==
-                                                    parent_name),
-                                                   None)
-                            if "requires-inputs" not in leading_command:
-                                leading_command["requires-inputs"] = [
-                                        "list_of_{0}".format(inp_name)
-                                    ]
-                            else:
-                                leading_command["requires-inputs"]\
-                                    .append("list_of_{0}".format(inp_name))
-        # print(json.dumps(self.descriptor["inputs"], indent=2))
+        """print("name: {0}, root: {1}, pre: {2}".format(
+            node.name,
+            root_cmd.name if hasattr(root_cmd, "name") else "NO ROOT CMD",
+            preceeding_cmd.name if hasattr(preceeding_cmd, "name") else
+            "NO PRECEEDING CMD"))"""
 
     def _parseParam(self, param):
         if len(param.split("=")) > 1:
@@ -321,10 +195,7 @@ class docoptHelper():
             return ""
 
     def _generateCmdKey(self, param):
-        cmdKey = " [{0}]".format(self._parseParam(param).upper())
-        return "" if cmdKey == " []" or\
-            cmdKey in self.descriptor["command-line"]\
-            else cmdKey
+        return "[{0}]".format(self._parseParam(param).upper())
 
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
@@ -335,10 +206,8 @@ helper = docoptHelper(sample_docopt, base_descriptor=(
     sample_dir + "defaults_docopt_descriptor.json"))
 helper.loadDocoptDescription()
 helper.loadArguments()
-helper.generateInputs()
 helper.loadDescriptionAndType()
-helper._extractHierarchy()
-helper.generateRules(helper.pattern)
+helper.generateInputs(helper.pattern)
 
 with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
     output.write(json.dumps(helper.descriptor, indent=4))

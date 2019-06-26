@@ -35,184 +35,86 @@
     ],
     "inputs": [
         {
-            "id": "name",
-            "name": "name",
-            "description": null,
-            "optional": true,
-            "type": "String",
-            "value-key": "[NAME]"
-        },
-        {
-            "id": "x",
-            "name": "x",
-            "description": null,
-            "optional": true,
-            "type": "String",
-            "value-key": "[X]"
-        },
-        {
-            "id": "y",
-            "name": "y",
-            "description": null,
-            "optional": true,
-            "type": "String",
-            "value-key": "[Y]"
-        },
-        {
-            "id": "speed",
-            "name": "speed",
-            "description": null,
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[SPEED]",
-            "command-line-flag": "--speed"
-        },
-        {
-            "id": "moored",
-            "name": "moored",
-            "description": null,
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[MOORED]",
-            "command-line-flag": "--moored"
-        },
-        {
-            "id": "drifting",
-            "name": "drifting",
-            "description": null,
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[DRIFTING]",
-            "command-line-flag": "--drifting"
-        },
-        {
-            "id": "help",
-            "name": "help",
-            "description": null,
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[HELP]",
-            "command-line-flag": "--help"
-        },
-        {
-            "id": "version",
-            "name": "version",
-            "description": null,
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[VERSION]",
-            "command-line-flag": "--version"
-        },
-        {
             "id": "ship",
             "name": "ship",
             "description": null,
             "optional": true,
-            "type": null,
             "value-key": "[SHIP]",
-            "requires-inputs": [
-                "name"
-            ]
+            "type": "String"
         },
         {
             "id": "new",
             "name": "new",
             "description": null,
             "optional": true,
-            "type": null,
             "value-key": "[NEW]",
-            "requires-inputs": [
-                "ship",
-                "list_of_name"
-            ]
+            "type": "String"
+        },
+        {
+            "id": "name",
+            "name": "name",
+            "description": null,
+            "optional": true,
+            "value-key": "[NAME]",
+            "type": "String"
         },
         {
             "id": "move",
             "name": "move",
             "description": null,
             "optional": true,
-            "type": null,
             "value-key": "[MOVE]",
-            "requires-inputs": [
-                "ship",
-                "x",
-                "y"
-            ]
+            "type": "String"
+        },
+        {
+            "id": "x",
+            "name": "x",
+            "description": null,
+            "optional": true,
+            "value-key": "[X]",
+            "type": "String"
+        },
+        {
+            "id": "y",
+            "name": "y",
+            "description": null,
+            "optional": true,
+            "value-key": "[Y]",
+            "type": "String"
         },
         {
             "id": "shoot",
             "name": "shoot",
             "description": null,
             "optional": true,
-            "type": null,
             "value-key": "[SHOOT]",
-            "requires-inputs": [
-                "ship",
-                "x",
-                "y"
-            ]
+            "type": "String"
         },
         {
             "id": "mine",
             "name": "mine",
             "description": null,
             "optional": true,
-            "type": null,
             "value-key": "[MINE]",
-            "requires-inputs": [
-                "set_remove",
-                "x",
-                "y"
-            ]
+            "type": "String"
         },
         {
-            "id": "set",
-            "name": "set",
-            "description": null,
+            "id": "help",
+            "name": "help",
+            "description": "Show this screen.",
             "optional": true,
-            "type": null,
-            "value-key": "[SET]"
+            "value-key": "[HELP]",
+            "type": "Flag",
+            "command-line-flag": "--help"
         },
         {
-            "id": "remove",
-            "name": "remove",
-            "description": null,
+            "id": "version",
+            "name": "version",
+            "description": "Show version.",
             "optional": true,
-            "type": null,
-            "value-key": "[REMOVE]"
-        },
-        {
-            "id": "list_of_name",
-            "name": "list_of_name",
-            "description": "list of names",
-            "optional": true,
-            "type": "String",
-            "list": true,
-            "value-key": "[LIST_OF_NAME]"
-        },
-        {
-            "id": "set_remove",
-            "name": "set_remove",
-            "description": "set or remove",
-            "optional": true,
-            "type": "String",
-            "value-choices": [
-                "set",
-                "remove"
-            ],
-            "value-key": "[SET_REMOVE]"
-        },
-        {
-            "id": "moored_drifting",
-            "name": "moored_drifting",
-            "description": "moored or drifting",
-            "optional": true,
-            "type": "String",
-            "value-choices": [
-                "--moored",
-                "--drifting"
-            ],
-            "value-key": "[MOORED_DRIFTING]"
+            "value-key": "[VERSION]",
+            "type": "Flag",
+            "command-line-flag": "--version"
         }
     ],
     "invocation-schema": {
