@@ -52,13 +52,13 @@ class docoptHelper():
     def loadArguments(self):
         for prm in self.pattern.flat():
             if type(prm) is dcpt.Argument:
-                self.positional_arguments[prm.name[1:-1]] = {
+                self.positional_arguments[prm.name] = {
                     "default": prm.value}
             elif type(prm) is dcpt.Command:
                 self.commands[prm.name] = {
                     "default": prm.value}
             elif type(prm) is dcpt.Option:
-                self.optional_arguments[prm.name[2:]] = {
+                self.optional_arguments[prm.name] = {
                     "default": prm.value,
                     "short": prm.short,
                     "long": prm.long,
@@ -90,11 +90,9 @@ class docoptHelper():
                 arg = dcpt.Option.parse(arg_str) if arg_str.startswith('-')\
                     else dcpt.Argument.parse(arg_str)
                 arg_segs = arg_str.partition('  ')
-                arg_name = arg.name[2:] if type(arg) is dcpt.Option else\
-                    arg.name[1:-1]
                 # Add description field to arguments dicts
                 {**self.optional_arguments, **self.positional_arguments}[
-                    arg_name]["description"] = ''.join(arg_segs[2:])\
+                    arg.name]["description"] = ''.join(arg_segs[2:])\
                     .replace("\n", " ").replace("  ", "").strip()
                 # if type is specified add type field to optional arguments
                 if type(arg) is dcpt.Option and arg.argcount > 0:
@@ -102,72 +100,118 @@ class docoptHelper():
                                 .replace(',', ' ')
                                 .replace('=', ' ')
                                 .split() if seg[0] != "-"]:
-                        self.optional_arguments[arg_name]["type"] = typ
+                        self.optional_arguments[arg.name]["type"] = typ
 
     def generateInputs(self, node):
         child_node_type = type(node.children[0]).__name__
-        # Traversing reached usage level
         if hasattr(node, 'children') and (child_node_type == "Either" or
                                           child_node_type == "Required"):
             for child in node.children:
                 self.generateInputs(child)
+        # Traversing reached usage level
         else:
-            self._loadRestrictionsFromUsage(node)
+            self._loadInputsFromUsage(node)
 
-    def _loadRestrictionsFromUsage(self, usage):
-        preceeding_cmd_idx = 0
+    def _loadInputsFromUsage(self, usage):
+        preceeding_cmd = None
         root_cmd = None
         if type(usage.children[0]).__name__ == "Command":
             root_cmd = usage.children[0]
         for cmd_idx, arg in enumerate(usage.children):
             arg_type = type(arg).__name__
             if hasattr(arg, "children"):
+                fchild_type = type(arg.children[0]).__name__
                 # Has sub-arguments, maybe recurse into _loadRtrctnsFrmUsg
                 # but have to deal with children in subtype
-                if arg_type == "Optional" and type(arg.children[0]).__name__ ==\
-                  "OptionsShortcut":
+                if arg_type == "Optional" and fchild_type == "OptionsShortcut":
                     for option in arg.children[0].children:
                         self._addInput(option)
+                elif arg_type == "OneOrMore":
+                    list_name = "<list_of_{0}>".format(
+                        self._getParamName(arg.children[0].name))
+                    list_arg = dcpt.Argument(list_name)
+                    list_arg.parse(list_name)
+                    self.positional_arguments[list_name] = {
+                        "default": None,
+                        "description": "List of {0}".format(
+                            self._getParamName(arg.children[0].name))}
+                    self._addInput(list_arg, isList=True)
+                elif arg_type == "Optional" and fchild_type == "Option":
+                    for option in arg.children:
+                        self._addInput(option)
+                elif arg_type == "Optional" and fchild_type == "Either":
+                    self._addGroupInput(arg)
+                elif arg_type == "Required" and fchild_type == "Either":
+                    self._addGroupInput(arg)
+                    for option in arg.children[0].children:
+                        self._addRestrictions(
+                            option, root_cmd=root_cmd,
+                            preceeding_cmd=preceeding_cmd)
             elif arg_type == "Command":
                 self._addInput(arg)
                 self._addRestrictions(
                     arg, root_cmd=root_cmd,
-                    preceeding_cmd=usage.children[preceeding_cmd_idx])
-                preceeding_cmd_idx = cmd_idx
+                    preceeding_cmd=preceeding_cmd)
+                preceeding_cmd = usage.children[cmd_idx]
             elif arg_type == "Argument":
                 self._addInput(arg)
                 self._addRestrictions(
                     arg, root_cmd=root_cmd,
-                    preceeding_cmd=usage.children[preceeding_cmd_idx])
+                    preceeding_cmd=preceeding_cmd)
             elif arg_type == "Option":
                 self._addInput(arg)
                 self._addRestrictions(
                     arg, root_cmd=root_cmd,
-                    preceeding_cmd=usage.children[preceeding_cmd_idx])
-            elif arg_type == "Optional":
-                print("Optional")
-            elif arg_type == "OptionsShortcut":
-                print("OptionsShortcut")
+                    preceeding_cmd=preceeding_cmd)
+            else:
+                print("NON IMPLEMENTED arg_type: " + arg_type)
 
-    def _addInput(self, arg):
+    def _addGroupInput(self, arg):
+        choices = arg.children[0].children
+        pretty_names = []
+        for c in choices:
+            pretty_names.append(self._getStrippedName(c.name))
+
+        gname = "<{0}>".format("_".join(pretty_names))
+        gdesc = "Group key for mutex choices: {0}".format(
+            " and ".join([c.name for c in choices]))
+        self.positional_arguments[gname] = {
+            "default": None,
+            "description": gdesc}
+        grp_arg = dcpt.Argument(gname)
+        grp_arg.parse(gname)
+        self._addInput(grp_arg)
+
+    def _getStrippedName(self, name):
+        if name[0] == "-" and name[1] == "-":
+            return name[2:]
+        elif name[0] == "<" and name[-1] == ">":
+            return name[1:-1]
+        else:
+            return name
+
+    def _addInput(self, arg, isList=False):
         joint_args = {**self.positional_arguments,
                       **self.optional_arguments,
                       **self.commands}
-        arg_name = self._parseParam(arg.name)
+        pretty_name = self._getStrippedName(arg.name)
 
-        if not any(x['name'] == arg_name for x in self.descriptor['inputs']):
+        if not any(x['name'] == pretty_name for x in self.descriptor['inputs']):
             new_inp = {
-                "id": arg_name.replace("-", "_"),
-                "name": arg_name,
-                "description": joint_args[arg_name].get('description'),
+                "id": pretty_name.replace("-", "_"),
+                "name": pretty_name,
+                "description": joint_args[arg.name].get('description'),
                 "optional": True,
-                "value-key": "[{0}]".format(arg_name).upper()
+                "value-key": "[{0}]".format(pretty_name).upper()
             }
-            if 'type' in joint_args[arg_name]:
-                new_inp['type'] = joint_args[arg_name]['type']
-            elif arg_name in self.optional_arguments:
+            # Only add list param when isList
+            if isList:
+                new_inp['list'] = True
+            if 'type' in joint_args[arg.name]:
+                new_inp['type'] = joint_args[arg.name]['type']
+            elif arg.name in self.optional_arguments:
                 new_inp['type'] = "Flag"
-                new_inp['command-line-flag'] = joint_args[arg_name]['long']
+                new_inp['command-line-flag'] = joint_args[arg.name]['long']
             else:
                 new_inp['type'] = "String"
             self.descriptor['inputs'].append(new_inp)
@@ -179,27 +223,18 @@ class docoptHelper():
             preceeding_cmd.name if hasattr(preceeding_cmd, "name") else
             "NO PRECEEDING CMD"))"""
 
-    def _parseParam(self, param):
-        if len(param.split("=")) > 1:
-            param = param.split("=")[0]
-
-        if param[2:] in self.optional_arguments:
-            return param[2:]
-        elif param[1:-1] in self.positional_arguments:
-            return param[1:-1]
-        elif param in self.commands or param in self.optional_arguments:
-            return param
-        elif param[1:-4] in self.positional_arguments:
-            return param[1:-4]
-        else:
-            return ""
+    def _getParamName(self, param):
+        chars = ['<', '>', '[', ']', '(', ')', '-']
+        for char in chars:
+            param = param.replace(char, "")
+        return param
 
     def _generateCmdKey(self, param):
-        return "[{0}]".format(self._parseParam(param).upper())
+        return "[{0}]".format(self._getParamName(param).upper())
 
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
-with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
+with open(sample_dir + "sample_docopt.txt", "r") as myfile:
     sample_docopt = myfile.read()
 
 helper = docoptHelper(sample_docopt, base_descriptor=(
@@ -209,5 +244,5 @@ helper.loadArguments()
 helper.loadDescriptionAndType()
 helper.generateInputs(helper.pattern)
 
-with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
+with open(sample_dir + "sample_descriptor_output.json", "w+") as output:
     output.write(json.dumps(helper.descriptor, indent=4))

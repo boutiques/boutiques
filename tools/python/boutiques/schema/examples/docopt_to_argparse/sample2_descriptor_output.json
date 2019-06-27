@@ -51,6 +51,15 @@
             "type": "String"
         },
         {
+            "id": "list_of_name",
+            "name": "list_of_name",
+            "description": "List of name",
+            "optional": true,
+            "value-key": "[LIST_OF_NAME]",
+            "list": true,
+            "type": "String"
+        },
+        {
             "id": "name",
             "name": "name",
             "description": null,
@@ -83,6 +92,14 @@
             "type": "String"
         },
         {
+            "id": "speed",
+            "name": "speed",
+            "description": "Speed in knots [default: 10].",
+            "optional": true,
+            "value-key": "[SPEED]",
+            "type": "<kn>"
+        },
+        {
             "id": "shoot",
             "name": "shoot",
             "description": null,
@@ -96,6 +113,22 @@
             "description": null,
             "optional": true,
             "value-key": "[MINE]",
+            "type": "String"
+        },
+        {
+            "id": "set_remove",
+            "name": "set_remove",
+            "description": "Group key for mutex choices: set and remove",
+            "optional": true,
+            "value-key": "[SET_REMOVE]",
+            "type": "String"
+        },
+        {
+            "id": "moored_drifting",
+            "name": "moored_drifting",
+            "description": "Group key for mutex choices: --moored and --drifting",
+            "optional": true,
+            "value-key": "[MOORED_DRIFTING]",
             "type": "String"
         },
         {
