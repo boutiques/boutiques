@@ -8,16 +8,6 @@ from boutiques import __file__ as bfile
 
 
 class docoptHelper():
-    TYPE_MAPPINGS = {
-        "REGNAME": "String",
-        "PATH": "File",
-        "FILE": "File",
-        "INT": "Number",
-        "FWHM": "String",
-        "STR": "String",
-        "TAG": "String",
-        "YAML": "String"
-    }
 
     def __init__(self, docopt_str, base_descriptor=None):
         if base_descriptor is not None:
@@ -30,6 +20,7 @@ class docoptHelper():
         self.positional_arguments = {}
         self.optional_arguments = {}
         self.commands = {}
+        self.dependencies = {}
 
         self.dcpt_usgs = dcpt.parse_section(
             'usage:', docopt_str)[0].split("\n")[1:]
@@ -112,6 +103,9 @@ class docoptHelper():
         else:
             self._loadInputsFromUsage(node)
 
+    def generateDependencies(self):
+        print(json.dumps(self.dependencies, indent=2))
+
     def _loadInputsFromUsage(self, usage):
         preceeding_cmd = None
         root_cmd = None
@@ -142,25 +136,24 @@ class docoptHelper():
                 elif arg_type == "Optional" and fchild_type == "Either":
                     self._addGroupInput(arg)
                 elif arg_type == "Required" and fchild_type == "Either":
-                    self._addGroupInput(arg)
-                    for option in arg.children[0].children:
-                        self._addRestrictions(
-                            option, root_cmd=root_cmd,
-                            preceeding_cmd=preceeding_cmd)
+                    grp_arg = self._addGroupInput(arg)
+                    self._addArgumentDependency(
+                        grp_arg, root_cmd=root_cmd,
+                        preceeding_cmd=preceeding_cmd)
             elif arg_type == "Command":
                 self._addInput(arg)
-                self._addRestrictions(
+                self._addArgumentDependency(
                     arg, root_cmd=root_cmd,
                     preceeding_cmd=preceeding_cmd)
                 preceeding_cmd = usage.children[cmd_idx]
             elif arg_type == "Argument":
                 self._addInput(arg)
-                self._addRestrictions(
+                self._addArgumentDependency(
                     arg, root_cmd=root_cmd,
                     preceeding_cmd=preceeding_cmd)
             elif arg_type == "Option":
                 self._addInput(arg)
-                self._addRestrictions(
+                self._addArgumentDependency(
                     arg, root_cmd=root_cmd,
                     preceeding_cmd=preceeding_cmd)
             else:
@@ -181,6 +174,7 @@ class docoptHelper():
         grp_arg = dcpt.Argument(gname)
         grp_arg.parse(gname)
         self._addInput(grp_arg)
+        return grp_arg
 
     def _getStrippedName(self, name):
         if name[0] == "-" and name[1] == "-":
@@ -216,12 +210,34 @@ class docoptHelper():
                 new_inp['type'] = "String"
             self.descriptor['inputs'].append(new_inp)
 
-    def _addRestrictions(self, node, root_cmd=None, preceeding_cmd=None):
-        """print("name: {0}, root: {1}, pre: {2}".format(
-            node.name,
-            root_cmd.name if hasattr(root_cmd, "name") else "NO ROOT CMD",
-            preceeding_cmd.name if hasattr(preceeding_cmd, "name") else
-            "NO PRECEEDING CMD"))"""
+    def _addArgumentDependency(self, node, root_cmd=None, preceeding_cmd=None):
+        if node.name not in self.dependencies:
+            self.dependencies[node.name] = {
+                "root": [root_cmd.name] if
+                root_cmd is not None else [],
+                "lead-by": [preceeding_cmd.name] if
+                preceeding_cmd is not None else [],
+                "follow-by": []}
+        else:
+            if root_cmd is not None and\
+               root_cmd.name not in self.dependencies[node.name]["root"]:
+                self.dependencies[node.name]["root"].append(
+                    root_cmd.name)
+            if preceeding_cmd is not None and\
+               preceeding_cmd.name not in\
+               self.dependencies[node.name]["lead-by"]:
+                self.dependencies[node.name]["lead-by"].append(
+                    preceeding_cmd.name)
+        if preceeding_cmd is not None and\
+           preceeding_cmd.name not in self.dependencies:
+            self.dependencies[preceeding_cmd.name] = {
+                "root": [],
+                "lead-by": [],
+                "follow-by": [node.name]
+            }
+        elif preceeding_cmd is not None:
+            self.dependencies[preceeding_cmd.name]["follow-by"].append(
+                node.name)
 
     def _getParamName(self, param):
         chars = ['<', '>', '[', ']', '(', ')', '-']
@@ -234,7 +250,7 @@ class docoptHelper():
 
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
-with open(sample_dir + "sample_docopt.txt", "r") as myfile:
+with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
     sample_docopt = myfile.read()
 
 helper = docoptHelper(sample_docopt, base_descriptor=(
@@ -243,6 +259,7 @@ helper.loadDocoptDescription()
 helper.loadArguments()
 helper.loadDescriptionAndType()
 helper.generateInputs(helper.pattern)
+helper.generateDependencies()
 
-with open(sample_dir + "sample_descriptor_output.json", "w+") as output:
+with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
     output.write(json.dumps(helper.descriptor, indent=4))
