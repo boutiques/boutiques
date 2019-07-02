@@ -35,20 +35,29 @@
     ],
     "inputs": [
         {
-            "id": "ship",
-            "name": "ship",
-            "description": null,
+            "id": "set_remove",
+            "name": "set_remove",
+            "description": "Group key for mutex choices: set and remove",
             "optional": true,
-            "value-key": "[SHIP]",
+            "value-key": "[SET_REMOVE]",
             "type": "String"
         },
         {
-            "id": "new",
-            "name": "new",
-            "description": null,
+            "id": "moored_drifting",
+            "name": "moored_drifting",
+            "description": "Group key for mutex choices: --moored and --drifting",
             "optional": true,
-            "value-key": "[NEW]",
+            "value-key": "[MOORED_DRIFTING]",
             "type": "String"
+        },
+        {
+            "id": "new_or_<name>_or_shoot",
+            "name": "new_or_<name>_or_shoot",
+            "description": "Group key for usage choices: new and <name> and shoot",
+            "optional": true,
+            "type": "String",
+            "value-key": "[NEW_OR_<NAME>_OR_SHOOT]",
+            "value-choices": {}
         },
         {
             "id": "list_of_name",
@@ -56,15 +65,6 @@
             "description": "List of name",
             "optional": true,
             "value-key": "[LIST_OF_NAME]",
-            "list": true,
-            "type": "String"
-        },
-        {
-            "id": "name",
-            "name": "name",
-            "description": null,
-            "optional": true,
-            "value-key": "[NAME]",
             "type": "String"
         },
         {
@@ -100,38 +100,6 @@
             "type": "<kn>"
         },
         {
-            "id": "shoot",
-            "name": "shoot",
-            "description": null,
-            "optional": true,
-            "value-key": "[SHOOT]",
-            "type": "String"
-        },
-        {
-            "id": "mine",
-            "name": "mine",
-            "description": null,
-            "optional": true,
-            "value-key": "[MINE]",
-            "type": "String"
-        },
-        {
-            "id": "set_remove",
-            "name": "set_remove",
-            "description": "Group key for mutex choices: set and remove",
-            "optional": true,
-            "value-key": "[SET_REMOVE]",
-            "type": "String"
-        },
-        {
-            "id": "moored_drifting",
-            "name": "moored_drifting",
-            "description": "Group key for mutex choices: --moored and --drifting",
-            "optional": true,
-            "value-key": "[MOORED_DRIFTING]",
-            "type": "String"
-        },
-        {
             "id": "help",
             "name": "help",
             "description": "Show this screen.",
@@ -139,15 +107,6 @@
             "value-key": "[HELP]",
             "type": "Flag",
             "command-line-flag": "--help"
-        },
-        {
-            "id": "version",
-            "name": "version",
-            "description": "Show version.",
-            "optional": true,
-            "value-key": "[VERSION]",
-            "type": "Flag",
-            "command-line-flag": "--version"
         }
     ],
     "invocation-schema": {

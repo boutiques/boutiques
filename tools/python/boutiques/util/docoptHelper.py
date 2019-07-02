@@ -103,14 +103,58 @@ class docoptHelper():
         else:
             self._loadInputsFromUsage(node)
 
-    def generateDependencies(self):
-        print(json.dumps(self.dependencies, indent=2))
+    def addInputsRecursive(self, node, tabs=0):
+        names = [name for name in node['children']]
+        if len(node['children']) == 1:
+            self._addInput(names[0])
+        elif len(node['children']) > 1:
+            pretty_name = "_or_".join(self._getStrippedName(names))
+            choices = {}
+            new_inp = {
+                "id": pretty_name.replace("-", "_"),
+                "name": pretty_name,
+                "description": "Group key for usage choices: {0}".format(
+                    " and ".join(names)),
+                "optional": True,
+                "type": "String",
+                "value-key": "[{0}]".format(pretty_name).upper(),
+                "value-choices": choices
+            }
+            self.descriptor['inputs'].append(new_inp)
+
+        for child in node['children']:
+            print(tabs * "  " + child)
+            self.addInputsRecursive(node['children'][child], tabs+1)
+
+    def _addInput(self, arg, isList=False):
+        joint_args = {**self.positional_arguments,
+                      **self.optional_arguments,
+                      **self.commands}
+        arg = arg.name if hasattr(arg, "name") else arg
+        pretty_name = self._getStrippedName(arg)
+
+        if not any(x['name'] == pretty_name for x in self.descriptor['inputs']):
+            new_inp = {
+                "id": pretty_name.replace("-", "_"),
+                "name": pretty_name,
+                "description": joint_args[arg].get('description'),
+                "optional": True,
+                "value-key": "[{0}]".format(pretty_name).upper()
+            }
+            # Only add list param when isList
+            if isList:
+                new_inp['list'] = True
+            if 'type' in joint_args[arg]:
+                new_inp['type'] = joint_args[arg]['type']
+            elif arg in self.optional_arguments:
+                new_inp['type'] = "Flag"
+                new_inp['command-line-flag'] = joint_args[arg]['long']
+            else:
+                new_inp['type'] = "String"
+            self.descriptor['inputs'].append(new_inp)
 
     def _loadInputsFromUsage(self, usage):
-        preceeding_cmd = None
-        root_cmd = None
-        if type(usage.children[0]).__name__ == "Command":
-            root_cmd = usage.children[0]
+        ancestors = []
         for cmd_idx, arg in enumerate(usage.children):
             arg_type = type(arg).__name__
             if hasattr(arg, "children"):
@@ -119,7 +163,8 @@ class docoptHelper():
                 # but have to deal with children in subtype
                 if arg_type == "Optional" and fchild_type == "OptionsShortcut":
                     for option in arg.children[0].children:
-                        self._addInput(option)
+                        self._addArgumentToDependencies(
+                            option, ancestors=ancestors)
                 elif arg_type == "OneOrMore":
                     list_name = "<list_of_{0}>".format(
                         self._getParamName(arg.children[0].name))
@@ -129,45 +174,44 @@ class docoptHelper():
                         "default": None,
                         "description": "List of {0}".format(
                             self._getParamName(arg.children[0].name))}
-                    self._addInput(list_arg, isList=True)
+                    self._addArgumentToDependencies(
+                        list_arg, ancestors=ancestors)
+                    ancestors.append(list_name)
                 elif arg_type == "Optional" and fchild_type == "Option":
                     for option in arg.children:
-                        self._addInput(option)
+                        self._addArgumentToDependencies(
+                            option, ancestors=ancestors)
                 elif arg_type == "Optional" and fchild_type == "Either":
-                    self._addGroupInput(arg)
+                    grp_arg = self._addMutexInput(arg)
+                    self._addArgumentToDependencies(
+                        grp_arg, ancestors=ancestors)
+                    ancestors.append(grp_arg.name)
                 elif arg_type == "Required" and fchild_type == "Either":
-                    grp_arg = self._addGroupInput(arg)
-                    self._addArgumentDependency(
-                        grp_arg, root_cmd=root_cmd,
-                        preceeding_cmd=preceeding_cmd)
+                    grp_arg = self._addMutexInput(arg)
+                    self._addArgumentToDependencies(
+                        grp_arg, ancestors=ancestors)
+                    ancestors.append(grp_arg.name)
             elif arg_type == "Command":
-                self._addInput(arg)
-                self._addArgumentDependency(
-                    arg, root_cmd=root_cmd,
-                    preceeding_cmd=preceeding_cmd)
-                preceeding_cmd = usage.children[cmd_idx]
+                self._addArgumentToDependencies(arg, ancestors=ancestors)
+                ancestors.append(arg.name)
             elif arg_type == "Argument":
-                self._addInput(arg)
-                self._addArgumentDependency(
-                    arg, root_cmd=root_cmd,
-                    preceeding_cmd=preceeding_cmd)
+                self._addArgumentToDependencies(arg, ancestors=ancestors)
+                ancestors.append(arg.name)
             elif arg_type == "Option":
-                self._addInput(arg)
-                self._addArgumentDependency(
-                    arg, root_cmd=root_cmd,
-                    preceeding_cmd=preceeding_cmd)
+                self._addArgumentToDependencies(arg, ancestors=ancestors)
+                ancestors.append(arg.name)
             else:
                 print("NON IMPLEMENTED arg_type: " + arg_type)
 
-    def _addGroupInput(self, arg):
-        choices = arg.children[0].children
+    def _addMutexInput(self, arg):
         pretty_names = []
-        for c in choices:
-            pretty_names.append(self._getStrippedName(c.name))
+        arg = [arg.name for arg in arg.children[0].children]
+        for name in arg:
+            pretty_names.append(self._getStrippedName(name))
 
         gname = "<{0}>".format("_".join(pretty_names))
         gdesc = "Group key for mutex choices: {0}".format(
-            " and ".join([c.name for c in choices]))
+            " and ".join(arg))
         self.positional_arguments[gname] = {
             "default": None,
             "description": gdesc}
@@ -176,7 +220,28 @@ class docoptHelper():
         self._addInput(grp_arg)
         return grp_arg
 
+    def _addArgumentToDependencies(self, node, ancestors=None):
+        parent_dependency = self._getDependencyParentNode(ancestors)
+        if ancestors == [] and node.name not in self.dependencies:
+            self.dependencies[node.name] = {"children": {}}
+        elif ancestors != [] and parent_dependency is not None:
+            parent_dependency['children'][node.name] = {
+                "parent": parent_dependency,
+                "children": {}}
+
+    def _getDependencyParentNode(self, ancestors):
+        last_node = None
+        for ancestor in ancestors:
+            if last_node is None:
+                last_node = self.dependencies[ancestor]
+            elif ancestor in last_node['children']:
+                last_node = last_node['children'][ancestor]
+            else:
+                return None
+        return last_node
+
     def _getStrippedName(self, name):
+        # only parses --arg and <arg>
         if name[0] == "-" and name[1] == "-":
             return name[2:]
         elif name[0] == "<" and name[-1] == ">":
@@ -184,64 +249,18 @@ class docoptHelper():
         else:
             return name
 
-    def _addInput(self, arg, isList=False):
-        joint_args = {**self.positional_arguments,
-                      **self.optional_arguments,
-                      **self.commands}
-        pretty_name = self._getStrippedName(arg.name)
-
-        if not any(x['name'] == pretty_name for x in self.descriptor['inputs']):
-            new_inp = {
-                "id": pretty_name.replace("-", "_"),
-                "name": pretty_name,
-                "description": joint_args[arg.name].get('description'),
-                "optional": True,
-                "value-key": "[{0}]".format(pretty_name).upper()
-            }
-            # Only add list param when isList
-            if isList:
-                new_inp['list'] = True
-            if 'type' in joint_args[arg.name]:
-                new_inp['type'] = joint_args[arg.name]['type']
-            elif arg.name in self.optional_arguments:
-                new_inp['type'] = "Flag"
-                new_inp['command-line-flag'] = joint_args[arg.name]['long']
-            else:
-                new_inp['type'] = "String"
-            self.descriptor['inputs'].append(new_inp)
-
-    def _addArgumentDependency(self, node, root_cmd=None, preceeding_cmd=None):
-        if node.name not in self.dependencies:
-            self.dependencies[node.name] = {
-                "root": [root_cmd.name] if
-                root_cmd is not None else [],
-                "lead-by": [preceeding_cmd.name] if
-                preceeding_cmd is not None else [],
-                "follow-by": []}
-        else:
-            if root_cmd is not None and\
-               root_cmd.name not in self.dependencies[node.name]["root"]:
-                self.dependencies[node.name]["root"].append(
-                    root_cmd.name)
-            if preceeding_cmd is not None and\
-               preceeding_cmd.name not in\
-               self.dependencies[node.name]["lead-by"]:
-                self.dependencies[node.name]["lead-by"].append(
-                    preceeding_cmd.name)
-        if preceeding_cmd is not None and\
-           preceeding_cmd.name not in self.dependencies:
-            self.dependencies[preceeding_cmd.name] = {
-                "root": [],
-                "lead-by": [],
-                "follow-by": [node.name]
-            }
-        elif preceeding_cmd is not None:
-            self.dependencies[preceeding_cmd.name]["follow-by"].append(
-                node.name)
-
     def _getParamName(self, param):
-        chars = ['<', '>', '[', ']', '(', ')', '-']
-        for char in chars:
+        # returns descriptor id compliant name
+        chars = ['<', '>', '[', ']', '(', ')']
+        if param[0] == "-" and param[1] == "-":
+            param = param[2:].replace('-', '_')
+            for char in chars:
+                param = param.replace(char, "")
+        elif param[0] == "<" and param[-1] == ">":
+            param = param[1:-1].replace('-', '_')
+            for char in chars:
+                param = param.replace(char, "")
+        else:
             param = param.replace(char, "")
         return param
 
@@ -259,7 +278,8 @@ helper.loadDocoptDescription()
 helper.loadArguments()
 helper.loadDescriptionAndType()
 helper.generateInputs(helper.pattern)
-helper.generateDependencies()
+for root_arg in helper.dependencies:
+    helper.addInputsRecursive(helper.dependencies[root_arg])
 
 with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
     output.write(json.dumps(helper.descriptor, indent=4))
