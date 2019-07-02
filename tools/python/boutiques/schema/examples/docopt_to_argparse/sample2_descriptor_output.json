@@ -31,6 +31,27 @@
             "id": "at_least_one",
             "members": [],
             "name": "At least one must be present"
+        },
+        {
+            "id": "ship_mine_help_version",
+            "name": "Mutex group with members: ship, mine, help, version",
+            "members": [
+                "ship",
+                "mine",
+                "help",
+                "version"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "new_name_shoot",
+            "name": "Mutex group with members: new, name, shoot",
+            "members": [
+                "new",
+                "name",
+                "shoot"
+            ],
+            "mutually-exclusive": true
         }
     ],
     "inputs": [
@@ -51,15 +72,6 @@
             "type": "String"
         },
         {
-            "id": "new_or_<name>_or_shoot",
-            "name": "new_or_<name>_or_shoot",
-            "description": "Group key for usage choices: new and <name> and shoot",
-            "optional": true,
-            "type": "String",
-            "value-key": "[NEW_OR_<NAME>_OR_SHOOT]",
-            "value-choices": {}
-        },
-        {
             "id": "list_of_name",
             "name": "list_of_name",
             "description": "List of name",
@@ -73,6 +85,9 @@
             "description": null,
             "optional": true,
             "value-key": "[MOVE]",
+            "value-requires": [
+                "x"
+            ],
             "type": "String"
         },
         {
@@ -81,6 +96,9 @@
             "description": null,
             "optional": true,
             "value-key": "[X]",
+            "value-requires": [
+                "y"
+            ],
             "type": "String"
         },
         {
@@ -89,6 +107,9 @@
             "description": null,
             "optional": true,
             "value-key": "[Y]",
+            "value-requires": [
+                "speed"
+            ],
             "type": "String"
         },
         {

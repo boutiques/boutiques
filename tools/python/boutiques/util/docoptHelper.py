@@ -104,43 +104,41 @@ class docoptHelper():
             self._loadInputsFromUsage(node)
 
     def addInputsRecursive(self, node, tabs=0):
-        names = [name for name in node['children']]
-        if len(node['children']) == 1:
-            self._addInput(names[0])
-        elif len(node['children']) > 1:
-            pretty_name = "_or_".join(self._getStrippedName(names))
-            choices = {}
-            new_inp = {
-                "id": pretty_name.replace("-", "_"),
-                "name": pretty_name,
-                "description": "Group key for usage choices: {0}".format(
-                    " and ".join(names)),
-                "optional": True,
-                "type": "String",
-                "value-key": "[{0}]".format(pretty_name).upper(),
-                "value-choices": choices
+        names = [name for name in node]
+        if len(names) == 1:
+            self._addInput(names[0], requires=node[names[0]]['children'])
+        elif len(names) > 1:
+            pretty_name = "_".join([self._getParamName(name) for name in names])
+            new_group = {
+                "id": pretty_name,
+                "name": "Mutex group with members: {0}".format(", ".join(
+                    [self._getStrippedName(name) for name in names])),
+                "members": [self._getParamName(name) for name in names],
+                "mutually-exclusive": True
             }
-            self.descriptor['inputs'].append(new_inp)
+            self.descriptor['groups'].append(new_group)
 
-        for child in node['children']:
-            print(tabs * "  " + child)
-            self.addInputsRecursive(node['children'][child], tabs+1)
+        for child in [node[name] for name in names]:
+            self.addInputsRecursive(child['children'], tabs+1)
 
-    def _addInput(self, arg, isList=False):
+    def _addInput(self, arg, requires=None, isList=False):
         joint_args = {**self.positional_arguments,
                       **self.optional_arguments,
                       **self.commands}
         arg = arg.name if hasattr(arg, "name") else arg
-        pretty_name = self._getStrippedName(arg)
+        param_name = self._getParamName(arg)
 
-        if not any(x['name'] == pretty_name for x in self.descriptor['inputs']):
+        if not any(x['name'] == param_name for x in self.descriptor['inputs']):
             new_inp = {
-                "id": pretty_name.replace("-", "_"),
-                "name": pretty_name,
+                "id": param_name.replace("-", "_"),
+                "name": param_name,
                 "description": joint_args[arg].get('description'),
                 "optional": True,
-                "value-key": "[{0}]".format(pretty_name).upper()
+                "value-key": "[{0}]".format(param_name).upper()
             }
+            if requires is not None and [name for name in requires] != []:
+                new_inp["value-requires"] = [
+                    self._getParamName(name) for name in requires]
             # Only add list param when isList
             if isList:
                 new_inp['list'] = True
@@ -261,7 +259,8 @@ class docoptHelper():
             for char in chars:
                 param = param.replace(char, "")
         else:
-            param = param.replace(char, "")
+            for char in chars:
+                param = param.replace(char, "")
         return param
 
     def _generateCmdKey(self, param):
@@ -278,8 +277,7 @@ helper.loadDocoptDescription()
 helper.loadArguments()
 helper.loadDescriptionAndType()
 helper.generateInputs(helper.pattern)
-for root_arg in helper.dependencies:
-    helper.addInputsRecursive(helper.dependencies[root_arg])
+helper.addInputsRecursive(helper.dependencies)
 
 with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:
     output.write(json.dumps(helper.descriptor, indent=4))
