@@ -21,6 +21,7 @@ class docoptHelper():
         self.optional_arguments = {}
         self.commands = {}
         self.dependencies = {}
+        self.unique_ids = []
 
         self.dcpt_usgs = dcpt.parse_section(
             'usage:', docopt_str)[0].split("\n")[1:]
@@ -103,53 +104,68 @@ class docoptHelper():
         else:
             self._loadInputsFromUsage(node)
 
-    def addInputsRecursive(self, node, tabs=0):
-        names = [name for name in node]
+    def addInputsRecursive(self, node, requires=[]):
+        names = list(node.keys())
         if len(names) == 1:
-            self._addInput(names[0], requires=node[names[0]]['children'])
+            self._addInput(
+                node[names[0]],
+                requires,
+                isList=node[names[0]]["isList"] if 'isList' in
+                node[names[0]] else False)
+            self.addInputsRecursive(
+                node[names[0]]['children'], requires)
         elif len(names) > 1:
-            pretty_name = "_".join([self._getParamName(name) for name in names])
-            new_group = {
-                "id": pretty_name,
-                "name": "Mutex group with members: {0}".format(", ".join(
-                    [self._getStrippedName(name) for name in names])),
-                "members": [self._getParamName(name) for name in names],
-                "mutually-exclusive": True
-            }
-            self.descriptor['groups'].append(new_group)
+            for name in names:
+                self._addInput(
+                    node[name],
+                    requires + self._getLineageChildren(node[name], []),
+                    isList=node[name]["isList"] if 'isList' in
+                    node[name] else False)
+                # Add node with siblings to required-inputs list
+                self.addInputsRecursive(
+                    node[name]['children'], [node[name]['name']])
+            self._addMutexGroup(names)
 
-        for child in [node[name] for name in names]:
-            self.addInputsRecursive(child['children'], tabs+1)
+    def _addMutexGroup(self, arg_names):
+        pretty_name = "_".join([self._getParamName(name) for name in arg_names])
+        new_group = {
+            "id": pretty_name,
+            "name": "Mutex group with members: {0}".format(", ".join(
+                [self._getStrippedName(name) for name in arg_names])),
+            "members": [self._getParamName(name) for name in arg_names],
+            "mutually-exclusive": True
+        }
+        self.descriptor['groups'].append(new_group)
 
-    def _addInput(self, arg, requires=None, isList=False):
+    def _addInput(self, arg, requires, isList=False):
         joint_args = {**self.positional_arguments,
                       **self.optional_arguments,
                       **self.commands}
-        arg = arg.name if hasattr(arg, "name") else arg
-        param_name = self._getParamName(arg)
 
-        if not any(x['name'] == param_name for x in self.descriptor['inputs']):
-            new_inp = {
-                "id": param_name.replace("-", "_"),
-                "name": param_name,
-                "description": joint_args[arg].get('description'),
-                "optional": True,
-                "value-key": "[{0}]".format(param_name).upper()
-            }
-            if requires is not None and [name for name in requires] != []:
-                new_inp["value-requires"] = [
-                    self._getParamName(name) for name in requires]
-            # Only add list param when isList
-            if isList:
-                new_inp['list'] = True
-            if 'type' in joint_args[arg]:
-                new_inp['type'] = joint_args[arg]['type']
-            elif arg in self.optional_arguments:
-                new_inp['type'] = "Flag"
-                new_inp['command-line-flag'] = joint_args[arg]['long']
-            else:
-                new_inp['type'] = "String"
-            self.descriptor['inputs'].append(new_inp)
+        param_key = arg["id"]
+        param_name = arg["name"]
+
+        new_inp = {
+            "id": param_name.replace("-", "_"),
+            "name": param_name,
+            "description": joint_args[param_key].get('description') if
+            param_key in joint_args else "",
+            "optional": True,
+            "value-key": "[{0}]".format(param_name).upper()
+        }
+        if requires != []:
+            new_inp["requires-inputs"] = requires
+        # Only add list param when isList
+        if isList:
+            new_inp['list'] = True
+        if 'type' in joint_args[param_key]:
+            new_inp['type'] = joint_args[param_key]['type']
+        elif param_key in self.optional_arguments:
+            new_inp['type'] = "Flag"
+            new_inp['command-line-flag'] = joint_args[param_key]['long']
+        else:
+            new_inp['type'] = "String"
+        self.descriptor['inputs'].append(new_inp)
 
     def _loadInputsFromUsage(self, usage):
         ancestors = []
@@ -173,7 +189,7 @@ class docoptHelper():
                         "description": "List of {0}".format(
                             self._getParamName(arg.children[0].name))}
                     self._addArgumentToDependencies(
-                        list_arg, ancestors=ancestors)
+                        list_arg, ancestors=ancestors, isList=True)
                     ancestors.append(list_name)
                 elif arg_type == "Optional" and fchild_type == "Option":
                     for option in arg.children:
@@ -206,7 +222,6 @@ class docoptHelper():
         arg = [arg.name for arg in arg.children[0].children]
         for name in arg:
             pretty_names.append(self._getStrippedName(name))
-
         gname = "<{0}>".format("_".join(pretty_names))
         gdesc = "Group key for mutex choices: {0}".format(
             " and ".join(arg))
@@ -215,17 +230,34 @@ class docoptHelper():
             "description": gdesc}
         grp_arg = dcpt.Argument(gname)
         grp_arg.parse(gname)
-        self._addInput(grp_arg)
         return grp_arg
 
-    def _addArgumentToDependencies(self, node, ancestors=None):
+    def _addArgumentToDependencies(self, node, ancestors=None, isList=False):
         parent_dependency = self._getDependencyParentNode(ancestors)
+        argAdded = None
         if ancestors == [] and node.name not in self.dependencies:
-            self.dependencies[node.name] = {"children": {}}
+            argAdded = self.dependencies[node.name] = {
+                "id": node.name,
+                "name": self._getUniqueId(self._getParamName(node.name)),
+                "parent": None,
+                "children": {}}
         elif ancestors != [] and parent_dependency is not None:
-            parent_dependency['children'][node.name] = {
+            argAdded = parent_dependency['children'][node.name] = {
+                "id": node.name,
+                "name": self._getUniqueId(self._getParamName(node.name)),
                 "parent": parent_dependency,
                 "children": {}}
+
+        if argAdded is not None and isList:
+            argAdded["isList"] = True
+
+    def _getLineageChildren(self, node, descendants):
+        if len(node['children']) == 1:
+            child_key = list(node['children'].keys())
+            descendants.append(node['children'][child_key[0]]['name'])
+            self._getLineageChildren(
+                node['children'][child_key[0]], descendants)
+        return descendants
 
     def _getDependencyParentNode(self, ancestors):
         last_node = None
@@ -237,6 +269,14 @@ class docoptHelper():
             else:
                 return None
         return last_node
+
+    def _getUniqueId(self, name):
+        id_count = 1
+        while name + (str(id_count) if id_count > 1 else "") in self.unique_ids:
+            id_count += 1
+        new_unique_id = name + (str(id_count) if id_count > 1 else "")
+        self.unique_ids.append(new_unique_id)
+        return new_unique_id
 
     def _getStrippedName(self, name):
         # only parses --arg and <arg>

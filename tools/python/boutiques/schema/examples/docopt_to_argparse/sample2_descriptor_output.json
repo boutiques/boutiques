@@ -33,6 +33,16 @@
             "name": "At least one must be present"
         },
         {
+            "id": "new_name_shoot",
+            "name": "Mutex group with members: new, name, shoot",
+            "members": [
+                "new",
+                "name",
+                "shoot"
+            ],
+            "mutually-exclusive": true
+        },
+        {
             "id": "ship_mine_help_version",
             "name": "Mutex group with members: ship, mine, help, version",
             "members": [
@@ -42,33 +52,27 @@
                 "version"
             ],
             "mutually-exclusive": true
-        },
-        {
-            "id": "new_name_shoot",
-            "name": "Mutex group with members: new, name, shoot",
-            "members": [
-                "new",
-                "name",
-                "shoot"
-            ],
-            "mutually-exclusive": true
         }
     ],
     "inputs": [
         {
-            "id": "set_remove",
-            "name": "set_remove",
-            "description": "Group key for mutex choices: set and remove",
+            "id": "ship",
+            "name": "ship",
+            "description": null,
             "optional": true,
-            "value-key": "[SET_REMOVE]",
+            "value-key": "[SHIP]",
             "type": "String"
         },
         {
-            "id": "moored_drifting",
-            "name": "moored_drifting",
-            "description": "Group key for mutex choices: --moored and --drifting",
+            "id": "new",
+            "name": "new",
+            "description": null,
             "optional": true,
-            "value-key": "[MOORED_DRIFTING]",
+            "value-key": "[NEW]",
+            "requires-inputs": [
+                "ship",
+                "list_of_name"
+            ],
             "type": "String"
         },
         {
@@ -77,6 +81,25 @@
             "description": "List of name",
             "optional": true,
             "value-key": "[LIST_OF_NAME]",
+            "requires-inputs": [
+                "new"
+            ],
+            "list": true,
+            "type": "String"
+        },
+        {
+            "id": "name",
+            "name": "name",
+            "description": null,
+            "optional": true,
+            "value-key": "[NAME]",
+            "requires-inputs": [
+                "ship",
+                "move",
+                "x",
+                "y",
+                "speed"
+            ],
             "type": "String"
         },
         {
@@ -85,8 +108,8 @@
             "description": null,
             "optional": true,
             "value-key": "[MOVE]",
-            "value-requires": [
-                "x"
+            "requires-inputs": [
+                "name"
             ],
             "type": "String"
         },
@@ -96,8 +119,8 @@
             "description": null,
             "optional": true,
             "value-key": "[X]",
-            "value-requires": [
-                "y"
+            "requires-inputs": [
+                "name"
             ],
             "type": "String"
         },
@@ -107,8 +130,8 @@
             "description": null,
             "optional": true,
             "value-key": "[Y]",
-            "value-requires": [
-                "speed"
+            "requires-inputs": [
+                "name"
             ],
             "type": "String"
         },
@@ -118,7 +141,103 @@
             "description": "Speed in knots [default: 10].",
             "optional": true,
             "value-key": "[SPEED]",
+            "requires-inputs": [
+                "name"
+            ],
             "type": "<kn>"
+        },
+        {
+            "id": "shoot",
+            "name": "shoot",
+            "description": null,
+            "optional": true,
+            "value-key": "[SHOOT]",
+            "requires-inputs": [
+                "ship",
+                "x2",
+                "y2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "x2",
+            "name": "x2",
+            "description": null,
+            "optional": true,
+            "value-key": "[X2]",
+            "requires-inputs": [
+                "shoot"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "y2",
+            "name": "y2",
+            "description": null,
+            "optional": true,
+            "value-key": "[Y2]",
+            "requires-inputs": [
+                "shoot"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "mine",
+            "name": "mine",
+            "description": null,
+            "optional": true,
+            "value-key": "[MINE]",
+            "requires-inputs": [
+                "set_remove",
+                "x3",
+                "y3",
+                "moored_drifting"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "set_remove",
+            "name": "set_remove",
+            "description": "Group key for mutex choices: set and remove",
+            "optional": true,
+            "value-key": "[SET_REMOVE]",
+            "requires-inputs": [
+                "mine"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "x3",
+            "name": "x3",
+            "description": null,
+            "optional": true,
+            "value-key": "[X3]",
+            "requires-inputs": [
+                "mine"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "y3",
+            "name": "y3",
+            "description": null,
+            "optional": true,
+            "value-key": "[Y3]",
+            "requires-inputs": [
+                "mine"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "moored_drifting",
+            "name": "moored_drifting",
+            "description": "Group key for mutex choices: --moored and --drifting",
+            "optional": true,
+            "value-key": "[MOORED_DRIFTING]",
+            "requires-inputs": [
+                "mine"
+            ],
+            "type": "String"
         },
         {
             "id": "help",
@@ -126,8 +245,32 @@
             "description": "Show this screen.",
             "optional": true,
             "value-key": "[HELP]",
+            "requires-inputs": [
+                "help2"
+            ],
             "type": "Flag",
             "command-line-flag": "--help"
+        },
+        {
+            "id": "help2",
+            "name": "help2",
+            "description": "Show this screen.",
+            "optional": true,
+            "value-key": "[HELP2]",
+            "requires-inputs": [
+                "help"
+            ],
+            "type": "Flag",
+            "command-line-flag": "--help"
+        },
+        {
+            "id": "version",
+            "name": "version",
+            "description": "Show version.",
+            "optional": true,
+            "value-key": "[VERSION]",
+            "type": "Flag",
+            "command-line-flag": "--version"
         }
     ],
     "invocation-schema": {
