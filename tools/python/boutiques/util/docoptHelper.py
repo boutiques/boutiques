@@ -198,7 +198,7 @@ class docoptHelper():
                 elif arg_type == "Optional" and fchild_type == "Either":
                     grp_arg = self._addMutexInput(arg)
                     self._addArgumentToDependencies(
-                        grp_arg, ancestors=ancestors)
+                        grp_arg, ancestors=ancestors, optional=True)
                     ancestors.append(grp_arg.name)
                 elif arg_type == "Required" and fchild_type == "Either":
                     grp_arg = self._addMutexInput(arg)
@@ -212,7 +212,8 @@ class docoptHelper():
                 self._addArgumentToDependencies(arg, ancestors=ancestors)
                 ancestors.append(arg.name)
             elif arg_type == "Option":
-                self._addArgumentToDependencies(arg, ancestors=ancestors)
+                self._addArgumentToDependencies(
+                    arg, ancestors=ancestors, optional=True)
                 ancestors.append(arg.name)
             else:
                 print("NON IMPLEMENTED arg_type: " + arg_type)
@@ -232,19 +233,24 @@ class docoptHelper():
         grp_arg.parse(gname)
         return grp_arg
 
-    def _addArgumentToDependencies(self, node, ancestors=None, isList=False):
+    def _addArgumentToDependencies(self, node, ancestors=None,
+                                   isList=False, optional=False):
         parent_dependency = self._getDependencyParentNode(ancestors)
         argAdded = None
+        print(node.name, end=": ")
+        print(optional)
         if ancestors == [] and node.name not in self.dependencies:
             argAdded = self.dependencies[node.name] = {
                 "id": node.name,
                 "name": self._getUniqueId(self._getParamName(node.name)),
+                "optional": optional,
                 "parent": None,
                 "children": {}}
         elif ancestors != [] and parent_dependency is not None:
             argAdded = parent_dependency['children'][node.name] = {
                 "id": node.name,
                 "name": self._getUniqueId(self._getParamName(node.name)),
+                "optional": optional,
                 "parent": parent_dependency,
                 "children": {}}
 
@@ -252,11 +258,12 @@ class docoptHelper():
             argAdded["isList"] = True
 
     def _getLineageChildren(self, node, descendants):
-        if len(node['children']) == 1:
-            child_key = list(node['children'].keys())
-            descendants.append(node['children'][child_key[0]]['name'])
+        child_keys = list(node['children'].keys())
+        if len(child_keys) == 1 and\
+           not node['children'][child_keys[0]]['optional']:
+            descendants.append(node['children'][child_keys[0]]['name'])
             self._getLineageChildren(
-                node['children'][child_key[0]], descendants)
+                node['children'][child_keys[0]], descendants)
         return descendants
 
     def _getDependencyParentNode(self, ancestors):

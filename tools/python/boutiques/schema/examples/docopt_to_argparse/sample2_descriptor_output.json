@@ -190,8 +190,7 @@
             "requires-inputs": [
                 "set_remove",
                 "x3",
-                "y3",
-                "moored_drifting"
+                "y3"
             ],
             "type": "String"
         },
@@ -245,9 +244,6 @@
             "description": "Show this screen.",
             "optional": true,
             "value-key": "[HELP]",
-            "requires-inputs": [
-                "help2"
-            ],
             "type": "Flag",
             "command-line-flag": "--help"
         },
