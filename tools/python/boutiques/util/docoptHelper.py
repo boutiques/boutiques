@@ -94,28 +94,30 @@ class docoptHelper():
                                 .split() if seg[0] != "-"]:
                         self.optional_arguments[arg.name]["type"] = typ
 
-    def generateInputs(self, node):
+    def generateInputsAndCommandLine(self, node):
         child_node_type = type(node.children[0]).__name__
         if hasattr(node, 'children') and (child_node_type == "Either" or
                                           child_node_type == "Required"):
             for child in node.children:
-                self.generateInputs(child)
+                self.generateInputsAndCommandLine(child)
         # Traversing reached usage level
         else:
+            self.descriptor['command-line'] = self.dcpt_usgs[0].split()[0]
             self._loadInputsFromUsage(node)
 
     def addInputsRecursive(self, node, requires=[]):
-        names = list(node.keys())
-        if len(names) == 1:
+        args_id = list(node.keys())
+        if len(args_id) == 1:
             self._addInput(
-                node[names[0]],
+                node[args_id[0]],
                 requires,
-                isList=node[names[0]]["isList"] if 'isList' in
-                node[names[0]] else False)
+                isList=node[args_id[0]]["isList"] if 'isList' in
+                node[args_id[0]] else False)
             self.addInputsRecursive(
-                node[names[0]]['children'], requires)
-        elif len(names) > 1:
-            for name in names:
+                node[args_id[0]]['children'], requires)
+        elif len(args_id) > 1:
+            mutex_names = []
+            for name in args_id:
                 self._addInput(
                     node[name],
                     requires + self._getLineageChildren(node[name], []),
@@ -124,7 +126,10 @@ class docoptHelper():
                 # Add node with siblings to required-inputs list
                 self.addInputsRecursive(
                     node[name]['children'], [node[name]['name']])
-            self._addMutexGroup(names)
+                if not node[name]['optional']:
+                    mutex_names.append(node[name]['name'])
+            if len(mutex_names) > 1:
+                self._addMutexGroup(mutex_names)
 
     def _addMutexGroup(self, arg_names):
         pretty_name = "_".join([self._getParamName(name) for name in arg_names])
@@ -153,6 +158,8 @@ class docoptHelper():
             "optional": True,
             "value-key": "[{0}]".format(param_name).upper()
         }
+        self.descriptor["command-line"] += " {0}".format(new_inp['value-key'])
+
         if requires != []:
             new_inp["requires-inputs"] = requires
         # Only add list param when isList
@@ -178,7 +185,7 @@ class docoptHelper():
                 if arg_type == "Optional" and fchild_type == "OptionsShortcut":
                     for option in arg.children[0].children:
                         self._addArgumentToDependencies(
-                            option, ancestors=ancestors)
+                            option, ancestors=ancestors, optional=True)
                 elif arg_type == "OneOrMore":
                     list_name = "<list_of_{0}>".format(
                         self._getParamName(arg.children[0].name))
@@ -194,14 +201,14 @@ class docoptHelper():
                 elif arg_type == "Optional" and fchild_type == "Option":
                     for option in arg.children:
                         self._addArgumentToDependencies(
-                            option, ancestors=ancestors)
+                            option, ancestors=ancestors, optional=True)
                 elif arg_type == "Optional" and fchild_type == "Either":
-                    grp_arg = self._addMutexInput(arg)
+                    grp_arg = self._getMutexInput(arg)
                     self._addArgumentToDependencies(
                         grp_arg, ancestors=ancestors, optional=True)
                     ancestors.append(grp_arg.name)
                 elif arg_type == "Required" and fchild_type == "Either":
-                    grp_arg = self._addMutexInput(arg)
+                    grp_arg = self._getMutexInput(arg)
                     self._addArgumentToDependencies(
                         grp_arg, ancestors=ancestors)
                     ancestors.append(grp_arg.name)
@@ -218,7 +225,7 @@ class docoptHelper():
             else:
                 print("NON IMPLEMENTED arg_type: " + arg_type)
 
-    def _addMutexInput(self, arg):
+    def _getMutexInput(self, arg):
         pretty_names = []
         arg = [arg.name for arg in arg.children[0].children]
         for name in arg:
@@ -237,8 +244,6 @@ class docoptHelper():
                                    isList=False, optional=False):
         parent_dependency = self._getDependencyParentNode(ancestors)
         argAdded = None
-        print(node.name, end=": ")
-        print(optional)
         if ancestors == [] and node.name not in self.dependencies:
             argAdded = self.dependencies[node.name] = {
                 "id": node.name,
@@ -310,9 +315,6 @@ class docoptHelper():
                 param = param.replace(char, "")
         return param
 
-    def _generateCmdKey(self, param):
-        return "[{0}]".format(self._getParamName(param).upper())
-
 sample_dir = op.join(op.split(bfile)[0], 'schema/examples/'
                      'docopt_to_argparse/')
 with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
@@ -323,7 +325,7 @@ helper = docoptHelper(sample_docopt, base_descriptor=(
 helper.loadDocoptDescription()
 helper.loadArguments()
 helper.loadDescriptionAndType()
-helper.generateInputs(helper.pattern)
+helper.generateInputsAndCommandLine(helper.pattern)
 helper.addInputsRecursive(helper.dependencies)
 
 with open(sample_dir + "sample2_descriptor_output.json", "w+") as output:

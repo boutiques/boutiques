@@ -1,5 +1,5 @@
 {
-    "command-line": "",
+    "command-line": "naval_fate [SHIP] [NEW] [LIST_OF_NAME] [NAME] [MOVE] [X] [Y] [SPEED] [SHOOT] [X2] [Y2] [MINE] [SET_REMOVE] [X3] [Y3] [MOORED_DRIFTING] [HELP] [HELP2] [VERSION]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -43,13 +43,11 @@
             "mutually-exclusive": true
         },
         {
-            "id": "ship_mine_help_version",
-            "name": "Mutex group with members: ship, mine, help, version",
+            "id": "ship_mine",
+            "name": "Mutex group with members: ship, mine",
             "members": [
                 "ship",
-                "mine",
-                "help",
-                "version"
+                "mine"
             ],
             "mutually-exclusive": true
         }
@@ -97,8 +95,7 @@
                 "ship",
                 "move",
                 "x",
-                "y",
-                "speed"
+                "y"
             ],
             "type": "String"
         },
