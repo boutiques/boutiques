@@ -169,7 +169,7 @@ class docoptHelper():
             new_inp['type'] = joint_args[param_key]['type']
         elif param_key in self.optional_arguments:
             new_inp['type'] = "Flag"
-            new_inp['command-line-flag'] = joint_args[param_key]['long']
+            new_inp['command-line-flag'] = arg['flag']
         else:
             new_inp['type'] = "String"
         self.descriptor['inputs'].append(new_inp)
@@ -242,25 +242,42 @@ class docoptHelper():
 
     def _addArgumentToDependencies(self, node, ancestors=None,
                                    isList=False, optional=False):
-        parent_dependency = self._getDependencyParentNode(ancestors)
+        p_node = self._getDependencyParentNode(ancestors)
         argAdded = None
         if ancestors == [] and node.name not in self.dependencies:
+            # root argument
             argAdded = self.dependencies[node.name] = {
                 "id": node.name,
                 "name": self._getUniqueId(self._getParamName(node.name)),
                 "optional": optional,
                 "parent": None,
                 "children": {}}
-        elif ancestors != [] and parent_dependency is not None:
-            argAdded = parent_dependency['children'][node.name] = {
+        elif ancestors != [] and p_node is not None:
+            argAdded = p_node['children'][node.name] = {
                 "id": node.name,
                 "name": self._getUniqueId(self._getParamName(node.name)),
                 "optional": optional,
-                "parent": parent_dependency,
+                "parent": p_node,
                 "children": {}}
 
         if argAdded is not None and isList:
             argAdded["isList"] = True
+
+        if hasattr(node, 'long') and node.long is not None:
+            # ensure flag has long hand flag
+            argAdded["flag"] = node.long
+            if p_node is not None and 'flag' in p_node and\
+               argAdded["flag"] == p_node["flag"]:
+                # if parent and child are same option (therefore has short-hand)
+                self.dependencies[
+                    p_node['children'][node.name]['name']] = {
+                        'id': p_node['children'][node.name]['id'],
+                        'name': p_node['children'][node.name]['name'],
+                        'flag': node.short,
+                        'optional': p_node['children'][node.name]['optional'],
+                        'parent': None,
+                        'children': {}}
+                del p_node['children'][node.name]
 
     def _getLineageChildren(self, node, descendants):
         child_keys = list(node['children'].keys())
