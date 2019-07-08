@@ -13,29 +13,7 @@
             "description": "INSERT_DESCRIPTION"
         }
     ], 
-    "groups": [
-        {
-            "all-or-none": false, 
-            "id": "together_group", 
-            "members": [
-            ], 
-            "name": "Toggled together"
-        }, 
-        {
-            "mutually-exclusive": false,
-            "id": "mutex_group", 
-            "members": [
-            ], 
-            "name": "Mutually-exclusive inputs"
-        },
-        {
-            "one-is-required": false,
-            "id": "at_least_one", 
-            "members": [
-            ],
-            "name": "At least one must be present"
-        }
-    ], 
+    "groups": [], 
     "inputs": [], 
     "invocation-schema": {
         "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#", 

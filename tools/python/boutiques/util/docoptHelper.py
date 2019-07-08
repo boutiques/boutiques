@@ -14,19 +14,14 @@ class docoptHelper():
             with open(base_descriptor, "r") as base_desc:
                 self.descriptor = json.load(base_desc)
         else:
-            self.descriptor = {}
+            self.descriptor = {
+                "inputs": []
+            }
 
         self.docopt_str = docopt_str
-        self.positional_arguments = {}
-        self.optional_arguments = {}
-        self.commands = {}
         self.dependencies = {}
-        self.unique_ids = []
-
-        self.dcpt_usgs = dcpt.parse_section(
-            'usage:', docopt_str)[0].split("\n")[1:]
-        self.dcpt_args = dcpt.parse_section('arguments:', docopt_str)
-        self.dcpt_opts = dcpt.parse_section('options:', docopt_str)
+        self.all_desc_and_type = {}
+        self.unique_ids = {}
         options = dcpt.parse_defaults(docopt_str)
 
         self.pattern = dcpt.parse_pattern(
@@ -41,39 +36,23 @@ class docoptHelper():
             options_shortcut.children = list(set(doc_options) - pattern_options)
         matched, left, collected = self.pattern.fix().match(argv)
 
-    def loadArguments(self):
-        for prm in self.pattern.flat():
-            if type(prm) is dcpt.Argument:
-                self.positional_arguments[prm.name] = {
-                    "default": prm.value}
-            elif type(prm) is dcpt.Command:
-                self.commands[prm.name] = {
-                    "default": prm.value}
-            elif type(prm) is dcpt.Option:
-                self.optional_arguments[prm.name] = {
-                    "default": prm.value,
-                    "short": prm.short,
-                    "long": prm.long,
-                    "argcount": prm.argcount}
-            else:
-                raise EnvironmentError(
-                    "Unrecognized argument of type {0}\n\"{1}\": {2}".format(
-                        type(prm), prm.name, prm.value))
-
     def loadDocoptDescription(self):
         self.descriptor["description"] = self.docopt_str\
             .replace("".join(dcpt.parse_section(
                 'usage:', self.docopt_str)), "")\
-            .replace("".join(self.dcpt_args), "")\
-            .replace("".join(self.dcpt_opts), "")\
+            .replace("".join(dcpt.parse_section(
+                'arguments:', self.docopt_str)), "")\
+            .replace("".join(dcpt.parse_section(
+                'options:', self.docopt_str)), "")\
             .replace("\n\n", "\n").strip()
 
     def loadDescriptionAndType(self):
         # using docopt code to extract description and type from args
-        for line in (self.dcpt_opts + self.dcpt_args):
+        for line in (dcpt.parse_section('arguments:', self.docopt_str) +
+                     dcpt.parse_section('options:', self.docopt_str)):
             _, _, s = line.partition(':')  # get rid of "options:"
             split = re.split('\n[ \t]*(-\S+?)', '\n' + s)[1:] if\
-                line in self.dcpt_opts else\
+                line in dcpt.parse_section('options:', self.docopt_str) else\
                 re.split('\n[ \t]*(<\S+?)', '\n' + s)[1:]
             split = [s1 + s2 for s1, s2 in zip(split[::2], split[1::2])]
             # parse each line of Arguments and Options
@@ -82,17 +61,18 @@ class docoptHelper():
                 arg = dcpt.Option.parse(arg_str) if arg_str.startswith('-')\
                     else dcpt.Argument.parse(arg_str)
                 arg_segs = arg_str.partition('  ')
-                # Add description field to arguments dicts
-                {**self.optional_arguments, **self.positional_arguments}[
-                    arg.name]["description"] = ''.join(arg_segs[2:])\
-                    .replace("\n", " ").replace("  ", "").strip()
-                # if type is specified add type field to optional arguments
+                self.all_desc_and_type[arg.name] = {
+                    "desc": arg_segs[-1].replace('\n', ' ')
+                                        .replace("  ", '').strip()}
+                if hasattr(arg, "value") and arg.value is not None and\
+                   arg.value is not False:
+                    self.all_desc_and_type[arg.name]['default'] = arg.value
                 if type(arg) is dcpt.Option and arg.argcount > 0:
                     for typ in [seg for seg in arg_segs[0]
                                 .replace(',', ' ')
                                 .replace('=', ' ')
                                 .split() if seg[0] != "-"]:
-                        self.optional_arguments[arg.name]["type"] = typ
+                        self.all_desc_and_type[arg.name]["type"] = typ
 
     def generateInputsAndCommandLine(self, node):
         child_node_type = type(node.children[0]).__name__
@@ -102,7 +82,8 @@ class docoptHelper():
                 self.generateInputsAndCommandLine(child)
         # Traversing reached usage level
         else:
-            self.descriptor['command-line'] = self.dcpt_usgs[0].split()[0]
+            self.descriptor['command-line'] = dcpt.parse_section(
+                'usage:', self.docopt_str)[0].split("\n")[1:][0].split()[0]
             self._loadInputsFromUsage(node)
 
     def addInputsRecursive(self, node, requires=[]):
@@ -131,49 +112,6 @@ class docoptHelper():
             if len(mutex_names) > 1:
                 self._addMutexGroup(mutex_names)
 
-    def _addMutexGroup(self, arg_names):
-        pretty_name = "_".join([self._getParamName(name) for name in arg_names])
-        new_group = {
-            "id": pretty_name,
-            "name": "Mutex group with members: {0}".format(", ".join(
-                [self._getStrippedName(name) for name in arg_names])),
-            "members": [self._getParamName(name) for name in arg_names],
-            "mutually-exclusive": True
-        }
-        self.descriptor['groups'].append(new_group)
-
-    def _addInput(self, arg, requires, isList=False):
-        joint_args = {**self.positional_arguments,
-                      **self.optional_arguments,
-                      **self.commands}
-
-        param_key = arg["id"]
-        param_name = arg["name"]
-
-        new_inp = {
-            "id": param_name.replace("-", "_"),
-            "name": param_name,
-            "description": joint_args[param_key].get('description') if
-            param_key in joint_args else "",
-            "optional": True,
-            "value-key": "[{0}]".format(param_name).upper()
-        }
-        self.descriptor["command-line"] += " {0}".format(new_inp['value-key'])
-
-        if requires != []:
-            new_inp["requires-inputs"] = requires
-        # Only add list param when isList
-        if isList:
-            new_inp['list'] = True
-        if 'type' in joint_args[param_key]:
-            new_inp['type'] = joint_args[param_key]['type']
-        elif param_key in self.optional_arguments:
-            new_inp['type'] = "Flag"
-            new_inp['command-line-flag'] = arg['flag']
-        else:
-            new_inp['type'] = "String"
-        self.descriptor['inputs'].append(new_inp)
-
     def _loadInputsFromUsage(self, usage):
         ancestors = []
         for cmd_idx, arg in enumerate(usage.children):
@@ -191,9 +129,8 @@ class docoptHelper():
                         self._getParamName(arg.children[0].name))
                     list_arg = dcpt.Argument(list_name)
                     list_arg.parse(list_name)
-                    self.positional_arguments[list_name] = {
-                        "default": None,
-                        "description": "List of {0}".format(
+                    self.all_desc_and_type[list_name] = {
+                        'desc': "List of {0}".format(
                             self._getParamName(arg.children[0].name))}
                     self._addArgumentToDependencies(
                         list_arg, ancestors=ancestors, isList=True)
@@ -205,7 +142,8 @@ class docoptHelper():
                 elif arg_type == "Optional" and fchild_type == "Either":
                     grp_arg = self._getMutexInput(arg)
                     self._addArgumentToDependencies(
-                        grp_arg, ancestors=ancestors, optional=True)
+                        grp_arg, ancestors=ancestors,
+                        optional=True)
                     ancestors.append(grp_arg.name)
                 elif arg_type == "Required" and fchild_type == "Either":
                     grp_arg = self._getMutexInput(arg)
@@ -225,43 +163,92 @@ class docoptHelper():
             else:
                 print("NON IMPLEMENTED arg_type: " + arg_type)
 
+    def _addMutexGroup(self, arg_names):
+        pretty_name = "_".join([self._getParamName(name) for name in arg_names])
+        new_group = {
+            "id": pretty_name,
+            "name": "Mutex group with members: {0}".format(", ".join(
+                [self._getStrippedName(name) for name in arg_names])),
+            "members": [self._getParamName(name) for name in arg_names],
+            "mutually-exclusive": True
+        }
+        self.descriptor['groups'].append(new_group)
+
+    def _addInput(self, arg, requires, isList=False):
+        param_key = arg["id"]
+        param_name = arg["name"]
+        new_inp = {
+            "id": param_name.replace("-", "_"),
+            "name": param_name.replace("_", " ").replace("-", " "),
+            "description": arg['desc'],
+            "optional": True,
+            "value-key": "[{0}]".format(param_name).upper()
+        }
+        self.descriptor["command-line"] += " {0}".format(new_inp['value-key'])
+
+        if requires != []:
+            new_inp["requires-inputs"] = requires
+        # Only add list param when isList
+        if isList:
+            new_inp['list'] = True
+        if "default" in arg:
+            new_inp['default'] = arg['default']
+        if "flag" in arg:
+            if "type" in arg:
+                new_inp['type'] = arg['type']
+            else:
+                new_inp['type'] = "Flag"
+            new_inp["command-line-flag"] = arg["flag"]
+        else:
+            new_inp['type'] = "String"
+        self.descriptor['inputs'].append(new_inp)
+
     def _getMutexInput(self, arg):
         pretty_names = []
         arg = [arg.name for arg in arg.children[0].children]
-        for name in arg:
-            pretty_names.append(self._getStrippedName(name))
-        gname = "<{0}>".format("_".join(pretty_names))
         gdesc = "Group key for mutex choices: {0}".format(
             " and ".join(arg))
-        self.positional_arguments[gname] = {
-            "default": None,
-            "description": gdesc}
+        for name in arg:
+            pretty_names.append(self._getStrippedName(name))
+            if name in self.all_desc_and_type:
+                gdesc = gdesc.replace(name, "{0} ({1})".format(
+                    name, self.all_desc_and_type[name]['desc']
+                ))
+        gname = "<{0}>".format("_".join(pretty_names))
         grp_arg = dcpt.Argument(gname)
         grp_arg.parse(gname)
+        self.all_desc_and_type[gname] = {'desc': gdesc}
         return grp_arg
 
     def _addArgumentToDependencies(self, node, ancestors=None,
                                    isList=False, optional=False):
         p_node = self._getDependencyParentNode(ancestors)
-        argAdded = None
+        argAdded = {
+            "id": node.name,
+            "name": self._getUniqueId(self._getParamName(node.name)),
+            "optional": optional,
+            "parent": None,
+            "children": {}}
         if ancestors == [] and node.name not in self.dependencies:
-            # root argument
-            argAdded = self.dependencies[node.name] = {
-                "id": node.name,
-                "name": self._getUniqueId(self._getParamName(node.name)),
-                "optional": optional,
-                "parent": None,
-                "children": {}}
+            self.dependencies[node.name] = argAdded
         elif ancestors != [] and p_node is not None:
-            argAdded = p_node['children'][node.name] = {
-                "id": node.name,
-                "name": self._getUniqueId(self._getParamName(node.name)),
-                "optional": optional,
-                "parent": p_node,
-                "children": {}}
+            argAdded["parent"] = p_node
+            p_node['children'][node.name] = argAdded
 
         if argAdded is not None and isList:
             argAdded["isList"] = True
+
+        argAdded["desc"] = self.all_desc_and_type[node.name]['desc']\
+            if node.name in self.all_desc_and_type\
+            else None
+
+        if node.name in self.all_desc_and_type:
+            if 'type' in self.all_desc_and_type[node.name]:
+                argAdded["type"] = self.all_desc_and_type[node.name]['type']
+
+            if 'default' in self.all_desc_and_type[node.name]:
+                argAdded['default'] =\
+                    self.all_desc_and_type[node.name]['default']
 
         if hasattr(node, 'long') and node.long is not None:
             # ensure flag has long hand flag
@@ -269,14 +256,16 @@ class docoptHelper():
             if p_node is not None and 'flag' in p_node and\
                argAdded["flag"] == p_node["flag"]:
                 # if parent and child are same option (therefore has short-hand)
+                # create new input with short-hand flag
                 self.dependencies[
                     p_node['children'][node.name]['name']] = {
                         'id': p_node['children'][node.name]['id'],
                         'name': p_node['children'][node.name]['name'],
+                        'desc': p_node['children'][node.name]['desc'],
                         'flag': node.short,
                         'optional': p_node['children'][node.name]['optional'],
                         'parent': None,
-                        'children': {}}
+                        'children': p_node['children'][node.name]['children']}
                 del p_node['children'][node.name]
 
     def _getLineageChildren(self, node, descendants):
@@ -304,7 +293,7 @@ class docoptHelper():
         while name + (str(id_count) if id_count > 1 else "") in self.unique_ids:
             id_count += 1
         new_unique_id = name + (str(id_count) if id_count > 1 else "")
-        self.unique_ids.append(new_unique_id)
+        self.unique_ids[new_unique_id] = {'id': new_unique_id, 'original': name}
         return new_unique_id
 
     def _getStrippedName(self, name):
@@ -340,7 +329,6 @@ with open(sample_dir + "sample2_docopt.txt", "r") as myfile:
 helper = docoptHelper(sample_docopt, base_descriptor=(
     sample_dir + "defaults_docopt_descriptor.json"))
 helper.loadDocoptDescription()
-helper.loadArguments()
 helper.loadDescriptionAndType()
 helper.generateInputsAndCommandLine(helper.pattern)
 helper.addInputsRecursive(helper.dependencies)

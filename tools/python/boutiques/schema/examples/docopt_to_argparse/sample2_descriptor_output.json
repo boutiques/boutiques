@@ -15,24 +15,6 @@
     ],
     "groups": [
         {
-            "all-or-none": false,
-            "id": "together_group",
-            "members": [],
-            "name": "Toggled together"
-        },
-        {
-            "mutually-exclusive": false,
-            "id": "mutex_group",
-            "members": [],
-            "name": "Mutually-exclusive inputs"
-        },
-        {
-            "one-is-required": false,
-            "id": "at_least_one",
-            "members": [],
-            "name": "At least one must be present"
-        },
-        {
             "id": "new_name_shoot",
             "name": "Mutex group with members: new, name, shoot",
             "members": [
@@ -75,7 +57,7 @@
         },
         {
             "id": "list_of_name",
-            "name": "list_of_name",
+            "name": "list of name",
             "description": "List of name",
             "optional": true,
             "value-key": "[LIST_OF_NAME]",
@@ -141,7 +123,9 @@
             "requires-inputs": [
                 "name"
             ],
-            "type": "<kn>"
+            "default": "10",
+            "type": "<kn>",
+            "command-line-flag": "--speed"
         },
         {
             "id": "shoot",
@@ -193,7 +177,7 @@
         },
         {
             "id": "set_remove",
-            "name": "set_remove",
+            "name": "set remove",
             "description": "Group key for mutex choices: set and remove",
             "optional": true,
             "value-key": "[SET_REMOVE]",
@@ -226,8 +210,8 @@
         },
         {
             "id": "moored_drifting",
-            "name": "moored_drifting",
-            "description": "Group key for mutex choices: --moored and --drifting",
+            "name": "moored drifting",
+            "description": "Group key for mutex choices: --moored (Moored (anchored) mine.) and --drifting (Drifting mine.)",
             "optional": true,
             "value-key": "[MOORED_DRIFTING]",
             "requires-inputs": [
