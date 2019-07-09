@@ -468,9 +468,9 @@ class Docopt_Importer():
         for line in (dcpt.parse_section('arguments:', self.docopt_str) +
                      dcpt.parse_section('options:', self.docopt_str)):
             _, _, s = line.partition(':')  # get rid of "options:"
-            split = re.split('\n[ \t]*(-\S+?)', '\n' + s)[1:] if\
+            split = re.split(r'\n[ \t]*(-\S+?)', '\n' + s)[1:] if\
                 line in dcpt.parse_section('options:', self.docopt_str) else\
-                re.split('\n[ \t]*(<\S+?)', '\n' + s)[1:]
+                re.split(r'\n[ \t]*(<\S+?)', '\n' + s)[1:]
             split = [s1 + s2 for s1, s2 in zip(split[::2], split[1::2])]
             # parse each line of Arguments and Options
             for arg_str in [s for s in split if (s.startswith('-') or
