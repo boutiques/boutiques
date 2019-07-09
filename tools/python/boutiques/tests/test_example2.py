@@ -1,54 +1,39 @@
 #!/usr/bin/env python
 
-import os
-import subprocess
-from unittest import TestCase
-from boutiques import __file__ as bfile
+from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 
 
-class TestExample2(TestCase):
+class TestExample2(BaseTest):
 
-    def get_examples_dir(self):
-        return os.path.join(os.path.dirname(bfile),
-                            "schema", "examples")
+    def setUp(self):
+        self.setup("example2")
 
     def test_example2_no_exec(self):
-        example2_dir = os.path.join(self.get_examples_dir(), "example2")
-        ret = bosh.execute("simulate",
-                           os.path.join(example2_dir,
-                                        "example2.json"),
-                           "-i",
-                           os.path.join(example2_dir,
-                                        "invocation.json"))
-        assert(ret.stdout != ""
-               and ret.stderr == ""
-               and ret.exit_code == 0
-               and ret.error_message == "")
+        self.assert_successful_return(
+            bosh.execute("simulate",
+                         self.get_file_path("example2.json"),
+                         "-i",
+                         self.get_file_path("invocation.json")),
+            aditional_assertions=self.assert_only_stdout)
 
     def test_example2_exec(self):
-        example2_dir = os.path.join(self.get_examples_dir(), "example2")
-        ret = bosh.execute("launch",
-                           os.path.join(example2_dir, "example2.json"),
-                           os.path.join(example2_dir, "invocation.json"))
-        print(ret)
-        assert(ret.stdout == ""
-               and ret.stderr == ""
-               and ret.exit_code == 0
-               and ret.error_message == "")
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example2.json"),
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
+            aditional_assertions=self.assert_no_output)
 
-        ret = bosh.execute("launch",
-                           os.path.join(example2_dir, "example2.json"),
-                           "-x",
-                           os.path.join(example2_dir, "invocation.json"))
-        print(ret)
-        assert(ret.stdout == ""
-               and ret.stderr == ""
-               and ret.exit_code == 0
-               and ret.error_message == "")
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example2.json"),
+                         "-x",
+                         self.get_file_path("invocation.json"),
+                         "--skip-data-collection"),
+            aditional_assertions=self.assert_no_output)
 
     def test_example2_no_exec_random(self):
-        example2_dir = os.path.join(self.get_examples_dir(), "example2")
-        self.assertFalse(bosh.execute("simulate",
-                                      os.path.join(example2_dir,
-                                                   "example2.json")).exit_code)
+        self.assertFalse(
+            bosh.execute("simulate",
+                         self.get_file_path("example2.json")).exit_code)

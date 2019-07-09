@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-import simplejson
 import tempfile
 import argparse
 import sys
 import os
-import json
+import simplejson as json
 import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
@@ -23,7 +22,7 @@ class CreateDescriptor(object):
     def __init__(self, parser=None, **kwargs):
         template = op.join(op.split(bfile)[0], "templates", "basic.json")
         with open(template) as f:
-            self.descriptor = simplejson.load(f)
+            self.descriptor = json.load(f)
 
         if(kwargs.get('docker_image')):
             self.parse_docker(self.descriptor,
@@ -44,7 +43,6 @@ class CreateDescriptor(object):
             self.parseParser(**kwargs)
 
     def save(self, filename):
-        import json
         with open(filename, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
 

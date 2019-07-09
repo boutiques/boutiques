@@ -68,12 +68,10 @@ class PrettyPrinter():
         else:
             tags = ""
 
-        # Grabs command-line, and figures out where params start so it can
-        # display it nicely
+        # Grabs command-line, and wraps it right to the first element of it
+        # (usually the executable) unless it's too long
         cline = self.desc['command-line']
-        cend = len(cline)
-        for clkey in self.lut.keys():
-            cend = cline.find(clkey) if 0 < cline.find(clkey) < cend else cend
+        cend = min(len(cline.split(' ')[0]) + 1, 35)
         cline = textwrap.wrap("  " + self.desc['command-line'],
                               subsequent_indent='  ' + ' ' * cend)
         cline = "Command-line:\n{0}".format("\n".join(cline))
@@ -187,6 +185,10 @@ class PrettyPrinter():
             tinp = inps[0]
             cflag = tinp.get("command-line-flag")
             if cflag:
+                # argparse crashes when dest is supplied and
+                # argument doesn't start with '--'
+                if not cflag.startswith("-"):
+                    cflag = '--' + cflag
                 inp_args += [cflag]
                 inp_kwargs['dest'] = clkey
             else:

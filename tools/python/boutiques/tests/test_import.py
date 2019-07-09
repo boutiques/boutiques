@@ -4,7 +4,6 @@ from unittest import TestCase
 from boutiques import bosh
 from boutiques import __file__ as bfile
 from jsonschema.exceptions import ValidationError
-import json
 import os
 import os.path as op
 from os.path import join as opj
@@ -25,9 +24,9 @@ class TestImport(TestCase):
         if op.isfile(outfile):
             os.remove(outfile)
         self.assertFalse(bosh(["import", "bids", outfile, bids_app]))
-        assert(open(outfile, "U").read().strip() == open(opj(bids_app,
-                                                             ref_name),
-                                                         "U").read().strip())
+        self.assertEqual(open(outfile, "U").read().strip(),
+                         open(opj(bids_app, ref_name),
+                              "U").read().strip())
 
     def test_import_bids_bad(self):
         bids_app = opj(op.split(bfile)[0],
@@ -52,8 +51,8 @@ class TestImport(TestCase):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
         result = open(fout, "U").read().strip()
-        assert(result == open(ref_file, "U").read().strip() or
-               result == open(ref_file_p2, "U").read().strip())
+        self.assertIn(result, [open(ref_file, "U").read().strip(),
+                               open(ref_file_p2, "U").read().strip()])
         os.remove(fout)
 
     def test_upgrade_04_json_obj(self):
@@ -69,8 +68,8 @@ class TestImport(TestCase):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
         result = open(fout, "U").read().strip()
-        assert(result == open(ref_file, "U").read().strip() or
-               result == open(ref_file_p2, "U").read().strip())
+        self.assertIn(result, [open(ref_file, "U").read().strip(),
+                               open(ref_file_p2, "U").read().strip()])
         os.remove(fout)
 
     def test_import_cwl_valid(self):
@@ -86,18 +85,13 @@ class TestImport(TestCase):
             if d == "README.md":
                 continue
             files = os.listdir(opj(ex_dir, d))
-            cwl_descriptor = None
-            cwl_invocation = None
-            for f in files:
-                if op.basename(f).endswith(".cwl"):
-                    cwl_descriptor = op.abspath(opj(ex_dir, d, f))
-                if op.basename(f).endswith(".yml"):
-                    cwl_invocation = op.abspath(opj(ex_dir, d, f))
-            assert(cwl_descriptor is not None)
+            cwl_descriptor = op.abspath(opj(ex_dir, d, d+".cwl"))
+            cwl_invocation = op.abspath(opj(ex_dir, d, d+".yml"))
+            assert(os.path.isfile(cwl_descriptor))
             out_desc = "./cwl_out.json"
             out_inv = "./cwl_inv_out.json"
             run = False
-            if cwl_invocation is not None:
+            if os.path.isfile(cwl_invocation):
                 args = ["import",
                         "cwl",
                         out_desc,
@@ -128,7 +122,8 @@ class TestImport(TestCase):
                     ret = boutiques.execute(
                             "launch",
                             out_desc,
-                            out_inv
+                            out_inv,
+                            "--skip-data-collection"
                           )
                     self.assertFalse(ret.exit_code,
                                      cwl_descriptor)
