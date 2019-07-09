@@ -244,17 +244,17 @@ def execute(*params):
 
 
 def importer(*params):
-    parser = ArgumentParser("Imports old descriptor or BIDS app or CWL "
+    parser = ArgumentParser("Imports old descriptor or BIDS app or CWL"
                             " descriptor to spec.")
     parser.add_argument("type", help="Type of import we are performing",
-                        choices=["bids", "0.4", "cwl"])
+                        choices=["bids", "0.4", "cwl", "dcpt"])
     parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
-    parser.add_argument("input_descriptor", help="Input descriptor to be "
-                        "converted. For '0.4'"
-                        ", is JSON descriptor,"
-                        " for 'bids' is base directory of BIDS app, "
-                        "for 'cwl' is YAML descriptor.")
+    parser.add_argument("input_descriptor", help="Input descriptor to be"
+                        " converted. For '0.4', is JSON descriptor,"
+                        " for 'dcpt' is JSON descriptor,"
+                        " for 'bids' is base directory of BIDS app,"
+                        " for 'cwl' is YAML descriptor.")
     parser.add_argument("-o", "--output-invocation", help="Where to write "
                         "the invocation if any.")
     parser.add_argument("-i", "--input-invocation", help="Input invocation "
@@ -272,6 +272,8 @@ def importer(*params):
         importer.import_bids()
     elif results.type == "cwl":
         importer.import_cwl()
+    elif results.type == "dcpt":
+        importer.import_docopt()
 
 
 def exporter(*params):

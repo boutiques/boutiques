@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Runs a combination of fmriprep and ciftify pipelines from BIDS specification
 
@@ -76,3 +77,7 @@ copied into the subject folder insteadself.
 
 Written by Erin W Dickie
 """
+
+
+def function():
+    "does not matter"

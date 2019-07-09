@@ -1,3 +1,4 @@
+'''
 Naval Fate.
 
 Usage:
@@ -6,7 +7,7 @@ Usage:
   naval_fate ship shoot <x> <y>
   naval_fate mine (set|remove) <x> <y> [--moored|--drifting]
   naval_fate -h | --help
-  naval_fate -v | --version
+  naval_fate --version
 
 Options:
   -h --help     Show this screen.
@@ -14,3 +15,8 @@ Options:
   --speed=<kn>  Speed in knots [default: 10].
   --moored      Moored (anchored) mine.
   --drifting    Drifting mine.
+  '''
+
+
+def dummy_function(x):
+    return x

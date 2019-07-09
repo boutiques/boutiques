@@ -1,5 +1,5 @@
 {
-    "command-line": "naval_fate [SHIP] [NEW] [LIST_OF_NAME] [NAME] [MOVE] [X] [Y] [SPEED] [SHOOT] [X2] [Y2] [MINE] [SET_REMOVE] [X3] [Y3] [MOORED_DRIFTING] [HELP] [HELP2] [VERSION] [VERSION2]",
+    "command-line": "naval_fate [SHIP] [NEW] [LIST_OF_NAME] [NAME] [MOVE] [X] [Y] [SPEED] [SHOOT] [X2] [Y2] [MINE] [SET_REMOVE] [X3] [Y3] [MOORED_DRIFTING] [HELP] [HELP2] [VERSION]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -245,15 +245,6 @@
             "value-key": "[VERSION]",
             "type": "Flag",
             "command-line-flag": "--version"
-        },
-        {
-            "id": "version2",
-            "name": "version2",
-            "description": "Show version.",
-            "optional": true,
-            "value-key": "[VERSION2]",
-            "type": "Flag",
-            "command-line-flag": "-v"
         }
     ],
     "invocation-schema": {
