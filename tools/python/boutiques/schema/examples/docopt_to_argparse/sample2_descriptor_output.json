@@ -13,27 +13,76 @@
             "description": "INSERT_DESCRIPTION"
         }
     ],
-    "groups": [
-        {
-            "id": "new_name_shoot",
-            "name": "Mutex group with members: new, name, shoot",
-            "members": [
-                "new",
-                "name",
-                "shoot"
-            ],
-            "mutually-exclusive": true
+    "invocation-schema": {
+        "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#",
+        "additionalProperties": false,
+        "allOf": [
+            {
+                "anyOf": [
+                    {
+                        "required": [
+                            "INSERT_ID"
+                        ]
+                    }
+                ]
+            },
+            {
+                "anyOf": [
+                    {
+                        "required": [
+                            "INSERT_ID"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "dependencies": {
+            "INSERT_ID": {
+                "properties": {
+                    "INSERT_ID": {
+                        "not": {}
+                    }
+                }
+            }
         },
+        "description": "INSERT_SCHEMA_DESCRIPTION",
+        "properties": {
+            "INSERT_ID": {
+                "enum": [
+                    "INSERT_CHOICE"
+                ]
+            }
+        },
+        "required": [
+            "INSERT_ID"
+        ],
+        "title": "INSERT_TITLE",
+        "type": "INSERT_TYPE"
+    },
+    "name": "INSERT_NAME",
+    "output-files": [
         {
-            "id": "ship_mine",
-            "name": "Mutex group with members: ship, mine",
-            "members": [
-                "ship",
-                "mine"
-            ],
-            "mutually-exclusive": true
+            "id": "INSERT_ID",
+            "name": "INSERT_NAME",
+            "optional": true,
+            "path-template": "INSERT_PATH ex:[OUTDIR]/reg_dti/[DTI]_aligned.nii.gz",
+            "path-template-stripped-extensions": [
+                "INSERT_EXTENSION"
+            ]
         }
     ],
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 12,
+        "walltime-estimate": 3600
+    },
+    "tags": {
+        "domain": "testing",
+        "status": "experimental",
+        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
+    },
+    "tool-version": "INSERT_TOOL_VERSION",
     "inputs": [
         {
             "id": "ship",
@@ -255,74 +304,25 @@
             "command-line-flag": "--version"
         }
     ],
-    "invocation-schema": {
-        "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#",
-        "additionalProperties": false,
-        "allOf": [
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            },
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            }
-        ],
-        "dependencies": {
-            "INSERT_ID": {
-                "properties": {
-                    "INSERT_ID": {
-                        "not": {}
-                    }
-                }
-            }
-        },
-        "description": "INSERT_SCHEMA_DESCRIPTION",
-        "properties": {
-            "INSERT_ID": {
-                "enum": [
-                    "INSERT_CHOICE"
-                ]
-            }
-        },
-        "required": [
-            "INSERT_ID"
-        ],
-        "title": "INSERT_TITLE",
-        "type": "INSERT_TYPE"
-    },
-    "name": "INSERT_NAME",
-    "output-files": [
+    "groups": [
         {
-            "id": "INSERT_ID",
-            "name": "INSERT_NAME",
-            "optional": true,
-            "path-template": "INSERT_PATH ex:[OUTDIR]/reg_dti/[DTI]_aligned.nii.gz",
-            "path-template-stripped-extensions": [
-                "INSERT_EXTENSION"
-            ]
+            "id": "new_name_shoot",
+            "name": "Mutex group with members: new, name, shoot",
+            "members": [
+                "new",
+                "name",
+                "shoot"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "ship_mine",
+            "name": "Mutex group with members: ship, mine",
+            "members": [
+                "ship",
+                "mine"
+            ],
+            "mutually-exclusive": true
         }
-    ],
-    "schema-version": "0.5",
-    "suggested-resources": {
-        "cpu-cores": 1,
-        "ram": 12,
-        "walltime-estimate": 3600
-    },
-    "tags": {
-        "domain": "testing",
-        "status": "experimental",
-        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
-    },
-    "tool-version": "INSERT_TOOL_VERSION"
+    ]
 }

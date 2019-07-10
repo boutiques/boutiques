@@ -430,9 +430,7 @@ class Docopt_Importer():
             with open(base_descriptor, "r") as base_desc:
                 self.descriptor = json.load(base_desc)
         else:
-            self.descriptor = {
-                "inputs": []
-            }
+            self.descriptor = {}
 
         self.docopt_str = docopt_str
         self.dependencies = {}
@@ -592,6 +590,8 @@ class Docopt_Importer():
             "members": [self._getParamName(name) for name in arg_names],
             "mutually-exclusive": True
         }
+        if "groups" not in self.descriptor:
+            self.descriptor['groups'] = []
         self.descriptor['groups'].append(new_group)
 
     def _addInput(self, arg, requires, isList=False):
@@ -623,6 +623,9 @@ class Docopt_Importer():
             new_inp["command-line-flag"] = arg["flag"]
         else:
             new_inp['type'] = "String"
+
+        if "inputs" not in self.descriptor:
+            self.descriptor['inputs'] = []
         self.descriptor['inputs'].append(new_inp)
 
     def _getMutexInputAndChoices(self, arg):
