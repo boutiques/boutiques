@@ -38,7 +38,7 @@
         {
             "id": "ship",
             "name": "ship",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[SHIP]",
             "type": "String"
@@ -46,7 +46,7 @@
         {
             "id": "new",
             "name": "new",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[NEW]",
             "requires-inputs": [
@@ -70,7 +70,7 @@
         {
             "id": "name",
             "name": "name",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[NAME]",
             "requires-inputs": [
@@ -84,7 +84,7 @@
         {
             "id": "move",
             "name": "move",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[MOVE]",
             "requires-inputs": [
@@ -95,7 +95,7 @@
         {
             "id": "x",
             "name": "x",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[X]",
             "requires-inputs": [
@@ -106,7 +106,7 @@
         {
             "id": "y",
             "name": "y",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[Y]",
             "requires-inputs": [
@@ -123,14 +123,14 @@
             "requires-inputs": [
                 "name"
             ],
-            "default": "10",
-            "type": "<kn>",
+            "default-value": "10",
+            "type": "String",
             "command-line-flag": "--speed"
         },
         {
             "id": "shoot",
             "name": "shoot",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[SHOOT]",
             "requires-inputs": [
@@ -143,7 +143,7 @@
         {
             "id": "x2",
             "name": "x2",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[X2]",
             "requires-inputs": [
@@ -154,7 +154,7 @@
         {
             "id": "y2",
             "name": "y2",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[Y2]",
             "requires-inputs": [
@@ -165,7 +165,7 @@
         {
             "id": "mine",
             "name": "mine",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[MINE]",
             "requires-inputs": [
@@ -184,12 +184,16 @@
             "requires-inputs": [
                 "mine"
             ],
+            "value-choices": [
+                "set",
+                "remove"
+            ],
             "type": "String"
         },
         {
             "id": "x3",
             "name": "x3",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[X3]",
             "requires-inputs": [
@@ -200,7 +204,7 @@
         {
             "id": "y3",
             "name": "y3",
-            "description": null,
+            "description": "",
             "optional": true,
             "value-key": "[Y3]",
             "requires-inputs": [
@@ -216,6 +220,10 @@
             "value-key": "[MOORED_DRIFTING]",
             "requires-inputs": [
                 "mine"
+            ],
+            "value-choices": [
+                "--moored",
+                "--drifting"
             ],
             "type": "String"
         },

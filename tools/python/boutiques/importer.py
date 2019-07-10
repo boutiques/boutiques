@@ -303,12 +303,12 @@ class Importer():
                                                             boutiques_inputs)
                 cwl_out_obj = cwl_desc['outputs'][cwl_output]
                 if type(cwl_out_obj.get('type')) is dict:
-                    if (cwl_out_obj['type'].get('type')
-                       and cwl_out_obj['type']['type'] == 'array'):
+                    if (cwl_out_obj['type'].get('type') and
+                       cwl_out_obj['type']['type'] == 'array'):
                         bout_output['list'] = True
                     else:
-                        raise_error(ImportError, 'Unsupported output type: '
-                                    + cwl_output['type'])
+                        raise_error(ImportError, 'Unsupported output type: ' +
+                                    cwl_output['type'])
                 boutiques_outputs.append(bout_output)
         # Boutiques descriptors have to have at least 1 output file
         if len(boutiques_outputs) == 0 or cwl_desc.get('stdout'):
@@ -483,7 +483,8 @@ class Docopt_Importer():
                                         .replace("  ", '').strip()}
                 if hasattr(arg, "value") and arg.value is not None and\
                    arg.value is not False:
-                    self.all_desc_and_type[arg.name]['default'] = arg.value
+                    self.all_desc_and_type[arg.name]['default-value'] =\
+                        arg.value
                 if type(arg) is dcpt.Option and arg.argcount > 0:
                     for typ in [seg for seg in arg_segs[0]
                                 .replace(',', ' ')
@@ -557,15 +558,16 @@ class Docopt_Importer():
                         self._addArgumentToDependencies(
                             option, ancestors=ancestors, optional=True)
                 elif arg_type == "Optional" and fchild_type == "Either":
-                    grp_arg = self._getMutexInput(arg)
+                    grp_arg, choices = self._getMutexInputAndChoices(arg)
                     self._addArgumentToDependencies(
                         grp_arg, ancestors=ancestors,
-                        optional=True)
+                        optional=True, value_choices=choices)
                     ancestors.append(grp_arg.name)
                 elif arg_type == "Required" and fchild_type == "Either":
-                    grp_arg = self._getMutexInput(arg)
+                    grp_arg, choices = self._getMutexInputAndChoices(arg)
                     self._addArgumentToDependencies(
-                        grp_arg, ancestors=ancestors)
+                        grp_arg, ancestors=ancestors,
+                        value_choices=choices)
                     ancestors.append(grp_arg.name)
             elif arg_type == "Command":
                 self._addArgumentToDependencies(arg, ancestors=ancestors)
@@ -609,8 +611,10 @@ class Docopt_Importer():
         # Only add list param when isList
         if isList:
             new_inp['list'] = True
-        if "default" in arg:
-            new_inp['default'] = arg['default']
+        if 'value-choices' in arg:
+            new_inp['value-choices'] = arg['value-choices']
+        if "default-value" in arg:
+            new_inp['default-value'] = arg['default-value']
         if "flag" in arg:
             if "type" in arg:
                 new_inp['type'] = arg['type']
@@ -621,12 +625,12 @@ class Docopt_Importer():
             new_inp['type'] = "String"
         self.descriptor['inputs'].append(new_inp)
 
-    def _getMutexInput(self, arg):
+    def _getMutexInputAndChoices(self, arg):
         pretty_names = []
-        arg = [arg.name for arg in arg.children[0].children]
+        names = [arg.name for arg in arg.children[0].children]
         gdesc = "Group key for mutex choices: {0}".format(
-            " and ".join(arg))
-        for name in arg:
+            " and ".join(names))
+        for name in names:
             pretty_names.append(self._getStrippedName(name))
             if name in self.all_desc_and_type:
                 gdesc = gdesc.replace(name, "{0} ({1})".format(
@@ -636,10 +640,11 @@ class Docopt_Importer():
         grp_arg = dcpt.Argument(gname)
         grp_arg.parse(gname)
         self.all_desc_and_type[gname] = {'desc': gdesc}
-        return grp_arg
+        return grp_arg, names
 
     def _addArgumentToDependencies(self, node, ancestors=None,
-                                   isList=False, optional=False):
+                                   isList=False, optional=False,
+                                   value_choices=[]):
         p_node = self._getDependencyParentNode(ancestors)
         argAdded = {
             "id": node.name,
@@ -655,18 +660,22 @@ class Docopt_Importer():
 
         if argAdded is not None and isList:
             argAdded["isList"] = True
+        if value_choices != []:
+            argAdded["value-choices"] = value_choices
 
         argAdded["desc"] = self.all_desc_and_type[node.name]['desc']\
             if node.name in self.all_desc_and_type\
-            else None
+            else ""
 
         if node.name in self.all_desc_and_type:
             if 'type' in self.all_desc_and_type[node.name]:
-                argAdded["type"] = self.all_desc_and_type[node.name]['type']
+                argAdded["type"] = self.all_desc_and_type[node.name]['type'] if\
+                    self.all_desc_and_type[node.name]['type'] in\
+                    {"File", "Flag", "Number", "String"} else "String"
 
-            if 'default' in self.all_desc_and_type[node.name]:
-                argAdded['default'] =\
-                    self.all_desc_and_type[node.name]['default']
+            if 'default-value' in self.all_desc_and_type[node.name]:
+                argAdded['default-value'] =\
+                    self.all_desc_and_type[node.name]['default-value']
 
         if hasattr(node, 'long') and node.long is not None:
             # ensure flag has long hand flag
