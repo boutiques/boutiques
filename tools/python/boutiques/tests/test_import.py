@@ -12,6 +12,7 @@ from boutiques.importer import ImportError
 import boutiques
 import tarfile
 from contextlib import closing
+import simplejson as json
 
 
 class TestImport(TestCase):
@@ -129,6 +130,18 @@ class TestImport(TestCase):
                                      cwl_descriptor)
 
     def test_import_docopt_valid(self):
-        test_pydocopt = op.join(
-            op.split(bfile)[0], "tests/docopt", "test_valid.py")
-        print(test_pydocopt)
+        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        pydocopt_input = op.join(base_path, "test_valid.py")
+        descriptor_output = op.join(base_path, "test_valid_output.json")
+        expected_output = op.join(base_path, "test_valid.json")
+
+        args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        if op.isfile(descriptor_output):
+            os.remove(descriptor_output)
+        bosh(args)
+        result = json.loads(
+            open(descriptor_output, "r").read().strip())
+        expected = json.loads(
+            open(expected_output, "r").read().strip())
+        os.remove(descriptor_output)
+        self.assertEqual(expected, result)

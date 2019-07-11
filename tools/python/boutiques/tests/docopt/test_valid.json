@@ -1,12 +1,12 @@
 {
-    "command-line": "test_import [X] [A] [LIST_OF_LIST] [X2] [B] [BAR1_BAR2] [FOO1_FOO2_FOO3] [X3] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [Y2] [M12] [M22] [M32] [M42] [DESC2] [HELP] [HELP2]",
+    "command-line": "test_import [X] [A] [LIST_OF_LIST] [B] [BAR1_BAR2] [FOO1_FOO2_FOO3] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [M12] [M22] [M32] [M42] [DESC2] [HELP] [HELP2]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
         "index": "INSERT_INDEX",
         "type": "docker"
     },
-    "description": "Sample Docopt script for bosh import testing\n\n\f\n\r\t\\\n  --desc2       desc2 descriptions",
+    "description": "Sample Docopt script for bosh import testing",
     "error-codes": [
         {
             "code": 1,
@@ -90,10 +90,6 @@
             "description": "",
             "optional": true,
             "value-key": "[X]",
-            "requires-inputs": [
-                "a",
-                "list_of_list"
-            ],
             "type": "String"
         },
         {
@@ -103,7 +99,8 @@
             "optional": true,
             "value-key": "[A]",
             "requires-inputs": [
-                "X"
+                "X",
+                "list_of_list"
             ],
             "type": "String"
         },
@@ -114,21 +111,9 @@
             "optional": true,
             "value-key": "[LIST_OF_LIST]",
             "requires-inputs": [
-                "X"
+                "a"
             ],
             "list": true,
-            "type": "String"
-        },
-        {
-            "id": "X2",
-            "name": "X2",
-            "description": "",
-            "optional": true,
-            "value-key": "[X2]",
-            "requires-inputs": [
-                "b",
-                "bar1_bar2"
-            ],
             "type": "String"
         },
         {
@@ -138,7 +123,8 @@
             "optional": true,
             "value-key": "[B]",
             "requires-inputs": [
-                "X2"
+                "X",
+                "bar1_bar2"
             ],
             "type": "String"
         },
@@ -149,7 +135,7 @@
             "optional": true,
             "value-key": "[BAR1_BAR2]",
             "requires-inputs": [
-                "X2"
+                "b"
             ],
             "value-choices": [
                 "--bar1",
@@ -164,23 +150,12 @@
             "optional": true,
             "value-key": "[FOO1_FOO2_FOO3]",
             "requires-inputs": [
-                "X2"
+                "b"
             ],
             "value-choices": [
                 "--foo1",
                 "--foo2",
                 "--foo3"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "X3",
-            "name": "X3",
-            "description": "",
-            "optional": true,
-            "value-key": "[X3]",
-            "requires-inputs": [
-                "c"
             ],
             "type": "String"
         },
@@ -191,7 +166,7 @@
             "optional": true,
             "value-key": "[C]",
             "requires-inputs": [
-                "X3"
+                "X"
             ],
             "type": "String"
         },
@@ -202,7 +177,7 @@
             "optional": true,
             "value-key": "[D1]",
             "requires-inputs": [
-                "X3"
+                "c"
             ],
             "type": "String",
             "command-line-flag": "--d1"
@@ -214,7 +189,7 @@
             "optional": true,
             "value-key": "[D2]",
             "requires-inputs": [
-                "X3"
+                "c"
             ],
             "type": "Number",
             "command-line-flag": "--d2"
@@ -226,7 +201,7 @@
             "optional": true,
             "value-key": "[D3]",
             "requires-inputs": [
-                "X3"
+                "c"
             ],
             "type": "File",
             "command-line-flag": "--d3"
@@ -234,13 +209,13 @@
         {
             "id": "d4",
             "name": "d4",
-            "description": "path type",
+            "description": "flag type",
             "optional": true,
             "value-key": "[D4]",
             "requires-inputs": [
-                "X3"
+                "c"
             ],
-            "type": "String",
+            "type": "Flag",
             "command-line-flag": "--d4"
         },
         {
@@ -250,7 +225,7 @@
             "optional": true,
             "value-key": "[D5]",
             "requires-inputs": [
-                "X3"
+                "c"
             ],
             "type": "String",
             "command-line-flag": "--d5"
@@ -261,12 +236,6 @@
             "description": "",
             "optional": true,
             "value-key": "[Y]",
-            "requires-inputs": [
-                "m1",
-                "m2",
-                "m31",
-                "m41"
-            ],
             "type": "String"
         },
         {
@@ -276,7 +245,10 @@
             "optional": true,
             "value-key": "[M1]",
             "requires-inputs": [
-                "Y"
+                "Y",
+                "m2",
+                "m31",
+                "m41"
             ],
             "type": "String"
         },
@@ -287,7 +259,7 @@
             "optional": true,
             "value-key": "[M2]",
             "requires-inputs": [
-                "Y"
+                "m1"
             ],
             "type": "String"
         },
@@ -298,7 +270,7 @@
             "optional": true,
             "value-key": "[M31]",
             "requires-inputs": [
-                "Y"
+                "m1"
             ],
             "type": "String"
         },
@@ -309,35 +281,21 @@
             "optional": true,
             "value-key": "[M41]",
             "requires-inputs": [
-                "Y"
+                "m1"
             ],
             "type": "String"
         },
         {
             "id": "desc1",
             "name": "desc1",
-            "description": "desc1 d3$c&p+0/\\/s \b",
+            "description": "desc1 d3$c&p+0/\\/s",
             "optional": true,
             "value-key": "[DESC1]",
             "requires-inputs": [
-                "Y"
+                "m1"
             ],
             "type": "Flag",
             "command-line-flag": "--desc1"
-        },
-        {
-            "id": "Y2",
-            "name": "Y2",
-            "description": "",
-            "optional": true,
-            "value-key": "[Y2]",
-            "requires-inputs": [
-                "m12",
-                "m22",
-                "m32",
-                "m42"
-            ],
-            "type": "String"
         },
         {
             "id": "m12",
@@ -346,7 +304,10 @@
             "optional": true,
             "value-key": "[M12]",
             "requires-inputs": [
-                "Y2"
+                "Y",
+                "m22",
+                "m32",
+                "m42"
             ],
             "type": "String"
         },
@@ -357,7 +318,7 @@
             "optional": true,
             "value-key": "[M22]",
             "requires-inputs": [
-                "Y2"
+                "m12"
             ],
             "type": "String"
         },
@@ -368,7 +329,7 @@
             "optional": true,
             "value-key": "[M32]",
             "requires-inputs": [
-                "Y2"
+                "m12"
             ],
             "type": "String"
         },
@@ -379,18 +340,18 @@
             "optional": true,
             "value-key": "[M42]",
             "requires-inputs": [
-                "Y2"
+                "m12"
             ],
             "type": "String"
         },
         {
             "id": "desc2",
             "name": "desc2",
-            "description": "",
+            "description": "desc2 descriptions",
             "optional": true,
             "value-key": "[DESC2]",
             "requires-inputs": [
-                "Y2"
+                "m12"
             ],
             "type": "Flag",
             "command-line-flag": "--desc2"
@@ -416,14 +377,30 @@
     ],
     "groups": [
         {
-            "id": "X_X2_X3_Y_Y2",
-            "name": "Mutex group with members: X, X2, X3, Y, Y2",
+            "id": "a_b_c",
+            "name": "Mutex group with members: a, b, c",
+            "members": [
+                "a",
+                "b",
+                "c"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "m1_m12",
+            "name": "Mutex group with members: m1, m12",
+            "members": [
+                "m1",
+                "m12"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "X_Y",
+            "name": "Mutex group with members: X, Y",
             "members": [
                 "X",
-                "X2",
-                "X3",
-                "Y",
-                "Y2"
+                "Y"
             ],
             "mutually-exclusive": true
         }

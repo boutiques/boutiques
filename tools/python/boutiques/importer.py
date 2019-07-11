@@ -436,20 +436,26 @@ class Docopt_Importer():
         self.dependencies = {}
         self.all_desc_and_type = {}
         self.unique_ids = {}
-        options = dcpt.parse_defaults(docopt_str)
 
-        self.pattern = dcpt.parse_pattern(
-            dcpt.formal_usage(dcpt.parse_section('usage:', docopt_str)[0]),
-            options)
+        try:
+            # All native docopt code, should succeed if docopt script is valid
+            options = dcpt.parse_defaults(docopt_str)
 
-        argv = dcpt.parse_argv(dcpt.Tokens(sys.argv[1:]), list(options), False)
-        pattern_options = set(self.pattern.flat(dcpt.Option))
+            self.pattern = dcpt.parse_pattern(
+                dcpt.formal_usage(dcpt.parse_section('usage:', docopt_str)[0]),
+                options)
 
-        for options_shortcut in self.pattern.flat(dcpt.OptionsShortcut):
-            doc_options = dcpt.parse_defaults(docopt_str)
-            options_shortcut.children = list(
-                set(doc_options) - pattern_options)
-        matched, left, collected = self.pattern.fix().match(argv)
+            argv = dcpt.parse_argv(
+                dcpt.Tokens(sys.argv[1:]), list(options), False)
+            pattern_options = set(self.pattern.flat(dcpt.Option))
+
+            for options_shortcut in self.pattern.flat(dcpt.OptionsShortcut):
+                doc_options = dcpt.parse_defaults(docopt_str)
+                options_shortcut.children = list(
+                    set(doc_options) - pattern_options)
+            matched, left, collected = self.pattern.fix().match(argv)
+        except:
+            raise_error(ImportError, "Invalid docopt script")
 
     def loadDocoptDescription(self):
         self.descriptor["description"] = self.docopt_str\
@@ -578,7 +584,9 @@ class Docopt_Importer():
                     arg, ancestors=ancestors, optional=True)
                 ancestors.append(arg.name)
             else:
-                print("NON IMPLEMENTED arg_type: " + arg_type)
+                raise_error(
+                    ImportError,
+                    "Non implemented docopt arg.type: {0}".format(arg_type))
 
     def _addMutexGroup(self, arg_names):
         pretty_name = "_".join([self._getParamName(name)
@@ -655,13 +663,11 @@ class Docopt_Importer():
             "optional": optional,
             "parent": None,
             "children": {}}
-        if ancestors == [] and argAdded["name"] not in self.dependencies:
-            self.dependencies[argAdded["name"]] = argAdded
+        if ancestors == [] and node.name not in self.dependencies:
+            self.dependencies[node.name] = argAdded
         elif ancestors != [] and p_node is not None:
             argAdded["parent"] = p_node
             p_node['children'][argAdded["name"]] = argAdded
-            if p_node['id'] == "<m1>":
-                print(p_node['children'])
 
         if argAdded is not None and isList:
             argAdded["isList"] = True
@@ -695,9 +701,11 @@ class Docopt_Importer():
                         'name': p_node['children'][argAdded["name"]]['name'],
                         'desc': p_node['children'][argAdded["name"]]['desc'],
                         'flag': node.short,
-                        'optional': p_node['children'][argAdded["name"]]['optional'],
+                        'optional': p_node['children']
+                                    [argAdded["name"]]['optional'],
                         'parent': None,
-                        'children': p_node['children'][argAdded["name"]]['children']}
+                        'children': p_node['children']
+                                    [argAdded["name"]]['children']}
                 del p_node['children'][argAdded["name"]]
 
     def _getLineageChildren(self, node, descendants):
@@ -720,7 +728,7 @@ class Docopt_Importer():
                               key in last_node['children']]:
                 last_node = last_node['children'][
                     [{'id': last_node['children'][n]['id'], 'key': n} for
-                     n in last_node['children']][0]['key']]
+                     n in last_node['children']][-1]['key']]
             else:
                 return None
         return last_node
