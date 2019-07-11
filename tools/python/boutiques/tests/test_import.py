@@ -127,3 +127,8 @@ class TestImport(TestCase):
                           )
                     self.assertFalse(ret.exit_code,
                                      cwl_descriptor)
+
+    def test_import_docopt_valid(self):
+        test_pydocopt = op.join(
+            op.split(bfile)[0], "tests/docopt", "test_valid.py")
+        print(test_pydocopt)

@@ -655,11 +655,13 @@ class Docopt_Importer():
             "optional": optional,
             "parent": None,
             "children": {}}
-        if ancestors == [] and node.name not in self.dependencies:
-            self.dependencies[node.name] = argAdded
+        if ancestors == [] and argAdded["name"] not in self.dependencies:
+            self.dependencies[argAdded["name"]] = argAdded
         elif ancestors != [] and p_node is not None:
             argAdded["parent"] = p_node
-            p_node['children'][node.name] = argAdded
+            p_node['children'][argAdded["name"]] = argAdded
+            if p_node['id'] == "<m1>":
+                print(p_node['children'])
 
         if argAdded is not None and isList:
             argAdded["isList"] = True
@@ -688,15 +690,15 @@ class Docopt_Importer():
                 # if parent and child are same option (therefore has short-hand)
                 # create new input with short-hand flag
                 self.dependencies[
-                    p_node['children'][node.name]['name']] = {
-                        'id': p_node['children'][node.name]['id'],
-                        'name': p_node['children'][node.name]['name'],
-                        'desc': p_node['children'][node.name]['desc'],
+                    p_node['children'][argAdded["name"]]['name']] = {
+                        'id': p_node['children'][argAdded["name"]]['id'],
+                        'name': p_node['children'][argAdded["name"]]['name'],
+                        'desc': p_node['children'][argAdded["name"]]['desc'],
                         'flag': node.short,
-                        'optional': p_node['children'][node.name]['optional'],
+                        'optional': p_node['children'][argAdded["name"]]['optional'],
                         'parent': None,
-                        'children': p_node['children'][node.name]['children']}
-                del p_node['children'][node.name]
+                        'children': p_node['children'][argAdded["name"]]['children']}
+                del p_node['children'][argAdded["name"]]
 
     def _getLineageChildren(self, node, descendants):
         child_keys = list(node['children'].keys())
@@ -711,9 +713,14 @@ class Docopt_Importer():
         last_node = None
         for ancestor in ancestors:
             if last_node is None:
-                last_node = self.dependencies[ancestor]
-            elif ancestor in last_node['children']:
-                last_node = last_node['children'][ancestor]
+                for root in self.dependencies:
+                    if self.dependencies[root]['id'] == ancestor:
+                        last_node = self.dependencies[root]
+            elif ancestor in [last_node['children'][key]['id'] for
+                              key in last_node['children']]:
+                last_node = last_node['children'][
+                    [{'id': last_node['children'][n]['id'], 'key': n} for
+                     n in last_node['children']][0]['key']]
             else:
                 return None
         return last_node

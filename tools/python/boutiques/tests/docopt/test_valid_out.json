@@ -1,0 +1,431 @@
+{
+    "command-line": "test_import [X] [A] [LIST_OF_LIST] [X2] [B] [BAR1_BAR2] [FOO1_FOO2_FOO3] [X3] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [Y2] [M12] [M22] [M32] [M42] [DESC2] [HELP] [HELP2]",
+    "container-image": {
+        "entrypoint": false,
+        "image": "INSERT_IMAGE",
+        "index": "INSERT_INDEX",
+        "type": "docker"
+    },
+    "description": "Sample Docopt script for bosh import testing\n\n\f\n\r\t\\\n  --desc2       desc2 descriptions",
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "INSERT_DESCRIPTION"
+        }
+    ],
+    "invocation-schema": {
+        "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#",
+        "additionalProperties": false,
+        "allOf": [
+            {
+                "anyOf": [
+                    {
+                        "required": [
+                            "INSERT_ID"
+                        ]
+                    }
+                ]
+            },
+            {
+                "anyOf": [
+                    {
+                        "required": [
+                            "INSERT_ID"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "dependencies": {
+            "INSERT_ID": {
+                "properties": {
+                    "INSERT_ID": {
+                        "not": {}
+                    }
+                }
+            }
+        },
+        "description": "INSERT_SCHEMA_DESCRIPTION",
+        "properties": {
+            "INSERT_ID": {
+                "enum": [
+                    "INSERT_CHOICE"
+                ]
+            }
+        },
+        "required": [
+            "INSERT_ID"
+        ],
+        "title": "INSERT_TITLE",
+        "type": "INSERT_TYPE"
+    },
+    "name": "INSERT_NAME",
+    "output-files": [
+        {
+            "id": "INSERT_ID",
+            "name": "INSERT_NAME",
+            "optional": true,
+            "path-template": "INSERT_PATH ex:[OUTDIR]/reg_dti/[DTI]_aligned.nii.gz",
+            "path-template-stripped-extensions": [
+                "INSERT_EXTENSION"
+            ]
+        }
+    ],
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 12,
+        "walltime-estimate": 3600
+    },
+    "tags": {
+        "domain": "testing",
+        "status": "experimental",
+        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
+    },
+    "tool-version": "INSERT_TOOL_VERSION",
+    "inputs": [
+        {
+            "id": "X",
+            "name": "X",
+            "description": "",
+            "optional": true,
+            "value-key": "[X]",
+            "requires-inputs": [
+                "a",
+                "list_of_list"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "a",
+            "name": "a",
+            "description": "",
+            "optional": true,
+            "value-key": "[A]",
+            "requires-inputs": [
+                "X"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "list_of_list",
+            "name": "list of list",
+            "description": "List of list",
+            "optional": true,
+            "value-key": "[LIST_OF_LIST]",
+            "requires-inputs": [
+                "X"
+            ],
+            "list": true,
+            "type": "String"
+        },
+        {
+            "id": "X2",
+            "name": "X2",
+            "description": "",
+            "optional": true,
+            "value-key": "[X2]",
+            "requires-inputs": [
+                "b",
+                "bar1_bar2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "b",
+            "name": "b",
+            "description": "",
+            "optional": true,
+            "value-key": "[B]",
+            "requires-inputs": [
+                "X2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "bar1_bar2",
+            "name": "bar1 bar2",
+            "description": "Group key for mutex choices: --bar1 and --bar2",
+            "optional": true,
+            "value-key": "[BAR1_BAR2]",
+            "requires-inputs": [
+                "X2"
+            ],
+            "value-choices": [
+                "--bar1",
+                "--bar2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "foo1_foo2_foo3",
+            "name": "foo1 foo2 foo3",
+            "description": "Group key for mutex choices: --foo1 and --foo2 and --foo3",
+            "optional": true,
+            "value-key": "[FOO1_FOO2_FOO3]",
+            "requires-inputs": [
+                "X2"
+            ],
+            "value-choices": [
+                "--foo1",
+                "--foo2",
+                "--foo3"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "X3",
+            "name": "X3",
+            "description": "",
+            "optional": true,
+            "value-key": "[X3]",
+            "requires-inputs": [
+                "c"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "c",
+            "name": "c",
+            "description": "",
+            "optional": true,
+            "value-key": "[C]",
+            "requires-inputs": [
+                "X3"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "d1",
+            "name": "d1",
+            "description": "string type",
+            "optional": true,
+            "value-key": "[D1]",
+            "requires-inputs": [
+                "X3"
+            ],
+            "type": "String",
+            "command-line-flag": "--d1"
+        },
+        {
+            "id": "d2",
+            "name": "d2",
+            "description": "number type",
+            "optional": true,
+            "value-key": "[D2]",
+            "requires-inputs": [
+                "X3"
+            ],
+            "type": "Number",
+            "command-line-flag": "--d2"
+        },
+        {
+            "id": "d3",
+            "name": "d3",
+            "description": "file type",
+            "optional": true,
+            "value-key": "[D3]",
+            "requires-inputs": [
+                "X3"
+            ],
+            "type": "File",
+            "command-line-flag": "--d3"
+        },
+        {
+            "id": "d4",
+            "name": "d4",
+            "description": "path type",
+            "optional": true,
+            "value-key": "[D4]",
+            "requires-inputs": [
+                "X3"
+            ],
+            "type": "String",
+            "command-line-flag": "--d4"
+        },
+        {
+            "id": "d5",
+            "name": "d5",
+            "description": "non-supported type",
+            "optional": true,
+            "value-key": "[D5]",
+            "requires-inputs": [
+                "X3"
+            ],
+            "type": "String",
+            "command-line-flag": "--d5"
+        },
+        {
+            "id": "Y",
+            "name": "Y",
+            "description": "",
+            "optional": true,
+            "value-key": "[Y]",
+            "requires-inputs": [
+                "m1",
+                "m2",
+                "m31",
+                "m41"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m1",
+            "name": "m1",
+            "description": "",
+            "optional": true,
+            "value-key": "[M1]",
+            "requires-inputs": [
+                "Y"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m2",
+            "name": "m2",
+            "description": "",
+            "optional": true,
+            "value-key": "[M2]",
+            "requires-inputs": [
+                "Y"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m31",
+            "name": "m31",
+            "description": "",
+            "optional": true,
+            "value-key": "[M31]",
+            "requires-inputs": [
+                "Y"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m41",
+            "name": "m41",
+            "description": "",
+            "optional": true,
+            "value-key": "[M41]",
+            "requires-inputs": [
+                "Y"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "desc1",
+            "name": "desc1",
+            "description": "desc1 d3$c&p+0/\\/s \b",
+            "optional": true,
+            "value-key": "[DESC1]",
+            "requires-inputs": [
+                "Y"
+            ],
+            "type": "Flag",
+            "command-line-flag": "--desc1"
+        },
+        {
+            "id": "Y2",
+            "name": "Y2",
+            "description": "",
+            "optional": true,
+            "value-key": "[Y2]",
+            "requires-inputs": [
+                "m12",
+                "m22",
+                "m32",
+                "m42"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m12",
+            "name": "m12",
+            "description": "",
+            "optional": true,
+            "value-key": "[M12]",
+            "requires-inputs": [
+                "Y2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m22",
+            "name": "m22",
+            "description": "",
+            "optional": true,
+            "value-key": "[M22]",
+            "requires-inputs": [
+                "Y2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m32",
+            "name": "m32",
+            "description": "",
+            "optional": true,
+            "value-key": "[M32]",
+            "requires-inputs": [
+                "Y2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "m42",
+            "name": "m42",
+            "description": "",
+            "optional": true,
+            "value-key": "[M42]",
+            "requires-inputs": [
+                "Y2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "desc2",
+            "name": "desc2",
+            "description": "",
+            "optional": true,
+            "value-key": "[DESC2]",
+            "requires-inputs": [
+                "Y2"
+            ],
+            "type": "Flag",
+            "command-line-flag": "--desc2"
+        },
+        {
+            "id": "help",
+            "name": "help",
+            "description": "Help descriptions",
+            "optional": true,
+            "value-key": "[HELP]",
+            "type": "Flag",
+            "command-line-flag": "--help"
+        },
+        {
+            "id": "help2",
+            "name": "help2",
+            "description": "Help descriptions",
+            "optional": true,
+            "value-key": "[HELP2]",
+            "type": "Flag",
+            "command-line-flag": "-h"
+        }
+    ],
+    "groups": [
+        {
+            "id": "X_X2_X3_Y_Y2",
+            "name": "Mutex group with members: X, X2, X3, Y, Y2",
+            "members": [
+                "X",
+                "X2",
+                "X3",
+                "Y",
+                "Y2"
+            ],
+            "mutually-exclusive": true
+        }
+    ]
+}
