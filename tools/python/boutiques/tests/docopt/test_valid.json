@@ -1,5 +1,5 @@
 {
-    "command-line": "test_import [X] [A] [LIST_OF_LIST] [B] [BAR1_BAR2] [FOO1_FOO2_FOO3] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [M12] [M22] [M32] [M42] [DESC2] [HELP] [HELP2]",
+    "command-line": "test_import [X] [A] [LIST_OF_LIST] [B] [BAR1_BAR2] [BAR1] [BAR2] [FOO1_FOO2_FOO3] [FOO1] [FOO2] [FOO3] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [M12] [M22] [M32] [M42] [DESC2] [HELP] [HELP2]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -131,7 +131,7 @@
         {
             "id": "bar1_bar2",
             "name": "bar1 bar2",
-            "description": "Group key for mutex choices: --bar1 and --bar2",
+            "description": "Group key for mutex choices: --bar1 (bar1_bar2 value-requires bar1&2) and --bar2 (bar1_bar2 value-requires bar1&2)",
             "optional": true,
             "value-key": "[BAR1_BAR2]",
             "requires-inputs": [
@@ -141,12 +141,40 @@
                 "--bar1",
                 "--bar2"
             ],
+            "value-requires": {
+                "--bar1": "bar1",
+                "--bar2": "bar2"
+            },
             "type": "String"
+        },
+        {
+            "id": "bar1",
+            "name": "bar1",
+            "description": "bar1_bar2 value-requires bar1&2",
+            "optional": true,
+            "value-key": "[BAR1]",
+            "requires-inputs": [
+                "b"
+            ],
+            "type": "Flag",
+            "command-line-flag": "--bar1"
+        },
+        {
+            "id": "bar2",
+            "name": "bar2",
+            "description": "bar1_bar2 value-requires bar1&2",
+            "optional": true,
+            "value-key": "[BAR2]",
+            "requires-inputs": [
+                "b"
+            ],
+            "type": "Flag",
+            "command-line-flag": "--bar2"
         },
         {
             "id": "foo1_foo2_foo3",
             "name": "foo1 foo2 foo3",
-            "description": "Group key for mutex choices: --foo1 and --foo2 and --foo3",
+            "description": "Group key for mutex choices: --foo1 (foo1_foo2_foo3 req foo1&2&3) and --foo2 (foo1_foo2_foo3 req foo1&2&3) and --foo3 (foo1_foo2_foo3 req foo1&2&3)",
             "optional": true,
             "value-key": "[FOO1_FOO2_FOO3]",
             "requires-inputs": [
@@ -157,7 +185,48 @@
                 "--foo2",
                 "--foo3"
             ],
+            "value-requires": {
+                "--foo1": "foo1",
+                "--foo2": "foo2",
+                "--foo3": "foo3"
+            },
             "type": "String"
+        },
+        {
+            "id": "foo1",
+            "name": "foo1",
+            "description": "foo1_foo2_foo3 req foo1&2&3",
+            "optional": true,
+            "value-key": "[FOO1]",
+            "requires-inputs": [
+                "foo1_foo2_foo3"
+            ],
+            "type": "String",
+            "command-line-flag": "--foo1"
+        },
+        {
+            "id": "foo2",
+            "name": "foo2",
+            "description": "foo1_foo2_foo3 req foo1&2&3",
+            "optional": true,
+            "value-key": "[FOO2]",
+            "requires-inputs": [
+                "foo1_foo2_foo3"
+            ],
+            "type": "Number",
+            "command-line-flag": "--foo2"
+        },
+        {
+            "id": "foo3",
+            "name": "foo3",
+            "description": "foo1_foo2_foo3 req foo1&2&3",
+            "optional": true,
+            "value-key": "[FOO3]",
+            "requires-inputs": [
+                "foo1_foo2_foo3"
+            ],
+            "type": "File",
+            "command-line-flag": "--foo3"
         },
         {
             "id": "c",
@@ -288,7 +357,7 @@
         {
             "id": "desc1",
             "name": "desc1",
-            "description": "desc1 d3$c&p+0/\\/s",
+            "description": "desc1 d3$c&p+0s ~!@#$%^&*()_+=-",
             "optional": true,
             "value-key": "[DESC1]",
             "requires-inputs": [
@@ -376,6 +445,15 @@
         }
     ],
     "groups": [
+        {
+            "id": "bar1_bar2",
+            "name": "Mutex group with members: bar1, bar2",
+            "members": [
+                "bar1",
+                "bar2"
+            ],
+            "mutually-exclusive": true
+        },
         {
             "id": "a_b_c",
             "name": "Mutex group with members: a, b, c",

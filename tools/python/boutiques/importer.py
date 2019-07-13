@@ -108,7 +108,7 @@ class Importer():
         docstring = imp.load_source(
             'docopt_pyscript', self.input_descriptor).__doc__
 
-        dcptImptr = Docopt_Importer(docstring, base_descriptor=template_file)
+        dcptImptr = Docopt_Importer(docstring, template_file)
         # The order matters
         dcptImptr.loadDocoptDescription()
         dcptImptr.loadDescriptionAndType()
@@ -425,12 +425,9 @@ class Importer():
 
 
 class Docopt_Importer():
-    def __init__(self, docopt_str, base_descriptor=None):
-        if base_descriptor is not None:
-            with open(base_descriptor, "r") as base_desc:
-                self.descriptor = json.load(base_desc)
-        else:
-            self.descriptor = {}
+    def __init__(self, docopt_str, base_descriptor):
+        with open(base_descriptor, "r") as base_desc:
+            self.descriptor = json.load(base_desc)
 
         self.docopt_str = docopt_str
         self.dependencies = {}
@@ -508,7 +505,7 @@ class Docopt_Importer():
                 'usage:', self.docopt_str)[0].split("\n")[1:][0].split()[0]
             self._loadInputsFromUsage(node)
 
-    def addInputsRecursive(self, node, requires=[]):
+    def addInputsRecursive(self, node, requires=[], s=0):
         args_id = list(node.keys())
         if len(args_id) == 1:
             self._addInput(
@@ -517,7 +514,7 @@ class Docopt_Importer():
                 isList=node[args_id[0]]["isList"] if 'isList' in
                 node[args_id[0]] else False)
             self.addInputsRecursive(
-                node[args_id[0]]['children'], requires)
+                node[args_id[0]]['children'], requires, s=s+2)
         elif len(args_id) > 1:
             mutex_names = []
             for name in args_id:
@@ -528,7 +525,7 @@ class Docopt_Importer():
                     node[name] else False)
                 # Add node with siblings to required-inputs list
                 self.addInputsRecursive(
-                    node[name]['children'], [node[name]['name']])
+                    node[name]['children'], [node[name]['name']], s=s+2)
                 if not node[name]['optional']:
                     mutex_names.append(node[name]['name'])
             if len(mutex_names) > 1:
@@ -562,17 +559,11 @@ class Docopt_Importer():
                         self._addArgumentToDependencies(
                             option, ancestors=ancestors, optional=True)
                 elif arg_type == "Optional" and fchild_type == "Either":
-                    grp_arg, choices = self._getMutexInputAndChoices(arg)
-                    self._addArgumentToDependencies(
-                        grp_arg, ancestors=ancestors,
-                        optional=True, value_choices=choices)
-                    ancestors.append(grp_arg.name)
+                    ancestors = self._addGroupArgumentToDependencies(
+                        arg, ancestors, optional=True)
                 elif arg_type == "Required" and fchild_type == "Either":
-                    grp_arg, choices = self._getMutexInputAndChoices(arg)
-                    self._addArgumentToDependencies(
-                        grp_arg, ancestors=ancestors,
-                        value_choices=choices)
-                    ancestors.append(grp_arg.name)
+                    ancestors = self._addGroupArgumentToDependencies(
+                        arg, ancestors)
             elif arg_type == "Command":
                 self._addArgumentToDependencies(arg, ancestors=ancestors)
                 ancestors.append(arg.name)
@@ -587,6 +578,26 @@ class Docopt_Importer():
                 raise_error(
                     ImportError,
                     "Non implemented docopt arg.type: {0}".format(arg_type))
+
+    def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
+        # solution:
+        # id: X
+        # value-choices: [a,b,c]
+        # value-requires: {a: A (unique), b: B, c: C}
+        #
+        # id: A (unique)
+        # require-inputs: X...
+        grp_arg, choices = self._getMutexInputAndChoices(arg)
+        self._addArgumentToDependencies(
+            grp_arg, ancestors=ancestors,
+            optional=optional, value_choices=choices)
+        ancestors.append(grp_arg.name)
+        options = arg.children[0].children
+        for option in options:
+            self._addArgumentToDependencies(
+                option, ancestors=ancestors,
+                optional=optional)
+        return ancestors
 
     def _addMutexGroup(self, arg_names):
         pretty_name = "_".join([self._getParamName(name)
@@ -621,6 +632,11 @@ class Docopt_Importer():
             new_inp['list'] = True
         if 'value-choices' in arg:
             new_inp['value-choices'] = arg['value-choices']
+            new_inp['value-requires'] = {}
+            for choice in arg['children']:
+                choice_key = arg['children'][choice]['id']
+                if choice_key in arg['value-choices']:
+                    new_inp['value-requires'][choice_key] = choice
         if "default-value" in arg:
             new_inp['default-value'] = arg['default-value']
         if "flag" in arg:
