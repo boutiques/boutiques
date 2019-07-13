@@ -14,6 +14,7 @@ import re
 import sys
 from boutiques.util import docopt as dcpt
 import imp
+import collections
 
 
 class ImportError(Exception):
@@ -427,12 +428,12 @@ class Importer():
 class Docopt_Importer():
     def __init__(self, docopt_str, base_descriptor):
         with open(base_descriptor, "r") as base_desc:
-            self.descriptor = json.load(base_desc)
+            self.descriptor = collections.OrderedDict(json.load(base_desc))
 
         self.docopt_str = docopt_str
-        self.dependencies = {}
-        self.all_desc_and_type = {}
-        self.unique_ids = {}
+        self.dependencies = collections.OrderedDict()
+        self.all_desc_and_type = collections.OrderedDict()
+        self.unique_ids = collections.OrderedDict()
 
         try:
             # All native docopt code, should succeed if docopt script is valid
@@ -579,26 +580,6 @@ class Docopt_Importer():
                     ImportError,
                     "Non implemented docopt arg.type: {0}".format(arg_type))
 
-    def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
-        # solution:
-        # id: X
-        # value-choices: [a,b,c]
-        # value-requires: {a: A (unique), b: B, c: C}
-        #
-        # id: A (unique)
-        # require-inputs: X...
-        grp_arg, choices = self._getMutexInputAndChoices(arg)
-        self._addArgumentToDependencies(
-            grp_arg, ancestors=ancestors,
-            optional=optional, value_choices=choices)
-        ancestors.append(grp_arg.name)
-        options = arg.children[0].children
-        for option in options:
-            self._addArgumentToDependencies(
-                option, ancestors=ancestors,
-                optional=optional)
-        return ancestors
-
     def _addMutexGroup(self, arg_names):
         pretty_name = "_".join([self._getParamName(name)
                                 for name in arg_names])
@@ -613,44 +594,18 @@ class Docopt_Importer():
             self.descriptor['groups'] = []
         self.descriptor['groups'].append(new_group)
 
-    def _addInput(self, arg, requires, isList=False):
-        param_key = arg["id"]
-        param_name = arg["name"]
-        new_inp = {
-            "id": param_name.replace("-", "_"),
-            "name": param_name.replace("_", " ").replace("-", " "),
-            "description": arg['desc'],
-            "optional": True,
-            "value-key": "[{0}]".format(param_name).upper()
-        }
-        self.descriptor["command-line"] += " {0}".format(new_inp['value-key'])
-
-        if requires != []:
-            new_inp["requires-inputs"] = requires
-        # Only add list param when isList
-        if isList:
-            new_inp['list'] = True
-        if 'value-choices' in arg:
-            new_inp['value-choices'] = arg['value-choices']
-            new_inp['value-requires'] = {}
-            for choice in arg['children']:
-                choice_key = arg['children'][choice]['id']
-                if choice_key in arg['value-choices']:
-                    new_inp['value-requires'][choice_key] = choice
-        if "default-value" in arg:
-            new_inp['default-value'] = arg['default-value']
-        if "flag" in arg:
-            if "type" in arg:
-                new_inp['type'] = arg['type']
-            else:
-                new_inp['type'] = "Flag"
-            new_inp["command-line-flag"] = arg["flag"]
-        else:
-            new_inp['type'] = "String"
-
-        if "inputs" not in self.descriptor:
-            self.descriptor['inputs'] = []
-        self.descriptor['inputs'].append(new_inp)
+    def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
+        grp_arg, choices = self._getMutexInputAndChoices(arg)
+        self._addArgumentToDependencies(
+            grp_arg, ancestors=ancestors,
+            optional=optional, value_choices=choices)
+        ancestors.append(grp_arg.name)
+        options = arg.children[0].children
+        for option in options:
+            self._addArgumentToDependencies(
+                option, ancestors=ancestors,
+                optional=optional)
+        return ancestors
 
     def _getMutexInputAndChoices(self, arg):
         pretty_names = []
@@ -678,7 +633,7 @@ class Docopt_Importer():
             "name": self._getUniqueId(self._getParamName(node.name)),
             "optional": optional,
             "parent": None,
-            "children": {}}
+            "children": collections.OrderedDict()}
         if ancestors == [] and node.name not in self.dependencies:
             self.dependencies[node.name] = argAdded
         elif ancestors != [] and p_node is not None:
@@ -723,6 +678,45 @@ class Docopt_Importer():
                         'children': p_node['children']
                                     [argAdded["name"]]['children']}
                 del p_node['children'][argAdded["name"]]
+
+    def _addInput(self, arg, requires, isList=False):
+        param_key = arg["id"]
+        param_name = arg["name"]
+        new_inp = {
+            "id": param_name.replace("-", "_"),
+            "name": param_name.replace("_", " ").replace("-", " "),
+            "description": arg['desc'],
+            "optional": True,
+            "value-key": "[{0}]".format(param_name).upper()
+        }
+        self.descriptor["command-line"] += " {0}".format(new_inp['value-key'])
+
+        if requires != []:
+            new_inp["requires-inputs"] = requires
+        # Only add list param when isList
+        if isList:
+            new_inp['list'] = True
+        if 'value-choices' in arg:
+            new_inp['value-choices'] = arg['value-choices']
+            new_inp['value-requires'] = collections.OrderedDict()
+            for choice_key in arg['children']:
+                choice = arg['children'][choice_key]['id']
+                if choice in arg['value-choices']:
+                    new_inp['value-requires'][choice] = choice_key
+        if "default-value" in arg:
+            new_inp['default-value'] = arg['default-value']
+        if "flag" in arg:
+            if "type" in arg:
+                new_inp['type'] = arg['type']
+            else:
+                new_inp['type'] = "Flag"
+            new_inp["command-line-flag"] = arg["flag"]
+        else:
+            new_inp['type'] = "String"
+
+        if "inputs" not in self.descriptor:
+            self.descriptor['inputs'] = []
+        self.descriptor['inputs'].append(new_inp)
 
     def _getLineageChildren(self, node, descendants):
         child_keys = list(node['children'].keys())

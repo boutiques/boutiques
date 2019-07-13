@@ -144,4 +144,11 @@ class TestImport(TestCase):
         expected = json.loads(
             open(expected_output, "r").read().strip())
         os.remove(descriptor_output)
-        self.assertEqual(expected, result)
+
+        self.assertEqual(expected['command-line'], result['command-line'])
+
+        for result_input in result['groups']:
+            self.assertIn(result_input, expected['groups'])
+
+        for result_input in result['inputs']:
+            self.assertIn(result_input, expected['inputs'])
