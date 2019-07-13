@@ -451,7 +451,7 @@ class Docopt_Importer():
                 options_shortcut.children = list(
                     set(doc_options) - pattern_options)
             matched, left, collected = self.pattern.fix().match(argv)
-        except:
+        except Exception:
             raise_error(ImportError, "Invalid docopt script")
 
     def loadDocoptDescription(self):
