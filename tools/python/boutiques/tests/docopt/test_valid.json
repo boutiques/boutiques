@@ -254,12 +254,13 @@
         {
             "id": "d2",
             "name": "d2",
-            "description": "number type",
+            "description": "number type [default: 50]",
             "optional": true,
             "value-key": "[D2]",
             "requires-inputs": [
                 "c"
             ],
+            "default-value": "50",
             "type": "Number",
             "command-line-flag": "--d2"
         },

@@ -508,6 +508,7 @@ class Docopt_Importer():
 
     def addInputsRecursive(self, node, requires=[], s=0):
         args_id = list(node.keys())
+        args_id.sort(key=self._getStrippedName)
         if len(args_id) == 1:
             self._addInput(
                 node[args_id[0]],

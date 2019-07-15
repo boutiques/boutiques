@@ -152,3 +152,39 @@ class TestImport(TestCase):
 
         for result_input in result['inputs']:
             self.assertIn(result_input, expected['inputs'])
+
+    def test_import_docopt_valid_options(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        pydocopt_input = op.join(base_path, "test_options.py")
+        descriptor_output = op.join(base_path, "test_options_output.json")
+        expected_output = op.join(base_path, "test_options.json")
+
+        args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        if op.isfile(descriptor_output):
+            os.remove(descriptor_output)
+        bosh(args)
+        result = json.loads(
+            open(descriptor_output, "r").read().strip())
+        expected = json.loads(
+            open(expected_output, "r").read().strip())
+        os.remove(descriptor_output)
+
+        self.assertEqual(expected['command-line'], result['command-line'])
+
+        for result_input in result['inputs']:
+            self.assertIn(result_input, expected['inputs'])
+
+    def test_import_docopt_invalid(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        pydocopt_input = op.join(base_path, "test_invalid.py")
+        descriptor_output = op.join(base_path, "foobar.json")
+
+        args = ["import", "dcpt", descriptor_output, pydocopt_input]
+
+        with pytest.raises(ImportError, match="Invalid docopt script"):
+            bosh(args)
+            self.fail("Did not raise ImportError or" +
+                      " message did not match Invalid docopt script")
+
+        if op.isfile(descriptor_output):
+            self.fail("Output file should not exist")
