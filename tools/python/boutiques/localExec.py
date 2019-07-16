@@ -939,7 +939,7 @@ class LocalExecutor(object):
                     # Remove path if a) a file, b) not the first item in the
                     # template; for output files specifically
                     if (self.safeGet(param_id, 'type') == 'File' and
-                        template.find(clk) > 0 and is_output):
+                       template.find(clk) > 0 and is_output):
                         val = op.basename(val)
                 # Here val can be a number so we need to cast it
                 if val is not None and val is not "":
