@@ -131,6 +131,8 @@ class LocalExecutor(object):
 
     # Constructor
     def __init__(self, desc, invocation, options={}):
+        self._rkit = self._replaceKeysInTemplate  # Abbrev. for readability
+
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
@@ -877,7 +879,7 @@ class LocalExecutor(object):
     #     * escaped for special characters
     def _replaceKeysInTemplate(self, template,
                                use_flags=False, unfound_keys="remove",
-                               stripped_extensions=[],
+                               stripped_extensions=[], is_output=False,
                                escape_special_chars=True):
 
         def escape_string(s):
@@ -934,6 +936,10 @@ class LocalExecutor(object):
                         self.safeGet(param_id, 'type') == 'String'):
                     for extension in stripped_extensions:
                         val = val.replace(extension, '')
+                    # Remove path if not the first item in the template for
+                    # output files specifically
+                    if template.find(clk) > 0 and is_output:
+                        val = op.basename(val)
                 # Here val can be a number so we need to cast it
                 if val is not None and val is not "":
                     template = template.replace(clk, str(val))
@@ -967,14 +973,17 @@ class LocalExecutor(object):
                                         "path-template-stripped-extensions")
             if stripped_extensions is None:
                 stripped_extensions = []
+            se = stripped_extensions  # Renaming variable to save space
             # We keep the unfound keys because they will be
             # substituted in a second call to the method in case
             # they are output keys
-            outputFileName = self._replaceKeysInTemplate(outputFileName,
-                                                         False,
-                                                         "keep",
-                                                         stripped_extensions,
-                                                         False)
+            outputFileName = self._rkit(outputFileName,
+                                        use_flags=False,
+                                        unfound_keys="keep",
+                                        stripped_extensions=se,
+                                        is_output=True,
+                                        escape_special_chars=False)
+
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
@@ -991,16 +1000,18 @@ class LocalExecutor(object):
                                         "path-template-stripped-extensions")
             if stripped_extensions is None:
                 stripped_extensions = []
+            se = stripped_extensions  # Renaming variable to save space
             # We substitute the keys line by line so that we can
             # clear the lines that have keys with no value
             # (undefined optional params)
             newTemplate = []
             for line in fileTemplate:
-                newTemplate.append(self._replaceKeysInTemplate(
-                                                line,
-                                                False, "clear",
-                                                stripped_extensions,
-                                                True))
+                newTemplate.append(self._rkit(line,
+                                              use_flags=False,
+                                              unfound_keys="clear",
+                                              stripped_extensions=se,
+                                              is_output=False,
+                                              escape_special_chars=True))
             template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
@@ -1025,8 +1036,9 @@ class LocalExecutor(object):
         template = self.desc_dict['command-line']
         # Substitute every given value into the template
         # (incl. flags, flag-seps, ...)
-        template = self._replaceKeysInTemplate(template, True,
-                                               "remove", [], True)
+        template = self._rkit(template, use_flags=True, unfound_keys="remove",
+                              stripped_extensions=[], is_output=False,
+                              escape_special_chars=True)
         # Return substituted command line
         return template
 
