@@ -147,12 +147,7 @@ class Publisher():
         self.zenodo_upload_descriptor(deposition_id)
         self.doi = self.zenodo_helper.zenodo_publish(
             self.zenodo_access_token, deposition_id, "Descriptor")
-
-        # Zenodo returns the full DOI, but for the purposes of Boutiques we just
-        # use the Zenodo-specific portion (as its the unique part). If the API
-        # updates on Zenodo to no longer provide the full DOI, this still works
-        # because it just grabs the last thing after the split.
-        self.descriptor['doi'] = self.doi.split('/')[-1]
+        self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
 
