@@ -131,7 +131,7 @@
         {
             "id": "bar1_bar2",
             "name": "bar1 bar2",
-            "description": "Group key for mutex choices: --bar1 (bar1_bar2 value-requires bar1&2) and --bar2 (bar1_bar2 value-requires bar1&2)",
+            "description": "Group key for mutex choices: --bar1 (requires b) and --bar2 (requires b)",
             "optional": true,
             "value-key": "[BAR1_BAR2]",
             "requires-inputs": [
@@ -150,7 +150,7 @@
         {
             "id": "bar1",
             "name": "bar1",
-            "description": "bar1_bar2 value-requires bar1&2",
+            "description": "requires b",
             "optional": true,
             "value-key": "[BAR1]",
             "requires-inputs": [
@@ -162,7 +162,7 @@
         {
             "id": "bar2",
             "name": "bar2",
-            "description": "bar1_bar2 value-requires bar1&2",
+            "description": "requires b",
             "optional": true,
             "value-key": "[BAR2]",
             "requires-inputs": [
@@ -174,7 +174,7 @@
         {
             "id": "foo1_foo2_foo3",
             "name": "foo1 foo2 foo3",
-            "description": "Group key for mutex choices: --foo1 (foo1_foo2_foo3 req foo1&2&3) and --foo2 (foo1_foo2_foo3 req foo1&2&3) and --foo3 (foo1_foo2_foo3 req foo1&2&3)",
+            "description": "Group key for mutex choices: --foo1 (requires bar1_bar2) and --foo2 (requires bar1_bar2) and --foo3 (requires bar1_bar2)",
             "optional": true,
             "value-key": "[FOO1_FOO2_FOO3]",
             "requires-inputs": [
@@ -195,7 +195,7 @@
         {
             "id": "foo1",
             "name": "foo1",
-            "description": "foo1_foo2_foo3 req foo1&2&3",
+            "description": "requires bar1_bar2",
             "optional": true,
             "value-key": "[FOO1]",
             "requires-inputs": [
@@ -207,7 +207,7 @@
         {
             "id": "foo2",
             "name": "foo2",
-            "description": "foo1_foo2_foo3 req foo1&2&3",
+            "description": "requires bar1_bar2",
             "optional": true,
             "value-key": "[FOO2]",
             "requires-inputs": [
@@ -219,7 +219,7 @@
         {
             "id": "foo3",
             "name": "foo3",
-            "description": "foo1_foo2_foo3 req foo1&2&3",
+            "description": "requires bar1_bar2",
             "optional": true,
             "value-key": "[FOO3]",
             "requires-inputs": [

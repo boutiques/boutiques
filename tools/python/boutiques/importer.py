@@ -12,7 +12,9 @@ import os
 import os.path as op
 import re
 import sys
-from boutiques.util import docopt as dcpt
+from docopt import parse_defaults, parse_pattern, parse_argv
+from docopt import formal_usage, DocoptLanguageError
+from docopt import AnyOptions, TokenStream, Option, Argument, Command
 import imp
 import collections
 
@@ -435,50 +437,51 @@ class Docopt_Importer():
         self.all_desc_and_type = collections.OrderedDict()
         self.unique_ids = collections.OrderedDict()
 
-        try:
-            # All native docopt code, should succeed if docopt script is valid
-            options = dcpt.parse_defaults(docopt_str)
+        # try:
+        # All native docopt code, should succeed if docopt script is valid
+        options = parse_defaults(docopt_str)
 
-            self.pattern = dcpt.parse_pattern(
-                dcpt.formal_usage(dcpt.parse_section('usage:', docopt_str)[0]),
-                options)
+        self.pattern = parse_pattern(
+            formal_usage(self._parse_section('usage:', docopt_str)[0]),
+            options)
 
-            argv = dcpt.parse_argv(
-                dcpt.Tokens(sys.argv[1:]), list(options), False)
-            pattern_options = set(self.pattern.flat(dcpt.Option))
+        argv = parse_argv(
+            TokenStream(sys.argv[1:], DocoptLanguageError),
+            list(options), False)
+        pattern_options = set(self.pattern.flat(Option))
 
-            for options_shortcut in self.pattern.flat(dcpt.OptionsShortcut):
-                doc_options = dcpt.parse_defaults(docopt_str)
-                options_shortcut.children = list(
-                    set(doc_options) - pattern_options)
-            matched, left, collected = self.pattern.fix().match(argv)
-        except Exception:
-            raise_error(ImportError, "Invalid docopt script")
+        for options_shortcut in self.pattern.flat(AnyOptions):
+            doc_options = parse_defaults(docopt_str)
+            options_shortcut.children = list(
+                set(doc_options) - pattern_options)
+        matched, left, collected = self.pattern.fix().match(argv)
+        # except Exception:
+        #    raise_error(ImportError, "Invalid docopt script")
 
     def loadDocoptDescription(self):
         self.descriptor["description"] = self.docopt_str\
-            .replace("".join(dcpt.parse_section(
+            .replace("".join(self._parse_section(
                 'usage:', self.docopt_str)), "")\
-            .replace("".join(dcpt.parse_section(
+            .replace("".join(self._parse_section(
                 'arguments:', self.docopt_str)), "")\
-            .replace("".join(dcpt.parse_section(
+            .replace("".join(self._parse_section(
                 'options:', self.docopt_str)), "")\
             .replace("\n\n", "\n").strip()
 
     def loadDescriptionAndType(self):
         # using docopt code to extract description and type from args
-        for line in (dcpt.parse_section('arguments:', self.docopt_str) +
-                     dcpt.parse_section('options:', self.docopt_str)):
+        for line in (self._parse_section('arguments:', self.docopt_str) +
+                     self._parse_section('options:', self.docopt_str)):
             _, _, s = line.partition(':')  # get rid of "options:"
             split = re.split(r'\n[ \t]*(-\S+?)', '\n' + s)[1:] if\
-                line in dcpt.parse_section('options:', self.docopt_str) else\
+                line in self._parse_section('options:', self.docopt_str) else\
                 re.split(r'\n[ \t]*(<\S+?)', '\n' + s)[1:]
             split = [s1 + s2 for s1, s2 in zip(split[::2], split[1::2])]
             # parse each line of Arguments and Options
             for arg_str in [s for s in split if (s.startswith('-') or
                                                  s.startswith('<'))]:
-                arg = dcpt.Option.parse(arg_str) if arg_str.startswith('-')\
-                    else dcpt.Argument.parse(arg_str)
+                arg = Option.parse(arg_str) if arg_str.startswith('-')\
+                    else Argument.parse(arg_str)
                 arg_segs = arg_str.partition('  ')
                 self.all_desc_and_type[arg.name] = {
                     "desc": arg_segs[-1].replace('\n', ' ')
@@ -487,7 +490,7 @@ class Docopt_Importer():
                    arg.value is not False:
                     self.all_desc_and_type[arg.name]['default-value'] =\
                         arg.value
-                if type(arg) is dcpt.Option and arg.argcount > 0:
+                if type(arg) is Option and arg.argcount > 0:
                     for typ in [seg for seg in arg_segs[0]
                                 .replace(',', ' ')
                                 .replace('=', ' ')
@@ -502,7 +505,7 @@ class Docopt_Importer():
                 self.generateInputsAndCommandLine(child)
         # Traversing reached usage level
         else:
-            self.descriptor['command-line'] = dcpt.parse_section(
+            self.descriptor['command-line'] = self._parse_section(
                 'usage:', self.docopt_str)[0].split("\n")[1:][0].split()[0]
             self._loadInputsFromUsage(node)
 
@@ -541,14 +544,14 @@ class Docopt_Importer():
                 fchild_type = type(arg.children[0]).__name__
                 # Has sub-arguments, maybe recurse into _loadRtrctnsFrmUsg
                 # but have to deal with children in subtype
-                if arg_type == "Optional" and fchild_type == "OptionsShortcut":
+                if arg_type == "Optional" and fchild_type == "AnyOptions":
                     for option in arg.children[0].children:
                         self._addArgumentToDependencies(
                             option, ancestors=ancestors, optional=True)
                 elif arg_type == "OneOrMore":
                     list_name = "<list_of_{0}>".format(
                         self._getParamName(arg.children[0].name))
-                    list_arg = dcpt.Argument(list_name)
+                    list_arg = Argument(list_name)
                     list_arg.parse(list_name)
                     self.all_desc_and_type[list_name] = {
                         'desc': "List of {0}".format(
@@ -620,7 +623,7 @@ class Docopt_Importer():
                     name, self.all_desc_and_type[name]['desc']
                 ))
         gname = "<{0}>".format("_".join(pretty_names))
-        grp_arg = dcpt.Argument(gname)
+        grp_arg = Argument(gname)
         grp_arg.parse(gname)
         self.all_desc_and_type[gname] = {'desc': gdesc}
         return grp_arg, names
@@ -777,3 +780,9 @@ class Docopt_Importer():
             for char in chars:
                 param = param.replace(char, "")
         return param
+
+    def _parse_section(self, name, source):
+        pattern = re.compile(
+            '^([^\n]*' + name + '[^\n]*\n?(?:[ \t].*?(?:\n|$))*)',
+            re.IGNORECASE | re.MULTILINE)
+        return [s.strip() for s in pattern.findall(source)]

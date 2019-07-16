@@ -1,5 +1,5 @@
 {
-    "command-line": "naval_fate [SHIP] [NEW] [LIST_OF_NAME] [NAME] [MOVE] [X] [Y] [SPEED] [SHOOT] [X2] [Y2] [MINE] [SET_REMOVE] [X3] [Y3] [MOORED_DRIFTING] [HELP] [HELP2] [VERSION]",
+    "command-line": "naval_fate [HELP] [HELP2] [MINE] [SET_REMOVE] [REMOVE] [SET] [X3] [Y3] [MOORED_DRIFTING] [DRIFTING] [MOORED] [SHIP] [NAME] [MOVE] [X] [Y] [SPEED] [NEW] [LIST_OF_NAME] [SHOOT] [X2] [Y2] [VERSION]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -85,35 +85,147 @@
     "tool-version": "INSERT_TOOL_VERSION",
     "inputs": [
         {
+            "id": "help",
+            "name": "help",
+            "description": "Show this screen.",
+            "optional": true,
+            "value-key": "[HELP]",
+            "type": "Flag",
+            "command-line-flag": "--help"
+        },
+        {
+            "id": "help2",
+            "name": "help2",
+            "description": "Show this screen.",
+            "optional": true,
+            "value-key": "[HELP2]",
+            "type": "Flag",
+            "command-line-flag": "-h"
+        },
+        {
+            "id": "mine",
+            "name": "mine",
+            "description": "",
+            "optional": true,
+            "value-key": "[MINE]",
+            "requires-inputs": [
+                "set_remove"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "set_remove",
+            "name": "set remove",
+            "description": "Group key for mutex choices: set and remove",
+            "optional": true,
+            "value-key": "[SET_REMOVE]",
+            "requires-inputs": [
+                "mine"
+            ],
+            "value-choices": [
+                "set",
+                "remove"
+            ],
+            "value-requires": {
+                "set": "set",
+                "remove": "remove"
+            },
+            "type": "String"
+        },
+        {
+            "id": "remove",
+            "name": "remove",
+            "description": "",
+            "optional": true,
+            "value-key": "[REMOVE]",
+            "requires-inputs": [
+                "mine"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "set",
+            "name": "set",
+            "description": "",
+            "optional": true,
+            "value-key": "[SET]",
+            "requires-inputs": [
+                "mine"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "x3",
+            "name": "x3",
+            "description": "",
+            "optional": true,
+            "value-key": "[X3]",
+            "requires-inputs": [
+                "mine",
+                "y3"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "y3",
+            "name": "y3",
+            "description": "",
+            "optional": true,
+            "value-key": "[Y3]",
+            "requires-inputs": [
+                "x3"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "moored_drifting",
+            "name": "moored drifting",
+            "description": "Group key for mutex choices: --moored (Moored (anchored) mine.) and --drifting (Drifting mine.)",
+            "optional": true,
+            "value-key": "[MOORED_DRIFTING]",
+            "requires-inputs": [
+                "x3"
+            ],
+            "value-choices": [
+                "--moored",
+                "--drifting"
+            ],
+            "value-requires": {
+                "--moored": "moored",
+                "--drifting": "drifting"
+            },
+            "type": "String"
+        },
+        {
+            "id": "drifting",
+            "name": "drifting",
+            "description": "Drifting mine.",
+            "optional": true,
+            "value-key": "[DRIFTING]",
+            "requires-inputs": [
+                "x3"
+            ],
+            "type": "Flag",
+            "command-line-flag": "--drifting"
+        },
+        {
+            "id": "moored",
+            "name": "moored",
+            "description": "Moored (anchored) mine.",
+            "optional": true,
+            "value-key": "[MOORED]",
+            "requires-inputs": [
+                "x3"
+            ],
+            "type": "Flag",
+            "command-line-flag": "--moored"
+        },
+        {
             "id": "ship",
             "name": "ship",
             "description": "",
             "optional": true,
             "value-key": "[SHIP]",
-            "type": "String"
-        },
-        {
-            "id": "new",
-            "name": "new",
-            "description": "",
-            "optional": true,
-            "value-key": "[NEW]",
-            "requires-inputs": [
-                "ship",
-                "list_of_name"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "list_of_name",
-            "name": "list of name",
-            "description": "List of name",
-            "optional": true,
-            "value-key": "[LIST_OF_NAME]",
-            "requires-inputs": [
-                "new"
-            ],
-            "list": true,
             "type": "String"
         },
         {
@@ -177,6 +289,30 @@
             "command-line-flag": "--speed"
         },
         {
+            "id": "new",
+            "name": "new",
+            "description": "",
+            "optional": true,
+            "value-key": "[NEW]",
+            "requires-inputs": [
+                "ship",
+                "list_of_name"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "list_of_name",
+            "name": "list of name",
+            "description": "List of name",
+            "optional": true,
+            "value-key": "[LIST_OF_NAME]",
+            "requires-inputs": [
+                "new"
+            ],
+            "list": true,
+            "type": "String"
+        },
+        {
             "id": "shoot",
             "name": "shoot",
             "description": "",
@@ -212,89 +348,6 @@
             "type": "String"
         },
         {
-            "id": "mine",
-            "name": "mine",
-            "description": "",
-            "optional": true,
-            "value-key": "[MINE]",
-            "requires-inputs": [
-                "set_remove",
-                "x3",
-                "y3"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "set_remove",
-            "name": "set remove",
-            "description": "Group key for mutex choices: set and remove",
-            "optional": true,
-            "value-key": "[SET_REMOVE]",
-            "requires-inputs": [
-                "mine"
-            ],
-            "value-choices": [
-                "set",
-                "remove"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "x3",
-            "name": "x3",
-            "description": "",
-            "optional": true,
-            "value-key": "[X3]",
-            "requires-inputs": [
-                "mine"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "y3",
-            "name": "y3",
-            "description": "",
-            "optional": true,
-            "value-key": "[Y3]",
-            "requires-inputs": [
-                "mine"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "moored_drifting",
-            "name": "moored drifting",
-            "description": "Group key for mutex choices: --moored (Moored (anchored) mine.) and --drifting (Drifting mine.)",
-            "optional": true,
-            "value-key": "[MOORED_DRIFTING]",
-            "requires-inputs": [
-                "mine"
-            ],
-            "value-choices": [
-                "--moored",
-                "--drifting"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "help",
-            "name": "help",
-            "description": "Show this screen.",
-            "optional": true,
-            "value-key": "[HELP]",
-            "type": "Flag",
-            "command-line-flag": "--help"
-        },
-        {
-            "id": "help2",
-            "name": "help2",
-            "description": "Show this screen.",
-            "optional": true,
-            "value-key": "[HELP2]",
-            "type": "Flag",
-            "command-line-flag": "-h"
-        },
-        {
             "id": "version",
             "name": "version",
             "description": "Show version.",
@@ -306,21 +359,31 @@
     ],
     "groups": [
         {
-            "id": "new_name_shoot",
-            "name": "Mutex group with members: new, name, shoot",
+            "id": "remove_set_x3",
+            "name": "Mutex group with members: remove, set, x3",
             "members": [
-                "new",
+                "remove",
+                "set",
+                "x3"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "name_new_shoot",
+            "name": "Mutex group with members: name, new, shoot",
+            "members": [
                 "name",
+                "new",
                 "shoot"
             ],
             "mutually-exclusive": true
         },
         {
-            "id": "ship_mine",
-            "name": "Mutex group with members: ship, mine",
+            "id": "mine_ship",
+            "name": "Mutex group with members: mine, ship",
             "members": [
-                "ship",
-                "mine"
+                "mine",
+                "ship"
             ],
             "mutually-exclusive": true
         }

@@ -11,11 +11,11 @@ Usage:
 
 Options:
   -h --help       Help descriptions
-  --bar1          bar1_bar2 value-requires bar1&2
-  --bar2          bar1_bar2 value-requires bar1&2
-  --foo1=String   foo1_foo2_foo3 req foo1&2&3
-  --foo2=Number   foo1_foo2_foo3 req foo1&2&3
-  --foo3=File     foo1_foo2_foo3 req foo1&2&3
+  --bar1          requires b
+  --bar2          requires b
+  --foo1=String   requires bar1_bar2
+  --foo2=Number   requires bar1_bar2
+  --foo3=File     requires bar1_bar2
   --d1=String     string type
   --d2=Number     number type [default: 50]
   --d3=File       file type
