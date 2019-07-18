@@ -179,9 +179,6 @@
             "description": "requires bar1_bar2",
             "optional": true,
             "value-key": "[FOO1]",
-            "requires-inputs": [
-                "bar1_bar2"
-            ],
             "type": "String",
             "command-line-flag": "--foo1"
         },
@@ -191,9 +188,6 @@
             "description": "requires bar1_bar2",
             "optional": true,
             "value-key": "[FOO2]",
-            "requires-inputs": [
-                "bar1_bar2"
-            ],
             "type": "Number",
             "command-line-flag": "--foo2"
         },
@@ -203,9 +197,6 @@
             "description": "requires bar1_bar2",
             "optional": true,
             "value-key": "[FOO3]",
-            "requires-inputs": [
-                "bar1_bar2"
-            ],
             "type": "File",
             "command-line-flag": "--foo3"
         },
@@ -216,8 +207,7 @@
             "optional": true,
             "value-key": "[G_2]",
             "requires-inputs": [
-                "b_2",
-                "bar1_bar2_2"
+                "b_2"
             ],
             "type": "String"
         },
@@ -447,6 +437,34 @@
             "members": [
                 "list_of_list",
                 "b"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "bar1_bar2",
+            "name": "Mutex group with members: bar1, bar2",
+            "members": [
+                "bar1",
+                "bar2"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "foo1_foo2_foo3",
+            "name": "Mutex group with members: foo1, foo2, foo3",
+            "members": [
+                "foo1",
+                "foo2",
+                "foo3"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "bar1_2_bar2_2",
+            "name": "Mutex group with members: bar1_2, bar2_2",
+            "members": [
+                "bar1_2",
+                "bar2_2"
             ],
             "mutually-exclusive": true
         },

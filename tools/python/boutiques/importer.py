@@ -116,9 +116,10 @@ class Importer():
         dcptImptr.loadDocoptDescription()
         dcptImptr.loadDescriptionAndType()
         dcptImptr.generateInputsAndCommandLine(dcptImptr.pattern)
-        #for root in dcptImptr.dependencies:
+        # for root in dcptImptr.dependencies:
         #    dcptImptr._printNodes(dcptImptr.dependencies[root], 0)
         dcptImptr.addInputsRecursive(dcptImptr.dependencies)
+        dcptImptr._removeGroupsFromRequires()
 
         with open(self.output_descriptor, "w") as output:
             output.write(json.dumps(dcptImptr.descriptor, indent=4))
@@ -517,6 +518,8 @@ class Docopt_Importer():
             if 'mutex_members' in node[args_id[0]]:
                 for mutex_member in node[args_id[0]]['mutex_members']:
                     self._addInput(mutex_member, requires)
+                self._addMutexGroup([member["name"] for member in
+                                    node[args_id[0]]['mutex_members']])
             else:
                 self._addInput(
                     node[args_id[0]],
@@ -531,6 +534,8 @@ class Docopt_Importer():
                 if 'mutex_members' in node[name]:
                     for mutex_member in node[name]['mutex_members']:
                         self._addInput(mutex_member, requires)
+                    self._addMutexGroup([member["name"] for member in
+                                        node[name]['mutex_members']])
                 else:
                     self._addInput(
                         node[name],
@@ -543,19 +548,6 @@ class Docopt_Importer():
                     mutex_names.append(node[name]['name'])
             if len(mutex_names) > 1:
                 self._addMutexGroup(mutex_names)
-
-    def _printNodes(self, node, tabs):
-        print(" " * tabs + node["name"], end="")
-        if "mutex_members" in node:
-            print(", members:", end="")
-            for member in node["mutex_members"]:
-                print(" " + member["name"], end="")
-        if "parent" in node and node["parent"] is not None:
-            print(", P: " + node["parent"]["name"])
-        else:
-            print()
-        for child in node["children"]:
-            self._printNodes(node["children"][child], tabs+1)
 
     def _loadInputsFromUsage(self, usage):
         ancestors = []
@@ -610,7 +602,7 @@ class Docopt_Importer():
                                 for name in arg_names])
         unique_name = self._getUniqueId(pretty_name)
         new_group = {
-            "id": unique_name,
+            "id": pretty_name,
             "name": "Mutex group with members: {0}".format(", ".join(
                 [self._getStrippedName(name) for name in arg_names])),
             "members": [self._getParamName(name) for name in arg_names],
@@ -621,26 +613,18 @@ class Docopt_Importer():
         self.descriptor['groups'].append(new_group)
 
     def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
-        grp_arg = self._getMutexInputAndChoices(arg)
         options = arg.children[0].children
         p_node = self._getDependencyParentNode(ancestors)
         members = []
         for option in options:
             mutex_member = self._getDependencyArgument(option)
             members.append(mutex_member)
-        self._addArgumentToDependencies(
-            grp_arg, ancestors=ancestors,
-            optional=optional, members=members)
-        ancestors.append(grp_arg.name)
-        return ancestors
 
-    def _getMutexInputAndChoices(self, arg):
-        pretty_names = []
+        pretty_names = [member["name"] for member in members]
         names = [arg.name for arg in arg.children[0].children]
         gdesc = "Group key for mutex choices: {0}".format(
             " and ".join(names))
         for name in names:
-            pretty_names.append(self._getStrippedName(name))
             if name in self.all_desc_and_type:
                 gdesc = gdesc.replace(name, "{0} ({1})".format(
                     name, self.all_desc_and_type[name]['desc']
@@ -649,7 +633,12 @@ class Docopt_Importer():
         grp_arg = Argument(gname)
         grp_arg.parse(gname)
         self.all_desc_and_type[gname] = {'desc': gdesc}
-        return grp_arg
+
+        self._addArgumentToDependencies(
+            grp_arg, ancestors=ancestors,
+            optional=optional, members=members)
+        ancestors.append(grp_arg.name)
+        return ancestors
 
     def _getDependencyArgument(self, node, isList=False,
                                optional=False, members=[]):
@@ -823,3 +812,27 @@ class Docopt_Importer():
             '^([^\n]*' + name + '[^\n]*\n?(?:[ \t].*?(?:\n|$))*)',
             re.IGNORECASE | re.MULTILINE)
         return [s.strip() for s in pattern.findall(source)]
+
+    def _printNodes(self, node, tabs):
+        # print dependency tree
+        print(" " * tabs + node["name"], end="")
+        if "mutex_members" in node:
+            print(", members:", end="")
+            for member in node["mutex_members"]:
+                print(" " + member["name"], end="")
+        print()
+        for child in node["children"]:
+            self._printNodes(node["children"][child], tabs+1)
+
+    def _removeGroupsFromRequires(self):
+        if 'groups' in self.descriptor:
+            gnames = [group['id'] for group in self.descriptor['groups']]
+            for inp in self.descriptor['inputs']:
+                if "requires-inputs" in inp:
+                    new_requires = []
+                    for requiree in inp["requires-inputs"]:
+                        if requiree not in gnames:
+                            new_requires.append(requiree)
+                    inp["requires-inputs"] = new_requires
+                    if inp["requires-inputs"] == []:
+                        del inp["requires-inputs"]
