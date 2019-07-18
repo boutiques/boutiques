@@ -440,26 +440,25 @@ class Docopt_Importer():
         self.all_desc_and_type = collections.OrderedDict()
         self.unique_ids = collections.OrderedDict()
 
-        # try:
-        # All native docopt code, should succeed if docopt script is valid
-        options = parse_defaults(docopt_str)
+        try:
+            options = parse_defaults(docopt_str)
 
-        self.pattern = parse_pattern(
-            formal_usage(self._parse_section('usage:', docopt_str)[0]),
-            options)
+            self.pattern = parse_pattern(
+                formal_usage(self._parse_section('usage:', docopt_str)[0]),
+                options)
 
-        argv = parse_argv(
-            TokenStream(sys.argv[1:], DocoptLanguageError),
-            list(options), False)
-        pattern_options = set(self.pattern.flat(Option))
+            argv = parse_argv(
+                TokenStream(sys.argv[1:], DocoptLanguageError),
+                list(options), False)
+            pattern_options = set(self.pattern.flat(Option))
 
-        for options_shortcut in self.pattern.flat(AnyOptions):
-            doc_options = parse_defaults(docopt_str)
-            options_shortcut.children = list(
-                set(doc_options) - pattern_options)
-        matched, left, collected = self.pattern.fix().match(argv)
-        # except Exception:
-        #    raise_error(ImportError, "Invalid docopt script")
+            for options_shortcut in self.pattern.flat(AnyOptions):
+                doc_options = parse_defaults(docopt_str)
+                options_shortcut.children = list(
+                    set(doc_options) - pattern_options)
+            matched, left, collected = self.pattern.fix().match(argv)
+        except Exception:
+            raise_error(ImportError, "Invalid docopt script")
 
     def loadDocoptDescription(self):
         self.descriptor["description"] = self.docopt_str\

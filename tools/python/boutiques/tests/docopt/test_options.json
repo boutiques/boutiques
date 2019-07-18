@@ -1,5 +1,5 @@
 {
-    "command-line": "test_import [X] [Y] [Z] [AY] [BEE] [CEE] [HELP] [VERSION]",
+    "command-line": "test_import [X] [Y] [Z] [AY] [VERSION] [HELP] [BEE] [CEE]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -118,6 +118,24 @@
             "command-line-flag": "--ay"
         },
         {
+            "id": "version",
+            "name": "version",
+            "description": "Versions",
+            "optional": true,
+            "value-key": "[VERSION]",
+            "type": "Flag",
+            "command-line-flag": "--version"
+        },
+        {
+            "id": "help",
+            "name": "help",
+            "description": "Help descriptions",
+            "optional": true,
+            "value-key": "[HELP]",
+            "type": "Flag",
+            "command-line-flag": "--help"
+        },
+        {
             "id": "bee",
             "name": "bee",
             "description": "B",
@@ -134,24 +152,6 @@
             "value-key": "[CEE]",
             "type": "Flag",
             "command-line-flag": "--cee"
-        },
-        {
-            "id": "help",
-            "name": "help",
-            "description": "Help descriptions",
-            "optional": true,
-            "value-key": "[HELP]",
-            "type": "Flag",
-            "command-line-flag": "--help"
-        },
-        {
-            "id": "version",
-            "name": "version",
-            "description": "Versions",
-            "optional": true,
-            "value-key": "[VERSION]",
-            "type": "Flag",
-            "command-line-flag": "--version"
         }
     ]
 }

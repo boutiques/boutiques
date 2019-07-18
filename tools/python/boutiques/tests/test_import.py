@@ -169,7 +169,11 @@ class TestImport(TestCase):
             open(expected_output, "r").read().strip())
         os.remove(descriptor_output)
 
-        self.assertEqual(expected['command-line'], result['command-line'])
+        expected_commands = expected['command-line'].split()
+        result_commands = result['command-line'].split()
+        expected_commands.sort()
+        result_commands.sort()
+        self.assertListEqual(expected_commands, result_commands)
 
         for result_input in result['inputs']:
             self.assertIn(result_input, expected['inputs'])
