@@ -116,6 +116,8 @@ class Importer():
         dcptImptr.loadDocoptDescription()
         dcptImptr.loadDescriptionAndType()
         dcptImptr.generateInputsAndCommandLine(dcptImptr.pattern)
+        #for root in dcptImptr.dependencies:
+        #    dcptImptr._printNodes(dcptImptr.dependencies[root], 0)
         dcptImptr.addInputsRecursive(dcptImptr.dependencies)
 
         with open(self.output_descriptor, "w") as output:
@@ -511,24 +513,30 @@ class Docopt_Importer():
 
     def addInputsRecursive(self, node, requires=[], s=0):
         args_id = list(node.keys())
-        args_id.sort(key=self._getStrippedName)
         if len(args_id) == 1:
-            self._addInput(
-                node[args_id[0]],
-                requires,
-                isList=node[args_id[0]]["isList"] if 'isList' in
-                node[args_id[0]] else False)
+            if 'mutex_members' in node[args_id[0]]:
+                for mutex_member in node[args_id[0]]['mutex_members']:
+                    self._addInput(mutex_member, requires)
+            else:
+                self._addInput(
+                    node[args_id[0]],
+                    requires,
+                    isList=node[args_id[0]]["isList"] if 'isList' in
+                    node[args_id[0]] else False)
             self.addInputsRecursive(
                 node[args_id[0]]['children'], requires, s=s+2)
         elif len(args_id) > 1:
             mutex_names = []
             for name in args_id:
-                self._addInput(
-                    node[name],
-                    requires + self._getLineageChildren(node[name], []),
-                    isList=node[name]["isList"] if 'isList' in
-                    node[name] else False)
-                # Add node with siblings to required-inputs list
+                if 'mutex_members' in node[name]:
+                    for mutex_member in node[name]['mutex_members']:
+                        self._addInput(mutex_member, requires)
+                else:
+                    self._addInput(
+                        node[name],
+                        requires + self._getLineageChildren(node[name], []),
+                        isList=node[name]["isList"] if 'isList' in
+                        node[name] else False)
                 self.addInputsRecursive(
                     node[name]['children'], [node[name]['name']], s=s+2)
                 if not node[name]['optional']:
@@ -536,9 +544,22 @@ class Docopt_Importer():
             if len(mutex_names) > 1:
                 self._addMutexGroup(mutex_names)
 
+    def _printNodes(self, node, tabs):
+        print(" " * tabs + node["name"], end="")
+        if "mutex_members" in node:
+            print(", members:", end="")
+            for member in node["mutex_members"]:
+                print(" " + member["name"], end="")
+        if "parent" in node and node["parent"] is not None:
+            print(", P: " + node["parent"]["name"])
+        else:
+            print()
+        for child in node["children"]:
+            self._printNodes(node["children"][child], tabs+1)
+
     def _loadInputsFromUsage(self, usage):
         ancestors = []
-        for cmd_idx, arg in enumerate(usage.children):
+        for arg in usage.children:
             arg_type = type(arg).__name__
             if hasattr(arg, "children"):
                 fchild_type = type(arg.children[0]).__name__
@@ -587,8 +608,9 @@ class Docopt_Importer():
     def _addMutexGroup(self, arg_names):
         pretty_name = "_".join([self._getParamName(name)
                                 for name in arg_names])
+        unique_name = self._getUniqueId(pretty_name)
         new_group = {
-            "id": pretty_name,
+            "id": unique_name,
             "name": "Mutex group with members: {0}".format(", ".join(
                 [self._getStrippedName(name) for name in arg_names])),
             "members": [self._getParamName(name) for name in arg_names],
@@ -599,16 +621,17 @@ class Docopt_Importer():
         self.descriptor['groups'].append(new_group)
 
     def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
-        grp_arg, choices = self._getMutexInputAndChoices(arg)
+        grp_arg = self._getMutexInputAndChoices(arg)
+        options = arg.children[0].children
+        p_node = self._getDependencyParentNode(ancestors)
+        members = []
+        for option in options:
+            mutex_member = self._getDependencyArgument(option)
+            members.append(mutex_member)
         self._addArgumentToDependencies(
             grp_arg, ancestors=ancestors,
-            optional=optional, value_choices=choices)
+            optional=optional, members=members)
         ancestors.append(grp_arg.name)
-        options = arg.children[0].children
-        for option in options:
-            self._addArgumentToDependencies(
-                option, ancestors=ancestors,
-                optional=optional)
         return ancestors
 
     def _getMutexInputAndChoices(self, arg):
@@ -626,42 +649,54 @@ class Docopt_Importer():
         grp_arg = Argument(gname)
         grp_arg.parse(gname)
         self.all_desc_and_type[gname] = {'desc': gdesc}
-        return grp_arg, names
+        return grp_arg
 
-    def _addArgumentToDependencies(self, node, ancestors=None,
-                                   isList=False, optional=False,
-                                   value_choices=[]):
-        p_node = self._getDependencyParentNode(ancestors)
-        argAdded = {
+    def _getDependencyArgument(self, node, isList=False,
+                               optional=False, members=[]):
+        new_arg = {
             "id": node.name,
             "name": self._getUniqueId(self._getParamName(node.name)),
+            "desc": self.all_desc_and_type[node.name]['desc']
+            if node.name in self.all_desc_and_type
+            else "",
             "optional": optional,
             "parent": None,
             "children": collections.OrderedDict()}
-        if ancestors == [] and node.name not in self.dependencies:
-            self.dependencies[node.name] = argAdded
-        elif ancestors != [] and p_node is not None:
-            argAdded["parent"] = p_node
-            p_node['children'][argAdded["name"]] = argAdded
 
-        if argAdded is not None and isList:
-            argAdded["isList"] = True
-        if value_choices != []:
-            argAdded["value-choices"] = value_choices
-
-        argAdded["desc"] = self.all_desc_and_type[node.name]['desc']\
-            if node.name in self.all_desc_and_type\
-            else ""
+        if new_arg is not None and isList:
+            new_arg["isList"] = True
+        if members != []:
+            new_arg["mutex_members"] = members
 
         if node.name in self.all_desc_and_type:
             if 'type' in self.all_desc_and_type[node.name]:
-                argAdded["type"] = self.all_desc_and_type[node.name]['type'] if\
+                new_arg["type"] = self.all_desc_and_type[node.name]['type'] if\
                     self.all_desc_and_type[node.name]['type'] in\
                     {"File", "Flag", "Number", "String"} else "String"
 
             if 'default-value' in self.all_desc_and_type[node.name]:
-                argAdded['default-value'] =\
+                new_arg['default-value'] =\
                     self.all_desc_and_type[node.name]['default-value']
+        if hasattr(node, 'long') and node.long is not None:
+            # ensure flag has long hand flag
+            new_arg["flag"] = node.long
+        return new_arg
+
+    def _addArgumentToDependencies(self, node, ancestors=None,
+                                   isList=False, optional=False,
+                                   members=[]):
+        p_node = self._getDependencyParentNode(ancestors)
+        argAdded = self._getDependencyArgument(node, isList, optional, members)
+
+        if ancestors == [] and node.name not in self.dependencies:
+            self.dependencies[node.name] = argAdded
+        elif ancestors != [] and p_node is not None:
+            argAdded["parent"] = p_node
+            if node.name in p_node['children']:
+                p_node['children'][node.name]['children'].update(
+                    argAdded['children'])
+            else:
+                p_node['children'][node.name] = argAdded
 
         if hasattr(node, 'long') and node.long is not None:
             # ensure flag has long hand flag
@@ -671,19 +706,22 @@ class Docopt_Importer():
                 # if parent and child are same option (therefore has short-hand)
                 # create new input with short-hand flag
                 self.dependencies[
-                    p_node['children'][argAdded["name"]]['name']] = {
-                        'id': p_node['children'][argAdded["name"]]['id'],
-                        'name': p_node['children'][argAdded["name"]]['name'],
-                        'desc': p_node['children'][argAdded["name"]]['desc'],
+                    p_node['children'][node.name]['name']] = {
+                        'id': p_node['children'][node.name]['id'],
+                        'name': p_node['children'][node.name]['name'],
+                        'desc': p_node['children'][node.name]['desc'],
                         'flag': node.short,
                         'optional': p_node['children']
-                                    [argAdded["name"]]['optional'],
+                                    [node.name]['optional'],
                         'parent': None,
                         'children': p_node['children']
-                                    [argAdded["name"]]['children']}
-                del p_node['children'][argAdded["name"]]
+                                    [node.name]['children']}
+                del p_node['children'][node.name]
 
     def _addInput(self, arg, requires, isList=False):
+        if "inputs" not in self.descriptor:
+            self.descriptor['inputs'] = []
+
         param_key = arg["id"]
         param_name = arg["name"]
         new_inp = {
@@ -700,13 +738,6 @@ class Docopt_Importer():
         # Only add list param when isList
         if isList:
             new_inp['list'] = True
-        if 'value-choices' in arg:
-            new_inp['value-choices'] = arg['value-choices']
-            new_inp['value-requires'] = collections.OrderedDict()
-            for choice_key in arg['children']:
-                choice = arg['children'][choice_key]['id']
-                if choice in arg['value-choices']:
-                    new_inp['value-requires'][choice] = choice_key
         if "default-value" in arg:
             new_inp['default-value'] = arg['default-value']
         if "flag" in arg:
@@ -717,10 +748,16 @@ class Docopt_Importer():
             new_inp["command-line-flag"] = arg["flag"]
         else:
             new_inp['type'] = "String"
-
-        if "inputs" not in self.descriptor:
-            self.descriptor['inputs'] = []
-        self.descriptor['inputs'].append(new_inp)
+        if 'mutex_members' in arg:
+            mutex_names = []
+            for choice_key in arg['children']:
+                choice = arg['children'][choice_key]['id']
+                if choice in arg['mutex_members']:
+                    mutex_names.append(choice_key)
+            if len(mutex_names) > 1:
+                self._addMutexGroup(mutex_names)
+        else:
+            self.descriptor['inputs'].append(new_inp)
 
     def _getLineageChildren(self, node, descendants):
         child_keys = list(node['children'].keys())
@@ -751,7 +788,7 @@ class Docopt_Importer():
         id_count = 1
         while name + (str(id_count) if id_count > 1 else "") in self.unique_ids:
             id_count += 1
-        new_unique_id = name + (str(id_count) if id_count > 1 else "")
+        new_unique_id = name + ("_" + str(id_count) if id_count > 1 else "")
         self.unique_ids[new_unique_id] = {
             'id': new_unique_id, 'original': name}
         return new_unique_id

@@ -3,7 +3,9 @@ Sample Docopt script for bosh import testing
 
 Usage:
   test_import X a <list>...
-  test_import X b (--bar1|--bar2) [--foo1=String|--foo2=Number|--foo3=File]
+  test_import X a b g
+  test_import X b (--bar1=Number|--bar2=File) [--foo1=String|--foo2=Number|--foo3=File]
+  test_import X b g (--bar1=Number|--bar2=File)
   test_import X c --d1=String --d2=Number --d3=File --d4=Flag --d5=<dummy>
   test_import Y <m1> <m2> <m31> <m41> [--desc1]
   test_import Y <m1> <m2> <m32> <m42> --desc2
@@ -11,8 +13,8 @@ Usage:
 
 Options:
   -h --help       Help descriptions
-  --bar1          requires b
-  --bar2          requires b
+  --bar1=Number   requires b
+  --bar2=File     requires b
   --foo1=String   requires bar1_bar2
   --foo2=Number   requires bar1_bar2
   --foo3=File     requires bar1_bar2

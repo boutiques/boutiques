@@ -1,5 +1,5 @@
 {
-    "command-line": "test_import [X] [A] [LIST_OF_LIST] [B] [BAR1_BAR2] [BAR1] [BAR2] [FOO1_FOO2_FOO3] [FOO1] [FOO2] [FOO3] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [M12] [M22] [M32] [M42] [DESC2] [HELP] [HELP2]",
+    "command-line": "test_import [X] [A] [LIST_OF_LIST] [B] [G] [B_2] [BAR1] [BAR2] [FOO1] [FOO2] [FOO3] [G_2] [BAR1_2] [BAR2_2] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [M32] [M42] [DESC2] [HELP] [HELP_2]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -99,8 +99,7 @@
             "optional": true,
             "value-key": "[A]",
             "requires-inputs": [
-                "X",
-                "list_of_list"
+                "X"
             ],
             "type": "String"
         },
@@ -123,28 +122,31 @@
             "optional": true,
             "value-key": "[B]",
             "requires-inputs": [
-                "X",
-                "bar1_bar2"
+                "a",
+                "g"
             ],
             "type": "String"
         },
         {
-            "id": "bar1_bar2",
-            "name": "bar1 bar2",
-            "description": "Group key for mutex choices: --bar1 (requires b) and --bar2 (requires b)",
+            "id": "g",
+            "name": "g",
+            "description": "",
             "optional": true,
-            "value-key": "[BAR1_BAR2]",
+            "value-key": "[G]",
             "requires-inputs": [
                 "b"
             ],
-            "value-choices": [
-                "--bar1",
-                "--bar2"
+            "type": "String"
+        },
+        {
+            "id": "b_2",
+            "name": "b 2",
+            "description": "",
+            "optional": true,
+            "value-key": "[B_2]",
+            "requires-inputs": [
+                "X"
             ],
-            "value-requires": {
-                "--bar1": "bar1",
-                "--bar2": "bar2"
-            },
             "type": "String"
         },
         {
@@ -154,9 +156,9 @@
             "optional": true,
             "value-key": "[BAR1]",
             "requires-inputs": [
-                "b"
+                "b_2"
             ],
-            "type": "Flag",
+            "type": "Number",
             "command-line-flag": "--bar1"
         },
         {
@@ -166,31 +168,10 @@
             "optional": true,
             "value-key": "[BAR2]",
             "requires-inputs": [
-                "b"
+                "b_2"
             ],
-            "type": "Flag",
+            "type": "File",
             "command-line-flag": "--bar2"
-        },
-        {
-            "id": "foo1_foo2_foo3",
-            "name": "foo1 foo2 foo3",
-            "description": "Group key for mutex choices: --foo1 (requires bar1_bar2) and --foo2 (requires bar1_bar2) and --foo3 (requires bar1_bar2)",
-            "optional": true,
-            "value-key": "[FOO1_FOO2_FOO3]",
-            "requires-inputs": [
-                "b"
-            ],
-            "value-choices": [
-                "--foo1",
-                "--foo2",
-                "--foo3"
-            ],
-            "value-requires": {
-                "--foo1": "foo1",
-                "--foo2": "foo2",
-                "--foo3": "foo3"
-            },
-            "type": "String"
         },
         {
             "id": "foo1",
@@ -199,7 +180,7 @@
             "optional": true,
             "value-key": "[FOO1]",
             "requires-inputs": [
-                "foo1_foo2_foo3"
+                "bar1_bar2"
             ],
             "type": "String",
             "command-line-flag": "--foo1"
@@ -211,7 +192,7 @@
             "optional": true,
             "value-key": "[FOO2]",
             "requires-inputs": [
-                "foo1_foo2_foo3"
+                "bar1_bar2"
             ],
             "type": "Number",
             "command-line-flag": "--foo2"
@@ -223,10 +204,46 @@
             "optional": true,
             "value-key": "[FOO3]",
             "requires-inputs": [
-                "foo1_foo2_foo3"
+                "bar1_bar2"
             ],
             "type": "File",
             "command-line-flag": "--foo3"
+        },
+        {
+            "id": "g_2",
+            "name": "g 2",
+            "description": "",
+            "optional": true,
+            "value-key": "[G_2]",
+            "requires-inputs": [
+                "b_2",
+                "bar1_bar2_2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "bar1_2",
+            "name": "bar1 2",
+            "description": "requires b",
+            "optional": true,
+            "value-key": "[BAR1_2]",
+            "requires-inputs": [
+                "g_2"
+            ],
+            "type": "Number",
+            "command-line-flag": "--bar1"
+        },
+        {
+            "id": "bar2_2",
+            "name": "bar2 2",
+            "description": "requires b",
+            "optional": true,
+            "value-key": "[BAR2_2]",
+            "requires-inputs": [
+                "g_2"
+            ],
+            "type": "File",
+            "command-line-flag": "--bar2"
         },
         {
             "id": "c",
@@ -306,6 +323,10 @@
             "description": "",
             "optional": true,
             "value-key": "[Y]",
+            "requires-inputs": [
+                "m1",
+                "m2"
+            ],
             "type": "String"
         },
         {
@@ -315,10 +336,7 @@
             "optional": true,
             "value-key": "[M1]",
             "requires-inputs": [
-                "Y",
-                "m2",
-                "m31",
-                "m41"
+                "Y"
             ],
             "type": "String"
         },
@@ -329,7 +347,7 @@
             "optional": true,
             "value-key": "[M2]",
             "requires-inputs": [
-                "m1"
+                "Y"
             ],
             "type": "String"
         },
@@ -340,7 +358,8 @@
             "optional": true,
             "value-key": "[M31]",
             "requires-inputs": [
-                "m1"
+                "Y",
+                "m41"
             ],
             "type": "String"
         },
@@ -351,7 +370,7 @@
             "optional": true,
             "value-key": "[M41]",
             "requires-inputs": [
-                "m1"
+                "m31"
             ],
             "type": "String"
         },
@@ -362,35 +381,10 @@
             "optional": true,
             "value-key": "[DESC1]",
             "requires-inputs": [
-                "m1"
+                "m31"
             ],
             "type": "Flag",
             "command-line-flag": "--desc1"
-        },
-        {
-            "id": "m12",
-            "name": "m12",
-            "description": "",
-            "optional": true,
-            "value-key": "[M12]",
-            "requires-inputs": [
-                "Y",
-                "m22",
-                "m32",
-                "m42"
-            ],
-            "type": "String"
-        },
-        {
-            "id": "m22",
-            "name": "m22",
-            "description": "",
-            "optional": true,
-            "value-key": "[M22]",
-            "requires-inputs": [
-                "m12"
-            ],
-            "type": "String"
         },
         {
             "id": "m32",
@@ -399,7 +393,8 @@
             "optional": true,
             "value-key": "[M32]",
             "requires-inputs": [
-                "m12"
+                "Y",
+                "m42"
             ],
             "type": "String"
         },
@@ -410,7 +405,7 @@
             "optional": true,
             "value-key": "[M42]",
             "requires-inputs": [
-                "m12"
+                "m32"
             ],
             "type": "String"
         },
@@ -421,7 +416,7 @@
             "optional": true,
             "value-key": "[DESC2]",
             "requires-inputs": [
-                "m12"
+                "m32"
             ],
             "type": "Flag",
             "command-line-flag": "--desc2"
@@ -436,41 +431,50 @@
             "command-line-flag": "--help"
         },
         {
-            "id": "help2",
-            "name": "help2",
+            "id": "help_2",
+            "name": "help 2",
             "description": "Help descriptions",
             "optional": true,
-            "value-key": "[HELP2]",
+            "value-key": "[HELP_2]",
             "type": "Flag",
             "command-line-flag": "-h"
         }
     ],
     "groups": [
         {
-            "id": "bar1_bar2",
-            "name": "Mutex group with members: bar1, bar2",
+            "id": "list_of_list_b",
+            "name": "Mutex group with members: list_of_list, b",
             "members": [
-                "bar1",
-                "bar2"
+                "list_of_list",
+                "b"
             ],
             "mutually-exclusive": true
         },
         {
-            "id": "a_b_c",
-            "name": "Mutex group with members: a, b, c",
+            "id": "bar1_bar2_g_2",
+            "name": "Mutex group with members: bar1_bar2, g_2",
+            "members": [
+                "bar1_bar2",
+                "g_2"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "a_b_2_c",
+            "name": "Mutex group with members: a, b_2, c",
             "members": [
                 "a",
-                "b",
+                "b_2",
                 "c"
             ],
             "mutually-exclusive": true
         },
         {
-            "id": "m1_m12",
-            "name": "Mutex group with members: m1, m12",
+            "id": "m31_m32",
+            "name": "Mutex group with members: m31, m32",
             "members": [
-                "m1",
-                "m12"
+                "m31",
+                "m32"
             ],
             "mutually-exclusive": true
         },
