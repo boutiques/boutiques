@@ -1225,12 +1225,7 @@ class LocalExecutor(object):
             # Most recent DOI in file if user is publisher
             # Include check to ensure descriptor is unmodified
             if self.desc_dict.get('doi') is not None:
-                # Zenodo returns the full DOI, but for the purposes of
-                # Boutiques we just use the Zenodo-specific portion (as its the
-                # unique part). If the API updates on Zenodo to no longer
-                # provide the full DOI, this still works because it just grabs
-                # the last thing after the split.
-                doi = self.desc_dict.get('doi').split('/')[-1]
+                doi = self.desc_dict.get('doi')
                 if loadJson(doi) == self.desc_dict:
                     return doi
             # DOI in filename if descriptor pulled from Zenodo
