@@ -13,6 +13,8 @@ import boutiques
 import tarfile
 from contextlib import closing
 import simplejson as json
+import docopt
+import imp
 
 
 class TestImport(TestCase):
@@ -192,3 +194,10 @@ class TestImport(TestCase):
 
         if op.isfile(descriptor_output):
             self.fail("Output file should not exist")
+
+    def test_docopt_script_with_descriptor(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        pydocopt_input = op.join(base_path, "test_valid.py")
+        docstring = imp.load_source(
+            'docopt_pyscript', pydocopt_input).__doc__
+        docopt.docopt(docstring)

@@ -1,5 +1,5 @@
 {
-    "command-line": "fmriprep_ciftify.py [BIDS_DIR] [OUTPUT_DIR] [ANALYSIS_LEVEL] [NO_SYMLINKS] [RERUN_IF_INCOMPLETE] [VERBOSE] [SESSION_LABEL] [OLDER_FMRIPREP] [READ_FROM_DERIVATIVES] [ANAT_ONLY] [FMRIPREP_WORKDIR] [FS_LICENSE] [IGNORE_FIELDMAPS] [TASK_LABEL] [FUNC_PREPROC_DIRNAME] [MSM_CONFIG] [PARTICIPANT_LABEL] [FMRIPREP_ARGS] [FUNC_PREPROC_DESC] [N_CPUS] [DEBUG] [CIFTIFY_CONF] [SURF_REG] [HELP] [DRY_RUN] [SMOOTHINGFWHM] [NO_SDC] [RESAMPLE_TO_T1W32K]",
+    "command-line": "fmriprep_ciftify.py [BIDS_DIR] [OUTPUT_DIR] [ANALYSIS_LEVEL] [CIFTIFY_CONF] [SESSION_LABEL] [MSM_CONFIG] [DRY_RUN] [SMOOTHINGFWHM] [OLDER_FMRIPREP] [N_CPUS] [FMRIPREP_ARGS] [HELP] [NO_SDC] [ANAT_ONLY] [FMRIPREP_WORKDIR] [RESAMPLE_TO_T1W32K] [NO_SYMLINKS] [DEBUG] [IGNORE_FIELDMAPS] [FS_LICENSE] [READ_FROM_DERIVATIVES] [VERBOSE] [RERUN_IF_INCOMPLETE] [SURF_REG] [PARTICIPANT_LABEL] [FUNC_PREPROC_DIRNAME] [FUNC_PREPROC_DESC] [TASK_LABEL]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -13,52 +13,6 @@
             "description": "INSERT_DESCRIPTION"
         }
     ],
-    "invocation-schema": {
-        "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#",
-        "additionalProperties": false,
-        "allOf": [
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            },
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            }
-        ],
-        "dependencies": {
-            "INSERT_ID": {
-                "properties": {
-                    "INSERT_ID": {
-                        "not": {}
-                    }
-                }
-            }
-        },
-        "description": "INSERT_SCHEMA_DESCRIPTION",
-        "properties": {
-            "INSERT_ID": {
-                "enum": [
-                    "INSERT_CHOICE"
-                ]
-            }
-        },
-        "required": [
-            "INSERT_ID"
-        ],
-        "title": "INSERT_TITLE",
-        "type": "INSERT_TYPE"
-    },
     "name": "INSERT_NAME",
     "output-files": [
         {
@@ -109,31 +63,13 @@
             "type": "String"
         },
         {
-            "id": "no_symlinks",
-            "name": "no symlinks",
-            "description": "Will not create symbolic links to the zz_templates folder",
+            "id": "ciftify_conf",
+            "name": "ciftify conf",
+            "description": "EXPERT OPTION. Path to a yaml configuration file. Overrides the default settings in ciftify/data/ciftify_workflow_settings.yaml",
             "optional": true,
-            "value-key": "[NO_SYMLINKS]",
-            "type": "Flag",
-            "command-line-flag": "--no-symlinks"
-        },
-        {
-            "id": "rerun_if_incomplete",
-            "name": "rerun if incomplete",
-            "description": "Will delete and rerun ciftify workflows if incomplete outputs are found.",
-            "optional": true,
-            "value-key": "[RERUN_IF_INCOMPLETE]",
-            "type": "Flag",
-            "command-line-flag": "--rerun-if-incomplete"
-        },
-        {
-            "id": "verbose",
-            "name": "verbose",
-            "description": "Verbose logging",
-            "optional": true,
-            "value-key": "[VERBOSE]",
-            "type": "Flag",
-            "command-line-flag": "--verbose"
+            "value-key": "[CIFTIFY_CONF]",
+            "type": "String",
+            "command-line-flag": "--ciftify-conf"
         },
         {
             "id": "session_label",
@@ -145,79 +81,6 @@
             "command-line-flag": "--session_label"
         },
         {
-            "id": "older_fmriprep",
-            "name": "older fmriprep",
-            "description": "Read from fmriprep derivatives that are version 1.1.8 or older",
-            "optional": true,
-            "value-key": "[OLDER_FMRIPREP]",
-            "type": "Flag",
-            "command-line-flag": "--older-fmriprep"
-        },
-        {
-            "id": "read_from_derivatives",
-            "name": "read from derivatives",
-            "description": "Indicates pre-ciftify will be read from the indicated derivatives path and freesurfer/fmriprep will not be run",
-            "optional": true,
-            "value-key": "[READ_FROM_DERIVATIVES]",
-            "type": "String",
-            "command-line-flag": "--read-from-derivatives"
-        },
-        {
-            "id": "anat_only",
-            "name": "anat only",
-            "description": "Only run the anatomical pipeline.",
-            "optional": true,
-            "value-key": "[ANAT_ONLY]",
-            "type": "Flag",
-            "command-line-flag": "--anat_only"
-        },
-        {
-            "id": "fmriprep_workdir",
-            "name": "fmriprep workdir",
-            "description": "Path to working directory for fmriprep",
-            "optional": true,
-            "value-key": "[FMRIPREP_WORKDIR]",
-            "type": "String",
-            "command-line-flag": "--fmriprep-workdir"
-        },
-        {
-            "id": "fs_license",
-            "name": "fs license",
-            "description": "The freesurfer license file",
-            "optional": true,
-            "value-key": "[FS_LICENSE]",
-            "type": "String",
-            "command-line-flag": "--fs-license"
-        },
-        {
-            "id": "ignore_fieldmaps",
-            "name": "ignore fieldmaps",
-            "description": "Will ignore available fieldmaps and use syn-sdc for fmriprep",
-            "optional": true,
-            "value-key": "[IGNORE_FIELDMAPS]",
-            "type": "Flag",
-            "command-line-flag": "--ignore-fieldmaps"
-        },
-        {
-            "id": "task_label",
-            "name": "task label",
-            "description": "String or Comma separated list of fmri tasks to process. Defaults to all.",
-            "optional": true,
-            "value-key": "[TASK_LABEL]",
-            "type": "String",
-            "command-line-flag": "--task_label"
-        },
-        {
-            "id": "func_preproc_dirname",
-            "name": "func preproc dirname",
-            "description": "Name derivatives folder where func derivatives are found [default: fmriprep]",
-            "optional": true,
-            "value-key": "[FUNC_PREPROC_DIRNAME]",
-            "default-value": "fmriprep",
-            "type": "String",
-            "command-line-flag": "--func-preproc-dirname"
-        },
-        {
             "id": "MSM_config",
             "name": "MSM config",
             "description": "EXPERT OPTION. The path to the configuration file to use for MSMSulc mode. By default, the configuration file is ciftify/data/hcp_config/MSMSulcStrainFinalconf This setting is ignored when not running MSMSulc mode.",
@@ -225,80 +88,6 @@
             "value-key": "[MSM_CONFIG]",
             "type": "String",
             "command-line-flag": "--MSM-config"
-        },
-        {
-            "id": "participant_label",
-            "name": "participant label",
-            "description": "String or Comma separated list of participants to process. Defaults to all.",
-            "optional": true,
-            "value-key": "[PARTICIPANT_LABEL]",
-            "type": "String",
-            "command-line-flag": "--participant_label"
-        },
-        {
-            "id": "fmriprep_args",
-            "name": "fmriprep args",
-            "description": "Additional user arguments that may be added to fmriprep stages",
-            "optional": true,
-            "value-key": "[FMRIPREP_ARGS]",
-            "type": "String",
-            "command-line-flag": "--fmriprep-args"
-        },
-        {
-            "id": "func_preproc_desc",
-            "name": "func preproc desc",
-            "description": "The bids desc tag [default: preproc] assigned to the preprocessed file",
-            "optional": true,
-            "value-key": "[FUNC_PREPROC_DESC]",
-            "default-value": "preproc",
-            "type": "String",
-            "command-line-flag": "--func-preproc-desc"
-        },
-        {
-            "id": "n_cpus",
-            "name": "n cpus",
-            "description": "Number of cpu's available. Defaults to the value of the OMP_NUM_THREADS environment variable",
-            "optional": true,
-            "value-key": "[N_CPUS]",
-            "type": "String",
-            "command-line-flag": "--n_cpus"
-        },
-        {
-            "id": "debug",
-            "name": "debug",
-            "description": "Debug logging in Erin's very verbose style",
-            "optional": true,
-            "value-key": "[DEBUG]",
-            "type": "Flag",
-            "command-line-flag": "--debug"
-        },
-        {
-            "id": "ciftify_conf",
-            "name": "ciftify conf",
-            "description": "EXPERT OPTION. Path to a yaml configuration file. Overrides the default settings in ciftify/data/ciftify_workflow_settings.yaml",
-            "optional": true,
-            "value-key": "[CIFTIFY_CONF]",
-            "type": "String",
-            "command-line-flag": "--ciftify-conf"
-        },
-        {
-            "id": "surf_reg",
-            "name": "surf reg",
-            "description": "Registration sphere prefix [default: MSMSulc]",
-            "optional": true,
-            "value-key": "[SURF_REG]",
-            "default-value": "MSMSulc",
-            "type": "String",
-            "command-line-flag": "--surf-reg"
-        },
-        {
-            "id": "help",
-            "name": "help",
-            "description": "Print help",
-            "optional": true,
-            "value-key": "[HELP]",
-            "type": "Flag",
-            "command-line-flag": "--help"
         },
         {
             "id": "dry_run",
@@ -319,6 +108,42 @@
             "command-line-flag": "--SmoothingFWHM"
         },
         {
+            "id": "older_fmriprep",
+            "name": "older fmriprep",
+            "description": "Read from fmriprep derivatives that are version 1.1.8 or older",
+            "optional": true,
+            "value-key": "[OLDER_FMRIPREP]",
+            "type": "Flag",
+            "command-line-flag": "--older-fmriprep"
+        },
+        {
+            "id": "n_cpus",
+            "name": "n cpus",
+            "description": "Number of cpu's available. Defaults to the value of the OMP_NUM_THREADS environment variable",
+            "optional": true,
+            "value-key": "[N_CPUS]",
+            "type": "String",
+            "command-line-flag": "--n_cpus"
+        },
+        {
+            "id": "fmriprep_args",
+            "name": "fmriprep args",
+            "description": "Additional user arguments that may be added to fmriprep stages",
+            "optional": true,
+            "value-key": "[FMRIPREP_ARGS]",
+            "type": "String",
+            "command-line-flag": "--fmriprep-args"
+        },
+        {
+            "id": "help",
+            "name": "help",
+            "description": "Print help",
+            "optional": true,
+            "value-key": "[HELP]",
+            "type": "Flag",
+            "command-line-flag": "--help"
+        },
+        {
             "id": "no_SDC",
             "name": "no SDC",
             "description": "Will not do fmriprep distortion correction at all (NOT recommended)",
@@ -328,6 +153,24 @@
             "command-line-flag": "--no-SDC"
         },
         {
+            "id": "anat_only",
+            "name": "anat only",
+            "description": "Only run the anatomical pipeline.",
+            "optional": true,
+            "value-key": "[ANAT_ONLY]",
+            "type": "Flag",
+            "command-line-flag": "--anat_only"
+        },
+        {
+            "id": "fmriprep_workdir",
+            "name": "fmriprep workdir",
+            "description": "Path to working directory for fmriprep",
+            "optional": true,
+            "value-key": "[FMRIPREP_WORKDIR]",
+            "type": "String",
+            "command-line-flag": "--fmriprep-workdir"
+        },
+        {
             "id": "resample_to_T1w32k",
             "name": "resample to T1w32k",
             "description": "Resample the Meshes to 32k Native (T1w) Space",
@@ -335,6 +178,117 @@
             "value-key": "[RESAMPLE_TO_T1W32K]",
             "type": "Flag",
             "command-line-flag": "--resample-to-T1w32k"
+        },
+        {
+            "id": "no_symlinks",
+            "name": "no symlinks",
+            "description": "Will not create symbolic links to the zz_templates folder",
+            "optional": true,
+            "value-key": "[NO_SYMLINKS]",
+            "type": "Flag",
+            "command-line-flag": "--no-symlinks"
+        },
+        {
+            "id": "debug",
+            "name": "debug",
+            "description": "Debug logging in Erin's very verbose style",
+            "optional": true,
+            "value-key": "[DEBUG]",
+            "type": "Flag",
+            "command-line-flag": "--debug"
+        },
+        {
+            "id": "ignore_fieldmaps",
+            "name": "ignore fieldmaps",
+            "description": "Will ignore available fieldmaps and use syn-sdc for fmriprep",
+            "optional": true,
+            "value-key": "[IGNORE_FIELDMAPS]",
+            "type": "Flag",
+            "command-line-flag": "--ignore-fieldmaps"
+        },
+        {
+            "id": "fs_license",
+            "name": "fs license",
+            "description": "The freesurfer license file",
+            "optional": true,
+            "value-key": "[FS_LICENSE]",
+            "type": "String",
+            "command-line-flag": "--fs-license"
+        },
+        {
+            "id": "read_from_derivatives",
+            "name": "read from derivatives",
+            "description": "Indicates pre-ciftify will be read from the indicated derivatives path and freesurfer/fmriprep will not be run",
+            "optional": true,
+            "value-key": "[READ_FROM_DERIVATIVES]",
+            "type": "String",
+            "command-line-flag": "--read-from-derivatives"
+        },
+        {
+            "id": "verbose",
+            "name": "verbose",
+            "description": "Verbose logging",
+            "optional": true,
+            "value-key": "[VERBOSE]",
+            "type": "Flag",
+            "command-line-flag": "--verbose"
+        },
+        {
+            "id": "rerun_if_incomplete",
+            "name": "rerun if incomplete",
+            "description": "Will delete and rerun ciftify workflows if incomplete outputs are found.",
+            "optional": true,
+            "value-key": "[RERUN_IF_INCOMPLETE]",
+            "type": "Flag",
+            "command-line-flag": "--rerun-if-incomplete"
+        },
+        {
+            "id": "surf_reg",
+            "name": "surf reg",
+            "description": "Registration sphere prefix [default: MSMSulc]",
+            "optional": true,
+            "value-key": "[SURF_REG]",
+            "default-value": "MSMSulc",
+            "type": "String",
+            "command-line-flag": "--surf-reg"
+        },
+        {
+            "id": "participant_label",
+            "name": "participant label",
+            "description": "String or Comma separated list of participants to process. Defaults to all.",
+            "optional": true,
+            "value-key": "[PARTICIPANT_LABEL]",
+            "type": "String",
+            "command-line-flag": "--participant_label"
+        },
+        {
+            "id": "func_preproc_dirname",
+            "name": "func preproc dirname",
+            "description": "Name derivatives folder where func derivatives are found [default: fmriprep]",
+            "optional": true,
+            "value-key": "[FUNC_PREPROC_DIRNAME]",
+            "default-value": "fmriprep",
+            "type": "String",
+            "command-line-flag": "--func-preproc-dirname"
+        },
+        {
+            "id": "func_preproc_desc",
+            "name": "func preproc desc",
+            "description": "The bids desc tag [default: preproc] assigned to the preprocessed file",
+            "optional": true,
+            "value-key": "[FUNC_PREPROC_DESC]",
+            "default-value": "preproc",
+            "type": "String",
+            "command-line-flag": "--func-preproc-desc"
+        },
+        {
+            "id": "task_label",
+            "name": "task label",
+            "description": "String or Comma separated list of fmri tasks to process. Defaults to all.",
+            "optional": true,
+            "value-key": "[TASK_LABEL]",
+            "type": "String",
+            "command-line-flag": "--task_label"
         }
     ]
 }

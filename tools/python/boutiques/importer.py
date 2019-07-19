@@ -120,6 +120,7 @@ class Importer():
         #    dcptImptr._printNodes(dcptImptr.dependencies[root], 0)
         dcptImptr.addInputsRecursive(dcptImptr.dependencies)
         dcptImptr._removeGroupsFromRequires()
+        dcptImptr._removeGroupsFromGroups()
 
         with open(self.output_descriptor, "w") as output:
             output.write(json.dumps(dcptImptr.descriptor, indent=4))
@@ -774,7 +775,8 @@ class Docopt_Importer():
 
     def _getUniqueId(self, name):
         id_count = 1
-        while name + (str(id_count) if id_count > 1 else "") in self.unique_ids:
+        while name + ("_" + str(id_count) if
+                      id_count > 1 else "") in self.unique_ids:
             id_count += 1
         new_unique_id = name + ("_" + str(id_count) if id_count > 1 else "")
         self.unique_ids[new_unique_id] = {
@@ -835,3 +837,18 @@ class Docopt_Importer():
                     inp["requires-inputs"] = new_requires
                     if inp["requires-inputs"] == []:
                         del inp["requires-inputs"]
+
+    def _removeGroupsFromGroups(self):
+        if 'groups' in self.descriptor:
+            gnames = [group['id'] for group in self.descriptor['groups']]
+            del_groups = []
+            for idx, group in enumerate(self.descriptor["groups"]):
+                new_members = []
+                for member in group["members"]:
+                    if member not in gnames:
+                        new_members.append(member)
+                group["members"] = new_members
+                if len(group["members"]) <= 1:
+                    del_groups.append(idx)
+            for idx in del_groups:
+                del self.descriptor["groups"][idx]

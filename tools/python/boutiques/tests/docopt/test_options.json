@@ -1,5 +1,5 @@
 {
-    "command-line": "test_import [X] [Y] [Z] [AY] [VERSION] [HELP] [BEE] [CEE]",
+    "command-line": "test_import [X] [Y] [Z] [HELP] [CEE] [AY] [BEE] [VERSION]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -13,52 +13,6 @@
             "description": "INSERT_DESCRIPTION"
         }
     ],
-    "invocation-schema": {
-        "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#",
-        "additionalProperties": false,
-        "allOf": [
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            },
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            }
-        ],
-        "dependencies": {
-            "INSERT_ID": {
-                "properties": {
-                    "INSERT_ID": {
-                        "not": {}
-                    }
-                }
-            }
-        },
-        "description": "INSERT_SCHEMA_DESCRIPTION",
-        "properties": {
-            "INSERT_ID": {
-                "enum": [
-                    "INSERT_CHOICE"
-                ]
-            }
-        },
-        "required": [
-            "INSERT_ID"
-        ],
-        "title": "INSERT_TITLE",
-        "type": "INSERT_TYPE"
-    },
     "name": "INSERT_NAME",
     "output-files": [
         {
@@ -109,24 +63,6 @@
             "type": "String"
         },
         {
-            "id": "ay",
-            "name": "ay",
-            "description": "A",
-            "optional": true,
-            "value-key": "[AY]",
-            "type": "Flag",
-            "command-line-flag": "--ay"
-        },
-        {
-            "id": "version",
-            "name": "version",
-            "description": "Versions",
-            "optional": true,
-            "value-key": "[VERSION]",
-            "type": "Flag",
-            "command-line-flag": "--version"
-        },
-        {
             "id": "help",
             "name": "help",
             "description": "Help descriptions",
@@ -134,6 +70,24 @@
             "value-key": "[HELP]",
             "type": "Flag",
             "command-line-flag": "--help"
+        },
+        {
+            "id": "cee",
+            "name": "cee",
+            "description": "C",
+            "optional": true,
+            "value-key": "[CEE]",
+            "type": "Flag",
+            "command-line-flag": "--cee"
+        },
+        {
+            "id": "ay",
+            "name": "ay",
+            "description": "A",
+            "optional": true,
+            "value-key": "[AY]",
+            "type": "Flag",
+            "command-line-flag": "--ay"
         },
         {
             "id": "bee",
@@ -145,13 +99,13 @@
             "command-line-flag": "--bee"
         },
         {
-            "id": "cee",
-            "name": "cee",
-            "description": "C",
+            "id": "version",
+            "name": "version",
+            "description": "Versions",
             "optional": true,
-            "value-key": "[CEE]",
+            "value-key": "[VERSION]",
             "type": "Flag",
-            "command-line-flag": "--cee"
+            "command-line-flag": "--version"
         }
     ]
 }

@@ -13,52 +13,6 @@
             "description": "INSERT_DESCRIPTION"
         }
     ],
-    "invocation-schema": {
-        "$schema": "INSERT_SCHEMA_URL ex:http://json-schema.org/draft-04/schema#",
-        "additionalProperties": false,
-        "allOf": [
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            },
-            {
-                "anyOf": [
-                    {
-                        "required": [
-                            "INSERT_ID"
-                        ]
-                    }
-                ]
-            }
-        ],
-        "dependencies": {
-            "INSERT_ID": {
-                "properties": {
-                    "INSERT_ID": {
-                        "not": {}
-                    }
-                }
-            }
-        },
-        "description": "INSERT_SCHEMA_DESCRIPTION",
-        "properties": {
-            "INSERT_ID": {
-                "enum": [
-                    "INSERT_CHOICE"
-                ]
-            }
-        },
-        "required": [
-            "INSERT_ID"
-        ],
-        "title": "INSERT_TITLE",
-        "type": "INSERT_TYPE"
-    },
     "name": "INSERT_NAME",
     "output-files": [
         {
@@ -465,15 +419,6 @@
             "members": [
                 "bar1_2",
                 "bar2_2"
-            ],
-            "mutually-exclusive": true
-        },
-        {
-            "id": "bar1_bar2_g_2",
-            "name": "Mutex group with members: bar1_bar2, g_2",
-            "members": [
-                "bar1_bar2",
-                "g_2"
             ],
             "mutually-exclusive": true
         },
