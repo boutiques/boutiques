@@ -13,8 +13,9 @@ import boutiques
 import tarfile
 from contextlib import closing
 import simplejson as json
-import docopt
+from docopt import docopt
 import imp
+import subprocess
 
 
 class TestImport(TestCase):
@@ -131,7 +132,7 @@ class TestImport(TestCase):
                     self.assertFalse(ret.exit_code,
                                      cwl_descriptor)
 
-    def test_import_docopt_valid(self):
+    def test_docopt_import_valid(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt")
         pydocopt_input = op.join(base_path, "test_valid.py")
         descriptor_output = op.join(base_path, "test_valid_output.json")
@@ -155,8 +156,8 @@ class TestImport(TestCase):
         for result_input in result['inputs']:
             self.assertIn(result_input, expected['inputs'])
 
-    def test_import_docopt_valid_options(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+    def test_docopt_import_valid_options(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/options")
         pydocopt_input = op.join(base_path, "test_options.py")
         descriptor_output = op.join(base_path, "test_options_output.json")
         expected_output = op.join(base_path, "test_options.json")
@@ -169,7 +170,10 @@ class TestImport(TestCase):
             open(descriptor_output, "r").read().strip())
         expected = json.loads(
             open(expected_output, "r").read().strip())
-        os.remove(descriptor_output)
+
+        test_invocation = op.join(base_path, "test_options_invocation.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
 
         expected_commands = expected['command-line'].split()
         result_commands = result['command-line'].split()
@@ -179,8 +183,9 @@ class TestImport(TestCase):
 
         for result_input in result['inputs']:
             self.assertIn(result_input, expected['inputs'])
+        os.remove(descriptor_output)
 
-    def test_import_docopt_invalid(self):
+    def test_docopt_import_invalid(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt")
         pydocopt_input = op.join(base_path, "test_invalid.py")
         descriptor_output = op.join(base_path, "foobar.json")
@@ -196,8 +201,22 @@ class TestImport(TestCase):
             self.fail("Output file should not exist")
 
     def test_docopt_script_with_descriptor(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
-        pydocopt_input = op.join(base_path, "test_valid.py")
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/naval_fate")
+        pydocopt_input = op.join(base_path, "naval_fate.py")
+        descriptor_output = op.join(base_path, "naval_fate_descriptor.json")
         docstring = imp.load_source(
             'docopt_pyscript', pydocopt_input).__doc__
-        docopt.docopt(docstring)
+        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        bosh(import_args)
+
+        test_invocation = op.join(base_path, "naval_fate_invocation_move.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        test_invocation = op.join(base_path, "naval_fate_invocation_shoot.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        # bosh(launch_args)
+        # issues:
+        #   default-value
+        #   unspecified types (defaulting to string)
+        os.remove(descriptor_output)
