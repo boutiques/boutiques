@@ -659,13 +659,18 @@ class Docopt_Importer():
 
         if node.name in self.all_desc_and_type:
             if 'type' in self.all_desc_and_type[node.name]:
-                new_arg["type"] = self.all_desc_and_type[node.name]['type'] if\
+                new_arg["type"] = self._getStrippedName(
+                    self.all_desc_and_type[node.name]['type']) if\
                     self.all_desc_and_type[node.name]['type'] in\
+                    {"File", "Flag", "Number", "String"} or\
+                    self.all_desc_and_type[node.name]['type'][1:-1] in\
                     {"File", "Flag", "Number", "String"} else "String"
 
-            if 'default-value' in self.all_desc_and_type[node.name]:
-                new_arg['default-value'] =\
-                    self.all_desc_and_type[node.name]['default-value']
+            # code omitted because of default-value bug in descriptor
+            # if 'default-value' in self.all_desc_and_type[node.name]:
+                # new_arg['default-value'] =\
+                #    self.all_desc_and_type[node.name]['default-value']
+
         if hasattr(node, 'long') and node.long is not None:
             # ensure flag has long hand flag
             new_arg["flag"] = node.long
