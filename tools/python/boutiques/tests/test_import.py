@@ -133,56 +133,31 @@ class TestImport(TestCase):
                                      cwl_descriptor)
 
     def test_docopt_import_valid(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/valid")
         pydocopt_input = op.join(base_path, "test_valid.py")
         descriptor_output = op.join(base_path, "test_valid_output.json")
-        expected_output = op.join(base_path, "test_valid.json")
 
-        args = ["import", "dcpt", descriptor_output, pydocopt_input]
-        if op.isfile(descriptor_output):
-            os.remove(descriptor_output)
-        bosh(args)
-        result = json.loads(
-            open(descriptor_output, "r").read().strip())
-        expected = json.loads(
-            open(expected_output, "r").read().strip())
+        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        bosh(import_args)
+
+        test_invocation = op.join(base_path, "valid_invoc_mutex.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
         os.remove(descriptor_output)
-
-        self.assertEqual(expected['command-line'], result['command-line'])
-
-        for result_input in result['groups']:
-            self.assertIn(result_input, expected['groups'])
-
-        for result_input in result['inputs']:
-            self.assertIn(result_input, expected['inputs'])
 
     def test_docopt_import_valid_options(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt/options")
         pydocopt_input = op.join(base_path, "test_options.py")
         descriptor_output = op.join(base_path, "test_options_output.json")
-        expected_output = op.join(base_path, "test_options.json")
 
-        args = ["import", "dcpt", descriptor_output, pydocopt_input]
-        if op.isfile(descriptor_output):
-            os.remove(descriptor_output)
-        bosh(args)
-        result = json.loads(
-            open(descriptor_output, "r").read().strip())
-        expected = json.loads(
-            open(expected_output, "r").read().strip())
+        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        bosh(import_args)
 
         test_invocation = op.join(base_path, "test_options_invocation.json")
         launch_args = ["exec", "launch", descriptor_output, test_invocation]
         bosh(launch_args)
 
-        expected_commands = expected['command-line'].split()
-        result_commands = result['command-line'].split()
-        expected_commands.sort()
-        result_commands.sort()
-        self.assertListEqual(expected_commands, result_commands)
-
-        for result_input in result['inputs']:
-            self.assertIn(result_input, expected['inputs'])
         os.remove(descriptor_output)
 
     def test_docopt_import_invalid(self):
@@ -204,8 +179,7 @@ class TestImport(TestCase):
         base_path = op.join(op.split(bfile)[0], "tests/docopt/naval_fate")
         pydocopt_input = op.join(base_path, "naval_fate.py")
         descriptor_output = op.join(base_path, "naval_fate_descriptor.json")
-        docstring = imp.load_source(
-            'docopt_pyscript', pydocopt_input).__doc__
+
         import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
         bosh(import_args)
 

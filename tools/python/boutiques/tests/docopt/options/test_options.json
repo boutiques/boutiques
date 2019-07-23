@@ -1,5 +1,5 @@
 {
-    "command-line": "test_import [X] [Y] [Z] [VERSION] [AY] [HELP] [CEE] [BEE]",
+    "command-line": "test_import [X] [Y] [Z] [BEE] [AY] [HELP] [VERSION] [CEE]",
     "container-image": {
         "entrypoint": false,
         "image": "INSERT_IMAGE",
@@ -13,111 +13,6 @@
             "description": "INSERT_DESCRIPTION"
         }
     ],
-    "inputs": [
-        {
-            "description": "",
-            "id": "X",
-            "name": "X",
-            "optional": true,
-            "type": "String",
-            "value-key": "[X]"
-        },
-        {
-            "description": "",
-            "id": "Y",
-            "name": "Y",
-            "optional": true,
-            "type": "String",
-            "value-key": "[Y]"
-        },
-        {
-            "description": "",
-            "id": "Z",
-            "name": "Z",
-            "optional": true,
-            "type": "String",
-            "value-key": "[Z]"
-        },
-        {
-            "command-line-flag": "--version",
-            "description": "Versions",
-            "id": "version",
-            "name": "version",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[VERSION]"
-        },
-        {
-            "command-line-flag": "--ay",
-            "description": "A",
-            "id": "ay",
-            "name": "ay",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[AY]"
-        },
-        {
-            "command-line-flag": "--help",
-            "description": "Help descriptions",
-            "id": "help",
-            "name": "help",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[HELP]"
-        },
-        {
-            "command-line-flag": "--cee",
-            "description": "C",
-            "id": "cee",
-            "name": "cee",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[CEE]"
-        },
-        {
-            "command-line-flag": "--bee",
-            "description": "B",
-            "id": "bee",
-            "name": "bee",
-            "optional": true,
-            "type": "Flag",
-            "value-key": "[BEE]"
-        }
-    ],
-    "invocation-schema": {
-        "$schema": "http://json-schema.org/draft-04/schema#",
-        "additionalProperties": false,
-        "dependencies": {},
-        "description": "Invocation schema for insert_name.",
-        "properties": {
-            "X": {
-                "type": "string"
-            },
-            "Y": {
-                "type": "string"
-            },
-            "Z": {
-                "type": "string"
-            },
-            "ay": {
-                "type": "boolean"
-            },
-            "bee": {
-                "type": "boolean"
-            },
-            "cee": {
-                "type": "boolean"
-            },
-            "help": {
-                "type": "boolean"
-            },
-            "version": {
-                "type": "boolean"
-            }
-        },
-        "title": "INSERT_NAME.invocationSchema",
-        "type": "object"
-    },
     "name": "INSERT_NAME",
     "output-files": [
         {
@@ -137,9 +32,80 @@
         "walltime-estimate": 3600
     },
     "tags": {
-        "INSERT_TAG_NAME": "INSERT_TAG_VALUE",
         "domain": "testing",
-        "status": "experimental"
+        "status": "experimental",
+        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
     },
-    "tool-version": "INSERT_TOOL_VERSION"
+    "tool-version": "INSERT_TOOL_VERSION",
+    "inputs": [
+        {
+            "id": "X",
+            "name": "X",
+            "description": "",
+            "optional": false,
+            "value-key": "[X]",
+            "type": "String"
+        },
+        {
+            "id": "Y",
+            "name": "Y",
+            "description": "",
+            "optional": false,
+            "value-key": "[Y]",
+            "type": "String"
+        },
+        {
+            "id": "Z",
+            "name": "Z",
+            "description": "",
+            "optional": false,
+            "value-key": "[Z]",
+            "type": "String"
+        },
+        {
+            "id": "bee",
+            "name": "bee",
+            "description": "B",
+            "optional": true,
+            "value-key": "[BEE]",
+            "type": "Flag",
+            "command-line-flag": "--bee"
+        },
+        {
+            "id": "ay",
+            "name": "ay",
+            "description": "A",
+            "optional": true,
+            "value-key": "[AY]",
+            "type": "Flag",
+            "command-line-flag": "--ay"
+        },
+        {
+            "id": "help",
+            "name": "help",
+            "description": "Help descriptions",
+            "optional": true,
+            "value-key": "[HELP]",
+            "type": "Flag",
+            "command-line-flag": "--help"
+        },
+        {
+            "id": "version",
+            "name": "version",
+            "description": "Versions",
+            "optional": true,
+            "value-key": "[VERSION]",
+            "type": "Flag",
+            "command-line-flag": "--version"
+        },
+        {
+            "id": "cee",
+            "name": "cee",
+            "description": "C",
+            "optional": true,
+            "value-key": "[CEE]",
+            "type": "Flag",
+            "command-line-flag": "--cee"
+        }
+    ]
 }

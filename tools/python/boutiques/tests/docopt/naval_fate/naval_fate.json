@@ -309,6 +309,18 @@
                 "mine"
             ],
             "mutually-exclusive": true
+        },
+        {
+            "id": "ship_mine_help_help_2_version",
+            "name": "One is required group with members: ship, mine, help, help_2, version",
+            "members": [
+                "ship",
+                "mine",
+                "help",
+                "help_2",
+                "version"
+            ],
+            "one-is-required": true
         }
     ]
 }
