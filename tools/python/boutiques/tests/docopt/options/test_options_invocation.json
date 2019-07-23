@@ -2,7 +2,5 @@
     "X": "testx",
     "Y": "testy",
     "Z": "testz",
-    "ay": true,
-    "bee": false,
-    "cee": false
+    "ay": true
 }
