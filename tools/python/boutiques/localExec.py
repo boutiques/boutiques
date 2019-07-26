@@ -730,9 +730,7 @@ class LocalExecutor(object):
         # Clear the dictionary
         self.in_dict = {}
         # Fill in the parameters depending on require complete
-        for params in [r for r in self.inputs
-                       if (not r.get('optional') and r.get('type') != "Flag") or
-                       self.requireComplete]:
+        for params in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[params['id']] = makeParam(params)
             # Check for mutex between in_dict and last in param
             for group, mbs in [(x, x["members"]) for x in self.groups
@@ -760,34 +758,34 @@ class LocalExecutor(object):
                 for r in res:
                     self.in_dict[r['id']] = makeParam(r)
                 break  # If we were allowed to add a parameter, we can stop
-        # Choose a random number of times to try to fill optional inputs
-        opts = [p for p in self.inputs
-                if self.safeGet(p['id'], '') in [None, True] and
-                p['type'] != "Flag"]
-        # Loop a random number of times, each time
-        #  attempting to fill a random parameter
-        for _ in range(rnd.randint(int(len(opts) / 2 + 1), len(opts) * 2)):
-            targ = rnd.choice(opts)  # Choose an optional output
-            # If it is already filled in, continue
-            if targ['id'] in list(self.in_dict.keys()):
-                continue
-            # If it is a prohibited option, continue
-            # (isFilled case handled above)
-            if not isOrCanBeFilled(targ):
-                continue
-            # Now we handle the mutual requirements case. This is a little
-            # more complex because a mutual requirement
-            # of targ can have its own mutual requirements, ad nauseam.
-            # We need to look at all of them recursively and either
-            # fill all of them in (i.e. at once) or none of them
-            # (e.g. if one of them is disabled by some other param).
-            result = checkMutualRequirements(targ)
-            # Leave if the mutreqs cannot be satisfied
-            if result is False:
-                continue
-            # Fill in the target(s) otherwise
-            for r in result:
-                if self.requireComplete is None or self.requireComplete:
+
+        if self.requireComplete:
+            # Fill in all possible optional inputs
+            opts = [p for p in self.inputs if
+                    self.safeGet(p['id'], 'optional') in [None, True]]
+            random.shuffle(opts)
+            # Loop a random number of times, each time
+            #  attempting to fill a random parameter
+            for option in opts:
+                # If it is already filled in, continue
+                if option['id'] in list(self.in_dict.keys()):
+                    continue
+                # If it is a prohibited option, continue
+                # (isFilled case handled above)
+                if not isOrCanBeFilled(option):
+                    continue
+                # Now we handle the mutual requirements case. This is a little
+                # more complex because a mutual requirement
+                # of targ can have its own mutual requirements, ad nauseam.
+                # We need to look at all of them recursively and either
+                # fill all of them in (i.e. at once) or none of them
+                # (e.g. if one of them is disabled by some other param).
+                result = checkMutualRequirements(option)
+                # Leave if the mutreqs cannot be satisfied
+                if result is False:
+                    continue
+                # Fill in the target(s) otherwise
+                for r in result:
                     self.in_dict[r['id']] = makeParam(r)
 
     # Function to generate random parameter values
