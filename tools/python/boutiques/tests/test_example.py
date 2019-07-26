@@ -21,10 +21,14 @@ class TestExample(TestCase):
                                    stdout=subprocess.PIPE)
         output = json.loads(process.stdout.read())
 
-        self.assertDictEqual({"a1": "a1",
-                              "b1": "b1", "b2": "b2",
-                              "c1": "c1", "c2": "c2",
-                              "d1": True, "d2": True}, output)
+        self.assertTrue("a1" in output or "a2" in output)
+        self.assertTrue("a2" in output or "b2" in output)
+        self.assertIn("b1", output)
+        self.assertIn("b2", output)
+        self.assertIn("c1", output)
+        self.assertIn("c2", output)
+        self.assertIn("d1", output)
+        self.assertIn("d2", output)
 
     def test_example_required_only(self):
         descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
