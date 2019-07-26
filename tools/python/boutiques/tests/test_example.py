@@ -21,10 +21,8 @@ class TestExample(TestCase):
                                    stdout=subprocess.PIPE)
         output = json.loads(process.stdout.read())
 
-        self.assertTrue("a1" in output or "a2" in output)
-        self.assertTrue("a2" in output or "b2" in output)
+        self.assertTrue(("a1" in output and "b2" in output) or "a2" in output)
         self.assertIn("b1", output)
-        self.assertIn("b2", output)
         self.assertIn("c1", output)
         self.assertIn("c2", output)
         self.assertIn("d1", output)
