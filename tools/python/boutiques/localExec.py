@@ -763,7 +763,6 @@ class LocalExecutor(object):
             # Fill in all possible optional inputs
             opts = [p for p in self.inputs if
                     self.safeGet(p['id'], 'optional') in [None, True]]
-            random.shuffle(opts)
             # Loop a random number of times, each time
             #  attempting to fill a random parameter
             for option in opts:
