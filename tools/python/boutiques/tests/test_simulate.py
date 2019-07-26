@@ -181,5 +181,5 @@ class TestSimulate(TestCase):
                                    stdout=subprocess.PIPE)
         output = str(process.stdout.read())
         command = re.search(r"(test[ \da-z]+)", output).group(0)
-        
+
         self.assertNotIn("  ", command)
