@@ -1183,8 +1183,11 @@ class LocalExecutor(object):
             # Check that requirements are present
             for r in self.reqsOf(givenVal['id']):
                 if r not in list(self.in_dict.keys()):
-                    self.errs.append('Input ' + str(givenVal['id']) +
-                                     ' is missing requirement '+str(r))
+                    members = [m['members'] for
+                               m in self.groups if m['id'] == r][0]
+                    if not any(m in list(self.in_dict.keys()) for m in members):
+                        self.errs.append('Input ' + str(givenVal['id']) +
+                                         ' is missing requirement '+str(r))
             for d in (givenVal['disables-inputs']
                       if 'disables-inputs' in list(givenVal.keys()) else []):
                 # Check if a disabler is present
