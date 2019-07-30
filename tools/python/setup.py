@@ -17,7 +17,8 @@ DEPS = [
          "pyyaml",
          "jsonschema",
          "tabulate",
-         "mock"
+         "mock",
+         "nexus-sdk"
        ]
 
 setup(name="boutiques",
