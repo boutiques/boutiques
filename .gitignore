@@ -13,3 +13,4 @@ dist/
 *~
 temp-*.localExec.boshjob.sh
 .vscode
+.idea/
