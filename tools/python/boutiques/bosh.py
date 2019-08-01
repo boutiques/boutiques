@@ -573,17 +573,15 @@ def data(*params):
                             help="Publish to Nexus instead of Zenodo.")
         parser.add_argument("--nexus-token", action="store",
                             help="Nexus API token to use for authentication. ")
-        parser.add_argument("--nexus-endpoint", action="store",
-                            help="Nexus server API endpoint. ")
         results = parser.parse_args(params)
 
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
         return dataHandler.publish(results.file, results.zenodo_token,
                                    results.author, results.nexus_token,
-                                   results.nexus_endpoint, results.individually,
-                                   results.sandbox, results.no_int,
-                                   results.verbose, results.nexus)
+                                   results.individually, results.sandbox,
+                                   results.no_int, results.verbose,
+                                   results.nexus)
 
     if action == "delete":
         parser = ArgumentParser("Delete data record(s) in cache.")

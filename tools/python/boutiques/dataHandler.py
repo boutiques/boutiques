@@ -4,10 +4,10 @@ import requests
 import time
 import hashlib
 import nexussdk as nexus
-from requests.exceptions import HTTPError
 from boutiques.logger import raise_error, print_info
 from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
+from boutiques.nexusHelper import NexusHelper
 
 
 class DataHandler(object):
@@ -55,7 +55,7 @@ class DataHandler(object):
     # Options allow to only publish a single file, publish files individually as
     # data sets or bulk publish all files in the cache as one data set (default)
     def publish(self, file, zenodo_token, author, nexus_token,
-                nexus_endpoint, individually=False, sandbox=False,
+                individually=False, sandbox=False,
                 no_int=False, verbose=False, to_nexus=False):
         self.filename = extractFileName(file)
         self.author = "Anonymous"
@@ -70,21 +70,14 @@ class DataHandler(object):
             self.zenodo_access_token = zenodo_token
             self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
             self.zenodo_endpoint = self.zenodo_helper.get_zenodo_endpoint()
-
-            # Fix Zenodo access token
             self.zenodo_access_token = self.zenodo_helper \
                 .verify_zenodo_access_token(self.zenodo_access_token)
         else:
-            if nexus_token is None or nexus_endpoint is None:
-                print("Please specify nexus endpoint and token using"
-                      "--nexus-token <token> and --nexus-endpoint <endpoint>")
-            nexus.config.set_token(nexus_token)
-            nexus.config.set_environment(nexus_endpoint)
-            try:
-                nexus.permissions.fetch()
-            except HTTPError:
-                print("Nexus token or endpoint invalid")
-                return
+            self.nexus_access_token = nexus_token
+            self.nexus_helper = NexusHelper(sandbox, no_int, verbose)
+            self.nexus_endpoint = self.nexus_helper.get_nexus_endpoint()
+            self.nexus_access_token = self.nexus_helper \
+                .verify_nexus_access_token(self.nexus_access_token)
 
         # Verify publishing
         if not self.no_int:
@@ -101,54 +94,48 @@ class DataHandler(object):
         # Single record publication
         if self.filename is not None:
             self._file_exists_in_cache(self.filename)
-            if self.to_nexus:
-                self._nexus_publish([self.filename])
-            else:
-                self._zenodo_publish([self.filename])
+            self._publish([self.filename])
         # All records published to individual data-sets
         elif individually:
             for file in self.record_files:
-                if self.to_nexus:
-                    self._nexus_publish([self.filename])
-                else:
-                    self._zenodo_publish([file])
+                self._publish([file])
         # All records published to one data-set
         else:
             self.bulk_publish = True
-            if self.to_nexus:
-                self._nexus_publish([self.record_files])
-            else:
-                self._zenodo_publish([self.record_files])
+            self._publish(self.record_files)
 
     # Private method to publish all the records in file_list to a single
-    # data-set on Nexus
-    def _nexus_publish(self, files_list):
-        return
-
-    # Private method to publish all the records in file_list to a single
-    # data-set on Zenodo
-    def _zenodo_publish(self, files_list):
+    # data-set on Zenodo or Nexus
+    def _publish(self, files_list):
         # Filter files_list by records with Zenodo ids
         records_dict = self._checkPulblishable(files_list)
         # Publishable list is empty, end execution
         if len(records_dict) == 0:
             return
 
-        # Create deposition
-        deposition_id = self.zenodo_helper.zenodo_deposit(
-            self._create_metadata(records_dict), self.zenodo_access_token)
+        # Publish to Nexus
+        if self.to_nexus:
+            for file in files_list:
+                nexus.files.create(org_label="boutiques", project_label="test",
+                                   filepath=os.path.join(self.cache_dir, file))
 
-        # Upload all files in files_list to deposition
-        for file in records_dict.keys():
-            self._zenodo_upload_dataset(deposition_id, file)
+        # Publish to Zenodo
+        else:
+            # Create deposition
+            deposition_id = self.zenodo_helper.zenodo_deposit(
+                self._create_metadata(records_dict), self.zenodo_access_token)
 
-        # Publish deposition
-        msg_obj = "Records" if self.bulk_publish else "Record"
-        doi = self.zenodo_helper.zenodo_publish(self.zenodo_access_token,
-                                                deposition_id, msg_obj)
-        # Clear cache of published records
-        if doi:
-            self._clean_cache(records_dict)
+            # Upload all files in files_list to deposition
+            for file in records_dict.keys():
+                self._zenodo_upload_dataset(deposition_id, file)
+
+            # Publish deposition
+            msg_obj = "Records" if self.bulk_publish else "Record"
+            doi = self.zenodo_helper.zenodo_publish(self.zenodo_access_token,
+                                                    deposition_id, msg_obj)
+            # Clear cache of published records
+            if doi:
+                self._clean_cache(records_dict)
 
     # Private function to filter out records that can not be published
     # because they lack a descriptor doi
