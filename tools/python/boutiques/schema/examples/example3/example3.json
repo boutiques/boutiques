@@ -1,11 +1,10 @@
 {
-    "command-line": "echo '[STRING_INPUT]' &> [LOG]",
-    "description": "This property describes the tool or application",
+    "command-line": "echo '[STRING_INPUT]' [FILE_INPUT] &> [LOG]",
     "container-image": {
-        "image": "ubuntu:latest", 
+        "image": "ubuntu:latest",
         "type": "docker"
     },
-    "shell": "/bin/bash",
+    "description": "This property describes the tool or application",
     "inputs": [
         {
             "default-value": "aStringValue",
@@ -17,6 +16,14 @@
             "name": "A string input",
             "type": "String",
             "value-key": "[STRING_INPUT]"
+        },
+        {
+            "default-value": "/path/to/a/FileValue.txt",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "file_input",
+            "name": "A file input",
+            "type": "File",
+            "value-key": "[FILE_INPUT]"
         }
     ],
     "invocation-schema": {
@@ -38,7 +45,8 @@
             }
         },
         "required": [
-            "str_input"
+            "str_input",
+            "file_input"
         ],
         "title": "Example Boutiques Tool.invocationSchema",
         "type": "object"
@@ -49,7 +57,7 @@
             "description": "The output log file from the example tool",
             "id": "logfile",
             "name": "Log file",
-            "path-template": "log.txt",
+            "path-template": "log-[FILE_INPUT].txt",
             "path-template-stripped-extensions": [
                 ".txt",
                 ".csv"
@@ -58,5 +66,6 @@
         }
     ],
     "schema-version": "0.5",
+    "shell": "/bin/bash",
     "tool-version": "0.0.1"
 }

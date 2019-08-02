@@ -13,7 +13,7 @@ class Searcher():
 
     def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
-        if query is not None:
+        if len(query or '') > 0:
             self.query = query
         else:
             self.query = 'boutiques'
