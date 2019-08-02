@@ -126,6 +126,8 @@ def execute(*params):
         parser.add_argument("--skip-data-collection", action="store_true",
                             help="Skips execution data collection and saving"
                             "to cache.")
+        parser.add_argument("--provenance", action="store", type=json.loads,
+                            help="Append provenance object to the generated record.")
         force_group = parser.add_mutually_exclusive_group()
         force_group.add_argument("--force-docker", action="store_true",
                                  help="Tries to run Singularity images with "
@@ -153,7 +155,8 @@ def execute(*params):
                                       results.skip_data_collection,
                                   "forceDocker": results.force_docker,
                                   "forceSingularity":
-                                      results.force_singularity})
+                                      results.force_singularity,
+                                  "provenance": results.provenance})
         # Execute it
         return executor.execute(results.volumes)
 

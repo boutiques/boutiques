@@ -1282,10 +1282,11 @@ class LocalExecutor(object):
         date_time = datetime.datetime.now().isoformat()
         tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
-        # Combine three modules in master dictionary
+        # Combine three modules plus provenance in master dictionary
         data_dict = {'summary': self.summary,
                      'public-invocation': self.public_in,
-                     'public-output': self.public_out}
+                     'public-output': self.public_out,
+                     'additional-information': self.provenance}
         # Convert dictionary to Json string
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file
