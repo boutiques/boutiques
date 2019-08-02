@@ -69,13 +69,13 @@ class DataHandler(object):
         if not self.to_nexus:
             self.zenodo_access_token = zenodo_token
             self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
-            self.zenodo_endpoint = self.zenodo_helper.get_zenodo_endpoint()
+            self.zenodo_endpoint = self.zenodo_helper.zenodo_endpoint
             self.zenodo_access_token = self.zenodo_helper \
                 .verify_zenodo_access_token(self.zenodo_access_token)
         else:
             self.nexus_access_token = nexus_token
             self.nexus_helper = NexusHelper(sandbox, no_int, verbose)
-            self.nexus_endpoint = self.nexus_helper.get_nexus_endpoint()
+            self.nexus_endpoint = self.nexus_helper.nexus_endpoint
             self.nexus_access_token = self.nexus_helper \
                 .verify_nexus_access_token(self.nexus_access_token)
 

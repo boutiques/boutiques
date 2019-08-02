@@ -11,6 +11,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
+from boutiques.nexusHelper import NexusError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
@@ -722,6 +723,7 @@ OTHER
             raise SystemExit
 
     except (ZenodoError,
+            NexusError,
             DescriptorValidationError,
             InvocationValidationError,
             ValidationError,
