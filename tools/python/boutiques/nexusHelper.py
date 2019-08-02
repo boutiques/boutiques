@@ -54,8 +54,9 @@ class NexusHelper(object):
                        format(self.config_file))
 
     def get_nexus_endpoint(self):
+        # change once nexus is setup
         endpoint = "https://sandbox.bluebrainnexus.io/v1" if self.sandbox \
-            else "https://sandbox.bluebrainnexus.io/v1"  # change once nexus is setup
+            else "https://sandbox.bluebrainnexus.io/v1"
         if self.verbose:
             print_info("Using Nexus endpoint {0}"
                        .format(endpoint))
@@ -83,7 +84,8 @@ class NexusHelper(object):
         try:
             nexus.permissions.fetch()
         except ConnectionError as e:
-            raise_error(NexusError, "Cannot access Nexus endpoint", e.response)
+            raise_error(NexusError,
+                        "Cannot access Nexus endpoint", e.response)
         if self.verbose:
             print_info("Nexus endpoint is accessible")
 
@@ -96,9 +98,11 @@ class NexusHelper(object):
         except HTTPError as e:
             if 404 == e.response.status_code:
                 raise_error(NexusError,
-                            "No organization called 'boutiques' in Nexus repository", e.response)
+                            "No organization called 'boutiques' "
+                            "in Nexus repository", e.response)
             elif 401 == e.response.status_code:
                 raise_error(NexusError,
-                            "Cannot authenticate to Nexus API, check your access token", e.response)
+                            "Cannot authenticate to Nexus API, check "
+                            "your access token", e.response)
             else:
                 raise_error(NexusError, "Something went wrong", e.response)
