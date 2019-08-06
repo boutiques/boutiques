@@ -104,10 +104,8 @@ class Importer():
                 entrypoint = split[1].strip("[]\"")
         return entrypoint
 
-    def import_docopt(self):
-        path, fil = op.split(__file__)
-        template_file = op.join(
-            path, "templates", "template_docopt_descriptor.json")
+    def import_docopt(self, desc_path):
+        template_file = op.join(desc_path)
         docstring = imp.load_source(
             'docopt_pyscript', self.input_descriptor).__doc__
 
@@ -436,6 +434,9 @@ class Docopt_Importer():
         with open(base_descriptor, "r") as base_desc:
             self.descriptor = collections.OrderedDict(json.load(base_desc))
 
+        del self.descriptor['groups']
+        del self.descriptor['inputs']
+        del self.descriptor['output-files']
         self.docopt_str = docopt_str
         self.dependencies = collections.OrderedDict()
         self.all_desc_and_type = collections.OrderedDict()
@@ -461,6 +462,7 @@ class Docopt_Importer():
                     set(doc_options) - pattern_options)
             matched, left, collected = self.pattern.fix().match(argv)
         except Exception:
+            os.remove(base_descriptor)
             raise_error(ImportError, "Invalid docopt script")
 
     def loadDocoptDescription(self):

@@ -20,6 +20,11 @@ import subprocess
 
 class TestImport(TestCase):
 
+    @pytest.fixture(scope='session', autouse=True)
+    def clean_up(self):
+        yield
+        os.remove("user-image.simg")
+
     def test_import_bids_good(self):
         bids_app = opj(op.split(bfile)[0],
                        "schema/examples/bids-apps/example_good")

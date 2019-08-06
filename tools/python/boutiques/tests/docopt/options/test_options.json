@@ -1,42 +1,30 @@
 {
-    "command-line": "test_import [X] [Y] [Z] [BEE] [AY] [HELP] [VERSION] [CEE]",
+    "command-line": "test_import [X] [Y] [Z] [CEE] [BEE] [HELP] [AY] [VERSION]",
     "container-image": {
-        "entrypoint": false,
-        "image": "INSERT_IMAGE",
-        "index": "INSERT_INDEX",
-        "type": "docker"
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
     },
     "description": "Sample Docopt script for bosh import testing",
     "error-codes": [
         {
             "code": 1,
-            "description": "INSERT_DESCRIPTION"
+            "description": "Crashed"
         }
     ],
-    "name": "INSERT_NAME",
-    "output-files": [
-        {
-            "id": "INSERT_ID",
-            "name": "INSERT_NAME",
-            "optional": true,
-            "path-template": "INSERT_PATH ex:[OUTDIR]/reg_dti/[DTI]_aligned.nii.gz",
-            "path-template-stripped-extensions": [
-                "INSERT_EXTENSION"
-            ]
-        }
-    ],
+    "name": "tool name",
     "schema-version": "0.5",
     "suggested-resources": {
         "cpu-cores": 1,
-        "ram": 12,
-        "walltime-estimate": 3600
+        "ram": 1,
+        "walltime-estimate": 60
     },
     "tags": {
-        "domain": "testing",
-        "status": "experimental",
-        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
+        "foo": "bar",
+        "purpose": "testing",
+        "status": "example"
     },
-    "tool-version": "INSERT_TOOL_VERSION",
+    "tool-version": "v0.1.0",
     "inputs": [
         {
             "id": "X",
@@ -63,6 +51,15 @@
             "type": "String"
         },
         {
+            "id": "cee",
+            "name": "cee",
+            "description": "C",
+            "optional": true,
+            "value-key": "[CEE]",
+            "type": "Flag",
+            "command-line-flag": "--cee"
+        },
+        {
             "id": "bee",
             "name": "bee",
             "description": "B",
@@ -70,15 +67,6 @@
             "value-key": "[BEE]",
             "type": "Flag",
             "command-line-flag": "--bee"
-        },
-        {
-            "id": "ay",
-            "name": "ay",
-            "description": "A",
-            "optional": true,
-            "value-key": "[AY]",
-            "type": "Flag",
-            "command-line-flag": "--ay"
         },
         {
             "id": "help",
@@ -90,6 +78,15 @@
             "command-line-flag": "--help"
         },
         {
+            "id": "ay",
+            "name": "ay",
+            "description": "A",
+            "optional": true,
+            "value-key": "[AY]",
+            "type": "Flag",
+            "command-line-flag": "--ay"
+        },
+        {
             "id": "version",
             "name": "version",
             "description": "Versions",
@@ -97,15 +94,6 @@
             "value-key": "[VERSION]",
             "type": "Flag",
             "command-line-flag": "--version"
-        },
-        {
-            "id": "cee",
-            "name": "cee",
-            "description": "C",
-            "optional": true,
-            "value-key": "[CEE]",
-            "type": "Flag",
-            "command-line-flag": "--cee"
         }
     ]
 }

@@ -1,42 +1,30 @@
 {
     "command-line": "naval_fate [SHIP] [NEW] [LIST_OF_NAME] [NAME] [MOVE] [X] [Y] [SPEED] [SHOOT] [X_2] [Y_2] [MINE] [SET] [REMOVE] [X_3] [Y_3] [MOORED] [DRIFTING] [HELP] [HELP_2] [VERSION]",
     "container-image": {
-        "entrypoint": false,
-        "image": "INSERT_IMAGE",
-        "index": "INSERT_INDEX",
-        "type": "docker"
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
     },
     "description": "Naval Fate.",
     "error-codes": [
         {
             "code": 1,
-            "description": "INSERT_DESCRIPTION"
+            "description": "Crashed"
         }
     ],
-    "name": "INSERT_NAME",
-    "output-files": [
-        {
-            "id": "INSERT_ID",
-            "name": "INSERT_NAME",
-            "optional": true,
-            "path-template": "INSERT_PATH ex:[OUTDIR]/reg_dti/[DTI]_aligned.nii.gz",
-            "path-template-stripped-extensions": [
-                "INSERT_EXTENSION"
-            ]
-        }
-    ],
+    "name": "tool name",
     "schema-version": "0.5",
     "suggested-resources": {
         "cpu-cores": 1,
-        "ram": 12,
-        "walltime-estimate": 3600
+        "ram": 1,
+        "walltime-estimate": 60
     },
     "tags": {
-        "domain": "testing",
-        "status": "experimental",
-        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
+        "foo": "bar",
+        "purpose": "testing",
+        "status": "example"
     },
-    "tool-version": "INSERT_TOOL_VERSION",
+    "tool-version": "v0.1.0",
     "inputs": [
         {
             "id": "ship",

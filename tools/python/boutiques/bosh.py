@@ -273,7 +273,8 @@ def importer(*params):
     elif results.type == "cwl":
         importer.import_cwl()
     elif results.type == "dcpt":
-        importer.import_docopt()
+        create(params[1])
+        importer.import_docopt(params[1])
 
 
 def exporter(*params):

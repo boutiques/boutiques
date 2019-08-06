@@ -1,42 +1,30 @@
 {
     "command-line": "test_import [X] [A] [LIST_OF_LIST] [B] [G] [B_2] [BAR1] [BAR2] [FOO1] [FOO2] [FOO3] [G_2] [BAR1_2] [BAR2_2] [C] [D1] [D2] [D3] [D4] [D5] [Y] [M1] [M2] [M31] [M41] [DESC1] [M32] [M42] [DESC2] [HELP] [HELP_2]",
     "container-image": {
-        "entrypoint": false,
-        "image": "INSERT_IMAGE",
-        "index": "INSERT_INDEX",
-        "type": "docker"
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
     },
     "description": "Sample Docopt script for bosh import testing",
     "error-codes": [
         {
             "code": 1,
-            "description": "INSERT_DESCRIPTION"
+            "description": "Crashed"
         }
     ],
-    "name": "INSERT_NAME",
-    "output-files": [
-        {
-            "id": "INSERT_ID",
-            "name": "INSERT_NAME",
-            "optional": true,
-            "path-template": "INSERT_PATH ex:[OUTDIR]/reg_dti/[DTI]_aligned.nii.gz",
-            "path-template-stripped-extensions": [
-                "INSERT_EXTENSION"
-            ]
-        }
-    ],
+    "name": "tool name",
     "schema-version": "0.5",
     "suggested-resources": {
         "cpu-cores": 1,
-        "ram": 12,
-        "walltime-estimate": 3600
+        "ram": 1,
+        "walltime-estimate": 60
     },
     "tags": {
-        "domain": "testing",
-        "status": "experimental",
-        "INSERT_TAG_NAME": "INSERT_TAG_VALUE"
+        "foo": "bar",
+        "purpose": "testing",
+        "status": "example"
     },
-    "tool-version": "INSERT_TOOL_VERSION",
+    "tool-version": "v0.1.0",
     "inputs": [
         {
             "id": "X",
