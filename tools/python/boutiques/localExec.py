@@ -491,7 +491,7 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isDockerInstalled(self):
-        return not subprocess.Popen("type docker", shell=True).wait()
+        return not subprocess.Popen("type docker 1>/dev/null", shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
