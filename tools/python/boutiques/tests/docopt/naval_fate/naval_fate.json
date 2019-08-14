@@ -32,7 +32,10 @@
             "description": "",
             "optional": true,
             "value-key": "[SHIP]",
-            "type": "String"
+            "type": "String",
+            "requires-inputs": [
+                "new_name_shoot"
+            ]
         },
         {
             "id": "new",
@@ -159,6 +162,7 @@
             "optional": true,
             "value-key": "[MINE]",
             "requires-inputs": [
+                "set_remove",
                 "x_3",
                 "y_3"
             ],
@@ -308,7 +312,8 @@
                 "help_2",
                 "version"
             ],
-            "one-is-required": true
+            "one-is-required": true,
+            "mutually-exclusive": true
         }
     ]
 }
