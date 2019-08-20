@@ -176,7 +176,7 @@ class LocalExecutor(object):
 
     # Retrieves the parameter corresponding to the given id
     def byId(self, n):
-        return [v for v in self.inputs if v['id'] == n][0]
+        return [v for v in self.inputs+self.outputs if v['id'] == n][0]
 
     # Retrieves the group corresponding to the given id
     def byGid(self, g):
@@ -203,10 +203,6 @@ class LocalExecutor(object):
 
     # Returns the required inputs of a given input id, or the empty string
     def reqsOf(self, t):
-        if t in [g['id'] for g in self.groups]:
-            req_mbrs = self.safeGrpGet(t, "members")
-            rnd_mbr = req_mbrs[rnd.randint(0, len(req_mbrs) - 1)]
-            return [rnd_mbr] or []
         return self.safeGet(t, "requires-inputs") or []
 
     # Attempt local execution of the command line
@@ -668,15 +664,11 @@ class LocalExecutor(object):
 
         # Returns the list of mutually requiring parameters of the target
         def mutReqs(targetParam):
-            reqOfTarg = [(reqOfTarg, self.reqsOf(reqOfTarg)) for reqOfTarg in
+            return [self.byId(mutualReq[0]) for mutualReq in
+                    [possibleMutReq for possibleMutReq in
+                     [(reqOfTarg, self.reqsOf(reqOfTarg)) for reqOfTarg in
                          self.reqsOf(targetParam['id'])]
-            for idx, req in enumerate(reqOfTarg):
-                if req[0] in [g['id'] for g in self.groups]:
-                    reqOfTarg[idx] = (req[1][0], self.reqsOf(req[1][0]))
-            mutualReq = [possibleMutReq for possibleMutReq in reqOfTarg
-                         if targetParam['id'] in possibleMutReq[1]]
-            req_inps = [self.byId(mutualReq[0]) for mutualReq in mutualReq]
-            return req_inps
+                     if targetParam['id'] in possibleMutReq[1]]]
 
         # Returns whether targ (an input parameter) has a
         # value or is allowed to have one
@@ -694,25 +686,9 @@ class LocalExecutor(object):
             # If at least one non-mutual requirement has
             # not been met, it cannot be filled
             for r in self.reqsOf(targ['id']):
-                if r in [grp['id'] for grp in self.groups]:
-                    # if r is a group
-                    isMemberOfGroup = False
-                    for greq in self.reqsOf(r):
-                        if greq in self.in_dict or\
-                           targ['id'] in self.reqsOf(greq):
-                            # if targ is requirement of one of the group members
-                            isMemberOfGroup = True
-                    if not isMemberOfGroup:
-                        return False
-                elif r not in self.in_dict:
-                    # If a requirement is not present
-                    isMemberOfGroup = False
-                    for req in self.reqsOf(r):
-                        if req in [grp['id'] for grp in self.groups] and\
-                           targ['id'] in self.reqsOf(req):
-                            # if targ is member of required group
-                            isMemberOfGroup = True
-                    if not isMemberOfGroup and targ['id'] not in self.reqsOf(r):
+                if r not in self.in_dict:  # If a requirement is not present
+                    # and it is not mutually required
+                    if targ['id'] not in self.reqsOf(r):
                         return False
             # If it is in a mutex group with one target already chosen,
             # it cannot be filled
@@ -1199,17 +1175,14 @@ class LocalExecutor(object):
             if reqId not in list(self.in_dict.keys()):
                 self.errs.append('Required input ' + str(reqId) +
                                  ' is not present')
-        print(list(self.in_dict.keys()))
         # Disables/requires is satisfied
         for givenVal in [v for v in self.inputs
                          if v['id'] in list(self.in_dict.keys())]:
             # Check that requirements are present
             for r in self.reqsOf(givenVal['id']):
                 if r not in list(self.in_dict.keys()):
-                    print(givenVal['id'] + " requires: " + r)
                     members = [m['members'] for
-                               m in self.groups if m['id'] == r][0] if\
-                        r in [g['id'] for g in self.groups] else [r]
+                               m in self.groups if m['id'] == r][0]
                     if not any(m in list(self.in_dict.keys()) for m in members):
                         self.errs.append('Input ' + str(givenVal['id']) +
                                          ' is missing requirement '+str(r))
