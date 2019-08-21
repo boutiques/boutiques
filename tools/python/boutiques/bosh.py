@@ -127,8 +127,7 @@ def execute(*params):
                             help="Skips execution data collection and saving"
                             "to cache.")
         parser.add_argument("--provenance", action="store", type=json.loads,
-                            help="Append provenance object to the "
-                                 "generated record.")
+                            help="Append JSON object to the generated record.")
         force_group = parser.add_mutually_exclusive_group()
         force_group.add_argument("--force-docker", action="store_true",
                                  help="Tries to run Singularity images with "
@@ -577,12 +576,17 @@ def data(*params):
                             help="Publish to Nexus instead of Zenodo.")
         parser.add_argument("--nexus-token", action="store",
                             help="Nexus API token to use for authentication. ")
+        parser.add_argument("--nexus-org", action="store",
+                            help="Nexus organization to publish to. ")
+        parser.add_argument("--nexus-project", action="store",
+                            help="Nexus project to publish to. ")
         results = parser.parse_args(params)
 
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
         return dataHandler.publish(results.file, results.zenodo_token,
                                    results.author, results.nexus_token,
+                                   results.nexus_org, results.nexus_project,
                                    results.individually, results.sandbox,
                                    results.no_int, results.verbose,
                                    results.nexus)

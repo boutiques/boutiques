@@ -17,9 +17,11 @@ DEPS = [
          "pyyaml",
          "jsonschema",
          "tabulate",
-         "mock",
-         "nexus-sdk"
+         "mock"
        ]
+
+if sys.version_info >= (3, 5):
+    DEPS.append("nexus-sdk")
 
 setup(name="boutiques",
       version=VERSION,

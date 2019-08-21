@@ -169,3 +169,54 @@ class TestDataCollection(BaseTest):
         self.assertEqual(len(files), 2)
 
         self.clean_up()
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_add_provenance(self):
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        provenance = """{
+            \"engine\": \"http://cbrain.ca\",
+            \"dataset id\": \"1234\",
+            \"cluster\": \"beluga\"
+        }"""
+        bosh.execute("launch",
+                     os.path.join(example1_dir,
+                                  "example1_docker.json"),
+                     os.path.join(example1_dir,
+                                  "invocation.json"),
+                     "-v", "{}:/test_mount1".format(
+                self.get_file_path("example1_mount1")),
+                     "-v", "{}:/test_mount2".format(
+                self.get_file_path("example1_mount2")),
+                     "--provenance", provenance)
+        data_collect_dict = retrieve_data_record()
+
+        summary = data_collect_dict.get("summary")
+        self.assertIsNotNone(summary)
+        self.assertEqual(summary.get("name"), "Example Boutiques Tool")
+        public_in = data_collect_dict.get("public-invocation")
+        self.assertIsNotNone(public_in)
+        self.assertEqual(public_in.get("config_num"), 4)
+        self.assertEqual(public_in.get("enum_input"), "val1")
+        file_input = public_in.get("file_input")
+        self.assertIsNotNone(file_input)
+        self.assertEqual(file_input.get("file-name"), "setup.py")
+        self.assertIsNotNone(file_input.get("md5sum"))
+        public_out = data_collect_dict.get("public-output")
+        self.assertIsNotNone(public_out)
+        self.assertEqual(public_out.get("stdout"), "This is stdout")
+        self.assertEqual(public_out.get("stderr"), "This is stderr")
+        self.assertEqual(public_out.get("exit-code"), 0)
+        self.assertEqual(public_out.get("error-message"), "")
+        output_files = public_out.get("output-files")
+        self.assertIsNotNone(output_files)
+        self.assertIsNotNone(output_files.get("logfile"))
+        self.assertIsNotNone(output_files.get("config_file"))
+        logfile = output_files.get("logfile")
+        self.assertEqual(logfile.get("file-name"), "log-4-coin;plop.txt")
+        provenance = data_collect_dict.get("additional-information")
+        self.assertEqual(provenance.get("engine"), "http://cbrain.ca")
+        self.assertEqual(provenance.get("dataset id"), "1234")
+        self.assertEqual(provenance.get("cluster"), "beluga")
+
+        self.clean_up()

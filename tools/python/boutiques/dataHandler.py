@@ -3,7 +3,6 @@ import os
 import requests
 import time
 import hashlib
-import nexussdk as nexus
 from boutiques.logger import raise_error, print_info
 from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
@@ -55,6 +54,7 @@ class DataHandler(object):
     # Options allow to only publish a single file, publish files individually as
     # data sets or bulk publish all files in the cache as one data set (default)
     def publish(self, file, zenodo_token, author, nexus_token,
+                nexus_org, nexus_project,
                 individually=False, sandbox=False,
                 no_int=False, verbose=False, to_nexus=False):
         self.filename = extractFileName(file)
@@ -73,11 +73,11 @@ class DataHandler(object):
             self.zenodo_access_token = self.zenodo_helper \
                 .verify_zenodo_access_token(self.zenodo_access_token)
         else:
-            self.nexus_access_token = nexus_token
             self.nexus_helper = NexusHelper(sandbox, no_int, verbose)
             self.nexus_endpoint = self.nexus_helper.nexus_endpoint
-            self.nexus_access_token = self.nexus_helper \
-                .verify_nexus_access_token(self.nexus_access_token)
+            self.nexus_access_token, self.nexus_org, self.nexus_project = \
+                self.nexus_helper.verify_nexus_input(
+                    nexus_token, nexus_org, nexus_project)
 
         # Verify publishing
         if not self.no_int:
@@ -116,8 +116,8 @@ class DataHandler(object):
         # Publish to Nexus
         if self.to_nexus:
             for file in files_list:
-                nexus.files.create(org_label="boutiques", project_label="test",
-                                   filepath=os.path.join(self.cache_dir, file))
+                self.nexus_helper.publish(self.nexus_org, self.nexus_project,
+                                          os.path.join(self.cache_dir, file))
 
         # Publish to Zenodo
         else:
@@ -212,17 +212,19 @@ class DataHandler(object):
             print_info("Record uploaded to Zenodo", r)
 
     def _get_publishing_prompt(self):
-        _repository = "Nexus" if self.to_nexus else "Zenodo"
+        _destination = "Nexus in organization '{}' and project '{}'" \
+            .format(self.nexus_org, self.nexus_project) \
+            if self.to_nexus else "Zenodo"
         if self.filename is not None:
             return ("The dataset {} will be published to {}, "
                     "this cannot be undone. Are you sure? (Y/n) "
-                    .format(self.filename, _repository))
+                    .format(self.filename, _destination))
         if self.individual:
             return ("The records will be published to {} each as "
-                    "separate data-sets. This cannont be undone. Are you "
-                    "sure? (Y/n ". format(_repository))
+                    "separate data-sets. This cannot be undone. Are you "
+                    "sure? (Y/n ". format(_destination))
         return ("The records will be published to {} as a data-set. This "
-                "cannot be undone. Are you sure? (Y/n) ".format(_repository))
+                "cannot be undone. Are you sure? (Y/n) ".format(_destination))
 
     # Private function to remove published files and descriptors which no
     # longer have dependencies
