@@ -203,6 +203,8 @@ class LocalExecutor(object):
 
     # Returns the required inputs of a given input id, or the empty string
     def reqsOf(self, t):
+        if t in [g['id'] for g in self.groups]:
+            return self.safeGrpGet(t, "members") or []
         return self.safeGet(t, "requires-inputs") or []
 
     # Attempt local execution of the command line
@@ -683,13 +685,6 @@ class LocalExecutor(object):
                                                  'disables-inputs') or []):
                 if d in list(self.in_dict.keys()):
                     return False
-            # If at least one non-mutual requirement has
-            # not been met, it cannot be filled
-            for r in self.reqsOf(targ['id']):
-                if r not in self.in_dict:  # If a requirement is not present
-                    # and it is not mutually required
-                    if targ['id'] not in self.reqsOf(r):
-                        return False
             # If it is in a mutex group with one target already chosen,
             # it cannot be filled
             # Get the group that the target belongs to, if any
@@ -700,6 +695,27 @@ class LocalExecutor(object):
                         if x in list(self.in_dict.keys())]) > 0:
                     return False
             return True
+
+        # For optional params, don't add if it requires inputs not
+        # already chosen. Requires-complete can be satisfied but is
+        # too complicated to check without building dependency tree.
+        # (Added after requires-inputs: group was implemented)
+        def groupMemberCanBeAdded(targ):
+            # if target is a group member
+            if targ['id'] in [m for g in self.groups for m in g['members']]:
+                for req in self.reqsOf(targ['id']):
+                    # If targ requires group input and one of required members
+                    # has been chosen
+                    if req in [g['id'] for g in self.groups] and\
+                       len(set(self.reqsOf(req))
+                       .intersection(set(self.in_dict))) == 1:
+                        continue
+                    elif req not in self.in_dict:
+                        return False
+                return True
+            elif set(self.reqsOf(targ['id'])).issubset(set(self.in_dict)):
+                return True
+            return False
 
         # Handle the mutual requirement case by breadth first search in
         # the graph of mutual requirements. Essentially a graph is built,
@@ -723,8 +739,15 @@ class LocalExecutor(object):
                 if not isOrCanBeFilled(current):
                     return False
                 for mutreq in mutReqs(current):
-                    if not mutreq['id'] in [c['id'] for c in checked]:
+                    if not mutreq['id'] in [c['id'] for c in checked] and\
+                       mutreq['id'] not in [g['id'] for g in self.groups]:
                         toCheck.append(mutreq)
+                for greq in [g for g in self.reqsOf(current['id']) if
+                             g in [grp['id'] for grp in self.groups] and
+                             self.safeGrpGet(g, "mutually-exclusive")]:
+                    # Add random member if current requires mutex group
+                    rndMember = rnd.choice(self.safeGrpGet(greq, "members"))
+                    toCheck.append({i['id']: i for i in self.inputs}[rndMember])
             return checked
 
         # Start actual dictionary filling part
@@ -773,6 +796,10 @@ class LocalExecutor(object):
                 # If it is a prohibited option, continue
                 # (isFilled case handled above)
                 if not isOrCanBeFilled(option):
+                    continue
+                # Implementation without building dependency tree
+                # (should redo localexec)
+                if not groupMemberCanBeAdded(option):
                     continue
                 # Now we handle the mutual requirements case. This is a little
                 # more complex because a mutual requirement
@@ -1181,8 +1208,7 @@ class LocalExecutor(object):
             # Check that requirements are present
             for r in self.reqsOf(givenVal['id']):
                 if r not in list(self.in_dict.keys()):
-                    members = [m['members'] for
-                               m in self.groups if m['id'] == r][0]
+                    members = self.safeGrpGet(r, "members")
                     if not any(m in list(self.in_dict.keys()) for m in members):
                         self.errs.append('Input ' + str(givenVal['id']) +
                                          ' is missing requirement '+str(r))

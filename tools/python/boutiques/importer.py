@@ -117,8 +117,7 @@ class Importer():
         dcptImptr.addInputsRecursive(dcptImptr.dependencies)
         dcptImptr.determineOptionality()
         dcptImptr.createRootOneIsRequiredGroup()
-        dcptImptr._removeGroupsFromRequires()
-        dcptImptr._removeGroupsFromGroups()
+
 
         with open(self.output_descriptor, "w") as output:
             output.write(json.dumps(dcptImptr.descriptor, indent=4))
@@ -698,7 +697,16 @@ class Docopt_Importer():
                 if not node[name]['optional']:
                     mutex_names.append(node[name]['name'])
             if len(mutex_names) > 1:
-                self._addMutexGroup(mutex_names)
+                mtxgrp_name = self._addMutexGroup(mutex_names)
+                if node[args_ids[0]]['parent']:
+                    # add mutex group to parent node's requires-inputs
+                    p_name = node[args_ids[0]]['parent']['name']
+                    inputs = {inp['id']: inp
+                              for inp in self.descriptor['inputs']}
+                    if 'requires-inputs' in inputs[p_name]:
+                        inputs[p_name]['requires-inputs'].append(mtxgrp_name)
+                    else:
+                        inputs[p_name]['requires-inputs'] = [mtxgrp_name]
 
     def _addInputOrMutexGroupToDescriptor(self, node, requires,
                                           addInputWithLineage=False):
@@ -772,7 +780,20 @@ class Docopt_Importer():
         }
         if "groups" not in self.descriptor:
             self.descriptor['groups'] = []
+        else:
+            # Check/flatten nested groups
+            groups = {g['id']: g for g in self.descriptor['groups']}
+            nested_grps = []
+            for member in new_group['members']:
+                if member in [g['id'] for g in self.descriptor['groups']]:
+                    nested_grps.append(member)
+                    new_group['members'].extend(groups[member]['members'])
+            for nested_g in nested_grps:
+                new_group['members'].remove(nested_g)
+            new_group["name"] = "Mutex group with members: {0}".format(
+                ", ".join(new_group["members"]))
         self.descriptor['groups'].append(new_group)
+        return new_group['id']
 
     def determineOptionality(self):
         # Change optionality of inputs to false,
@@ -799,7 +820,8 @@ class Docopt_Importer():
             "name": "One is required group with members: {0}".format(
                 ", ".join(OIR_ids)),
             "members": OIR_ids,
-            "one-is-required": True
+            "one-is-required": True,
+            "mutually-exclusive": True
         }
         if len(OIR_ids) > 1:
             if "groups" not in self.descriptor:
