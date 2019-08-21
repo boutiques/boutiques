@@ -185,9 +185,9 @@ class TestDataCollection(BaseTest):
                      os.path.join(example1_dir,
                                   "invocation.json"),
                      "-v", "{}:/test_mount1".format(
-                self.get_file_path("example1_mount1")),
+                        self.get_file_path("example1_mount1")),
                      "-v", "{}:/test_mount2".format(
-                self.get_file_path("example1_mount2")),
+                        self.get_file_path("example1_mount2")),
                      "--provenance", provenance)
         data_collect_dict = retrieve_data_record()
 
