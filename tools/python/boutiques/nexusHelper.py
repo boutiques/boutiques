@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
-from builtins import Exception,\
-    object, NameError, input, IOError, ValueError, ImportError
+from builtins import Exception, object, NameError, input
+from builtins import IOError, ValueError, ImportError
 from codecs import open
 
 import simplejson as json
