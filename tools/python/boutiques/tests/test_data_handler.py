@@ -31,6 +31,10 @@ def mock_get_data_cache():
     return os.path.join(os.path.dirname(bfile), "tests", "test-data-cache")
 
 
+def mock_get_data_cache_file():
+    return os.path.join(os.path.dirname(bfile), "tests", "test-data-cache", "nexus")
+
+
 def mock_get_publish_single():
     return ([mock_zenodo_test_api_fail(),
              mock_zenodo_test_api(),
@@ -278,8 +282,8 @@ class TestDataHandler(TestCase):
             'Python version has to be >= 3.5')
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
-    @mock.patch('boutiques.nexusHelper.NexusHelper.save_nexus_inputs',
-                return_value=mock_empty_function())
+    @mock.patch('boutiques.nexusHelper.NexusHelper.get_config_file',
+                return_value=mock_get_data_cache_file())
     @mock.patch('boutiques.nexusHelper.NexusHelper.nexus_test_api',
                 return_value=mock_empty_function())
     @mock.patch('nexussdk.files.create',
@@ -294,7 +298,7 @@ class TestDataHandler(TestCase):
             bosh(["data", "publish", "-y", "--nexus", "--sandbox",
                   "--nexus-token", "hAaW2wSBZMskxpfigTYHcuDrCPWr2",
                   "--nexus-org", "test", "--nexus-project",
-                  "test"])
+                  "test", "-v"])
         except Exception as e:
             self.fail("Unexpected exception raised: " + str(e))
 

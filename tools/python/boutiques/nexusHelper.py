@@ -27,7 +27,7 @@ class NexusHelper(object):
         self.sandbox = sandbox
         self.no_int = no_int
         self.verbose = verbose
-        self.config_file = os.path.join(os.path.expanduser('~'), ".nexus")
+        self.config_file = self.get_config_file()
         self.nexus_endpoint = self.get_nexus_endpoint()
 
     def verify_nexus_input(self, input_token, input_org, input_project):
@@ -150,6 +150,9 @@ class NexusHelper(object):
                             "your access token", e.response)
             else:
                 raise_error(NexusError, "Something went wrong", e.response)
+
+    def get_config_file(self):
+        return os.path.join(os.path.expanduser('~'), ".nexus")
 
     def publish(self, org_label, project_label, filepath):
         self.nexus.files.create(org_label, project_label, filepath)
