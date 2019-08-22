@@ -32,7 +32,8 @@ def mock_get_data_cache():
 
 
 def mock_get_data_cache_file():
-    return os.path.join(os.path.dirname(bfile), "tests", "test-data-cache", "nexus")
+    return os.path.join(
+        os.path.dirname(bfile), "tests", "test-data-cache", "nexus")
 
 
 def mock_get_publish_single():
