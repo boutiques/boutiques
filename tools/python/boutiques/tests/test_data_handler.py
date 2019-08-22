@@ -2,8 +2,10 @@
 
 from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from boutiques_mocks import *
+from boutiques.nexusHelper import NexusError
+import sys
 import os
 import mock
 import shutil
@@ -73,6 +75,18 @@ def mock_post_publish_individual():
              mock_zenodo_deposit(2345678),
              mock_zenodo_upload_descriptor(),
              mock_zenodo_publish(2345678)])
+
+
+def mock_get_invalid_nexus_endpoint():
+    return "https://invalid.nexus.endpoint/v1"
+
+
+def mock_get_empty_nexus_credentials():
+    return {}
+
+
+def mock_empty_function():
+    return
 
 
 class TestDataHandler(TestCase):
@@ -177,6 +191,112 @@ class TestDataHandler(TestCase):
               "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
         self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))),
                          2)
+
+    @skipIf(sys.version_info < (3, 5),
+            'Python version has to be >= 3.5')
+    @mock.patch('boutiques.dataHandler.getDataCacheDir',
+                return_value=mock_get_data_cache())
+    @mock.patch('boutiques.nexusHelper.NexusHelper.read_credentials',
+                return_value=mock_get_empty_nexus_credentials())
+    def test_publish_nexus_no_token_fail(self, mock_dir, mock_cred):
+        cleanup()
+        setup()
+
+        with self.assertRaises(NexusError) as e:
+            bosh(["data", "publish", "-y", "--nexus", "--sandbox"])
+        self.assertIn("Cannot find Nexus credentials.",
+                      str(e.exception))
+
+    @skipIf(sys.version_info < (3, 5),
+            'Python version has to be >= 3.5')
+    @mock.patch('boutiques.dataHandler.getDataCacheDir',
+                return_value=mock_get_data_cache())
+    @mock.patch('boutiques.nexusHelper.NexusHelper.read_credentials',
+                return_value=mock_get_empty_nexus_credentials())
+    def test_publish_nexus_no_organization_fail(self, mock_dir, mock_cred):
+        cleanup()
+        setup()
+
+        with self.assertRaises(NexusError) as e:
+            bosh(["data", "publish", "-y", "--nexus", "--sandbox",
+                  "--nexus-token", "hAaW2wSBZMskxpfigTYHcuDrCPWr2"])
+        self.assertIn("Cannot find Nexus organization.",
+                      str(e.exception))
+
+    @skipIf(sys.version_info < (3, 5),
+            'Python version has to be >= 3.5')
+    @mock.patch('boutiques.dataHandler.getDataCacheDir',
+                return_value=mock_get_data_cache())
+    @mock.patch('boutiques.nexusHelper.NexusHelper.read_credentials',
+                return_value=mock_get_empty_nexus_credentials())
+    def test_publish_nexus_no_project_fail(self, mock_dir, mock_cred):
+        cleanup()
+        setup()
+
+        with self.assertRaises(NexusError) as e:
+            bosh(["data", "publish", "-y", "--nexus", "--sandbox",
+                  "--nexus-token", "hAaW2wSBZMskxpfigTYHcuDrCPWr2",
+                  "--nexus-org", "boutiques"])
+        self.assertIn("Cannot find Nexus project.",
+                      str(e.exception))
+
+    @skipIf(sys.version_info < (3, 5),
+            'Python version has to be >= 3.5')
+    @mock.patch('boutiques.dataHandler.getDataCacheDir',
+                return_value=mock_get_data_cache())
+    @mock.patch('boutiques.nexusHelper.NexusHelper.get_nexus_endpoint',
+                return_value=mock_get_invalid_nexus_endpoint())
+    def test_publish_nexus_invalid_endpoint(self, mock_dir, mock_endpoint):
+        cleanup()
+        setup()
+
+        with self.assertRaises(NexusError) as e:
+            bosh(["data", "publish", "-y", "--nexus", "--sandbox",
+                  "--nexus-token", "hAaW2wSBZMskxpfigTYHcuDrCPWr2",
+                  "--nexus-org", "boutiques", "--nexus-project",
+                  "test"])
+        self.assertIn("Cannot access Nexus endpoint",
+                      str(e.exception))
+
+    @skipIf(sys.version_info < (3, 5),
+            'Python version has to be >= 3.5')
+    @mock.patch('boutiques.dataHandler.getDataCacheDir',
+                return_value=mock_get_data_cache())
+    def test_publish_nexus_invalid_token(self, mock_dir):
+        cleanup()
+        setup()
+
+        with self.assertRaises(NexusError) as e:
+            bosh(["data", "publish", "-y", "--nexus", "--sandbox",
+                  "--nexus-token", "INVALIDTOKEN",
+                  "--nexus-org", "boutiques", "--nexus-project",
+                  "test"])
+        self.assertIn("Cannot authenticate to Nexus API, check "
+                      "your access token", str(e.exception))
+
+    @skipIf(sys.version_info < (3, 5),
+            'Python version has to be >= 3.5')
+    @mock.patch('boutiques.dataHandler.getDataCacheDir',
+                return_value=mock_get_data_cache())
+    @mock.patch('boutiques.nexusHelper.NexusHelper.save_nexus_inputs',
+                return_value=mock_empty_function())
+    @mock.patch('boutiques.nexusHelper.NexusHelper.nexus_test_api',
+                return_value=mock_empty_function())
+    @mock.patch('nexussdk.files.create',
+                return_value=mock_empty_function())
+    def test_publish_nexus_success(
+            self, mock_create_file, mock_fetch_project,
+            mock_save_inputs, mock_dir):
+        cleanup()
+        setup()
+
+        try:
+            bosh(["data", "publish", "-y", "--nexus", "--sandbox",
+                  "--nexus-token", "hAaW2wSBZMskxpfigTYHcuDrCPWr2",
+                  "--nexus-org", "test", "--nexus-project",
+                  "test"])
+        except Exception as e:
+            self.fail("Unexpected exception raised: " + str(e))
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
