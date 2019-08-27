@@ -491,7 +491,7 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isDockerInstalled(self):
-        return not subprocess.Popen("type docker", shell=True).wait()
+        return not subprocess.Popen("docker --version", shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
@@ -1279,7 +1279,7 @@ class LocalExecutor(object):
     # summary, publicInput an publicOutput are combined and
     # written to a file in .cache
     def _saveDataCaptureToCache(self):
-        date_time = datetime.datetime.now().isoformat()
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
         # Combine three modules in master dictionary
@@ -1325,7 +1325,7 @@ class LocalExecutor(object):
             return match
         # Write descriptor to data cache and save return filename
         content = json.dumps(self.desc_dict, indent=4)
-        date_time = datetime.datetime.now().isoformat()
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
         path = os.path.join(data_cache_dir, filename)
         file = open(path, 'w+')
