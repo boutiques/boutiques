@@ -672,6 +672,18 @@ class LocalExecutor(object):
                          self.reqsOf(targetParam['id'])]
                      if targetParam['id'] in possibleMutReq[1]]]
 
+        def getAllBranchedReqs(targ, reqs):
+            for r in [r for r in self.reqsOf(targ['id']) if r not in reqs]:
+                if r in [g['id'] for g in self.groups]:
+                    for gReq in self.reqsOf(r):
+                        if gReq not in reqs:
+                            reqs.append(gReq)
+                            getAllBranchedReqs(self.byId(gReq), reqs)
+                elif r not in reqs:
+                    reqs.append(r)
+                    getAllBranchedReqs(self.byId(r), reqs)
+            return reqs
+
         # Returns whether targ (an input parameter) has a
         # value or is allowed to have one
         def isOrCanBeFilled(targ):
@@ -687,6 +699,20 @@ class LocalExecutor(object):
                     return False
             # If it is in a mutex group with one target already chosen,
             # it cannot be filled
+            for r in self.reqsOf(targ['id']):
+                if r in [g['id'] for g in self.groups]:
+                    grpCanBeFilled = False
+                    for gReq in self.reqsOf(r):
+                        if isOrCanBeFilled(self.byId(gReq)):
+                            # if one of members can be added, skip the rest
+                            grpCanBeFilled = True
+                            continue
+                    if not grpCanBeFilled:
+                        return False
+                elif r not in self.in_dict:  # If a requirement is not present
+                    # and it is not mutually required
+                    if targ['id'] not in getAllBranchedReqs(targ, []):
+                        return False
             # Get the group that the target belongs to, if any
             g = self.assocGrp(targ['id'])
             if (g is not None) and self.safeGrpGet(g['id'],
@@ -745,6 +771,14 @@ class LocalExecutor(object):
                 for greq in [g for g in self.reqsOf(current['id']) if
                              g in [grp['id'] for grp in self.groups] and
                              self.safeGrpGet(g, "mutually-exclusive")]:
+                    # Check if one of the members is already added
+                    # and don't add random member
+                    memberFilled = False
+                    for m in self.safeGrpGet(greq, "members"):
+                        if m in self.in_dict:
+                            memberFilled = True
+                    if memberFilled:
+                        continue
                     # Add random member if current requires mutex group
                     rndMember = rnd.choice(self.safeGrpGet(greq, "members"))
                     toCheck.append({i['id']: i for i in self.inputs}[rndMember])
@@ -753,16 +787,8 @@ class LocalExecutor(object):
         # Start actual dictionary filling part
         # Clear the dictionary
         self.in_dict = {}
-        # Fill in the parameters depending on require complete
         for params in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[params['id']] = makeParam(params)
-            # Check for mutex between in_dict and last in param
-            for group, mbs in [(x, x["members"]) for x in self.groups
-                               if x.get('mutually-exclusive')]:
-                if len(set.intersection(set(mbs),
-                                        set(self.in_dict.keys()))) > 1:
-                    # Delete last in param
-                    del self.in_dict[params['id']]
 
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
@@ -814,6 +840,13 @@ class LocalExecutor(object):
                 # Fill in the target(s) otherwise
                 for r in result:
                     self.in_dict[r['id']] = makeParam(r)
+                    # Check for mutex between in_dict and last in param
+                    for group, mbs in [(x, x["members"]) for x in self.groups
+                                       if x.get('mutually-exclusive')]:
+                        if len(set.intersection(set(mbs),
+                                                set(self.in_dict.keys()))) > 1:
+                            # Delete last in param
+                            del self.in_dict[r['id']]
 
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
