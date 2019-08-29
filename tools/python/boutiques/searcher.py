@@ -13,7 +13,7 @@ class Searcher():
 
     def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
-        if len(query or '') > 0:
+        if query is not None:
             self.query = query
         else:
             self.query = 'boutiques'
@@ -121,7 +121,9 @@ class Searcher():
         id = "zenodo." + str(hit["id"])
         title = hit["metadata"]["title"]
         description = hit["metadata"]["description"]
-        downloads = hit["stats"]["version_downloads"]
+        downloads = 0
+        if "version_downloads" in hit["stats"]:
+            downloads = hit["stats"]["version_downloads"]
         return (id, title, description, downloads)
 
     # truncates every value of a dictionary whose length is
