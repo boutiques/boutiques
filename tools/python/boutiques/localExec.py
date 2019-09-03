@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 import simplejson as json
 import random as rnd
 import string
@@ -273,10 +274,43 @@ class LocalExecutor(object):
                     for opt in conOpts:
                         conOptsString += opt + ' '
             # Run it in docker
+            # Note: on Windows, users must give path following this format (compatible with docker): /c/a/windows/path
             mount_strings = [] if not mount_strings else mount_strings
-            mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
-                             for m in mount_strings]
-            mount_strings.append(op.realpath('./') + ':' + launchDir)
+            
+            # Normalize the path so that is follows this format (compatible with docker): /c/a/windows/or/linux/path
+            # Do nothing on linux paths
+            # If the path begins with C: or any other capital letter:
+            #  - replace '\\' with '/'
+            #  - prefix the path with '/'
+            #  - lowercase the drive letter
+            #  - remove the ':'
+            def normalizePath(path):
+                regexResult = re.match(r"^([A-Z]):", path)
+                if regexResult:
+                    path = path.replace("\\", "/")
+                    path = "/" + path[0].lower() + path[2:]
+                return path
+
+            # Make path absolute and normalized
+            # The resulting path must follow this format (compatible with docker): /c/a/windows/or/linux/path
+            def makePathAbsolute(path):
+                # If path is already absolute: do nothing 
+                # (Note that on Windows, op.realpath(/c/path/to/file) returns C:\\c\\path\\to\\file, so we should avoid applying op.realpath() if already absolute)
+                # (On both Windows and Linux, paths beginning with '/' are considered absolute)
+                if op.isabs(path):
+                    # If path is absolute, it must be normalized
+                    return normalizePath(path)
+                # Make path absolute
+                path = op.realpath(path)
+                # Normalize it
+                return normalizePath(path)
+            
+            launchDir = normalizePath(launchDir)
+            dsname = normalizePath(dsname)
+
+            mount_strings = [ makePathAbsolute(m.split(":")[0]) + ":" + m.split(":")[1] for m in mount_strings]
+            mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
+
             if conTypeToUse == 'docker':
                 envString = " "
                 if envVars:
