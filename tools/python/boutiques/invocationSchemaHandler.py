@@ -4,6 +4,7 @@
 # validation for Boutiques application descriptors
 # Requires jsonschema 2.5
 
+import simplejson
 import jsonschema
 import os
 import sys
@@ -101,9 +102,9 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
     # Handle requires and disables-inputs/mutex constraints
     def handleDisablesRequires(h, inval):
         i, h = RMap(inval), RMap(h)
-        id, gids = i['id'], [g['id'] for g in groups]
-        reqs = [req for req in i['requires-inputs'] if
-                req not in gids] if 'requires-inputs' in i else []
+        id, grps = i['id'], {g['id']: g for g in groups}
+        reqs = [req for req in i['requires-inputs']]\
+            if 'requires-inputs' in i else []
         disbs = i['disables-inputs'] or []
         # Mutex group members added to disablees list
         mutex_group_members = [g for g in groups if
@@ -125,8 +126,21 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
                     {"properties": {id: {"enum": [False]}}}
                 ]
             else:
-                h[id] = {"required": reqs}
-                h[id]['properties'] = reqMap
+                h[id] = {}
+                # Handle requiring mutex group
+                for r in [r for r in reqs if r in grps]:
+                    # Group properties will be tested in validator
+                    reqs.remove(r)
+                    h[id]['anyOf'] = []
+                    for m in grps[r]['members']:
+                        reqMap[m] = schema['properties'][m]
+                        h[id]['anyOf'].append({
+                            "properties": reqMap,
+                            "required": reqs + [m]
+                        })
+                h[id]["properties"] = reqMap
+                if reqs:
+                    h[id]["required"] = reqs
         # Handle disables-inputs (false flags do not violate
         # the disabled criteria)
         if len(disbs) > 0:
