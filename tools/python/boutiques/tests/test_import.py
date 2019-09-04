@@ -134,7 +134,6 @@ class TestImport(TestCase):
                             out_inv,
                             "--skip-data-collection"
                           )
-                    self.assertEqual(ret.exit_code, " ")
                     self.assertFalse(ret.exit_code,
                                      cwl_descriptor)
 
