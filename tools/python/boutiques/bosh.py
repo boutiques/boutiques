@@ -550,7 +550,7 @@ def data(*params):
         return dataHandler.inspect(results.example)
 
     if action == "publish":
-        parser = ArgumentParser("Publishes record(s) to a Zenodo data set.")
+        parser = ArgumentParser("Publishes record(s) to a data set.")
         parser.add_argument("-a", "--author", action="store",
                             help="Set the author name for the data set "
                             "publication. Defaults to anonymous.")
@@ -573,7 +573,8 @@ def data(*params):
                             "If not used, token will be read from "
                             "configuration file or requested interactively.")
         parser.add_argument("--nexus", action="store_true",
-                            help="Publish to Nexus instead of Zenodo.")
+                            help="Publish to Nexus instead of Zenodo. "
+                                 "Sandbox URL is https://sandbox.bluebrainnexus.io")
         parser.add_argument("--nexus-token", action="store",
                             help="Nexus API token to use for authentication. ")
         parser.add_argument("--nexus-org", action="store",
