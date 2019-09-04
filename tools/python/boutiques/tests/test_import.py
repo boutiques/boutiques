@@ -134,6 +134,7 @@ class TestImport(TestCase):
                             out_inv,
                             "--skip-data-collection"
                           )
+                    self.assertEqual(ret.exit_code, " ")
                     self.assertFalse(ret.exit_code,
                                      cwl_descriptor)
 
@@ -188,23 +189,11 @@ class TestImport(TestCase):
         import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
         bosh(import_args)
 
-        test_invocation = op.join(base_path, "nf_invoc_new.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
-
         test_invocation = op.join(base_path, "nf_invoc_move.json")
         launch_args = ["exec", "launch", descriptor_output, test_invocation]
         bosh(launch_args)
 
         test_invocation = op.join(base_path, "nf_invoc_shoot.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
-
-        test_invocation = op.join(base_path, "nf_invoc_mine.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
-
-        test_invocation = op.join(base_path, "nf_invoc_help.json")
         launch_args = ["exec", "launch", descriptor_output, test_invocation]
         bosh(launch_args)
 
