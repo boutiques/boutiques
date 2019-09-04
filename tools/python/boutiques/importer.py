@@ -118,7 +118,6 @@ class Importer():
         dcptImptr.determineOptionality()
         dcptImptr.createRootOneIsRequiredGroup()
 
-
         with open(self.output_descriptor, "w") as output:
             output.write(json.dumps(dcptImptr.descriptor, indent=4))
 
