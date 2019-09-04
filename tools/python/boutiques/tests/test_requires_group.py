@@ -39,7 +39,7 @@ class TestExample(TestCase):
         command = ("bosh invocation " + nf_desc + " -i " + invocation)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
-        self.assertIn(b'\'name\' is a required property',
+        self.assertIn(b'Failed validating',
                       process.stdout.read().strip())
 
     def test_reqInpGroup_nf_woChildren_woGroup_FAIL(self):
@@ -51,7 +51,7 @@ class TestExample(TestCase):
         command = ("bosh invocation " + nf_desc + " -i " + invocation)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
-        self.assertIn(b'\'new\' is a required property',
+        self.assertIn(b'Failed validating',
                       process.stdout.read().strip())
 
     def test_reqInpGroup_valid_Complex_OK(self):
