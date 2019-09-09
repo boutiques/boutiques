@@ -574,7 +574,8 @@ def data(*params):
                             "configuration file or requested interactively.")
         parser.add_argument("--nexus", action="store_true",
                             help="Publish to Nexus instead of Zenodo. "
-                                 "Sandbox URL is https://sandbox.bluebrainnexus.io")
+                                 "Sandbox URL is "
+                                 "https://sandbox.bluebrainnexus.io")
         parser.add_argument("--nexus-token", action="store",
                             help="Nexus API token to use for authentication. ")
         parser.add_argument("--nexus-org", action="store",
