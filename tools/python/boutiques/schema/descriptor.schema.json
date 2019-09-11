@@ -296,7 +296,7 @@
                     },
                     "requires-inputs": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
-                        "description": "Ids of the inputs or groups which must be active for this input to be available.",
+                        "description": "Ids of the inputs or ids of groups whose members must be active for this input to be available.",
                         "type": "array",
                         "items": {
                             "type": "string"
