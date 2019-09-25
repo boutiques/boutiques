@@ -11,6 +11,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
+from boutiques.nexusHelper import NexusError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
@@ -125,6 +126,8 @@ def execute(*params):
         parser.add_argument("--skip-data-collection", action="store_true",
                             help="Skips execution data collection and saving"
                             "to cache.")
+        parser.add_argument("--provenance", action="store", type=json.loads,
+                            help="Append JSON object to the generated record.")
         force_group = parser.add_mutually_exclusive_group()
         force_group.add_argument("--force-docker", action="store_true",
                                  help="Tries to run Singularity images with "
@@ -152,7 +155,8 @@ def execute(*params):
                                       results.skip_data_collection,
                                   "forceDocker": results.force_docker,
                                   "forceSingularity":
-                                      results.force_singularity})
+                                      results.force_singularity,
+                                  "provenance": results.provenance})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -549,7 +553,7 @@ def data(*params):
         return dataHandler.inspect(results.example)
 
     if action == "publish":
-        parser = ArgumentParser("Publishes record(s) to a Zenodo data set.")
+        parser = ArgumentParser("Publishes record(s) to a data set.")
         parser.add_argument("-a", "--author", action="store",
                             help="Set the author name for the data set "
                             "publication. Defaults to anonymous.")
@@ -571,14 +575,26 @@ def data(*params):
                             help="Zenodo API token to use for authentication. "
                             "If not used, token will be read from "
                             "configuration file or requested interactively.")
+        parser.add_argument("--nexus", action="store_true",
+                            help="Publish to Nexus instead of Zenodo. "
+                                 "Sandbox URL is "
+                                 "https://sandbox.bluebrainnexus.io")
+        parser.add_argument("--nexus-token", action="store",
+                            help="Nexus API token to use for authentication. ")
+        parser.add_argument("--nexus-org", action="store",
+                            help="Nexus organization to publish to. ")
+        parser.add_argument("--nexus-project", action="store",
+                            help="Nexus project to publish to. ")
         results = parser.parse_args(params)
 
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
         return dataHandler.publish(results.file, results.zenodo_token,
-                                   results.author, results.individually,
-                                   results.sandbox, results.no_int,
-                                   results.verbose)
+                                   results.author, results.nexus_token,
+                                   results.nexus_org, results.nexus_project,
+                                   results.individually, results.sandbox,
+                                   results.no_int, results.verbose,
+                                   results.nexus)
 
     if action == "delete":
         parser = ArgumentParser("Delete data record(s) in cache.")
@@ -719,6 +735,7 @@ OTHER
             raise SystemExit
 
     except (ZenodoError,
+            NexusError,
             DescriptorValidationError,
             InvocationValidationError,
             ValidationError,
