@@ -52,7 +52,7 @@ class NexusHelper(object):
             raise_error(NexusError, "Cannot find Nexus credentials.")
         prompt = ("Please enter your Nexus access token (it will be "
                   "saved in {0} for future use): ".format(self.config_file))
-        self.prompt(prompt)
+        return self.prompt(prompt)
 
     def get_nexus_organization(self):
         json_creds = self.read_credentials()
@@ -63,7 +63,7 @@ class NexusHelper(object):
         prompt = ("Please enter the Nexus organization you want to publish to"
                   " (it will be saved in {0} for future use): "
                   .format(self.config_file))
-        self.prompt(prompt)
+        return self.prompt(prompt)
 
     def get_nexus_project(self):
         json_creds = self.read_credentials()
@@ -74,7 +74,7 @@ class NexusHelper(object):
         prompt = ("Please enter the Nexus project you want to publish to"
                   " (it will be saved in {0} for future use): "
                   .format(self.config_file))
-        self.prompt(prompt)
+        return self.prompt(prompt)
 
     def save_nexus_inputs(self, access_token, org, project):
         json_creds = self.read_credentials()
