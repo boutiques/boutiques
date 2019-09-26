@@ -277,13 +277,18 @@ class LocalExecutor(object):
             mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
                              for m in mount_strings]
             mount_strings.append(op.realpath('./') + ':' + launchDir)
+
             if conTypeToUse == 'docker':
                 envString = " "
                 if envVars:
                     for (key, val) in list(envVars.items()):
                         envString += " -e {0}='{1}' ".format(key, val)
+
                 # export mounts to docker string
+                # Warning: mount_strings should have at least one entry ()
+                # otherwise docker run will failed
                 docker_mounts = " -v ".join(m for m in mount_strings)
+
                 # If --changeUser was desired, provides the current user id
                 # and its group id as the user and group to be used instead
                 # of the default root within the container.
@@ -291,26 +296,31 @@ class LocalExecutor(object):
                 if self.changeUser:
                     userchange = ' -u $(id -u):$(id -g)'
 
-                container_command = ('docker run' + userchange +
-                                     ' --entrypoint=' + self.shell +
-                                     ' --rm' + envString +
-                                     ' -v ' + docker_mounts +
-                                     ' -w ' + launchDir + ' ' +
-                                     conOptsString +
-                                     str(conImage) + ' ' + dsname)
+                container_command = ('docker run'     + userchange    +
+                                     ' --entrypoint=' + self.shell    +
+                                     ' --rm'          + envString     +
+                                     ' -v '           + docker_mounts +
+                                     ' -w '           + launchDir     + ' ' +
+                                     conOptsString    +
+                                     str(conImage)    + ' '           + dsname
+                                    )
+
             elif conTypeToUse == 'singularity':
                 envString = ""
                 if envVars:
                     for (key, val) in list(envVars.items()):
                         envString += "SINGULARITYENV_{0}='{1}' ".format(key,
                                                                         val)
-                singularity_mounts = '-B ' + ' '.join(mount_strings)
-                container_command = (envString + 'singularity exec '
-                                     '--cleanenv ' +
-                                     singularity_mounts +
-                                     ' -W ' + launchDir + ' ' +
-                                     conOptsString +
-                                     str(conPath) + ' ' + dsname)
+                # Warning: mount_strings should have at least one entry ()
+                # otherwise singularity run will failed
+                singularity_mounts = ' -B '.join(mount_strings)
+                container_command  = (envString               + 'singularity exec ' +
+                                     '--cleanenv '            +
+                                     ' -B '                   + singularity_mounts  +
+                                     ' -W '                   + launchDir           + ' ' +
+                                     conOptsString            +
+                                     str(conPath)             + ' '                 + dsname
+                                    )
             (stdout, stderr), exit_code = self._localExecute(container_command)
         # Otherwise, just run command locally
         else:
