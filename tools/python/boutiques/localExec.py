@@ -131,6 +131,8 @@ class LocalExecutor(object):
 
     # Constructor
     def __init__(self, desc, invocation, options={}):
+        self._rkit = self._replaceKeysInTemplate  # Abbrev. for readability
+
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
@@ -406,10 +408,17 @@ class LocalExecutor(object):
             return (conName, container_location)
 
         elif conTypeToUse == 'singularity':
+            if conType == 'docker':
+                # We're running a Docker image in Singularity
+                conIndex = "docker://" + (conIndex if
+                                          (conIndex is not None and
+                                           conIndex != "" and
+                                           conIndex != "docker://") else "")
+
             if not conIndex:
                 conIndex = "shub://"
-            elif not conIndex.endswith("://"):
-                conIndex = conIndex + "://"
+            if not conIndex.endswith("/"):
+                conIndex = conIndex + "/"
 
             if self.imagePath:
                 conName = op.basename(self.imagePath)
@@ -501,7 +510,8 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isDockerInstalled(self):
-        return not subprocess.Popen("type docker", shell=True).wait()
+        return not subprocess.Popen("type docker 1>/dev/null",
+                                    shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
@@ -635,8 +645,10 @@ class LocalExecutor(object):
                 return randStr(prm['id'])
             if prm['type'] == 'Number':
                 return randNum(prm)
+            # Since a flag can't be False, it's either there or not,
+            # there's no point in setting it to False.
             if prm['type'] == 'Flag':
-                return rnd.choice([True, False])
+                return True
             if prm['type'] == 'File':
                 return randFile(prm['id'])
 
@@ -729,8 +741,7 @@ class LocalExecutor(object):
         # Clear the dictionary
         self.in_dict = {}
         # Fill in the parameters depending on require complete
-        for params in [r for r in self.inputs
-                       if not r.get('optional') or self.requireComplete]:
+        for params in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[params['id']] = makeParam(params)
             # Check for mutex between in_dict and last in param
             for group, mbs in [(x, x["members"]) for x in self.groups
@@ -747,7 +758,9 @@ class LocalExecutor(object):
             # in case a previous choice disabled that one
             while True:
                 # Pick a random parameter
-                choice = self.byId(rnd.choice(grp['members']))
+                mbrId = rnd.choice([mbr for mbr in grp['members'] if
+                                   self.byId(mbr)['type'] != 'Flag'])
+                choice = self.byId(mbrId)
                 # see if it and its mutual requirements can be filled
                 res = checkMutualRequirements(choice)
                 if res is False:
@@ -756,33 +769,33 @@ class LocalExecutor(object):
                 for r in res:
                     self.in_dict[r['id']] = makeParam(r)
                 break  # If we were allowed to add a parameter, we can stop
-        # Choose a random number of times to try to fill optional inputs
-        opts = [p for p in self.inputs
-                if self.safeGet(p['id'], '') in [None, True]]
-        # Loop a random number of times, each time
-        #  attempting to fill a random parameter
-        for _ in range(rnd.randint(int(len(opts) / 2 + 1), len(opts) * 2)):
-            targ = rnd.choice(opts)  # Choose an optional output
-            # If it is already filled in, continue
-            if targ['id'] in list(self.in_dict.keys()):
-                continue
-            # If it is a prohibited option, continue
-            # (isFilled case handled above)
-            if not isOrCanBeFilled(targ):
-                continue
-            # Now we handle the mutual requirements case. This is a little
-            # more complex because a mutual requirement
-            # of targ can have its own mutual requirements, ad nauseam.
-            # We need to look at all of them recursively and either
-            # fill all of them in (i.e. at once) or none of them
-            # (e.g. if one of them is disabled by some other param).
-            result = checkMutualRequirements(targ)
-            # Leave if the mutreqs cannot be satisfied
-            if result is False:
-                continue
-            # Fill in the target(s) otherwise
-            for r in result:
-                if self.requireComplete is None or self.requireComplete:
+
+        if self.requireComplete:
+            # Fill in all possible optional inputs
+            opts = [p for p in self.inputs if
+                    self.safeGet(p['id'], 'optional') in [None, True]]
+            # Loop a random number of times, each time
+            #  attempting to fill a random parameter
+            for option in opts:
+                # If it is already filled in, continue
+                if option['id'] in list(self.in_dict.keys()):
+                    continue
+                # If it is a prohibited option, continue
+                # (isFilled case handled above)
+                if not isOrCanBeFilled(option):
+                    continue
+                # Now we handle the mutual requirements case. This is a little
+                # more complex because a mutual requirement
+                # of targ can have its own mutual requirements, ad nauseam.
+                # We need to look at all of them recursively and either
+                # fill all of them in (i.e. at once) or none of them
+                # (e.g. if one of them is disabled by some other param).
+                result = checkMutualRequirements(option)
+                # Leave if the mutreqs cannot be satisfied
+                if result is False:
+                    continue
+                # Fill in the target(s) otherwise
+                for r in result:
                     self.in_dict[r['id']] = makeParam(r)
 
     # Function to generate random parameter values
@@ -874,7 +887,7 @@ class LocalExecutor(object):
     #     * escaped for special characters
     def _replaceKeysInTemplate(self, template,
                                use_flags=False, unfound_keys="remove",
-                               stripped_extensions=[],
+                               stripped_extensions=[], is_output=False,
                                escape_special_chars=True):
 
         def escape_string(s):
@@ -902,7 +915,7 @@ class LocalExecutor(object):
                     s_val = ""
                     list_sep = self.safeGet(param_id, 'list-separator')
                     if list_sep is None:
-                        list_sep = " "
+                        list_sep = ' '
                     for x in val:
                         s = str(x)
                         if escape:
@@ -930,12 +943,23 @@ class LocalExecutor(object):
                 if (self.safeGet(param_id, 'type') == 'File' or
                         self.safeGet(param_id, 'type') == 'String'):
                     for extension in stripped_extensions:
-                        val = val.replace(extension, "")
+                        val = val.replace(extension, '')
+                    # Remove path if a) a file, b) not the first item in the
+                    # template; for output files specifically
+                    if (self.safeGet(param_id, 'type') == 'File' and
+                       template.find(clk) > 0 and is_output):
+                        val = op.basename(val)
                 # Here val can be a number so we need to cast it
-                template = template.replace(clk, str(val))
+                if val is not None and val is not "":
+                    template = template.replace(clk, str(val))
+                else:
+                    template = template.replace(' ' + clk, str(val))
             else:  # param has no value
                 if unfound_keys == "remove":
-                    template = template.replace(clk, '')
+                    if (' ' + clk) in template:
+                        template = template.replace(' ' + clk, '')
+                    else:
+                        template = template.replace(clk, '')
                 elif unfound_keys == "clear":
                     if clk in template:
                         return ""
@@ -958,14 +982,17 @@ class LocalExecutor(object):
                                         "path-template-stripped-extensions")
             if stripped_extensions is None:
                 stripped_extensions = []
+            se = stripped_extensions  # Renaming variable to save space
             # We keep the unfound keys because they will be
             # substituted in a second call to the method in case
             # they are output keys
-            outputFileName = self._replaceKeysInTemplate(outputFileName,
-                                                         False,
-                                                         "keep",
-                                                         stripped_extensions,
-                                                         False)
+            outputFileName = self._rkit(outputFileName,
+                                        use_flags=False,
+                                        unfound_keys="keep",
+                                        stripped_extensions=se,
+                                        is_output=True,
+                                        escape_special_chars=False)
+
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
@@ -982,16 +1009,18 @@ class LocalExecutor(object):
                                         "path-template-stripped-extensions")
             if stripped_extensions is None:
                 stripped_extensions = []
+            se = stripped_extensions  # Renaming variable to save space
             # We substitute the keys line by line so that we can
             # clear the lines that have keys with no value
             # (undefined optional params)
             newTemplate = []
             for line in fileTemplate:
-                newTemplate.append(self._replaceKeysInTemplate(
-                                                line,
-                                                False, "clear",
-                                                stripped_extensions,
-                                                True))
+                newTemplate.append(self._rkit(line,
+                                              use_flags=False,
+                                              unfound_keys="clear",
+                                              stripped_extensions=se,
+                                              is_output=False,
+                                              escape_special_chars=True))
             template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
@@ -1016,8 +1045,9 @@ class LocalExecutor(object):
         template = self.desc_dict['command-line']
         # Substitute every given value into the template
         # (incl. flags, flag-seps, ...)
-        template = self._replaceKeysInTemplate(template, True,
-                                               "remove", [], True)
+        template = self._rkit(template, use_flags=True, unfound_keys="remove",
+                              stripped_extensions=[], is_output=False,
+                              escape_special_chars=True)
         # Return substituted command line
         return template
 
@@ -1098,6 +1128,9 @@ class LocalExecutor(object):
                 check(None,
                       lambda x, y: type(x) == bool,
                       "is not a valid flag value", val)
+                check(None,
+                      lambda x, y: x,
+                      "flag is set to true or otherwise omitted", val)
             elif targ["type"] == "File":
                 # Check path-type (absolute vs relative)
                 if not self.forcePathType:
@@ -1292,10 +1325,11 @@ class LocalExecutor(object):
         date_time = datetime.datetime.now().isoformat()
         tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
-        # Combine three modules in master dictionary
+        # Combine three modules plus provenance in master dictionary
         data_dict = {'summary': self.summary,
                      'public-invocation': self.public_in,
-                     'public-output': self.public_out}
+                     'public-output': self.public_out,
+                     'additional-information': self.provenance}
         # Convert dictionary to Json string
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file

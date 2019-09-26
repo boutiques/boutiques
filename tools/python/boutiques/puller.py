@@ -28,6 +28,12 @@ class Puller():
         for zid in zids:
             discarded_zids.remove(zid)
             try:
+                # Zenodo returns the full DOI, but for the purposes of
+                # Boutiques we just use the Zenodo-specific portion (as its the
+                # unique part). If the API updates on Zenodo to no longer
+                # provide the full DOI, this still works because it just grabs
+                # the last thing after the split.
+                zid = zid.split('/')[-1]
                 newzid = zid.split(".", 1)[1]
                 newfname = os.path.join(self.cache_dir,
                                         "zenodo-{0}.json".format(newzid))
