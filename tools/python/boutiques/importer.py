@@ -10,7 +10,7 @@ import yaml
 import simplejson as json
 import os
 import os.path as op
-import re
+import re as re
 import sys
 from docopt import parse_defaults, parse_pattern, parse_argv
 from docopt import formal_usage, DocoptLanguageError
@@ -104,19 +104,24 @@ class Importer():
 
                 # According to DOCKER documetation the ENTRYPOINT can
                 # be like:
-                #   > ENTRYPOINT ["executable", "param1", "param2"] (exec form, preferred)
+                #   > ENTRYPOINT ["executable", "param1", "param2"]
                 # or:
-                #   > ENTRYPOINT command param1 param2 (shell form)
+                #   > ENTRYPOINT command param1 param2
                 if not entrypoint_values:
                     entrypoint = None
-                # ENTRYPOINT ["executable", "param1", "param2"] (exec form, preferred)
+                # ENTRYPOINT ["executable", "param1", "param2"]
                 elif entrypoint_values.startswith("["):
-                    entrypoint_values = entrypoint_values.strip("[]")
-                    entrypoint = entrypoint_values.split(",")[0].strip()\
-                        .strip("\"")
-                # > ENTRYPOINT command param1 param2 (shell form)
+                    entrypoint_values = entrypoint_values.strip("[]")\
+                        .split(",")
+                    entrypoint_values = map(lambda elem: elem.strip().strip("\""),
+                                            entrypoint_values)
+                    entrypoint_values = map(lambda elem: "\'" + elem + "\'" if
+                                            re.search("\s+", elem) else elem,
+                                            entrypoint_values)
+                    entrypoint = " ".join(entrypoint_values)
+                # > ENTRYPOINT command param1 param2
                 else:
-                    entrypoint = entrypoint_values.split()[0]
+                    entrypoint = entrypoint_values
 
         return entrypoint
 
