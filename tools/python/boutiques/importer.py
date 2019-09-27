@@ -10,7 +10,7 @@ import yaml
 import simplejson as json
 import os
 import os.path as op
-import re as re
+import re
 import sys
 from docopt import parse_defaults, parse_pattern, parse_argv
 from docopt import formal_usage, DocoptLanguageError
