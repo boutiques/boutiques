@@ -120,22 +120,6 @@ class Importer():
                                          for ev in entrypoint_values]
                     return " ".join(entrypoint_values)
 
-                return entrypoint_values
-                    entrypoint = None
-                # ENTRYPOINT ["executable", "param1", "param2"]
-                elif entrypoint_values.startswith("["):
-                    entrypoint_values = entrypoint_values.strip("[]")\
-                        .split(",")
-                    entrypoint_values = map(lambda elem: elem.strip().strip("\""),
-                                            entrypoint_values)
-                    entrypoint_values = map(lambda elem: "\'" + elem + "\'" if
-                                            re.search("\s+", elem) else elem,
-                                            entrypoint_values)
-                    entrypoint = " ".join(entrypoint_values)
-                # > ENTRYPOINT command param1 param2
-                else:
-                    entrypoint = entrypoint_values
-
         return entrypoint
 
     def import_docopt(self, desc_path):
