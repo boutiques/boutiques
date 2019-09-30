@@ -108,6 +108,19 @@ class Importer():
                 # or:
                 #   > ENTRYPOINT command param1 param2
                 if not entrypoint_values:
+                    return None
+
+                if entrypoint_values.startswith("["):
+                    # Replacing entrypoint_values with the Python-interpreted list version
+                    entrypoint_values = json.loads(entrypoint_values)
+                    # Adding single quotes around list items with spaces therein
+                    entrypoint_values = [ev
+                                         if " " not in ev else
+                                         "'{0}'".format(ev)
+                                         for ev in entrypoint_values]
+                    return " ".join(entrypoint_values)
+
+                return entrypoint_values
                     entrypoint = None
                 # ENTRYPOINT ["executable", "param1", "param2"]
                 elif entrypoint_values.startswith("["):
