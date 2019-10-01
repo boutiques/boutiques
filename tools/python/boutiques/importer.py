@@ -902,4 +902,3 @@ class Docopt_Importer():
             '^([^\n]*' + name + '[^\n]*\n?(?:[ \t].*?(?:\n|$))*)',
             re.IGNORECASE | re.MULTILINE)
         return [s.strip() for s in pattern.findall(source)]
-
