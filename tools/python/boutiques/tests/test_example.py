@@ -40,7 +40,6 @@ class TestExample(TestCase):
         self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
 
     def test_example_internal_validator_false_flag(self):
-        self.maxDiff = None
         descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
                                                  'example-invocation/'
                                                  'example_descriptor.json')
@@ -55,3 +54,16 @@ class TestExample(TestCase):
 
         self.assertIn("d2 (False) flag is set to true or otherwise omitted",
                       error)
+
+    def test_example_requires_group_complete_x10(self):
+        descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
+                                                 'example-invocation/'
+                                                 'test_valid_reduc.json')
+        command = ("bosh example " + descriptor + " -c")
+
+        # Can't create descriptors with mutex group but only one valid example
+        for _ in range(0, 10):
+            process = subprocess.Popen(command, shell=True,
+                                       stdout=subprocess.PIPE)
+            output = json.loads(process.stdout.read())
+            self.assertNotIn("Error", output)

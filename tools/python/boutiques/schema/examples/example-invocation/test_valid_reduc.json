@@ -1,0 +1,251 @@
+{
+    "command-line": "test_import [X] [A] [B] [G] [B_2] [BAR1] [BAR2] [FOO1] [FOO2] [FOO3] [G_2] [BAR1_2] [BAR2_2] [Y]",
+    "container-image": {
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
+    },
+    "description": "Sample Docopt script for bosh import testing",
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "Crashed"
+        }
+    ],
+    "name": "tool name",
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "tags": {
+        "foo": "bar",
+        "purpose": "testing",
+        "status": "example"
+    },
+    "tool-version": "v0.1.0",
+    "inputs": [
+        {
+            "id": "X",
+            "name": "X",
+            "description": "",
+            "optional": true,
+            "value-key": "[X]",
+            "type": "String",
+            "requires-inputs": [
+                "a_b_2"
+            ]
+        },
+        {
+            "id": "a",
+            "name": "a",
+            "description": "",
+            "optional": true,
+            "value-key": "[A]",
+            "requires-inputs": [
+                "X",
+                "b",
+                "g"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "b",
+            "name": "b",
+            "description": "",
+            "optional": true,
+            "value-key": "[B]",
+            "requires-inputs": [
+                "a"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "g",
+            "name": "g",
+            "description": "",
+            "optional": true,
+            "value-key": "[G]",
+            "requires-inputs": [
+                "a"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "b_2",
+            "name": "b 2",
+            "description": "",
+            "optional": true,
+            "value-key": "[B_2]",
+            "requires-inputs": [
+                "X",
+                "bar1_bar2_g_2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "bar1",
+            "name": "bar1",
+            "description": "requires b",
+            "optional": true,
+            "value-key": "[BAR1]",
+            "requires-inputs": [
+                "b_2"
+            ],
+            "type": "Number",
+            "command-line-flag": "--bar1"
+        },
+        {
+            "id": "bar2",
+            "name": "bar2",
+            "description": "requires b",
+            "optional": true,
+            "value-key": "[BAR2]",
+            "requires-inputs": [
+                "b_2"
+            ],
+            "type": "File",
+            "command-line-flag": "--bar2"
+        },
+        {
+            "id": "foo1",
+            "name": "foo1",
+            "description": "requires bar1_bar2",
+            "optional": true,
+            "value-key": "[FOO1]",
+            "requires-inputs": [
+                "bar1_bar2"
+            ],
+            "type": "String",
+            "command-line-flag": "--foo1"
+        },
+        {
+            "id": "foo2",
+            "name": "foo2",
+            "description": "requires bar1_bar2",
+            "optional": true,
+            "value-key": "[FOO2]",
+            "requires-inputs": [
+                "bar1_bar2"
+            ],
+            "type": "Number",
+            "command-line-flag": "--foo2"
+        },
+        {
+            "id": "foo3",
+            "name": "foo3",
+            "description": "requires bar1_bar2",
+            "optional": true,
+            "value-key": "[FOO3]",
+            "requires-inputs": [
+                "bar1_bar2"
+            ],
+            "type": "File",
+            "command-line-flag": "--foo3"
+        },
+        {
+            "id": "g_2",
+            "name": "g 2",
+            "description": "",
+            "optional": true,
+            "value-key": "[G_2]",
+            "requires-inputs": [
+                "b_2",
+                "bar1_2_bar2_2"
+            ],
+            "type": "String"
+        },
+        {
+            "id": "bar1_2",
+            "name": "bar1 2",
+            "description": "requires b",
+            "optional": true,
+            "value-key": "[BAR1_2]",
+            "requires-inputs": [
+                "g_2"
+            ],
+            "type": "Number",
+            "command-line-flag": "--bar1"
+        },
+        {
+            "id": "bar2_2",
+            "name": "bar2 2",
+            "description": "requires b",
+            "optional": true,
+            "value-key": "[BAR2_2]",
+            "requires-inputs": [
+                "g_2"
+            ],
+            "type": "File",
+            "command-line-flag": "--bar2"
+        },
+        {
+            "id": "Y",
+            "name": "Y",
+            "description": "",
+            "optional": true,
+            "value-key": "[Y]",
+            "type": "String"
+        }
+    ],
+    "groups": [
+        {
+            "id": "bar1_bar2",
+            "name": "Mutex group with members: bar1, bar2",
+            "members": [
+                "bar1",
+                "bar2"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "foo1_foo2_foo3",
+            "name": "Mutex group with members: foo1, foo2, foo3",
+            "members": [
+                "foo1",
+                "foo2",
+                "foo3"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "bar1_2_bar2_2",
+            "name": "Mutex group with members: bar1_2, bar2_2",
+            "members": [
+                "bar1_2",
+                "bar2_2"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "bar1_bar2_g_2",
+            "name": "Mutex group with members: g_2, bar1, bar2",
+            "members": [
+                "g_2",
+                "bar1",
+                "bar2"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "a_b_2",
+            "name": "Mutex group with members: a, b_2",
+            "members": [
+                "a",
+                "b_2"
+            ],
+            "mutually-exclusive": true
+        },
+        {
+            "id": "X_Y",
+            "name": "One is required group with members: X, Y",
+            "members": [
+                "X",
+                "Y"
+            ],
+            "one-is-required": true,
+            "mutually-exclusive": true
+        }
+    ]
+}

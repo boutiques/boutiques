@@ -780,7 +780,11 @@ class Docopt_Importer():
         if "groups" not in self.descriptor:
             self.descriptor['groups'] = []
         else:
-            # Check/flatten nested groups
+            # Check/flatten nested groups in descriptor
+            # If member of new mutex group (A) is itself a group (B),
+            # get members of (B) and add them to the first group (A).
+            # Needed to reduce validation complexity and potential
+            # circular references.
             groups = {g['id']: g for g in self.descriptor['groups']}
             nested_grps = []
             for member in new_group['members']:
@@ -899,38 +903,3 @@ class Docopt_Importer():
             re.IGNORECASE | re.MULTILINE)
         return [s.strip() for s in pattern.findall(source)]
 
-    def _removeGroupsFromRequires(self):
-        # temporary removal of groups from requires
-        # until requires-inputs: group is implemented
-        if 'groups' in self.descriptor:
-            gnames = [group['id'] for group in self.descriptor['groups']]
-            for inp in self.descriptor['inputs']:
-                if "requires-inputs" in inp:
-                    new_requires = []
-                    for requiree in inp["requires-inputs"]:
-                        if requiree not in gnames:
-                            new_requires.append(requiree)
-                    inp["requires-inputs"] = new_requires
-                    if inp["requires-inputs"] == []:
-                        del inp["requires-inputs"]
-
-    def _removeGroupsFromGroups(self):
-        # temporary removal of groups from groups
-        # until requires-inputs: group is implemented
-        # needed for this scenario:
-        #   run X g
-        #   run X (a|b) (c|d)
-        #   C_D group will require A_B group because A_B group has sibling G
-        if 'groups' in self.descriptor:
-            gnames = [group['id'] for group in self.descriptor['groups']]
-            del_groups = []
-            for idx, group in enumerate(self.descriptor["groups"]):
-                new_members = []
-                for member in group["members"]:
-                    if member not in gnames:
-                        new_members.append(member)
-                group["members"] = new_members
-                if len(group["members"]) <= 1:
-                    del_groups.append(idx)
-            for idx in del_groups:
-                del self.descriptor["groups"][idx]

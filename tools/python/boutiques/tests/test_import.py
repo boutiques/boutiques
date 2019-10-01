@@ -180,7 +180,7 @@ class TestImport(TestCase):
         if op.isfile(descriptor_output):
             self.fail("Output file should not exist")
 
-    def test_docopt_nf_list(self):
+    def test_docopt_nf(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt/naval_fate")
         pydocopt_input = op.join(base_path, "naval_fate.py")
         descriptor_output = op.join(base_path, "naval_fate_descriptor.json")
@@ -188,11 +188,23 @@ class TestImport(TestCase):
         import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
         bosh(import_args)
 
+        test_invocation = op.join(base_path, "nf_invoc_new.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
         test_invocation = op.join(base_path, "nf_invoc_move.json")
         launch_args = ["exec", "launch", descriptor_output, test_invocation]
         bosh(launch_args)
 
         test_invocation = op.join(base_path, "nf_invoc_shoot.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        test_invocation = op.join(base_path, "nf_invoc_mine.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        test_invocation = op.join(base_path, "nf_invoc_help.json")
         launch_args = ["exec", "launch", descriptor_output, test_invocation]
         bosh(launch_args)
 
