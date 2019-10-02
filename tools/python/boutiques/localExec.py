@@ -961,12 +961,42 @@ class LocalExecutor(object):
         if not hasattr(self, 'out_dict'):
             # a dictionary that will contain the output file names
             self.out_dict = {}
-        for outputId in [x['id'] for x in self.outputs]:
-            # Initialize file name with path template or existing value
+        for outputId in [x['id'] for x in self.outputs
+                         if 'conditional-path-templates' not in x]:
             if outputId in list(self.out_dict.keys()):
                 outputFileName = self.out_dict[outputId]
             else:
                 outputFileName = self.safeGet(outputId, 'path-template')
+            stripped_extensions = self.safeGet(
+                                        outputId,
+                                        "path-template-stripped-extensions")
+            if stripped_extensions is None:
+                stripped_extensions = []
+            se = stripped_extensions  # Renaming variable to save space
+            # We keep the unfound keys because they will be
+            # substituted in a second call to the method in case
+            # they are output keys
+            outputFileName = self._rkit(outputFileName,
+                                        use_flags=False,
+                                        unfound_keys="keep",
+                                        stripped_extensions=se,
+                                        is_output=True,
+                                        escape_special_chars=False)
+
+            if self.safeGet(outputId, 'uses-absolute-path'):
+                outputFileName = os.path.abspath(outputFileName)
+            self.out_dict[outputId] = outputFileName
+
+        # if 'conditional-path-templates' in outputItem
+        # (key=conditions, value=path)
+        # Initialize file name with path template or existing value
+        for outputId in [x['id'] for x in self.outputs
+                         if 'conditional-path-templates' in x]:
+            if outputId in list(self.out_dict.keys()):
+                outputFileName = self.out_dict[outputId]
+            else:
+                outputFileName = self.safeGet(outputId,
+                                              'conditional-path-template')
             stripped_extensions = self.safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
