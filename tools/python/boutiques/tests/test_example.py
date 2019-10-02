@@ -56,14 +56,17 @@ class TestExample(TestCase):
                       error)
 
     def test_example_requires_group_complete_x10(self):
-        descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
-                                                 'example-invocation/'
-                                                 'test_valid_reduc.json')
-        command = ("bosh example " + descriptor + " -c")
+        descriptor = op.join(op.split(bfile)[0],
+                             'tests/docopt/valid/test_valid.json')
+        command = ("bosh example " + descriptor)
 
         # Can't create descriptors with mutex group but only one valid example
-        for _ in range(0, 10):
-            process = subprocess.Popen(command, shell=True,
-                                       stdout=subprocess.PIPE)
+        # Bosh example is inherently random,
+        # must inject in_dict to properly test
+        for i in range(0, 10):
+            process = subprocess.Popen(
+                "{0} {1}".format(command, "-c" if i % 2 is 0 else ""),
+                shell=True,
+                stdout=subprocess.PIPE)
             output = json.loads(process.stdout.read())
             self.assertNotIn("Error", output)
