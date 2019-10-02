@@ -28,6 +28,8 @@ class TestOutputFiles(TestCase):
         launch_args = ["example", test_desc, "-c"]
         bosh(launch_args)
 
+        # Make it fail validator
+
         # Checks conditions are respected
         launch_args = ["exec", "launch", test_desc, test_invoc]
         # look for expected outputfiles
