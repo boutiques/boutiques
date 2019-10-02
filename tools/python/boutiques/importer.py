@@ -111,7 +111,8 @@ class Importer():
                     return None
 
                 if entrypoint_values.startswith("["):
-                    # Replacing entrypoint_values with the Python-interpreted list version
+                    # Replacing entrypoint_values
+                    # with the Python-interpreted list version
                     entrypoint_values = json.loads(entrypoint_values)
                     # Adding single quotes around list items with spaces therein
                     entrypoint_values = [ev
