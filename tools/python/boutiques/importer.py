@@ -99,9 +99,28 @@ class Importer():
         with open(os.path.join(self.input_descriptor, "Dockerfile")) as f:
             content = f.readlines()
         for line in content:
-            split = line.split()
-            if len(split) >= 2 and split[0] == "ENTRYPOINT":
-                entrypoint = split[1].strip("[]\"")
+            if line.startswith("ENTRYPOINT"):
+                entrypoint_values = line.strip("ENTRYPOINT").strip()
+
+                # According to DOCKER documetation the ENTRYPOINT can
+                # be like:
+                #   > ENTRYPOINT ["executable", "param1", "param2"]
+                # or:
+                #   > ENTRYPOINT command param1 param2
+                if not entrypoint_values:
+                    return None
+
+                if entrypoint_values.startswith("["):
+                    # Replacing entrypoint_values
+                    # with the Python-interpreted list version
+                    entrypoint_values = json.loads(entrypoint_values)
+                    # Adding single quotes around list items with spaces therein
+                    entrypoint_values = [ev
+                                         if " " not in ev else
+                                         "'{0}'".format(ev)
+                                         for ev in entrypoint_values]
+                    return " ".join(entrypoint_values)
+
         return entrypoint
 
     def import_docopt(self, desc_path):
