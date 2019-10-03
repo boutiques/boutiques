@@ -10,6 +10,13 @@ import yaml
 import simplejson as json
 import os
 import os.path as op
+import re
+import sys
+from docopt import parse_defaults, parse_pattern, parse_argv
+from docopt import formal_usage, DocoptLanguageError
+from docopt import AnyOptions, TokenStream, Option, Argument, Command
+import imp
+import collections
 
 
 class ImportError(Exception):
@@ -92,10 +99,48 @@ class Importer():
         with open(os.path.join(self.input_descriptor, "Dockerfile")) as f:
             content = f.readlines()
         for line in content:
-            split = line.split()
-            if len(split) >= 2 and split[0] == "ENTRYPOINT":
-                entrypoint = split[1].strip("[]\"")
+            if line.startswith("ENTRYPOINT"):
+                entrypoint_values = line.strip("ENTRYPOINT").strip()
+
+                # According to DOCKER documetation the ENTRYPOINT can
+                # be like:
+                #   > ENTRYPOINT ["executable", "param1", "param2"]
+                # or:
+                #   > ENTRYPOINT command param1 param2
+                if not entrypoint_values:
+                    return None
+
+                if entrypoint_values.startswith("["):
+                    # Replacing entrypoint_values
+                    # with the Python-interpreted list version
+                    entrypoint_values = json.loads(entrypoint_values)
+                    # Adding single quotes around list items with spaces therein
+                    entrypoint_values = [ev
+                                         if " " not in ev else
+                                         "'{0}'".format(ev)
+                                         for ev in entrypoint_values]
+                    return " ".join(entrypoint_values)
+
         return entrypoint
+
+    def import_docopt(self, desc_path):
+        template_file = op.join(desc_path)
+        docstring = imp.load_source(
+            'docopt_pyscript', self.input_descriptor).__doc__
+
+        dcptImptr = Docopt_Importer(docstring, template_file)
+        # The order matters
+        dcptImptr.loadDocoptDescription()
+        dcptImptr.loadDescriptionAndType()
+        dcptImptr.generateInputsAndCommandLine(dcptImptr.pattern)
+        dcptImptr.addInputsRecursive(dcptImptr.dependencies)
+        dcptImptr.determineOptionality()
+        dcptImptr.createRootOneIsRequiredGroup()
+        dcptImptr._removeGroupsFromRequires()
+        dcptImptr._removeGroupsFromGroups()
+
+        with open(self.output_descriptor, "w") as output:
+            output.write(json.dumps(dcptImptr.descriptor, indent=4))
 
     def import_bids(self):
         path, fil = os.path.split(__file__)
@@ -282,12 +327,12 @@ class Importer():
                                                             boutiques_inputs)
                 cwl_out_obj = cwl_desc['outputs'][cwl_output]
                 if type(cwl_out_obj.get('type')) is dict:
-                    if (cwl_out_obj['type'].get('type')
-                       and cwl_out_obj['type']['type'] == 'array'):
+                    if (cwl_out_obj['type'].get('type') and
+                       cwl_out_obj['type']['type'] == 'array'):
                         bout_output['list'] = True
                     else:
-                        raise_error(ImportError, 'Unsupported output type: '
-                                    + cwl_output['type'])
+                        raise_error(ImportError, 'Unsupported output type: ' +
+                                    cwl_output['type'])
                 boutiques_outputs.append(bout_output)
         # Boutiques descriptors have to have at least 1 output file
         if len(boutiques_outputs) == 0 or cwl_desc.get('stdout'):
@@ -401,3 +446,489 @@ class Importer():
             f.write(json.dumps(boutiques_invocation, indent=4, sort_keys=True))
         boutiques.invocation(self.output_descriptor,
                              "-i", self.output_invocation)
+
+
+class Docopt_Importer():
+    def __init__(self, docopt_str, base_descriptor):
+        with open(base_descriptor, "r") as base_desc:
+            self.descriptor = collections.OrderedDict(json.load(base_desc))
+
+        del self.descriptor['groups']
+        del self.descriptor['inputs']
+        del self.descriptor['output-files']
+        self.docopt_str = docopt_str
+        self.dependencies = collections.OrderedDict()
+        self.all_desc_and_type = collections.OrderedDict()
+        self.unique_ids = []
+
+        try:
+            # docopt code snippet to extract args tree (pattern)
+            # should run if docopt script is valid
+            options = parse_defaults(docopt_str)
+
+            self.pattern = parse_pattern(
+                formal_usage(self._parse_section('usage:', docopt_str)[0]),
+                options)
+
+            argv = parse_argv(
+                TokenStream(sys.argv[1:], DocoptLanguageError),
+                list(options), False)
+            pattern_options = set(self.pattern.flat(Option))
+
+            for options_shortcut in self.pattern.flat(AnyOptions):
+                doc_options = parse_defaults(docopt_str)
+                options_shortcut.children = list(
+                    set(doc_options) - pattern_options)
+            matched, left, collected = self.pattern.fix().match(argv)
+        except Exception:
+            os.remove(base_descriptor)
+            raise_error(ImportError, "Invalid docopt script")
+
+    def loadDocoptDescription(self):
+        # Get description of the script itself
+        # which is everything except for usage and arguments
+        self.descriptor["description"] = self.docopt_str\
+            .replace("".join(self._parse_section(
+                'usage:', self.docopt_str)), "")\
+            .replace("".join(self._parse_section(
+                'arguments:', self.docopt_str)), "")\
+            .replace("".join(self._parse_section(
+                'options:', self.docopt_str)), "")\
+            .replace("\n\n", "\n").strip()
+
+    def loadDescriptionAndType(self):
+        # using docopt code to extract description and type from args
+        for line in (self._parse_section('arguments:', self.docopt_str) +
+                     self._parse_section('options:', self.docopt_str)):
+            _, _, s = line.partition(':')  # get rid of "options:"
+            split = re.split(r'\n[ \t]*(-\S+?)', '\n' + s)[1:] if\
+                line in self._parse_section('options:', self.docopt_str) else\
+                re.split(r'\n[ \t]*(<\S+?)', '\n' + s)[1:]
+            split = [s1 + s2 for s1, s2 in zip(split[::2], split[1::2])]
+            # parse each line of Arguments and Options
+            for arg_str in [s for s in split if (s.startswith('-') or
+                                                 s.startswith('<'))]:
+                arg = Option.parse(arg_str) if arg_str.startswith('-')\
+                    else Argument.parse(arg_str)
+                arg_segs = arg_str.partition('  ')
+                # Add desc and type to all_desc_and_type
+                # key is initial id/name
+                self.all_desc_and_type[arg.name] = {
+                    "desc": arg_segs[-1].replace('\n', ' ')
+                                        .replace("  ", '').strip()}
+                if hasattr(arg, "value") and arg.value is not None and\
+                   arg.value is not False:
+                    self.all_desc_and_type[arg.name]['default-value'] =\
+                        arg.value
+                if type(arg) is Option and arg.argcount > 0:
+                    for typ in [seg for seg in arg_segs[0]
+                                .replace(',', ' ')
+                                .replace('=', ' ')
+                                .split() if seg[0] != "-"]:
+                        self.all_desc_and_type[arg.name]["type"] = typ
+
+    def generateInputsAndCommandLine(self, node):
+        # Add commands and inputs, depth first
+        child_node_type = type(node.children[0]).__name__
+        if hasattr(node, 'children') and (child_node_type == "Either" or
+                                          child_node_type == "Required"):
+            for child in node.children:
+                self.generateInputsAndCommandLine(child)
+        else:
+            # Traversing reached usage level, add script commnad
+            self.descriptor['command-line'] = self._parse_section(
+                'usage:', self.docopt_str)[0].split("\n")[1:][0].split()[0]
+            self._loadInputsFromUsage(node)
+
+    def _loadInputsFromUsage(self, usage):
+        ancestors = []
+        for arg in usage.children:
+            # Traverse usage args and add them to dependencies tree
+            arg_type = type(arg).__name__
+            if hasattr(arg, "children"):
+                fchild_type = type(arg.children[0]).__name__
+                # Has sub-arguments, maybe recurse into _loadRtrctnsFrmUsg
+                # but have to deal with children in subtype
+                if arg_type == "Optional" and fchild_type == "AnyOptions":
+                    for option in arg.children[0].children:
+                        self._addArgumentToDependencies(
+                            option, ancestors=ancestors, optional=True)
+                elif arg_type == "OneOrMore":
+                    list_name = "<list_of_{0}>".format(
+                        self._getParamName(arg.children[0].name))
+                    list_arg = Argument(list_name)
+                    list_arg.parse(list_name)
+                    self.all_desc_and_type[list_name] = {
+                        'desc': "List of {0}".format(
+                            self._getParamName(arg.children[0].name))}
+                    self._addArgumentToDependencies(
+                        list_arg, ancestors=ancestors, isList=True)
+                    ancestors.append(list_name)
+                elif arg_type == "Optional" and fchild_type == "Option":
+                    for option in arg.children:
+                        self._addArgumentToDependencies(
+                            option, ancestors=ancestors, optional=True)
+                elif arg_type == "Optional" and fchild_type == "Either":
+                    # Mutex choices group, add group to dependencies tree
+                    # add choices args to group
+                    ancestors = self._addGroupArgumentToDependencies(
+                        arg, ancestors, optional=True)
+                elif arg_type == "Required" and fchild_type == "Either":
+                    # Mutex choices group, add group to dependencies tree
+                    # add choices args to group
+                    ancestors = self._addGroupArgumentToDependencies(
+                        arg, ancestors)
+            elif arg_type == "Command":
+                self._addArgumentToDependencies(arg, ancestors=ancestors)
+                ancestors.append(arg.name)
+            elif arg_type == "Argument":
+                self._addArgumentToDependencies(arg, ancestors=ancestors)
+                ancestors.append(arg.name)
+            elif arg_type == "Option":
+                self._addArgumentToDependencies(
+                    arg, ancestors=ancestors, optional=True)
+                ancestors.append(arg.name)
+            else:
+                raise_error(
+                    ImportError,
+                    "Non implemented docopt arg.type: {0}".format(arg_type))
+
+    def _addArgumentToDependencies(self, node, ancestors=None,
+                                   isList=False, optional=False,
+                                   members=[]):
+        # Add arg to dependency tree, establish hierarchy (parent/children)
+        # by using ancestry of node
+        p_node = self._getDependencyParentNode(ancestors)
+        argAdded = self._generateDependencyArgument(
+            node, isList, optional, members)
+
+        if ancestors == [] and node.name not in self.dependencies:
+            self.dependencies[node.name] = argAdded
+        elif ancestors != [] and p_node is not None:
+            argAdded["parent"] = p_node
+            if node.name in p_node['children']:
+                p_node['children'][node.name]['children'].update(
+                    argAdded['children'])
+            else:
+                p_node['children'][node.name] = argAdded
+
+        if hasattr(node, 'long') and node.long is not None:
+            # ensure flag has long hand flag
+            argAdded["flag"] = node.long
+            if p_node is not None and 'flag' in p_node and\
+               argAdded["flag"] == p_node["flag"]:
+                # if parent and child are same option (therefore has short-hand)
+                # create new input with short-hand flag
+                self.dependencies[
+                    p_node['children'][node.name]['name']] = {
+                        'id': p_node['children'][node.name]['id'],
+                        'name': p_node['children'][node.name]['name'],
+                        'desc': p_node['children'][node.name]['desc'],
+                        'flag': node.short,
+                        'optional': p_node['children']
+                                    [node.name]['optional'],
+                        'parent': None,
+                        'children': p_node['children']
+                                    [node.name]['children']}
+                del p_node['children'][node.name]
+
+    def _generateDependencyArgument(self, node, isList=False,
+                                    optional=False, members=[]):
+        # Generate & return dependency tree arg populated with parameters
+        new_arg = {
+            "id": node.name,
+            "name": self._getUniqueId(self._getParamName(node.name)),
+            "desc": self.all_desc_and_type[node.name]['desc']
+            if node.name in self.all_desc_and_type
+            else "",
+            "optional": optional,
+            "parent": None,
+            "children": collections.OrderedDict()}
+
+        if new_arg is not None and isList:
+            new_arg["isList"] = True
+        if members != []:
+            # dependency arg is group_arg if it contains mutex_members
+            new_arg["mutex_members"] = members
+
+        if node.name in self.all_desc_and_type:
+            if 'type' in self.all_desc_and_type[node.name]:
+                new_arg["type"] = self._getStrippedName(
+                    self.all_desc_and_type[node.name]['type']) if\
+                    self.all_desc_and_type[node.name]['type'] in\
+                    {"File", "Flag", "Number", "String"} or\
+                    self.all_desc_and_type[node.name]['type'][1:-1] in\
+                    {"File", "Flag", "Number", "String"} else "String"
+
+            # CODE OMITTED because of default-value bug in descriptor
+            # if 'default-value' in self.all_desc_and_type[node.name]:
+                # new_arg['default-value'] =\
+                #    self.all_desc_and_type[node.name]['default-value']
+
+        if hasattr(node, 'long') and node.long is not None:
+            # ensure flag has long hand flag
+            new_arg["flag"] = node.long
+        return new_arg
+
+    def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
+        # Add mutex choice group arg to dependency tree
+        # group_arg contains members as dependency arguments
+        options = arg.children[0].children
+        p_node = self._getDependencyParentNode(ancestors)
+        members = [self._generateDependencyArgument(option) for
+                   option in options]
+
+        pretty_names = [member["name"] for member in members]
+        names = [arg.name for arg in arg.children[0].children]
+        gdesc = "Group key for mutex choices: {0}".format(
+            " and ".join(names))
+        for name in [name for name in names if name in self.all_desc_and_type]:
+            gdesc = gdesc.replace(name, "{0} ({1})".format(
+                name, self.all_desc_and_type[name]['desc']
+            ))
+        gname = "<{0}>".format("_".join(pretty_names))
+        grp_arg = Argument(gname)
+        grp_arg.parse(gname)
+        self.all_desc_and_type[gname] = {'desc': gdesc}
+
+        self._addArgumentToDependencies(
+            grp_arg, ancestors=ancestors,
+            optional=optional, members=members)
+        ancestors.append(grp_arg.name)
+        return ancestors
+
+    def addInputsRecursive(self, node, requires=[]):
+        # Traverse dependencies and add inputs/groups
+        # depending on children nb.
+        args_ids = list(node.keys())
+        if len(args_ids) == 1:
+            self._addInputOrMutexGroupToDescriptor(node[args_ids[0]], requires)
+            self.addInputsRecursive(
+                node[args_ids[0]]['children'], requires)
+        elif len(args_ids) > 1:
+            mutex_names = []
+            for name in args_ids:
+                # requires-inputs list is closest ancestor with siblings
+                # and single lineage descendants because this node has siblings
+                self._addInputOrMutexGroupToDescriptor(
+                    node[name], requires, addInputWithLineage=True)
+                self.addInputsRecursive(
+                    node[name]['children'], [node[name]['name']])
+                if not node[name]['optional']:
+                    mutex_names.append(node[name]['name'])
+            if len(mutex_names) > 1:
+                self._addMutexGroup(mutex_names)
+
+    def _addInputOrMutexGroupToDescriptor(self, node, requires,
+                                          addInputWithLineage=False):
+        if 'mutex_members' in node:
+            # Add mutex inputs and mutex group if arg is group_arg
+            for mutex_member in node['mutex_members']:
+                self._addInput(mutex_member, requires)
+            self._addMutexGroup([member["name"] for member in
+                                node['mutex_members']])
+        else:
+            self._addInput(
+                node,
+                requires + (self._getLineageChildren(node, []) if
+                            addInputWithLineage else []),
+                isList=node["isList"] if 'isList' in
+                node else False)
+
+    def _addInput(self, arg, requires, isList=False):
+        # Add input to descriptor with all parameters
+        if "inputs" not in self.descriptor:
+            self.descriptor['inputs'] = []
+
+        param_key = arg["id"]
+        param_name = arg["name"]
+        new_inp = {
+            "id": param_name.replace("-", "_"),
+            "name": param_name.replace("_", " ").replace("-", " "),
+            "description": arg['desc'],
+            "optional": True,
+            "value-key": "[{0}]".format(param_name).upper()
+        }
+        self.descriptor["command-line"] += " {0}".format(new_inp['value-key'])
+
+        if requires != []:
+            new_inp["requires-inputs"] = requires
+        # Only add list param when isList
+        if isList:
+            new_inp['list'] = True
+        if "default-value" in arg:
+            new_inp['default-value'] = arg['default-value']
+        if "flag" in arg:
+            if "type" in arg:
+                new_inp['type'] = arg['type']
+            else:
+                new_inp['type'] = "Flag"
+            new_inp["command-line-flag"] = arg["flag"]
+        else:
+            new_inp['type'] = "String"
+        if 'mutex_members' in arg:
+            mutex_names = []
+            for choice_key in arg['children']:
+                choice = arg['children'][choice_key]['id']
+                if choice in arg['mutex_members']:
+                    mutex_names.append(choice_key)
+            if len(mutex_names) > 1:
+                self._addMutexGroup(mutex_names)
+        else:
+            self.descriptor['inputs'].append(new_inp)
+
+    def _addMutexGroup(self, arg_names):
+        # Add mutex group to descriptor
+        pretty_name = "_".join([self._getParamName(name)
+                                for name in arg_names])
+        unique_name = self._getUniqueId(pretty_name)
+        new_group = {
+            "id": pretty_name,
+            "name": "Mutex group with members: {0}".format(", ".join(
+                [self._getStrippedName(name) for name in arg_names])),
+            "members": [self._getParamName(name) for name in arg_names],
+            "mutually-exclusive": True
+        }
+        if "groups" not in self.descriptor:
+            self.descriptor['groups'] = []
+        self.descriptor['groups'].append(new_group)
+
+    def determineOptionality(self):
+        # Change optionality of inputs to false,
+        # only applies to single root input and its single lineage descendants
+        if len(self.dependencies) == 1:
+            single_childs = [
+                self.dependencies[next(iter(self.dependencies))]["name"]]
+            single_childs += self._getLineageChildren(
+                self.dependencies[next(iter(self.dependencies))])
+            for required_inp in [inp for inp in self.descriptor["inputs"] if
+                                 inp["id"] in single_childs]:
+                required_inp["optional"] = False
+
+    def createRootOneIsRequiredGroup(self):
+        # Create OIR group with root inputs
+        OIR_ids = []
+        for root_inp in self.dependencies:
+            OIR_ids.append(
+                self.dependencies[root_inp]["name"].replace("-", "_"))
+        pretty_name = "_".join(OIR_ids)
+        unique_name = self._getUniqueId(pretty_name)
+        new_group = {
+            "id": pretty_name,
+            "name": "One is required group with members: {0}".format(
+                ", ".join(OIR_ids)),
+            "members": OIR_ids,
+            "one-is-required": True
+        }
+        if len(OIR_ids) > 1:
+            if "groups" not in self.descriptor:
+                self.descriptor['groups'] = []
+            self.descriptor['groups'].append(new_group)
+
+    def _getLineageChildren(self, node, descendants=[]):
+        # Recursively gets all the single lineage descendants names of
+        # a dependency tree node
+        child_keys = list(node['children'].keys())
+        if len(child_keys) == 1 and\
+           not node['children'][child_keys[0]]['optional']:
+            descendants.append(node['children'][child_keys[0]]['name'])
+            self._getLineageChildren(
+                node['children'][child_keys[0]], descendants=descendants)
+        return descendants
+
+    def _getDependencyParentNode(self, ancestors):
+        # Get parent dependency node, determined by ordered list of ancestors
+        last_node = None
+        for ancestor in ancestors:
+            if last_node is None:
+                for root in self.dependencies:
+                    if self.dependencies[root]['id'] == ancestor:
+                        last_node = self.dependencies[root]
+            elif ancestor in [last_node['children'][key]['id'] for
+                              key in last_node['children']]:
+                last_node = last_node['children'][
+                    [{'id': last_node['children'][n]['id'], 'key': n} for
+                     n in last_node['children']][-1]['key']]
+            else:
+                return None
+        return last_node
+
+    def _getUniqueId(self, name):
+        # Generate, store and return a unique_id for inputs/groups
+        # will store generated id and original id for reference
+        id_count = 1
+        while name + ("_" + str(id_count) if
+                      id_count > 1 else "") in self.unique_ids:
+            id_count += 1
+        new_unique_id = name + ("_" + str(id_count) if id_count > 1 else "")
+        self.unique_ids.append(new_unique_id)
+        return new_unique_id
+
+    def _getStrippedName(self, name):
+        # only parses --arg and <arg>
+        if name[0] == "-" and name[1] == "-":
+            return name[2:]
+        elif name[0] == "<" and name[-1] == ">":
+            return name[1:-1]
+        else:
+            return name
+
+    def _getParamName(self, param):
+        # returns descriptor id compliant name
+        chars = ['<', '>', '[', ']', '(', ')']
+        if param[0] == "-" and param[1] == "-":
+            param = param[2:].replace('-', '_')
+            for char in chars:
+                param = param.replace(char, "")
+        elif param[0] == "<" and param[-1] == ">":
+            param = param[1:-1].replace('-', '_')
+            for char in chars:
+                param = param.replace(char, "")
+        else:
+            for char in chars:
+                param = param.replace(char, "")
+        return param
+
+    def _parse_section(self, name, source):
+        # old docopt code snippet
+        # needed to extract section from docopt script
+        pattern = re.compile(
+            '^([^\n]*' + name + '[^\n]*\n?(?:[ \t].*?(?:\n|$))*)',
+            re.IGNORECASE | re.MULTILINE)
+        return [s.strip() for s in pattern.findall(source)]
+
+    def _removeGroupsFromRequires(self):
+        # temporary removal of groups from requires
+        # until requires-inputs: group is implemented
+        if 'groups' in self.descriptor:
+            gnames = [group['id'] for group in self.descriptor['groups']]
+            for inp in self.descriptor['inputs']:
+                if "requires-inputs" in inp:
+                    new_requires = []
+                    for requiree in inp["requires-inputs"]:
+                        if requiree not in gnames:
+                            new_requires.append(requiree)
+                    inp["requires-inputs"] = new_requires
+                    if inp["requires-inputs"] == []:
+                        del inp["requires-inputs"]
+
+    def _removeGroupsFromGroups(self):
+        # temporary removal of groups from groups
+        # until requires-inputs: group is implemented
+        # needed for this scenario:
+        #   run X g
+        #   run X (a|b) (c|d)
+        #   C_D group will require A_B group because A_B group has sibling G
+        if 'groups' in self.descriptor:
+            gnames = [group['id'] for group in self.descriptor['groups']]
+            del_groups = []
+            for idx, group in enumerate(self.descriptor["groups"]):
+                new_members = []
+                for member in group["members"]:
+                    if member not in gnames:
+                        new_members.append(member)
+                group["members"] = new_members
+                if len(group["members"]) <= 1:
+                    del_groups.append(idx)
+            for idx in del_groups:
+                del self.descriptor["groups"][idx]

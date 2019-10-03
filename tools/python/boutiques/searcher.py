@@ -121,7 +121,9 @@ class Searcher():
         id = "zenodo." + str(hit["id"])
         title = hit["metadata"]["title"]
         description = hit["metadata"]["description"]
-        downloads = hit["stats"]["version_downloads"]
+        downloads = 0
+        if "version_downloads" in hit["stats"]:
+            downloads = hit["stats"]["version_downloads"]
         return (id, title, description, downloads)
 
     # truncates every value of a dictionary whose length is
