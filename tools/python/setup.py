@@ -21,6 +21,9 @@ DEPS = [
          "docopt"
        ]
 
+if sys.version_info >= (3, 5):
+    DEPS.append("nexus-sdk")
+
 setup(name="boutiques",
       version=VERSION,
       description="Schema for describing bash command-line tools",
