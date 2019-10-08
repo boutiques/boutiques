@@ -63,7 +63,7 @@ class TestExample(TestCase):
         # Can't create descriptors with mutex group but only one valid example
         # Bosh example is inherently random,
         # must inject in_dict to properly test
-        for i in range(0, 10):
+        for i in range(0, 20):
             process = subprocess.Popen(
                 "{0} {1}".format(command, "-c" if i % 2 is 0 else ""),
                 shell=True,
