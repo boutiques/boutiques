@@ -962,7 +962,7 @@ class LocalExecutor(object):
             # a dictionary that will contain the output file names
             self.out_dict = {}
         for outputId in [x['id'] for x in self.outputs
-                         if 'conditional-path-templates' not in x]:
+                         if 'path-template' in x]:
             if outputId in list(self.out_dict.keys()):
                 outputFileName = self.out_dict[outputId]
             else:
@@ -987,16 +987,39 @@ class LocalExecutor(object):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
 
-        # if 'conditional-path-templates' in outputItem
+        # if 'conditional-path-template' in outputItem
         # (key=conditions, value=path)
         # Initialize file name with path template or existing value
         for outputId in [x['id'] for x in self.outputs
-                         if 'conditional-path-templates' in x]:
-            if outputId in list(self.out_dict.keys()):
-                outputFileName = self.out_dict[outputId]
-            else:
-                outputFileName = self.safeGet(outputId,
-                                              'conditional-path-template')
+                         if 'conditional-path-template' in x]:
+
+            for boolObj in self.safeGet(outputId, 'conditional-path-template'):
+                # Surround expression chars with space
+                # Then split by space to isolate ids
+                boolExp = list(boolObj)[0]
+                splitExp = "".join(
+                    [c if c.isalnum() or c == "_" else
+                     " {0} ".format(c) for c in boolExp]).split(" ")
+                parsedExp = []
+                for word in [word.strip() for word in splitExp]:
+                    # Substitute boolean expression key by its value
+                    if word in {**self.in_dict, **self.out_dict}:
+                        parsedExp.append(
+                            str({**self.in_dict, **self.out_dict}[word]))
+                    # Word is an expression char, just append it
+                    else:
+                        parsedExp.append(word)
+                # If expression is true, set fileName
+                # Stop checking (if-elif...)
+                print(" ".join(parsedExp))
+                if eval(" ".join(parsedExp)):
+                    templates = self.safeGet(
+                        outputId, 'conditional-path-template')
+                    t_dict = {list(t.keys())[0]: list(t.values())[0]
+                              for t in templates}
+                    outputFileName = t_dict[boolExp]
+                    break
+
             stripped_extensions = self.safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")

@@ -561,6 +561,12 @@
                         "minLength": 1,
                         "type": "string"
                     },
+                    "conditional-path-template": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
+                        "description": "Describes the output file path relatively to the execution directory. May contain input value keys. Example: \"results/[INPUT1]_brain.mnc\".",
+                        "minLength": 1,
+                        "type": "array"
+                    },
                     "path-template-stripped-extensions": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/path-template-stripped-extensions",
                         "description": "List of file extensions that will be stripped from the input values before being substituted in the path template. Example: [\".nii\",\".nii.gz\"].",
@@ -605,8 +611,7 @@
                 },
                 "required": [
                     "id",
-                    "name",
-                    "path-template"
+                    "name"
                 ],
                 "anyOf": [{
                     "properties": {
@@ -619,7 +624,19 @@
                     }
                 }, {
                     "properties": {
+                        "conditional-file-template": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": { "type": "object" }
+                        },
+                        "list": { "enum": [false] }
+                    }
+                }, {
+                    "properties": {
                         "file-template": { "enum": [false]} }
+                }, {
+                    "properties": {
+                        "conditional-file-template": { "enum": [false]} }
                 }
                          ],
                 "dependencies": {
