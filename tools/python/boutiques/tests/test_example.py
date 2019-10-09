@@ -58,15 +58,17 @@ class TestExample(TestCase):
     def test_example_requires_group_complete_x10(self):
         descriptor = op.join(op.split(bfile)[0],
                              'tests/docopt/valid/test_valid.json')
-        command = ("bosh example " + descriptor)
+        from boutiques.localExec import LocalExecutor
+        executor = LocalExecutor(descriptor, None,
+                                 {"forcePathType": True,
+                                  "destroyTempScripts": True,
+                                  "changeUser": True,
+                                  "skipDataCollect": True,
+                                  "requireComplete": True})
 
         # Can't create descriptors with mutex group but only one valid example
         # Bosh example is inherently random,
-        # must inject in_dict to properly test
-        for i in range(0, 20):
-            process = subprocess.Popen(
-                "{0} {1}".format(command, "-c" if i % 2 is 0 else ""),
-                shell=True,
-                stdout=subprocess.PIPE)
-            output = json.loads(process.stdout.read())
-            self.assertNotIn("Error", output)
+        # Couldn't even inject prederemined input to executor.in_dict
+        # because _randomFillInDict clears it
+        executor.generateRandomParams(100)
+        self.assertGreater(len(executor.in_dict), 0)
