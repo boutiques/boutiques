@@ -1002,22 +1002,29 @@ class LocalExecutor(object):
                      " {0} ".format(c) for c in boolExp]).split(" ")
                 parsedExp = []
                 for word in [word.strip() for word in splitExp]:
+                    all_ids = [i['id'] for i in (self.inputs + self.outputs)]
                     # Substitute boolean expression key by its value
                     if word in {**self.in_dict, **self.out_dict}:
                         parsedExp.append(
                             str({**self.in_dict, **self.out_dict}[word]))
+                    # Boolean expression key is not chosen (optional input),
+                    # therefore expression is false
+                    elif word in all_ids:
+                        parsedExp = ["False"]
+                        break
                     # Word is an expression char, just append it
                     else:
                         parsedExp.append(word)
                 # If expression is true, set fileName
                 # Stop checking (if-elif...)
                 print(" ".join(parsedExp))
-                if eval(" ".join(parsedExp)):
-                    templates = self.safeGet(
-                        outputId, 'conditional-path-template')
-                    t_dict = {list(t.keys())[0]: list(t.values())[0]
-                              for t in templates}
-                    outputFileName = t_dict[boolExp]
+                if " ".join(parsedExp) == "default":
+                    outputFileName = boolObj["default"]
+                    print(outputFileName)
+                    break
+                elif eval(" ".join(parsedExp)):
+                    outputFileName = boolObj[boolExp]
+                    print(outputFileName)
                     break
 
             stripped_extensions = self.safeGet(

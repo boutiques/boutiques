@@ -24,8 +24,12 @@ class TestOutputFiles(TestCase):
         test_invoc = op.join(base_path, "test_fixedANDcond_output_invoc.json")
         output_file_names = op.join(base_path, "test_fileNames.json")
 
-        # Checks validator
+        # Checks validator with -c
         launch_args = ["example", test_desc, "-c"]
+        bosh(launch_args)
+
+        # Checks validator without -c
+        launch_args = ["example", test_desc]
         bosh(launch_args)
 
         # Make it fail validator
@@ -34,3 +38,5 @@ class TestOutputFiles(TestCase):
         launch_args = ["exec", "launch", test_desc, test_invoc]
         # look for expected outputfiles
         bosh(launch_args)
+
+        self.assertTrue(False)
