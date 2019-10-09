@@ -136,8 +136,6 @@ class Importer():
         dcptImptr.addInputsRecursive(dcptImptr.dependencies)
         dcptImptr.determineOptionality()
         dcptImptr.createRootOneIsRequiredGroup()
-        dcptImptr._removeGroupsFromRequires()
-        dcptImptr._removeGroupsFromGroups()
 
         with open(self.output_descriptor, "w") as output:
             output.write(json.dumps(dcptImptr.descriptor, indent=4))
@@ -717,7 +715,16 @@ class Docopt_Importer():
                 if not node[name]['optional']:
                     mutex_names.append(node[name]['name'])
             if len(mutex_names) > 1:
-                self._addMutexGroup(mutex_names)
+                mtxgrp_name = self._addMutexGroup(mutex_names)
+                if node[args_ids[0]]['parent']:
+                    # add mutex group to parent node's requires-inputs
+                    p_name = node[args_ids[0]]['parent']['name']
+                    inputs = {inp['id']: inp
+                              for inp in self.descriptor['inputs']}
+                    if 'requires-inputs' in inputs[p_name]:
+                        inputs[p_name]['requires-inputs'].append(mtxgrp_name)
+                    else:
+                        inputs[p_name]['requires-inputs'] = [mtxgrp_name]
 
     def _addInputOrMutexGroupToDescriptor(self, node, requires,
                                           addInputWithLineage=False):
@@ -791,7 +798,24 @@ class Docopt_Importer():
         }
         if "groups" not in self.descriptor:
             self.descriptor['groups'] = []
+        else:
+            # Check/flatten nested groups in descriptor
+            # If member of new mutex group (A) is itself a group (B),
+            # get members of (B) and add them to the first group (A).
+            # Needed to reduce validation complexity and potential
+            # circular references.
+            groups = {g['id']: g for g in self.descriptor['groups']}
+            nested_grps = []
+            for member in new_group['members']:
+                if member in [g['id'] for g in self.descriptor['groups']]:
+                    nested_grps.append(member)
+                    new_group['members'].extend(groups[member]['members'])
+            for nested_g in nested_grps:
+                new_group['members'].remove(nested_g)
+            new_group["name"] = "Mutex group with members: {0}".format(
+                ", ".join(new_group["members"]))
         self.descriptor['groups'].append(new_group)
+        return new_group['id']
 
     def determineOptionality(self):
         # Change optionality of inputs to false,
@@ -818,7 +842,8 @@ class Docopt_Importer():
             "name": "One is required group with members: {0}".format(
                 ", ".join(OIR_ids)),
             "members": OIR_ids,
-            "one-is-required": True
+            "one-is-required": True,
+            "mutually-exclusive": True
         }
         if len(OIR_ids) > 1:
             if "groups" not in self.descriptor:
@@ -896,39 +921,3 @@ class Docopt_Importer():
             '^([^\n]*' + name + '[^\n]*\n?(?:[ \t].*?(?:\n|$))*)',
             re.IGNORECASE | re.MULTILINE)
         return [s.strip() for s in pattern.findall(source)]
-
-    def _removeGroupsFromRequires(self):
-        # temporary removal of groups from requires
-        # until requires-inputs: group is implemented
-        if 'groups' in self.descriptor:
-            gnames = [group['id'] for group in self.descriptor['groups']]
-            for inp in self.descriptor['inputs']:
-                if "requires-inputs" in inp:
-                    new_requires = []
-                    for requiree in inp["requires-inputs"]:
-                        if requiree not in gnames:
-                            new_requires.append(requiree)
-                    inp["requires-inputs"] = new_requires
-                    if inp["requires-inputs"] == []:
-                        del inp["requires-inputs"]
-
-    def _removeGroupsFromGroups(self):
-        # temporary removal of groups from groups
-        # until requires-inputs: group is implemented
-        # needed for this scenario:
-        #   run X g
-        #   run X (a|b) (c|d)
-        #   C_D group will require A_B group because A_B group has sibling G
-        if 'groups' in self.descriptor:
-            gnames = [group['id'] for group in self.descriptor['groups']]
-            del_groups = []
-            for idx, group in enumerate(self.descriptor["groups"]):
-                new_members = []
-                for member in group["members"]:
-                    if member not in gnames:
-                        new_members.append(member)
-                group["members"] = new_members
-                if len(group["members"]) <= 1:
-                    del_groups.append(idx)
-            for idx in del_groups:
-                del self.descriptor["groups"][idx]
