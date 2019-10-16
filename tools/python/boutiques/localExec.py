@@ -1004,8 +1004,10 @@ class LocalExecutor(object):
                 for word in [word.strip() for word in splitExp]:
                     all_ids = [i['id'] for i in (self.inputs + self.outputs)]
                     # Substitute boolean expression key by its value
-                    if word in {**self.in_dict, **self.out_dict}:
-                        value = str({**self.in_dict, **self.out_dict}[word])
+                    in_out_dict = self.in_dict.copy()
+                    in_out_dict.update(self.out_dict)
+                    if word in in_out_dict:
+                        value = unicode(str(in_out_dict[word]), 'utf-8')
                         if value.isnumeric():
                             parsedExp.append(value)
                         else:
