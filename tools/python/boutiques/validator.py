@@ -213,13 +213,19 @@ def validate_descriptor(json_file, **kwargs):
             else:
                 errors += []
 
-        # Verify requires- and disables-inputs (present ids, non-overlapping)
-        msg_template = " InputError: \"{0}\" {1}d id \"{2}\" not found"
-        for param in ["require", "disable"]:
-            if param+"s-inputs" in inp.keys():
-                errors += [msg_template.format(inp["id"], param, ids)
-                           for ids in inp[param+"s-inputs"]
-                           if ids not in inIds]
+        # Verify requires-inputs (present ids, non-overlapping)
+        msg_template = " InputError: \"{0}\" required id \"{1}\" not found"
+        if "requires-inputs" in inp.keys():
+            errors += [msg_template.format(inp["id"], ids)
+                       for ids in inp["requires-inputs"]
+                       if ids not in inIds + grpIds]
+
+        # Verify disables-inputs (present ids, non-overlapping)
+        msg_template = " InputError: \"{0}\" disables id \"{1}\" not found"
+        if "disables-inputs" in inp.keys():
+            errors += [msg_template.format(inp["id"], ids)
+                       for ids in inp["disables-inputs"]
+                       if ids not in inIds]
 
         if "requires-inputs" in inp.keys() and "disables-inputs" in inp.keys():
             msg_template = " InputError: \"{0}\" requires and disables \"{1}\""

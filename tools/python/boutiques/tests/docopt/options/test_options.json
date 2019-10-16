@@ -1,5 +1,5 @@
 {
-    "command-line": "test_import [X] [Y] [Z] [CEE] [BEE] [HELP] [AY] [VERSION]",
+    "command-line": "test_import [X] [Y] [Z] [HELP] [AY] [BEE] [VERSION] [CEE]",
     "container-image": {
         "image": "user/image",
         "index": "docker://",
@@ -51,24 +51,6 @@
             "type": "String"
         },
         {
-            "id": "cee",
-            "name": "cee",
-            "description": "C",
-            "optional": true,
-            "value-key": "[CEE]",
-            "type": "Flag",
-            "command-line-flag": "--cee"
-        },
-        {
-            "id": "bee",
-            "name": "bee",
-            "description": "B",
-            "optional": true,
-            "value-key": "[BEE]",
-            "type": "Flag",
-            "command-line-flag": "--bee"
-        },
-        {
             "id": "help",
             "name": "help",
             "description": "Help descriptions",
@@ -87,6 +69,15 @@
             "command-line-flag": "--ay"
         },
         {
+            "id": "bee",
+            "name": "bee",
+            "description": "B",
+            "optional": true,
+            "value-key": "[BEE]",
+            "type": "Flag",
+            "command-line-flag": "--bee"
+        },
+        {
             "id": "version",
             "name": "version",
             "description": "Versions",
@@ -94,6 +85,15 @@
             "value-key": "[VERSION]",
             "type": "Flag",
             "command-line-flag": "--version"
+        },
+        {
+            "id": "cee",
+            "name": "cee",
+            "description": "C",
+            "optional": true,
+            "value-key": "[CEE]",
+            "type": "Flag",
+            "command-line-flag": "--cee"
         }
     ]
 }

@@ -40,7 +40,6 @@ class TestExample(TestCase):
         self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
 
     def test_example_internal_validator_false_flag(self):
-        self.maxDiff = None
         descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
                                                  'example-invocation/'
                                                  'example_descriptor.json')
@@ -55,3 +54,21 @@ class TestExample(TestCase):
 
         self.assertIn("d2 (False) flag is set to true or otherwise omitted",
                       error)
+
+    def test_example_requires_group_complete_x10(self):
+        descriptor = op.join(op.split(bfile)[0],
+                             'tests/docopt/valid/test_valid.json')
+        from boutiques.localExec import LocalExecutor
+        executor = LocalExecutor(descriptor, None,
+                                 {"forcePathType": True,
+                                  "destroyTempScripts": True,
+                                  "changeUser": True,
+                                  "skipDataCollect": True,
+                                  "requireComplete": True})
+
+        # Can't create descriptors with mutex group but only one valid example
+        # Bosh example is inherently random,
+        # Couldn't even inject prederemined input to executor.in_dict
+        # because _randomFillInDict clears it
+        executor.generateRandomParams(100)
+        self.assertGreater(len(executor.in_dict), 0)
