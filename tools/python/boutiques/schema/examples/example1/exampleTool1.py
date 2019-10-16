@@ -32,6 +32,7 @@ def main(args=None):
     parser.add_argument('output_file',
                          help='The output file.')
     parser.add_argument('--no-opts', action='store_true', help='Ignore container options.')
+    parser.add_argument('--cond_out', action='store_true', help='Create conditional output Files')
 
     results=parser.parse_args() if args is None else parser.parse_args(args)
 
@@ -55,16 +56,33 @@ def main(args=None):
                              " working directory.\n")
             sys.exit(1)
 
-    with(open(results.config_file,'r')) as co:
-        config_string = co.read()
-        if config_string != "# This is a demo configuration file\nnumInput=4\nstrInput='coin;plop'":
-            sys.stderr.write("error: invalid configuration file:\n %s\n" % config_string)
-            sys.exit(1)
-        
+    if results.config_file:
+        with(open(results.config_file,'r')) as co:
+            config_string = co.read()
+            if config_string != "# This is a demo configuration file\nnumInput=4\nstrInput='coin;plop'":
+                sys.stderr.write("error: invalid configuration file:\n %s\n" % config_string)
+                sys.exit(1)
+
     sys.stdout.write("This is stdout")
     sys.stderr.write("This is stderr")
-    with open(results.output_file, 'w') as f:
-        f.write("File content")
+
+    if results.cond_out:
+        path = "{0}_default.txt".format(results.output_file)
+        if results.string and results.number > 10:
+            path = "{0}_{1}_{2}.txt".format(results.output_file, results.string, results.number)
+        elif results.string:
+            path = "{0}_{1}.txt".format(results.output_file, results.string)
+
+        with open(results.output_file + "_out1.txt", 'w') as f:
+            f.write("File content")
+        stripped_extensions = [".one", ".two", ".three", ".four", ".five"]
+        for extension in stripped_extensions:
+            path = path.replace(extension, "")
+        with open(path, 'w') as f:
+            f.write("File content")
+    else:
+        with open(results.output_file, 'w') as f:
+            f.write("File content")
 
 if  __name__ == "__main__":
     main()

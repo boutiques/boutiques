@@ -563,7 +563,7 @@
                     },
                     "conditional-path-template": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
-                        "description": "Describes the output file path relatively to the execution directory. May contain input value keys. Example: \"results/[INPUT1]_brain.mnc\".",
+                        "description": "List of objects containing boolean statement (python syntax) and output file paths relative to the execution directory, assign path of first true boolean statement. May contain input value keys, \"default\" object required if \"optional\" set to True . Example list: \"[{\"[PARAM1] > 8\": \"outputs/[INPUT1].txt\"}, {\"default\": \"outputs/default.txt\"}]\".",
                         "minLength": 1,
                         "type": "array"
                     },
@@ -613,6 +613,15 @@
                     "id",
                     "name"
                 ],
+                "oneOf":[{
+                    "properties": {
+                        "path-template": {"enum": [true]}
+                    }
+                }, {
+                    "properties": {
+                        "conditional-path-template": {"enum": [true]}
+                    }
+                }],
                 "anyOf": [{
                     "properties": {
                         "file-template": {
@@ -624,21 +633,8 @@
                     }
                 }, {
                     "properties": {
-                        "conditional-file-template": {
-                            "type": "array",
-                            "minItems": 1,
-                            "items": { "type": "object" }
-                        },
-                        "list": { "enum": [false] }
-                    }
-                }, {
-                    "properties": {
                         "file-template": { "enum": [false]} }
-                }, {
-                    "properties": {
-                        "conditional-file-template": { "enum": [false]} }
-                }
-                         ],
+                }],
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"]
                 },

@@ -49,7 +49,7 @@
         {
           "id": "out1",
           "name": "output 1",
-          "optional": true,
+          "optional": false,
           "path-template": "[PARAM1]/out1.txt",
           "path-template-stripped-extensions": [
             ".npz"

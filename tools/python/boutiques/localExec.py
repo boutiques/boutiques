@@ -1005,8 +1005,11 @@ class LocalExecutor(object):
                     all_ids = [i['id'] for i in (self.inputs + self.outputs)]
                     # Substitute boolean expression key by its value
                     if word in {**self.in_dict, **self.out_dict}:
-                        parsedExp.append(
-                            str({**self.in_dict, **self.out_dict}[word]))
+                        value = str({**self.in_dict, **self.out_dict}[word])
+                        if value.isnumeric():
+                            parsedExp.append(value)
+                        else:
+                            parsedExp.append("\"{0}\"".format(value))
                     # Boolean expression key is not chosen (optional input),
                     # therefore expression is false
                     elif word in all_ids:
@@ -1017,14 +1020,11 @@ class LocalExecutor(object):
                         parsedExp.append(word)
                 # If expression is true, set fileName
                 # Stop checking (if-elif...)
-                print(" ".join(parsedExp))
                 if " ".join(parsedExp) == "default":
                     outputFileName = boolObj["default"]
-                    print(outputFileName)
                     break
                 elif eval(" ".join(parsedExp)):
                     outputFileName = boolObj[boolExp]
-                    print(outputFileName)
                     break
 
             stripped_extensions = self.safeGet(
