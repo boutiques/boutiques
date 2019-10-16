@@ -122,17 +122,18 @@ def validate_descriptor(json_file, **kwargs):
             else:
                 errors += []
 
-    # Verify output file with non-optional conditional file template
-    # contains a default path
-    msg_template = ("OutputError: \"{0}\": Non-optional output-file with "
-                    "conditional-path-template must contain "
-                    "\"default\" path-template.")
-    for outF in [o for o in descriptor["output-files"] if
-                 'conditional-path-template' in o and not o['optional']]:
-        out_keys = [list(obj.keys())[0] for obj in
-                    outF['conditional-path-template']]
-        if 'default' not in out_keys:
-            errors += [msg_template.format(outF['id'])]
+    if 'output-files' in descriptor:
+        # Verify output file with non-optional conditional file template
+        # contains a default path
+        msg_template = ("OutputError: \"{0}\": Non-optional output-file with "
+                        "conditional-path-template must contain "
+                        "\"default\" path-template.")
+        for outF in [o for o in descriptor["output-files"] if
+                    'conditional-path-template' in o and not o['optional']]:
+            out_keys = [list(obj.keys())[0] for obj in
+                        outF['conditional-path-template']]
+            if 'default' not in out_keys:
+                errors += [msg_template.format(outF['id'])]
 
     # Verify inputs
     for inp in descriptor["inputs"]:
