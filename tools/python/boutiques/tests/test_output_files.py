@@ -77,8 +77,8 @@ class TestOutputFiles(TestCase):
                                                stdout=subprocess.PIPE)
         process_output = validate_fixANDCond.stdout.read()
         self.assertIn(
-            b"[ ERROR ] '[PARAM1]/out1.txt' is not one of [True]",
-            process_output)
+            "\'[PARAM1]/out1.txt\' is not one of [True]",
+            process_output.decode())
 
     def test_conditional_path_template_optionality(self):
         base_path = op.join(op.split(bfile)[0], "tests/output_files/")
