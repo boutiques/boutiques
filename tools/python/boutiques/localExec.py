@@ -1068,7 +1068,7 @@ class LocalExecutor(object):
                     in_out_dict.update(self.out_dict)
                     if word in in_out_dict:
                         value = "{0}".format(in_out_dict[word])
-                        if value.replace(".", "").replace("-", "").isnumeric():
+                        if value.replace(".", "").replace("-", "").isdigit():
                             parsedExp.append(in_out_dict[word])
                         else:
                             parsedExp.append("\"{0}\"".format(value))
