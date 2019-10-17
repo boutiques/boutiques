@@ -490,10 +490,12 @@ class TestExample1(BaseTest):
                               base_path,
                               "example1_conditional_invoc.json"),
                           "--skip-data-collection")
-        self.assertEqual("TEST.one.three.two_out1.txt (out1, Required)",
-                         str(ex.output_files[0]))
-        self.assertEqual("TEST_string1.txt (out2, Required)",
-                         str(ex.output_files[1]))
+
+        outFileList = [str(out) for out in ex.output_files]
+        self.assertIn("TEST.one.three.two_out1.txt (out1, Required)",
+                      outFileList)
+        self.assertIn("TEST_string1.txt (out2, Required)",
+                      outFileList)
         self.assertEqual([], ex.missing_files)
 
     # Captures the stdout and stderr during test execution
