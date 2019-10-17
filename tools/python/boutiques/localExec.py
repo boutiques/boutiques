@@ -1067,9 +1067,9 @@ class LocalExecutor(object):
                     in_out_dict = self.in_dict.copy()
                     in_out_dict.update(self.out_dict)
                     if word in in_out_dict:
-                        value = unicode(str(in_out_dict[word]), 'utf-8')
-                        if value.isnumeric():
-                            parsedExp.append(value)
+                        value = "{0}".format(in_out_dict[word])
+                        if value.replace(".", "").replace("-", "").isnumeric():
+                            parsedExp.append(in_out_dict[word])
                         else:
                             parsedExp.append("\"{0}\"".format(value))
                     # Boolean expression key is not chosen (optional input),
@@ -1082,10 +1082,10 @@ class LocalExecutor(object):
                         parsedExp.append(word)
                 # If expression is true, set fileName
                 # Stop checking (if-elif...)
-                if " ".join(parsedExp) == "default":
+                if " ".join("{0}".format(w) for w in parsedExp) == "default":
                     outputFileName = boolObj["default"]
                     break
-                elif eval(" ".join(parsedExp)):
+                elif eval(" ".join("{0}".format(w) for w in parsedExp)):
                     outputFileName = boolObj[boolExp]
                     break
 
