@@ -80,10 +80,12 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
 
     # Helper functions (assumes properly formed descriptor)
     def byInd(id):
+        if not [i for i in inputs if id == i['id']]:
+            return [i for i in groups if id == i['id']][0]
         return [i for i in inputs if id == i['id']][0]
 
     def isFlag(id):
-        return (byInd(id)['type'] == 'Flag')
+        return ('type' in byInd(id) and byInd(id)['type'] == 'Flag')
     # Handle one-is-required groups
     g1r = [g for g in groups if g.get("one-is-required")]
 
@@ -99,11 +101,14 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
     # Handle requires and disables-inputs/mutex constraints
     def handleDisablesRequires(h, inval):
         i, h = RMap(inval), RMap(h)
-        id, reqs = i['id'], i['requires-inputs']
+        id, grps = i['id'], {g['id']: g for g in groups}
+        reqs = [req for req in i['requires-inputs']]\
+            if 'requires-inputs' in i else []
         disbs = i['disables-inputs'] or []
         # Mutex group members added to disablees list
-        mutex_group_members = [g for g in groups if g.get('mutually-exclusive')
-                               and (id in g['members'])]
+        mutex_group_members = [g for g in groups if
+                               'mutually-exclusive' in g and
+                               (id in g['members'])]
         for g in mutex_group_members:
             for m in [m for m in g['members'] if not m == id]:
                 disbs.append(m)
@@ -120,8 +125,21 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
                     {"properties": {id: {"enum": [False]}}}
                 ]
             else:
-                h[id] = {"required": reqs}
-                h[id]['properties'] = reqMap
+                h[id] = {}
+                # Handle requiring mutex group
+                for r in [r for r in reqs if r in grps]:
+                    # Group properties will be tested in validator
+                    reqs.remove(r)
+                    h[id]['anyOf'] = []
+                    for m in grps[r]['members']:
+                        reqMap[m] = schema['properties'][m]
+                        h[id]['anyOf'].append({
+                            "properties": reqMap,
+                            "required": reqs + [m]
+                        })
+                h[id]["properties"] = reqMap
+                if reqs:
+                    h[id]["required"] = reqs
         # Handle disables-inputs (false flags do not violate
         # the disabled criteria)
         if len(disbs) > 0:

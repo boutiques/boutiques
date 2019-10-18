@@ -180,7 +180,7 @@ class TestImport(TestCase):
         if op.isfile(descriptor_output):
             self.fail("Output file should not exist")
 
-    def test_docopt_nf_list(self):
+    def test_docopt_nf(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt/naval_fate")
         pydocopt_input = op.join(base_path, "naval_fate.py")
         descriptor_output = op.join(base_path, "naval_fate_descriptor.json")
