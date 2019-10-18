@@ -439,7 +439,7 @@ class TestExample1(BaseTest):
 
     def docker_not_installed(command):
         if command == 'docker':
-            return False 
+            return False
         else:
             return True
 
