@@ -438,6 +438,9 @@ class LocalExecutor(object):
                 try:
                     os.mkdir(lockDir)
                 except OSError:
+                    print_info("Another process seems to be pulling the "
+                               "image ({} exists), sleeping 5 seconds"
+                               .format(lockDir))
                     time.sleep(5)
                 else:
                     try:
@@ -501,20 +504,25 @@ class LocalExecutor(object):
         if "SINGULARITY_PULLFOLDER" in os.environ:
             del os.environ["SINGULARITY_PULLFOLDER"]
 
-    def _isDockerInstalled(self):
-        return not subprocess.Popen("type docker 1>/dev/null",
+    def _isCommandInstalled(self, command):
+        return not subprocess.Popen("type {} &>/dev/null".format(command),
                                     shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
                                   forceDocker=False):
-        if (self._isDockerInstalled() and
+        if (self._isCommandInstalled('docker') and
                 (conType == 'docker' and not forceSing or
                  forceDocker)):
             return "docker"
-        else:
+
+        if self._isCommandInstalled('singularity'):
             return "singularity"
+
+        raise_error(ExecutorError, ("Could not find any container engine. " +
+                                    "Make sure that Docker or Singularity " +
+                                    "is installed."))
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.

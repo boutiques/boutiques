@@ -437,10 +437,16 @@ class TestExample1(BaseTest):
         self.assertIn("Local copy", ret.container_location)
         self.assertIn("docker run", ret.container_command)
 
+    def docker_not_installed(command):
+        if command == 'docker':
+            return False
+        else:
+            return True
+
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
-    @mock.patch('boutiques.localExec.LocalExecutor._isDockerInstalled',
-                return_value=False)
+    @mock.patch('boutiques.localExec.LocalExecutor._isCommandInstalled',
+                side_effect=docker_not_installed)
     def test_example1_exec_docker_not_installed(self,
                                                 mock_docker_not_installed):
         self.clean_up()
