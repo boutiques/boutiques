@@ -326,7 +326,6 @@ class PrettyPrinter():
                 for i in range(0, len(parsed_flags)):
                     if "_DUP" in parsed_flags[i]:
                         parsed_flags[i] = parsed_flags[i][0:-5]
-                print(parsed_flags)
                 if inp_args[0] in parsed_flags:
                     inp_args[0] = "{0}_DUP{1}".format(
                         inp_args[0], parsed_flags.count(inp_args[0]))
