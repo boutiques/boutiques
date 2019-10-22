@@ -66,3 +66,11 @@ class TestPPrint(TestCase):
         self.assertTrue("Template:" in configs)
         self.assertTrue("Output Files:" in outputs)
         self.assertFalse("Template:" in outputs)
+
+    def test_duplcate_flags(self):
+        fil = op.join(op.split(bfile)[0],
+                      'schema/examples/good_dupFlags.json')
+        prettystring = bosh.prettyprint(fil)
+        self.assertIn("-duplicate", prettystring)
+        self.assertIn("-duplicate_DUP1", prettystring)
+        self.assertIn("-duplicate_DUP2", prettystring)

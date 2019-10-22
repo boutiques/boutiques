@@ -31,7 +31,6 @@ def prettyprint(*params):
     from boutiques.prettyprint import PrettyPrinter
     desc = loadJson(results.descriptor)
     prettyclass = PrettyPrinter(desc)
-
     return prettyclass.docstring
 
 

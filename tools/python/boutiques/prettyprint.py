@@ -3,6 +3,7 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 from tabulate import tabulate
 import textwrap
+import simplejson as json
 
 
 class PrettyPrinter():
@@ -321,6 +322,14 @@ class PrettyPrinter():
             # Add args for optional inputs
             if opt_inp_descr is not "":
                 inp_kwargs['help'] = textwrap.dedent(opt_inp_descr)
+                parsed_flags = list(self.parser._option_string_actions.keys())
+                for i in range(0, len(parsed_flags)):
+                    if "_DUP" in parsed_flags[i]:
+                        parsed_flags[i] = parsed_flags[i][0:-5]
+                print(parsed_flags)
+                if inp_args[0] in parsed_flags:
+                    inp_args[0] = "{0}_DUP{1}".format(
+                        inp_args[0], parsed_flags.count(inp_args[0]))
                 self.parser.add_argument(*inp_args, **inp_kwargs)
 
     def _addSegment(self, segment):
