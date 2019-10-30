@@ -18,6 +18,7 @@ except ImportError:
     from urllib2 import urlopen
     from urllib import urlretrieve
 
+
 def mock_urlretrieve(*args, **kwargs):
     print "ARGHH!"
     mock_record1 = example_boutiques_tool
