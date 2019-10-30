@@ -20,15 +20,12 @@ except ImportError:
 
 
 def mock_urlretrieve(*args, **kwargs):
-    print "ARGHH!"
     mock_record1 = example_boutiques_tool
     mock_record2 = MockZenodoRecord(2587160, "makeblastdb_foo", "",
                                     "https://zenodo.org/api/files/"
                                     "d861b2cd-ec68-4613-9847-1911904a1218/"
                                     "makeblastdb.json")
-    print args[0]
     temp = tempfile.NamedTemporaryFile(delete=False)
-    print temp.name
     if str(example_boutiques_tool.id) in args[0]:
         json.dump(mock_zenodo_search([mock_record1]).mock_json, temp)
         temp.close()
@@ -36,9 +33,7 @@ def mock_urlretrieve(*args, **kwargs):
     if "makeblastdb.json" in args[0]:
         json.dump(mock_zenodo_search([mock_record2]).mock_json, temp)
         temp.close()
-        myurl = urlretrieve(temp.name, args[1])
-        print myurl
-        return myurl
+        return urlretrieve(temp.name, args[1])
     return urlretrieve(args[0], args[1])
 
 
@@ -53,7 +48,6 @@ class TestPull(TestCase):
 
     @mock.patch('boutiques.puller.urlretrieve', side_effect=mock_urlretrieve)
     def test_pull_multi(self, mock_urlretrieve):
-        print "TEST"
         results = bosh(["pull", "zenodo." +
                         str(example_boutiques_tool.id), "zenodo.2587160"])
         cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
