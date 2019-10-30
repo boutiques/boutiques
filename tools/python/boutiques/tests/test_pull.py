@@ -25,7 +25,7 @@ def mock_urlretrieve(*args, **kwargs):
                                     "https://zenodo.org/api/files/"
                                     "d861b2cd-ec68-4613-9847-1911904a1218/"
                                     "makeblastdb.json")
-    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp = tempfile.NamedTemporaryFile(delete=False, mode='w+t')
     if str(example_boutiques_tool.id) in args[0]:
         json.dump(mock_zenodo_search([mock_record1]).mock_json, temp)
         temp.close()
