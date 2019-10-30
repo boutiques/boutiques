@@ -29,11 +29,11 @@ def mock_urlretrieve(*args, **kwargs):
     if str(example_boutiques_tool.id) in args[0]:
         json.dump(mock_zenodo_search([mock_record1]).mock_json, temp)
         temp.close()
-        return urlretrieve(temp.name, args[1])
+        return urlretrieve("file://%s" % temp.name, args[1])
     if "makeblastdb.json" in args[0]:
         json.dump(mock_zenodo_search([mock_record2]).mock_json, temp)
         temp.close()
-        return urlretrieve(temp.name, args[1])
+        return urlretrieve("file://%s" % temp.name, args[1])
     return urlretrieve(args[0], args[1])
 
 
