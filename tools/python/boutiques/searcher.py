@@ -54,10 +54,12 @@ class Searcher():
 
     def zenodo_search(self):
         # Get all results
-        r = requests.get(self.zenodo_endpoint + '/api/records/?q=%s&'
-                         'keywords=boutiques&keywords=schema&'
-                         'keywords=version&file_type=json&type=software'
-                         '&page=1&size=%s' % (self.query, 9999))
+        r = requests.get(self.zenodo_endpoint + '/api/records/?q='
+                         'keywords:(/Boutiques/) AND '
+                         'keywords:(/schema-version.*/) AND '
+                         'keywords:(/.*%s.*/)&'
+                         'file_type=json&type=software&'
+                         'page=1&size=%s' % (self.query, 9999))
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
