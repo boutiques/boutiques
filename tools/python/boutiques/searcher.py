@@ -17,14 +17,20 @@ class Searcher():
         if query is not None:
             self.query = query
             if not exact_match:
-                self.query_line = \
-                    ' AND keywords:(/.*%s.*/)' % self.query
+                terms = self.query.split(" ")
+                self.query_line = ''
+                for t in terms:
+                    self.query_line = self.query_line + \
+                        ' AND keywords:(/.*%s.*/)' % t
             else:
-                self.query_line = \
-                    ' AND keywords:(/%s/)' % self.query
+                self.query_line =\
+                        ' AND keywords:(/%s/)' % self.query
         else:
             self.query_line = ''
             self.query = ''
+
+        if(verbose):
+            print_info("Using Query Line: " + self.query_line)
 
         self.verbose = verbose
         self.sandbox = sandbox
