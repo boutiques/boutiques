@@ -8,6 +8,13 @@ from operator import itemgetter
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
 
+try:
+    # Python 3
+    from urllib.parse import quote
+except ImportError:
+    # Python 2
+    from urllib import quote
+
 
 class Searcher():
 
@@ -20,11 +27,16 @@ class Searcher():
                 terms = self.query.split(" ")
                 self.query_line = ''
                 for t in terms:
+                    uncased_term = ''
+                    for ch in t:
+                        uncased_term = uncased_term + "[" + ch.upper() +\
+                            ch.lower() + "]"
+                    uncased_term = quote(uncased_term)
                     self.query_line = self.query_line + \
-                        ' AND keywords:(/.*%s.*/)' % t
+                        ' AND (/.*%s.*/)' % uncased_term
             else:
                 self.query_line =\
-                        ' AND keywords:(/%s/)' % self.query
+                        ' AND (/%s/)' % self.query
         else:
             self.query_line = ''
             self.query = ''
