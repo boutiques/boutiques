@@ -13,13 +13,18 @@ class Searcher():
 
     def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
-        if query is not None:
-            self.query = query
-        else:
-            self.query = 'boutiques'
 
-        if not exact_match:
-            self.query = '*' + self.query + '*'
+        if self.query is not None:
+            self.query = query
+            if not exact_match:
+                self.query_line = \
+                    ' AND keywords:(/.*%s.*/)' % self.query
+            else:
+                self.query_line = \
+                    ' AND keywords:(/%s/)' % self.query
+        else:
+            self.query_line = ''
+            self.query = ''
 
         self.verbose = verbose
         self.sandbox = sandbox
@@ -56,10 +61,10 @@ class Searcher():
         # Get all results
         r = requests.get(self.zenodo_endpoint + '/api/records/?q='
                          'keywords:(/Boutiques/) AND '
-                         'keywords:(/schema-version.*/) AND '
-                         'keywords:(/.*%s.*/)&'
-                         'file_type=json&type=software&'
-                         'page=1&size=%s' % (self.query, 9999))
+                         'keywords:(/schema-version.*/)'
+                         '%s'
+                         '&file_type=json&type=software&'
+                         'page=1&size=%s' % (self.query_line, 9999))
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
