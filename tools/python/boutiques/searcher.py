@@ -14,7 +14,7 @@ class Searcher():
     def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
 
-        if self.query is not None:
+        if query is not None:
             self.query = query
             if not exact_match:
                 self.query_line = \
