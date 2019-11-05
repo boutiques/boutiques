@@ -22,6 +22,6 @@
 5. Create tag on GitHub, add release notes 
 6. Push to PyPi:
    ```
-   python setup.py bdist_wheel --universal`
+   python setup.py bdist_wheel --universal
    twine upload dist/*
    ```
