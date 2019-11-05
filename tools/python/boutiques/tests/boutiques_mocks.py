@@ -18,7 +18,7 @@ class MockZenodoRecord:
 
 # Mock object representing the current version of Example Boutiques Tool
 # on Zenodo
-example_boutiques_tool = MockZenodoRecord(2634310, "Example Boutiques Tool",
+example_boutiques_tool = MockZenodoRecord(2644621, "Example Boutiques Tool",
                                           "", "https://zenodo.org/api/files/"
                                           "009cc264-76f6-459c-a824-"
                                           "5db6241a979f/example1_docker.json")

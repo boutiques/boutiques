@@ -946,7 +946,7 @@ True if input is optional.
 
 #### requires-inputs
 
-Ids of the inputs which must be active for this input to be available.
+Ids of the inputs or ids of groups whose members must be active for this input to be available.
 
 `requires-inputs`
 * is optional
