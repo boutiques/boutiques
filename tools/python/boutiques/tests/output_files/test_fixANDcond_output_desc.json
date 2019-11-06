@@ -16,7 +16,7 @@
             "id": "opt1",
             "name": "option 1",
             "optional": true,
-            "type": "Number",
+            "type": "Flag",
             "value-key": "[OPT1]"
         },
         {
@@ -61,9 +61,9 @@
             "optional": false,
             "conditional-path-template": [
                 {"opt1 and (opt2 >10.00)": "[PARAM1]_large.txt"},
-                {"opt1":                 "[PARAM1].txt"},
-                {"opt2>10":              "[PARAM2]_large.txt"},
-                {"default":              "[PARAM2]_default.txt"}
+                {"opt1":                   "[PARAM1].txt"},
+                {"opt2>10":                "[PARAM2]_large.txt"},
+                {"default":                "[PARAM2]_default.txt"}
             ],
             "path-template-stripped-extensions": [
               ".one", ".two", ".three", ".four", ".five"

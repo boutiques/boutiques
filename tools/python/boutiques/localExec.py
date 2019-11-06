@@ -1035,7 +1035,7 @@ class LocalExecutor(object):
             elif not isPathTemplate:
                 for templateObj in self.safeGet(outputId,
                                                 'conditional-path-template'):
-                    templateKey = list(templateObj)[0]
+                    templateKey = list(templateObj.keys())[0]
                     condition = self._getCondPathTemplateExp(templateKey)
                     # If condition is true, set fileName
                     # Stop checking (if-elif...)
@@ -1072,10 +1072,10 @@ class LocalExecutor(object):
         # splitExp ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
         spacedExpression = "".join(
             [c if c.isalnum() or c == "_" or c == "." else
-                " {0} ".format(c) for c in templateKey])
+             " {0} ".format(c) for c in templateKey])
         splitExp = spacedExpression.split(" ")
         parsedExp = []
-        for word in [word.strip() for word in splitExp]:
+        for word in [word.strip() for word in splitExp if len(word) > 0]:
             all_ids = [i['id'] for i in (self.inputs + self.outputs)]
             # Substitute boolean expression key by its value
             in_out_dict = self.in_dict.copy()

@@ -562,10 +562,18 @@
                         "type": "string"
                     },
                     "conditional-path-template": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
+                        "id": "http://github.com/boutiques/boutiques-schema/output/conditional-path-template",
                         "description": "List of objects containing boolean statement (python syntax) and output file paths relative to the execution directory, assign path of first true boolean statement. May contain input value keys, \"default\" object required if \"optional\" set to True . Example list: \"[{\"[PARAM1] > 8\": \"outputs/[INPUT1].txt\"}, {\"default\": \"outputs/default.txt\"}]\".",
                         "minLength": 1,
-                        "type": "array"
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "propertyNames": {
+                                    "pattern": "^[A-Za-z0-9_><=!)(]*$"
+                                }
+                            }
+                        }
                     },
                     "path-template-stripped-extensions": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/path-template-stripped-extensions",

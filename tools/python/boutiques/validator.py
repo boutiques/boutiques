@@ -59,6 +59,11 @@ def validate_descriptor(json_file, **kwargs):
             return descriptor["inputs"][inputGet("id").index(i)]
         return {}
 
+    def conditionalExpFormat(s):
+        # ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
+        return "".join([c if c.isalnum() or c == "_" or c == "." else
+                        " {0} ".format(c) for c in s])
+
     # Begin looking at Boutiques-specific failures
     errors = []
 
@@ -150,17 +155,36 @@ def validate_descriptor(json_file, **kwargs):
         msg_template = ("OutputError: \"{0}\" contains non-python keyword and "
                         "non-ID string: \"{1}\"")
         for templateKey in cond_outfiles_keys:
-            # splitExp ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
-            splitExp = "".join(
-                [c if c.isalnum() or c == "_" or c == "." else
-                    " {0} ".format(c) for c in templateKey]).split()
+            splitExp = conditionalExpFormat(templateKey).split()
             if splitExp[0] == 'default' and len(splitExp) == 1:
                 continue
             for s in [s for s in splitExp if not keyword.iskeyword(s) and
-                      s.isalnum() and not s.isdigit()]:
-                if s not in [i['id'] for i in descriptor['inputs']] and\
-                   s not in [i['id'] for i in descriptor['output-files']]:
-                    errors += [msg_template.format(outF['id'], s)]
+                      s.isalnum() and not s.isdigit() and
+                      s not in [i['id'] for i in descriptor['inputs']] and
+                      s not in [i['id'] for i in descriptor['output-files']]]:
+                errors += [msg_template.format(outF['id'], s)]
+
+        # Verify variable is being evaluated against a value of the same type
+        for templateKey in cond_outfiles_keys:
+            splitExp = conditionalExpFormat(templateKey).split()
+            if splitExp[0] == 'default' and len(splitExp) == 1:
+                continue
+            for s in [s for s in enumerate(splitExp) if
+                      not keyword.iskeyword(s[1]) and
+                      s[1].isalnum() and not s[1].isdigit()]:
+                if s[1] in [i['id'] for i in descriptor['inputs']]:
+                    sType = inById(s[1])['type']
+                    if sType == "Number":
+                        splitExp[s[0]] = "0"
+                    elif sType == "String":
+                        splitExp[s[0]] = "\"foobar\""
+                    elif sType == "Flag":
+                        splitExp[s[0]] = "False"
+                    elif sType == "File":
+                        splitExp[s[0]] = "\"dummyPath/path/file.txt\""
+            print(" ".join(splitExp))
+            # not sure about this
+            eval(" ".join(splitExp))
 
     # Verify inputs
     for inp in descriptor["inputs"]:
