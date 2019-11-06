@@ -134,6 +134,9 @@ def validate_descriptor(json_file, **kwargs):
                         outF['conditional-path-template']]
             if 'default' not in out_keys:
                 errors += [msg_template.format(outF['id'])]
+            # Verify output keys contain variables that correspond to input IDs
+            #for templateKey in out_keys:
+            #    print(templateKey)
 
     # Verify inputs
     for inp in descriptor["inputs"]:
