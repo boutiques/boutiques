@@ -1071,7 +1071,7 @@ class LocalExecutor(object):
         # Then split by space to isolate ids
         # splitExp ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
         spacedExpression = "".join(
-            [c if c.isalnum() or c == "_" else
+            [c if c.isalnum() or c == "_" or c == "." else
                 " {0} ".format(c) for c in templateKey])
         splitExp = spacedExpression.split(" ")
         parsedExp = []

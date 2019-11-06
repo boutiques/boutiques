@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import keyword
 import simplejson
 import os.path as op
 import simplejson as json
@@ -125,18 +126,41 @@ def validate_descriptor(json_file, **kwargs):
     if 'output-files' in descriptor:
         # Verify output file with non-optional conditional file template
         # contains a default path
-        msg_template = ("OutputError: \"{0}\": Non-optional output-file with "
+        msg_template = ("OutputError: \"{0}\". Non-optional output-file with "
                         "conditional-path-template must contain "
                         "\"default\" path-template.")
+
+        cond_outfiles_keys = []
         for outF in [o for o in descriptor["output-files"] if
                      'conditional-path-template' in o and not o['optional']]:
             out_keys = [list(obj.keys())[0] for obj in
                         outF['conditional-path-template']]
+            cond_outfiles_keys.extend(out_keys)
             if 'default' not in out_keys:
                 errors += [msg_template.format(outF['id'])]
-            # Verify output keys contain variables that correspond to input IDs
-            #for templateKey in out_keys:
-            #    print(templateKey)
+
+            # Verify output keys contain only one default condition
+            if out_keys.count('default') > 1:
+                errors += ["OutputError: \"{0}\". Only one \"default\" "
+                           "condition is permitted in a "
+                           "conditional-path-template.".format(outF['id'])]
+
+        # Verify output key contains variables that correspond to input IDs
+        # or is 'default'
+        msg_template = ("OutputError: \"{0}\" contains non-python keyword and "
+                        "non-ID string: \"{1}\"")
+        for templateKey in cond_outfiles_keys:
+            # splitExp ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
+            splitExp = "".join(
+                [c if c.isalnum() or c == "_" or c == "." else
+                    " {0} ".format(c) for c in templateKey]).split()
+            if splitExp[0] == 'default' and len(splitExp) == 1:
+                continue
+            for s in [s for s in splitExp if not keyword.iskeyword(s) and
+                      s.isalnum() and not s.isdigit()]:
+                if s not in [i['id'] for i in descriptor['inputs']] and\
+                   s not in [i['id'] for i in descriptor['output-files']]:
+                    errors += [msg_template.format(outF['id'], s)]
 
     # Verify inputs
     for inp in descriptor["inputs"]:

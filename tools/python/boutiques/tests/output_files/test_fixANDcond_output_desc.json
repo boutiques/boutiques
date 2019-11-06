@@ -60,7 +60,7 @@
             "name": "output 2",
             "optional": false,
             "conditional-path-template": [
-                {"opt1 and (opt2 > 10)": "[PARAM1]_large.txt"},
+                {"opt1 and (opt2 >10.00)": "[PARAM1]_large.txt"},
                 {"opt1":                 "[PARAM1].txt"},
                 {"opt2>10":              "[PARAM2]_large.txt"},
                 {"default":              "[PARAM2]_default.txt"}
