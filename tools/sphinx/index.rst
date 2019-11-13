@@ -6,9 +6,11 @@
 Welcome to Boutiques's documentation!
 =====================================
 
+Contents:
+    * :ref:`bosh`
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 2
 
 Indices and tables
 ==================

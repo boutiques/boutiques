@@ -31,7 +31,8 @@ release = 'https://github.com/boutiques/boutiques/'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
+    'sphinxarg.ext'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
