@@ -138,12 +138,12 @@ def parser_executeLaunch():
                         help="Append JSON object to the generated record.")
     force_group = parser.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
-                                help="Tries to run Singularity images with "
-                                "Docker. This only works if the image is on"
-                                "Docker Hub, i.e. has index docker://")
+                             help="Tries to run Singularity images with "
+                             "Docker. This only works if the image is on"
+                             "Docker Hub, i.e. has index docker://")
     force_group.add_argument("--force-singularity", action="store_true",
-                                help="Tries to run Docker images with "
-                                "Singularity.")
+                             help="Tries to run Docker images with "
+                             "Singularity.")
     return parser
 
 
@@ -642,8 +642,8 @@ def parser_dataPublish():
                         "configuration file or requested interactively.")
     parser.add_argument("--nexus", action="store_true",
                         help="Publish to Nexus instead of Zenodo. "
-                                "Sandbox URL is "
-                                "https://sandbox.bluebrainnexus.io")
+                        "Sandbox URL is "
+                        "https://sandbox.bluebrainnexus.io")
     parser.add_argument("--nexus-token", action="store",
                         help="Nexus API token to use for authentication. ")
     parser.add_argument("--nexus-org", action="store",
@@ -707,35 +707,35 @@ def parser_bosh():
     parser = ArgumentParser(add_help=False,
                             formatter_class=RawTextHelpFormatter)
     helptext = r'''
-    BOUTIQUES COMMANDS
+BOUTIQUES COMMANDS
 
-    TOOL CREATION
-    * create: create a Boutiques descriptor from scratch.
-    * export: export a descriptor to other formats.
-    * import: create a descriptor for a BIDS app or update a descriptor from \
-    an older version of the schema.
-    * validate: validate an existing boutiques descriptor.
+TOOL CREATION
+* create: create a Boutiques descriptor from scratch.
+* export: export a descriptor to other formats.
+* import: create a descriptor for a BIDS app or update a descriptor from \
+an older version of the schema.
+* validate: validate an existing boutiques descriptor.
 
-    TOOL USAGE & EXECUTION
-    * example: generate example command-line for descriptor.
-    * pprint: generate pretty help text from a descriptor.
-    * exec: launch or simulate an execution given a descriptor and a set of inputs.
-    * test: run pytest on a descriptor detailing tests.
+TOOL USAGE & EXECUTION
+* example: generate example command-line for descriptor.
+* pprint: generate pretty help text from a descriptor.
+* exec: launch or simulate an execution given a descriptor and a set of inputs.
+* test: run pytest on a descriptor detailing tests.
 
-    TOOL SEARCH & PUBLICATION
-    * publish: create an entry in Zenodo for the descriptor and adds the DOI \
-    created by Zenodo to the descriptor.
-    * pull: download a descriptor from Zenodo.
-    * search: search Zenodo for descriptors.
+TOOL SEARCH & PUBLICATION
+* publish: create an entry in Zenodo for the descriptor and adds the DOI \
+created by Zenodo to the descriptor.
+* pull: download a descriptor from Zenodo.
+* search: search Zenodo for descriptors.
 
-    DATA COLLECTION
-    * data: manage execution data collection.
+DATA COLLECTION
+* data: manage execution data collection.
 
-    OTHER
-    * evaluate: given an invocation and a descriptor,queries execution properties.
-    * invocation: generate or validate inputs against the invocation schema
-    * for a given descriptor.
-    * version: print the Boutiques version.
+OTHER
+* evaluate: given an invocation and a descriptor,queries execution properties.
+* invocation: generate or validate inputs against the invocation schema
+* for a given descriptor.
+* version: print the Boutiques version.
     '''
     parser.add_argument("function", action="store", nargs="?",
                         help=helptext,
