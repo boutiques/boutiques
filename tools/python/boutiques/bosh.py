@@ -23,7 +23,7 @@ from boutiques.logger import raise_error
 from tabulate import tabulate
 
 
-def parser_prettyPrint():
+def parser_pprint():
     parser = ArgumentParser("Boutiques pretty-print for generating help text")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
@@ -31,7 +31,7 @@ def parser_prettyPrint():
 
 
 def prettyprint(*params):
-    parser = parser_prettyPrint()
+    parser = parser_pprint()
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import PrettyPrinter

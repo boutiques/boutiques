@@ -1,20 +1,22 @@
-.. Boutiques documentation master file, created by
-   sphinx-quickstart on Wed Oct 30 13:18:54 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Boutiques's documentation!
 =====================================
 
-Contents:
-    * :ref:`bosh`
-
 .. toctree::
-    :maxdepth: 2
+    :caption: Table of Contents
+    :titlesonly:
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    bosh
+    create
+    data
+    evaluate
+    example
+    execute
+    exporter
+    importer
+    invocation
+    pprint
+    publish
+    pull
+    search
+    test
+    validate
