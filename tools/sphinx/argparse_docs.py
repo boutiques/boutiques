@@ -34,7 +34,7 @@ for scriptBlock in boshFileText.split("\n\n"):
 indexDocString = '\n'
 
 for api in sorted(apiNames):
-    indexDocString += '    {0}\n'.format(api)
+    indexDocString += '    _{0}\n'.format(api)
     docString = ""
     for subApi in sorted(apiNames[api]):
         subDocString = '**{0}**\n'.format(subApi)
@@ -49,7 +49,7 @@ for api in sorted(apiNames):
             apiNames[api][subApi],
             subApi if subApi == "bosh" else "bosh " + subApi)
         docString += "\n" + subDocString
-    with open("{0}.rst".format(api), "w+") as docPage:
+    with open("_{0}.rst".format(api), "w+") as docPage:
         docPage.write(docString)
 
 with open("_templates/index.rst", "r") as indexTemplate:
