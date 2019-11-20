@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
+import re
 import keyword
-import simplejson
 import os.path as op
 import simplejson as json
 from jsonschema import validate, ValidationError
@@ -23,6 +23,9 @@ def validate_descriptor(json_file, **kwargs):
     """
     path, fil = op.split(bfile)
     schema_file = op.join(path, "schema", "descriptor.schema.json")
+    allowed_keywords = ['and', 'or', 'false', 'true']
+    allowed_comparators = ['==', '!=', '<', '>', '<=', '>=']
+    schema_types = ["Number", "Flag", "String", "File"]
 
     # Load schema
     with open(schema_file) as fhandle:
@@ -63,6 +66,53 @@ def validate_descriptor(json_file, **kwargs):
         # ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
         return "".join([c if c.isalnum() or c == "_" or c == "." else
                         " {0} ".format(c) for c in s])
+
+    def getSubstringType(s):
+        s = s.strip()
+        if s in schema_types:
+            return s
+        elif re.search(r'^[0-9]+\.?[0-9]*$', s):
+            return "Number"
+        elif re.search(r'^True|False|false|true$', s):
+            return "Flag"
+        else:
+            return "String"
+
+    def isValidConditionalExp(exp):
+        isInBrackets = False
+        brackets, startIdx, endIdx = 0, 0, 0
+
+        rebuiltExp = ""
+        for idx, c in enumerate(exp):
+            if c == '(':
+                brackets += 1
+                startIdx = idx + 1
+                isInBrackets = True
+            elif c == ')':
+                brackets -= 1
+                if brackets == 0:
+                    isInBrackets = False
+                    endIdx = idx
+                    rebuiltExp += "{0} ".format(
+                        isValidConditionalExp(exp[startIdx:endIdx]))
+            elif brackets == 0:
+                rebuiltExp += "{0}".format(c)
+
+        if '(' not in rebuiltExp and ')' not in rebuiltExp:
+            expElements = rebuiltExp.split()
+            print(expElements)
+            for idx, e in enumerate(expElements):
+                e = e.strip()
+                # Compare types for elements neighbouring comparators
+                if e in allowed_comparators and\
+                   getSubstringType(expElements[idx-1]) !=\
+                   getSubstringType(expElements[idx+1]):
+                    return False
+                # Check if element is part of allowed keywords
+                if keyword.iskeyword(e) and e.lower() not in allowed_keywords:
+                    return False
+                
+        return True
 
     # Begin looking at Boutiques-specific failures
     errors = []
@@ -173,18 +223,9 @@ def validate_descriptor(json_file, **kwargs):
                       not keyword.iskeyword(s[1]) and
                       s[1].isalnum() and not s[1].isdigit()]:
                 if s[1] in [i['id'] for i in descriptor['inputs']]:
-                    sType = inById(s[1])['type']
-                    if sType == "Number":
-                        splitExp[s[0]] = "0"
-                    elif sType == "String":
-                        splitExp[s[0]] = "\"foobar\""
-                    elif sType == "Flag":
-                        splitExp[s[0]] = "False"
-                    elif sType == "File":
-                        splitExp[s[0]] = "\"dummyPath/path/file.txt\""
+                    splitExp[s[0]] = inById(s[1])['type']
             print(" ".join(splitExp))
-            # not sure about this
-            eval(" ".join(splitExp))
+            print(isValidConditionalExp(" ".join(splitExp)))
 
     # Verify inputs
     for inp in descriptor["inputs"]:
