@@ -1067,13 +1067,25 @@ class LocalExecutor(object):
             self.out_dict[outputId] = outputFileName
 
     def _getCondPathTemplateExp(self, templateKey):
-        # Surround expression chars with space
-        # Then split by space to isolate ids
-        # splitExp ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
-        spacedExpression = "".join(
-            [c if c.isalnum() or c == "_" or c == "." else
-             " {0} ".format(c) for c in templateKey])
-        splitExp = spacedExpression.split(" ")
+        def conditionalExpFormat(s):
+            # ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
+            # "(opt1<=10.1)" becomes " ( opt1 <= 10.1 ) "
+            cleanedExpression = ""
+            idx = 0
+            while idx < len(s):
+                c = s[idx]
+                if c in ['=', '!', '<', '>']:
+                    cleanedExpression += " {0}{1}".format(
+                        c, "=" if s[idx+1] == "=" else " ")
+                    idx += 1
+                elif c in ['(', ')']:
+                    cleanedExpression += " {0} ".format(c)
+                else:
+                    cleanedExpression += c
+                idx += 1
+            return cleanedExpression
+
+        splitExp = conditionalExpFormat(spacedExpression).split()
         parsedExp = []
         for word in [word.strip() for word in splitExp if len(word) > 0]:
             all_ids = [i['id'] for i in (self.inputs + self.outputs)]

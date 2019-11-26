@@ -570,7 +570,7 @@
                             "type": "object",
                             "properties": {
                                 "propertyNames": {
-                                    "pattern": "^[A-Za-z0-9_><=!)(]*$"
+                                    "pattern": "^[A-Za-z0-9_><=!)( ]*$"
                                 }
                             }
                         }

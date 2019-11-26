@@ -64,54 +64,72 @@ def validate_descriptor(json_file, **kwargs):
 
     def conditionalExpFormat(s):
         # ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
-        return "".join([c if c.isalnum() or c == "_" or c == "." else
-                        " {0} ".format(c) for c in s])
-
-    def getSubstringType(s):
-        s = s.strip()
-        if s in schema_types:
-            return s
-        elif re.search(r'^[0-9]+\.?[0-9]*$', s):
-            return "Number"
-        elif re.search(r'^True|False|false|true$', s):
-            return "Flag"
-        else:
-            return "String"
+        # "(opt1<=10.1)" becomes " ( opt1 <= 10.1 ) "
+        cleanedExpression = ""
+        idx = 0
+        while idx < len(s):
+            c = s[idx]
+            if c in ['=', '!', '<', '>']:
+                cleanedExpression += " {0}{1}".format(
+                    c, "=" if s[idx+1] == "=" else " ")
+                idx += 1
+            elif c in ['(', ')']:
+                cleanedExpression += " {0} ".format(c)
+            else:
+                cleanedExpression += c
+            idx += 1
+        return cleanedExpression
 
     def isValidConditionalExp(exp):
-        isInBrackets = False
-        brackets, startIdx, endIdx = 0, 0, 0
+        # Return the type of a conditional expression's substring
+        def getSubstringType(s):
+            s = s.strip()
+            if s in schema_types:
+                return s
+            elif re.search(r'^[0-9]+\.?[0-9]*$', s):
+                return "Number"
+            elif re.search(r'^(True|False|false|true)$', s):
+                return "Flag"
+            else:
+                return "String"
 
+        # Recursively check boolean expression by replacing variables with
+        # their expected value type [Number, String, File, Flag]
+        brackets, startIdx, endIdx = 0, 0, 0
         rebuiltExp = ""
         for idx, c in enumerate(exp):
             if c == '(':
                 brackets += 1
                 startIdx = idx + 1
-                isInBrackets = True
             elif c == ')':
                 brackets -= 1
                 if brackets == 0:
-                    isInBrackets = False
                     endIdx = idx
-                    rebuiltExp += "{0} ".format(
-                        isValidConditionalExp(exp[startIdx:endIdx]))
+                    isValidSubExp = isValidConditionalExp(exp[startIdx:endIdx])
+                    # Immediately return false if sub expression is not valid
+                    if not isValidSubExp:
+                        return False
+                    else:
+                        rebuiltExp += "{0}".format(isValidSubExp)
             elif brackets == 0:
                 rebuiltExp += "{0}".format(c)
+        rebuiltExp = rebuiltExp.strip()
 
+        # If there are no more parentheses, check if sub-expression is valid
+        # rebuiltExp should only be two values separated by operator: x >= y
+        # or values separated by 'AND'/'OR': x and y and z
         if '(' not in rebuiltExp and ')' not in rebuiltExp:
             expElements = rebuiltExp.split()
-            print(expElements)
             for idx, e in enumerate(expElements):
                 e = e.strip()
-                # Compare types for elements neighbouring comparators
+                # Compare types of elements neighbouring allowed_comparators
                 if e in allowed_comparators and\
                    getSubstringType(expElements[idx-1]) !=\
                    getSubstringType(expElements[idx+1]):
                     return False
-                # Check if element is part of allowed keywords
+                # Check if keyword element is part of allowed keywords
                 if keyword.iskeyword(e) and e.lower() not in allowed_keywords:
                     return False
-                
         return True
 
     # Begin looking at Boutiques-specific failures
@@ -215,17 +233,22 @@ def validate_descriptor(json_file, **kwargs):
                 errors += [msg_template.format(outF['id'], s)]
 
         # Verify variable is being evaluated against a value of the same type
+        msg_template = ("OutputError: Conditional output \"{0}\" contains "
+                        "invalid conditional expression. Verify arguments' "
+                        "type and allowed keywords in expression.")
         for templateKey in cond_outfiles_keys:
             splitExp = conditionalExpFormat(templateKey).split()
             if splitExp[0] == 'default' and len(splitExp) == 1:
                 continue
+            # Replace variable by it's type according to the descriptor schema
             for s in [s for s in enumerate(splitExp) if
                       not keyword.iskeyword(s[1]) and
                       s[1].isalnum() and not s[1].isdigit()]:
                 if s[1] in [i['id'] for i in descriptor['inputs']]:
                     splitExp[s[0]] = inById(s[1])['type']
-            print(" ".join(splitExp))
-            print(isValidConditionalExp(" ".join(splitExp)))
+
+            if not isValidConditionalExp(" ".join(splitExp)):
+                errors += [msg_template.format(templateKey)]
 
     # Verify inputs
     for inp in descriptor["inputs"]:
