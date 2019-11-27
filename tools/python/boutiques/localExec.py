@@ -1085,7 +1085,7 @@ class LocalExecutor(object):
                 idx += 1
             return cleanedExpression
 
-        splitExp = conditionalExpFormat(spacedExpression).split()
+        splitExp = conditionalExpFormat(templateKey).split()
         parsedExp = []
         for word in [word.strip() for word in splitExp if len(word) > 0]:
             all_ids = [i['id'] for i in (self.inputs + self.outputs)]
