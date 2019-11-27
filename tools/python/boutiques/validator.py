@@ -130,6 +130,12 @@ def validate_descriptor(json_file, **kwargs):
                 # Check if keyword element is part of allowed keywords
                 if keyword.iskeyword(e) and e.lower() not in allowed_keywords:
                     return False
+                # Check elements neighbouring and/or keywords are valid words
+                if e.lower() in ["and", "or"] and (
+                   expElements[idx-1] not in schema_types + ["True", "False"]
+                   or
+                   expElements[idx+1] not in schema_types + ["True", "False"]):
+                    return False
         return True
 
     # Begin looking at Boutiques-specific failures

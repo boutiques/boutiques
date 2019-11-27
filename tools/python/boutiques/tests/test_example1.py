@@ -472,24 +472,6 @@ class TestExample1(BaseTest):
                               base_path,
                               "example1_conditional_invoc.json"),
                           "--skip-data-collection")
-        self.assertEqual("TEST.one.three.two_out1.txt (out1, Required)",
-                         str(ex.output_files[0]))
-        self.assertEqual("TEST_string1.txt (out2, Required)",
-                         str(ex.output_files[1]))
-        self.assertEqual([], ex.missing_files)
-
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
-    def test_example1_conditional_outputFiles_created(self):
-        base_path = os.path.join(os.path.split(bfile)[0], "tests/output_files/")
-        ex = bosh.execute("launch",
-                          os.path.join(
-                              base_path,
-                              "example1_docker_conditional_outputFiles.json"),
-                          os.path.join(
-                              base_path,
-                              "example1_conditional_invoc.json"),
-                          "--skip-data-collection")
 
         outFileList = [str(out) for out in ex.output_files]
         self.assertIn("TEST.one.three.two_out1.txt (out1, Required)",
