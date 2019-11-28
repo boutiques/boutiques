@@ -1,6 +1,4 @@
-Welcome to Boutiques's documentation!
-=====================================
 
 .. toctree::
-    :caption: Table of Contents
+    :caption: Bosh Command-line APIs
     :maxdepth: 1

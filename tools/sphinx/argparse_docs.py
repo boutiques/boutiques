@@ -2,26 +2,15 @@ import simplejson as json
 
 
 def CreateBoshDocs():
-    # Get bosh file as plain text
-    def fetchBoshFile():
-        with open("../python/boutiques/bosh.py", "r") as boshFile:
-            return boshFile.read()
-
-    # Get readme file as plain text
-    def fetchReadMeFile():
-        with open("../python/README.rst", "r") as readmeFile:
-            return readmeFile.read()
+    # Get file as plain text
+    def readFile(path):
+        with open(path, "r") as file:
+            return file.read()
 
     # create an RST index page
-    def createDocsIndex(docString):
-        with open("_templates/index.rst", "r") as indexTemplate:
-            with open("index.rst", "w+") as indexPage:
-                indexPage.write(indexTemplate.read() + docString)
-
-    # create an RST API documentation page
-    def createDocsPage(apiName, docString):
-        with open("_{0}.rst".format(apiName), "w+") as docPage:
-            docPage.write(docString)
+    def createDocsPage(path, docString):
+        with open(path, "w+") as page:
+            page.write(docString)
 
     # Generate a structure to represent bosh APIs and subAPIs
     def GenerateApiTree(boshFileText, ):
@@ -55,11 +44,14 @@ def CreateBoshDocs():
                     apiNames[apiName] = {apiName: apiFunction}
         return apiNames
 
-    boshFileText = fetchBoshFile()
-    readmeText = fetchReadMeFile()
+    boshFileText = readFile("../python/boutiques/bosh.py")
+    indexTemplate = readFile("./_templates/index.rst")
+    # Split readme into two, slicing at command line api section
+    readmeText = readFile("../python/README.rst").split(
+        "Let’s consider a few common use-cases…")
     apiNames = GenerateApiTree(boshFileText)
 
-    indexDocString = '\n'
+    indexDocString = readmeText[0] + "\n" + indexTemplate + "\n"
     for api in sorted(apiNames):
         # Add api reference to index doc string
         indexDocString += '    _{0}\n'.format(api)
@@ -72,16 +64,17 @@ def CreateBoshDocs():
             subDocString += '{0}\n'.format(headerType*(len(subApi) + 4))
             # Define doc block by sub-command
             subDocString += ("\n.. argparse::"
-                                "\n    :module: bosh"
-                                "\n    :func: {0}"
-                                "\n    :prog: {1}\n").format(
+                             "\n    :module: bosh"
+                             "\n    :func: {0}"
+                             "\n    :prog: {1}\n").format(
                 apiNames[api][subApi],
                 subApi if subApi == "bosh" else "bosh " + subApi)
             docString += "\n" + subDocString
         # Create a RST page per api
-        createDocsPage(api, docString)
+        createDocsPage("_{0}.rst".format(api), docString)
     # Create index RST page
-    createDocsIndex(indexDocString)
+    indexDocString += readmeText[1]
+    createDocsPage("index.rst", indexDocString)
 
 
 CreateBoshDocs()
