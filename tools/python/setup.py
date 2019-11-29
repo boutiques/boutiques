@@ -53,7 +53,7 @@ setup(name="boutiques",
       tests_require=["pytest"],
       setup_requires=DEPS,
       install_requires=DEPS,
-      entry_points=  {
+      entry_points={
         "console_scripts": [
             "bosh=boutiques.bosh:bosh",
         ]
