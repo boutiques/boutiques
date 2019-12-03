@@ -132,6 +132,8 @@ class LocalExecutor(object):
 
     # Constructor
     def __init__(self, desc, invocation, options={}):
+        self._rkit = self._replaceKeysInTemplate  # Abbrev. for readability
+
         # Initial parameters
         self.desc_path = desc    # Save descriptor path
         self.errs = []        # Empty errors holder
@@ -202,6 +204,8 @@ class LocalExecutor(object):
 
     # Returns the required inputs of a given input id, or the empty string
     def reqsOf(self, t):
+        if t in [g['id'] for g in self.groups]:
+            return self.safeGrpGet(t, "members") or []
         return self.safeGet(t, "requires-inputs") or []
 
     # Attempt local execution of the command line
@@ -338,7 +342,7 @@ class LocalExecutor(object):
                     for (key, val) in list(envVars.items()):
                         envString += "SINGULARITYENV_{0}='{1}' ".format(key,
                                                                         val)
-                singularity_mounts = '-B ' + ' '.join(mount_strings)
+                singularity_mounts = '-B ' + ' -B '.join(mount_strings)
                 container_command = (envString + 'singularity exec '
                                      '--cleanenv ' +
                                      singularity_mounts +
@@ -430,10 +434,17 @@ class LocalExecutor(object):
             return (conName, container_location)
 
         elif conTypeToUse == 'singularity':
+            if conType == 'docker':
+                # We're running a Docker image in Singularity
+                conIndex = "docker://" + (conIndex if
+                                          (conIndex is not None and
+                                           conIndex != "" and
+                                           conIndex != "docker://") else "")
+
             if not conIndex:
                 conIndex = "shub://"
-            elif not conIndex.endswith("://"):
-                conIndex = conIndex + "://"
+            if not conIndex.endswith("/"):
+                conIndex = conIndex + "/"
 
             if self.imagePath:
                 conName = op.basename(self.imagePath)
@@ -461,6 +472,9 @@ class LocalExecutor(object):
                 try:
                     os.mkdir(lockDir)
                 except OSError:
+                    print_info("Another process seems to be pulling the "
+                               "image ({} exists), sleeping 5 seconds"
+                               .format(lockDir))
                     time.sleep(5)
                 else:
                     try:
@@ -524,19 +538,24 @@ class LocalExecutor(object):
         if "SINGULARITY_PULLFOLDER" in os.environ:
             del os.environ["SINGULARITY_PULLFOLDER"]
 
-    def _isDockerInstalled(self):
-        return not subprocess.Popen("docker --version", shell=True).wait()
+    def _isCommandInstalled(self, command):
+        return not subprocess.Popen("{} --version".format(command), shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
                                   forceDocker=False):
-        if (self._isDockerInstalled() and
+        if (self._isCommandInstalled('docker') and
                 (conType == 'docker' and not forceSing or
                  forceDocker)):
             return "docker"
-        else:
+
+        if self._isCommandInstalled('singularity'):
             return "singularity"
+
+        raise_error(ExecutorError, ("Could not find any container engine. " +
+                                    "Make sure that Docker or Singularity " +
+                                    "is installed."))
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
@@ -659,8 +678,10 @@ class LocalExecutor(object):
                 return randStr(prm['id'])
             if prm['type'] == 'Number':
                 return randNum(prm)
+            # Since a flag can't be False, it's either there or not,
+            # there's no point in setting it to False.
             if prm['type'] == 'Flag':
-                return rnd.choice([True, False])
+                return True
             if prm['type'] == 'File':
                 return randFile(prm['id'])
 
@@ -692,6 +713,18 @@ class LocalExecutor(object):
                          self.reqsOf(targetParam['id'])]
                      if targetParam['id'] in possibleMutReq[1]]]
 
+        def getAllBranchedReqs(targ, reqs):
+            for r in [r for r in self.reqsOf(targ['id']) if r not in reqs]:
+                if r in [g['id'] for g in self.groups]:
+                    for gReq in self.reqsOf(r):
+                        if gReq not in reqs:
+                            reqs.append(gReq)
+                            getAllBranchedReqs(self.byId(gReq), reqs)
+                elif r not in reqs:
+                    reqs.append(r)
+                    getAllBranchedReqs(self.byId(r), reqs)
+            return reqs
+
         # Returns whether targ (an input parameter) has a
         # value or is allowed to have one
         def isOrCanBeFilled(targ):
@@ -705,15 +738,22 @@ class LocalExecutor(object):
                                                  'disables-inputs') or []):
                 if d in list(self.in_dict.keys()):
                     return False
-            # If at least one non-mutual requirement has
-            # not been met, it cannot be filled
-            for r in self.reqsOf(targ['id']):
-                if r not in self.in_dict:  # If a requirement is not present
-                    # and it is not mutually required
-                    if targ['id'] not in self.reqsOf(r):
-                        return False
             # If it is in a mutex group with one target already chosen,
             # it cannot be filled
+            for r in self.reqsOf(targ['id']):
+                if r in [g['id'] for g in self.groups]:
+                    grpCanBeFilled = False
+                    for gReq in self.reqsOf(r):
+                        if isOrCanBeFilled(self.byId(gReq)):
+                            # if one of members can be added, skip the rest
+                            grpCanBeFilled = True
+                            continue
+                    if not grpCanBeFilled:
+                        return False
+                elif r not in self.in_dict:  # If a requirement is not present
+                    # and it is not mutually required
+                    if targ['id'] not in getAllBranchedReqs(targ, []):
+                        return False
             # Get the group that the target belongs to, if any
             g = self.assocGrp(targ['id'])
             if (g is not None) and self.safeGrpGet(g['id'],
@@ -722,6 +762,27 @@ class LocalExecutor(object):
                         if x in list(self.in_dict.keys())]) > 0:
                     return False
             return True
+
+        # For optional params, don't add if it requires inputs not
+        # already chosen. Requires-complete can be satisfied but is
+        # too complicated to check without building dependency tree.
+        # (Added after requires-inputs: group was implemented)
+        def groupMemberCanBeAdded(targ):
+            # if target is a group member
+            if targ['id'] in [m for g in self.groups for m in g['members']]:
+                for req in self.reqsOf(targ['id']):
+                    # If targ requires group input and one of required members
+                    # has been chosen
+                    if req in [g['id'] for g in self.groups] and\
+                       len(set(self.reqsOf(req))
+                       .intersection(set(self.in_dict))) == 1:
+                        continue
+                    elif req not in self.in_dict:
+                        return False
+                return True
+            elif set(self.reqsOf(targ['id'])).issubset(set(self.in_dict)):
+                return True
+            return False
 
         # Handle the mutual requirement case by breadth first search in
         # the graph of mutual requirements. Essentially a graph is built,
@@ -745,24 +806,30 @@ class LocalExecutor(object):
                 if not isOrCanBeFilled(current):
                     return False
                 for mutreq in mutReqs(current):
-                    if not mutreq['id'] in [c['id'] for c in checked]:
+                    if not mutreq['id'] in [c['id'] for c in checked] and\
+                       mutreq['id'] not in [g['id'] for g in self.groups]:
                         toCheck.append(mutreq)
+                for greq in [g for g in self.reqsOf(current['id']) if
+                             g in [grp['id'] for grp in self.groups] and
+                             self.safeGrpGet(g, "mutually-exclusive")]:
+                    # Check if one of the members is already added
+                    # and don't add random member
+                    memberFilled = False
+                    for m in self.safeGrpGet(greq, "members"):
+                        if m in self.in_dict:
+                            memberFilled = True
+                    if memberFilled:
+                        continue
+                    # Add random member if current requires mutex group
+                    rndMember = rnd.choice(self.safeGrpGet(greq, "members"))
+                    toCheck.append({i['id']: i for i in self.inputs}[rndMember])
             return checked
 
         # Start actual dictionary filling part
         # Clear the dictionary
         self.in_dict = {}
-        # Fill in the parameters depending on require complete
-        for params in [r for r in self.inputs
-                       if not r.get('optional') or self.requireComplete]:
+        for params in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[params['id']] = makeParam(params)
-            # Check for mutex between in_dict and last in param
-            for group, mbs in [(x, x["members"]) for x in self.groups
-                               if x.get('mutually-exclusive')]:
-                if len(set.intersection(set(mbs),
-                                        set(self.in_dict.keys()))) > 1:
-                    # Delete last in param
-                    del self.in_dict[params['id']]
 
         # Fill in a random choice for each one-is-required group
         for grp in [g for g in self.groups
@@ -771,7 +838,9 @@ class LocalExecutor(object):
             # in case a previous choice disabled that one
             while True:
                 # Pick a random parameter
-                choice = self.byId(rnd.choice(grp['members']))
+                mbrId = rnd.choice([mbr for mbr in grp['members'] if
+                                   self.byId(mbr)['type'] != 'Flag'])
+                choice = self.byId(mbrId)
                 # see if it and its mutual requirements can be filled
                 res = checkMutualRequirements(choice)
                 if res is False:
@@ -780,34 +849,45 @@ class LocalExecutor(object):
                 for r in res:
                     self.in_dict[r['id']] = makeParam(r)
                 break  # If we were allowed to add a parameter, we can stop
-        # Choose a random number of times to try to fill optional inputs
-        opts = [p for p in self.inputs
-                if self.safeGet(p['id'], '') in [None, True]]
-        # Loop a random number of times, each time
-        #  attempting to fill a random parameter
-        for _ in range(rnd.randint(int(len(opts) / 2 + 1), len(opts) * 2)):
-            targ = rnd.choice(opts)  # Choose an optional output
-            # If it is already filled in, continue
-            if targ['id'] in list(self.in_dict.keys()):
-                continue
-            # If it is a prohibited option, continue
-            # (isFilled case handled above)
-            if not isOrCanBeFilled(targ):
-                continue
-            # Now we handle the mutual requirements case. This is a little
-            # more complex because a mutual requirement
-            # of targ can have its own mutual requirements, ad nauseam.
-            # We need to look at all of them recursively and either
-            # fill all of them in (i.e. at once) or none of them
-            # (e.g. if one of them is disabled by some other param).
-            result = checkMutualRequirements(targ)
-            # Leave if the mutreqs cannot be satisfied
-            if result is False:
-                continue
-            # Fill in the target(s) otherwise
-            for r in result:
-                if self.requireComplete is None or self.requireComplete:
+
+        if self.requireComplete:
+            # Fill in all possible optional inputs
+            opts = [p for p in self.inputs if
+                    self.safeGet(p['id'], 'optional') in [None, True]]
+            # Loop a random number of times, each time
+            #  attempting to fill a random parameter
+            for option in opts:
+                # If it is already filled in, continue
+                if option['id'] in list(self.in_dict.keys()):
+                    continue
+                # If it is a prohibited option, continue
+                # (isFilled case handled above)
+                if not isOrCanBeFilled(option):
+                    continue
+                # Implementation without building dependency tree
+                # (should redo localexec)
+                if not groupMemberCanBeAdded(option):
+                    continue
+                # Now we handle the mutual requirements case. This is a little
+                # more complex because a mutual requirement
+                # of targ can have its own mutual requirements, ad nauseam.
+                # We need to look at all of them recursively and either
+                # fill all of them in (i.e. at once) or none of them
+                # (e.g. if one of them is disabled by some other param).
+                result = checkMutualRequirements(option)
+                # Leave if the mutreqs cannot be satisfied
+                if result is False:
+                    continue
+                # Fill in the target(s) otherwise
+                for r in result:
                     self.in_dict[r['id']] = makeParam(r)
+                    # Check for mutex between in_dict and last in param
+                    for group, mbs in [(x, x["members"]) for x in self.groups
+                                       if x.get('mutually-exclusive')]:
+                        if len(set.intersection(set(mbs),
+                                                set(self.in_dict.keys()))) > 1:
+                            # Delete last in param
+                            del self.in_dict[r['id']]
 
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
@@ -898,7 +978,7 @@ class LocalExecutor(object):
     #     * escaped for special characters
     def _replaceKeysInTemplate(self, template,
                                use_flags=False, unfound_keys="remove",
-                               stripped_extensions=[],
+                               stripped_extensions=[], is_output=False,
                                escape_special_chars=True):
 
         def escape_string(s):
@@ -926,7 +1006,7 @@ class LocalExecutor(object):
                     s_val = ""
                     list_sep = self.safeGet(param_id, 'list-separator')
                     if list_sep is None:
-                        list_sep = " "
+                        list_sep = ' '
                     for x in val:
                         s = str(x)
                         if escape:
@@ -954,12 +1034,23 @@ class LocalExecutor(object):
                 if (self.safeGet(param_id, 'type') == 'File' or
                         self.safeGet(param_id, 'type') == 'String'):
                     for extension in stripped_extensions:
-                        val = val.replace(extension, "")
+                        val = val.replace(extension, '')
+                    # Remove path if a) a file, b) not the first item in the
+                    # template; for output files specifically
+                    if (self.safeGet(param_id, 'type') == 'File' and
+                       template.find(clk) > 0 and is_output):
+                        val = op.basename(val)
                 # Here val can be a number so we need to cast it
-                template = template.replace(clk, str(val))
+                if val is not None and val is not "":
+                    template = template.replace(clk, str(val))
+                else:
+                    template = template.replace(' ' + clk, str(val))
             else:  # param has no value
                 if unfound_keys == "remove":
-                    template = template.replace(clk, '')
+                    if (' ' + clk) in template:
+                        template = template.replace(' ' + clk, '')
+                    else:
+                        template = template.replace(clk, '')
                 elif unfound_keys == "clear":
                     if clk in template:
                         return ""
@@ -982,14 +1073,17 @@ class LocalExecutor(object):
                                         "path-template-stripped-extensions")
             if stripped_extensions is None:
                 stripped_extensions = []
+            se = stripped_extensions  # Renaming variable to save space
             # We keep the unfound keys because they will be
             # substituted in a second call to the method in case
             # they are output keys
-            outputFileName = self._replaceKeysInTemplate(outputFileName,
-                                                         False,
-                                                         "keep",
-                                                         stripped_extensions,
-                                                         False)
+            outputFileName = self._rkit(outputFileName,
+                                        use_flags=False,
+                                        unfound_keys="keep",
+                                        stripped_extensions=se,
+                                        is_output=True,
+                                        escape_special_chars=False)
+
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
@@ -1006,16 +1100,18 @@ class LocalExecutor(object):
                                         "path-template-stripped-extensions")
             if stripped_extensions is None:
                 stripped_extensions = []
+            se = stripped_extensions  # Renaming variable to save space
             # We substitute the keys line by line so that we can
             # clear the lines that have keys with no value
             # (undefined optional params)
             newTemplate = []
             for line in fileTemplate:
-                newTemplate.append(self._replaceKeysInTemplate(
-                                                line,
-                                                False, "clear",
-                                                stripped_extensions,
-                                                True))
+                newTemplate.append(self._rkit(line,
+                                              use_flags=False,
+                                              unfound_keys="clear",
+                                              stripped_extensions=se,
+                                              is_output=False,
+                                              escape_special_chars=True))
             template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
@@ -1040,8 +1136,9 @@ class LocalExecutor(object):
         template = self.desc_dict['command-line']
         # Substitute every given value into the template
         # (incl. flags, flag-seps, ...)
-        template = self._replaceKeysInTemplate(template, True,
-                                               "remove", [], True)
+        template = self._rkit(template, use_flags=True, unfound_keys="remove",
+                              stripped_extensions=[], is_output=False,
+                              escape_special_chars=True)
         # Return substituted command line
         return template
 
@@ -1122,6 +1219,9 @@ class LocalExecutor(object):
                 check(None,
                       lambda x, y: type(x) == bool,
                       "is not a valid flag value", val)
+                check(None,
+                      lambda x, y: x,
+                      "flag is set to true or otherwise omitted", val)
             elif targ["type"] == "File":
                 # Check path-type (absolute vs relative)
                 if not self.forcePathType:
@@ -1182,8 +1282,10 @@ class LocalExecutor(object):
             # Check that requirements are present
             for r in self.reqsOf(givenVal['id']):
                 if r not in list(self.in_dict.keys()):
-                    self.errs.append('Input ' + str(givenVal['id']) +
-                                     ' is missing requirement '+str(r))
+                    members = self.safeGrpGet(r, "members")
+                    if not any(m in list(self.in_dict.keys()) for m in members):
+                        self.errs.append('Input ' + str(givenVal['id']) +
+                                         ' is missing requirement '+str(r))
             for d in (givenVal['disables-inputs']
                       if 'disables-inputs' in list(givenVal.keys()) else []):
                 # Check if a disabler is present
@@ -1316,10 +1418,11 @@ class LocalExecutor(object):
         date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
-        # Combine three modules in master dictionary
+        # Combine three modules plus provenance in master dictionary
         data_dict = {'summary': self.summary,
                      'public-invocation': self.public_in,
-                     'public-output': self.public_out}
+                     'public-output': self.public_out,
+                     'additional-information': self.provenance}
         # Convert dictionary to Json string
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file

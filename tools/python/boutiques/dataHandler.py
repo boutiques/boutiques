@@ -6,6 +6,7 @@ import hashlib
 from boutiques.logger import raise_error, print_info
 from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
+from boutiques.nexusHelper import NexusHelper
 
 
 class DataHandler(object):
@@ -49,14 +50,14 @@ class DataHandler(object):
             print(file_in.read())
             file_in.close()
 
-    # Function to publish a data set to Zenodo
+    # Function to publish a data set to Zenodo or Nexus
     # Options allow to only publish a single file, publish files individually as
     # data sets or bulk publish all files in the cache as one data set (default)
-    def publish(self, file, zenodo_token, author,
-                individually=False, sandbox=False, no_int=False,
-                verbose=False):
+    def publish(self, file, zenodo_token, author, nexus_token,
+                nexus_org, nexus_project,
+                individually=False, sandbox=False,
+                no_int=False, verbose=False, to_nexus=False):
         self.filename = extractFileName(file)
-        self.zenodo_access_token = zenodo_token
         self.author = "Anonymous"
         if author is not None:
             self.author = author
@@ -64,12 +65,19 @@ class DataHandler(object):
         self.sandbox = sandbox
         self.no_int = no_int
         self.verbose = verbose
-        self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
-        self.zenodo_endpoint = self.zenodo_helper.get_zenodo_endpoint()
-
-        # Fix Zenodo access token
-        self.zenodo_access_token = self.zenodo_helper \
-            .verify_zenodo_access_token(self.zenodo_access_token)
+        self.to_nexus = to_nexus
+        if not self.to_nexus:
+            self.zenodo_access_token = zenodo_token
+            self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
+            self.zenodo_endpoint = self.zenodo_helper.zenodo_endpoint
+            self.zenodo_access_token = self.zenodo_helper \
+                .verify_zenodo_access_token(self.zenodo_access_token)
+        else:
+            self.nexus_helper = NexusHelper(sandbox, no_int, verbose)
+            self.nexus_endpoint = self.nexus_helper.nexus_endpoint
+            self.nexus_access_token, self.nexus_org, self.nexus_project = \
+                self.nexus_helper.verify_nexus_input(
+                    nexus_token, nexus_org, nexus_project)
 
         # Verify publishing
         if not self.no_int:
@@ -86,40 +94,48 @@ class DataHandler(object):
         # Single record publication
         if self.filename is not None:
             self._file_exists_in_cache(self.filename)
-            self._zenodo_publish([self.filename])
+            self._publish([self.filename])
         # All records published to individual data-sets
         elif individually:
             for file in self.record_files:
-                self._zenodo_publish([file])
+                self._publish([file])
         # All records published to one data-set
         else:
             self.bulk_publish = True
-            self._zenodo_publish(self.record_files)
+            self._publish(self.record_files)
 
     # Private method to publish all the records in file_list to a single
-    # data-set on Zenodo
-    def _zenodo_publish(self, files_list):
+    # data-set on Zenodo or Nexus
+    def _publish(self, files_list):
         # Filter files_list by records with Zenodo ids
         records_dict = self._checkPulblishable(files_list)
         # Publishable list is empty, end execution
         if len(records_dict) == 0:
             return
 
-        # Create deposition
-        deposition_id = self.zenodo_helper.zenodo_deposit(
-            self._create_metadata(records_dict), self.zenodo_access_token)
+        # Publish to Nexus
+        if self.to_nexus:
+            for file in files_list:
+                self.nexus_helper.publish(self.nexus_org, self.nexus_project,
+                                          os.path.join(self.cache_dir, file))
 
-        # Upload all files in files_list to deposition
-        for file in records_dict.keys():
-            self._zenodo_upload_dataset(deposition_id, file)
+        # Publish to Zenodo
+        else:
+            # Create deposition
+            deposition_id = self.zenodo_helper.zenodo_deposit(
+                self._create_metadata(records_dict), self.zenodo_access_token)
 
-        # Publish deposition
-        msg_obj = "Records" if self.bulk_publish else "Record"
-        doi = self.zenodo_helper.zenodo_publish(self.zenodo_access_token,
-                                                deposition_id, msg_obj)
-        # Clear cache of published records
-        if doi:
-            self._clean_cache(records_dict)
+            # Upload all files in files_list to deposition
+            for file in records_dict.keys():
+                self._zenodo_upload_dataset(deposition_id, file)
+
+            # Publish deposition
+            msg_obj = "Records" if self.bulk_publish else "Record"
+            doi = self.zenodo_helper.zenodo_publish(self.zenodo_access_token,
+                                                    deposition_id, msg_obj)
+            # Clear cache of published records
+            if doi:
+                self._clean_cache(records_dict)
 
     # Private function to filter out records that can not be published
     # because they lack a descriptor doi
@@ -196,16 +212,19 @@ class DataHandler(object):
             print_info("Record uploaded to Zenodo", r)
 
     def _get_publishing_prompt(self):
+        _destination = "Nexus in organization '{}' and project '{}'" \
+            .format(self.nexus_org, self.nexus_project) \
+            if self.to_nexus else "Zenodo"
         if self.filename is not None:
-            return ("The dataset {} will be published to Zenodo, "
+            return ("The dataset {} will be published to {}, "
                     "this cannot be undone. Are you sure? (Y/n) "
-                    .format(self.filename))
+                    .format(self.filename, _destination))
         if self.individual:
-            return ("The records will be published to Zenodo each as "
-                    "separate data-sets. This cannont be undone. Are you "
-                    "sure? (Y/n ")
-        return ("The records will be published to Zenodo as a data-set. This "
-                "cannot be undone. Are you sure? (Y/n) ")
+            return ("The records will be published to {} each as "
+                    "separate data-sets. This cannot be undone. Are you "
+                    "sure? (Y/n ". format(_destination))
+        return ("The records will be published to {} as a data-set. This "
+                "cannot be undone. Are you sure? (Y/n) ".format(_destination))
 
     # Private function to remove published files and descriptors which no
     # longer have dependencies

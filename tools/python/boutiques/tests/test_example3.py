@@ -16,3 +16,9 @@ class TestExample3(BaseTest):
                          self.get_file_path("invocation.json"),
                          "--skip-data-collection"),
             aditional_assertions=self.assert_no_output)
+
+    def test_example3_filepathrenaming(self):
+        self.assertEquals(bosh.evaluate(self.get_file_path("example3.json"),
+                                        self.get_file_path("invocation.json"),
+                                        "output-files/"),
+                          {'logfile': 'log-FileValue.txt'})

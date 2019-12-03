@@ -12,9 +12,18 @@ from boutiques.importer import ImportError
 import boutiques
 import tarfile
 from contextlib import closing
+import simplejson as json
+from docopt import docopt
+import imp
+import subprocess
 
 
 class TestImport(TestCase):
+
+    @pytest.fixture(scope='session', autouse=True)
+    def clean_up(self):
+        yield
+        os.remove("user-image.simg")
 
     def test_import_bids_good(self):
         bids_app = opj(op.split(bfile)[0],
@@ -127,3 +136,76 @@ class TestImport(TestCase):
                           )
                     self.assertFalse(ret.exit_code,
                                      cwl_descriptor)
+
+    def test_docopt_import_valid(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/valid")
+        pydocopt_input = op.join(base_path, "test_valid.py")
+        descriptor_output = op.join(base_path, "test_valid_output.json")
+
+        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        bosh(import_args)
+
+        test_invocation = op.join(base_path, "valid_invoc_mutex.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        os.remove(descriptor_output)
+
+    def test_docopt_import_valid_options(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/options")
+        pydocopt_input = op.join(base_path, "test_options.py")
+        descriptor_output = op.join(base_path, "test_options_output.json")
+
+        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        bosh(import_args)
+
+        test_invocation = op.join(base_path, "test_options_invocation.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        os.remove(descriptor_output)
+
+    def test_docopt_import_invalid(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        pydocopt_input = op.join(base_path, "test_invalid.py")
+        descriptor_output = op.join(base_path, "foobar.json")
+
+        args = ["import", "dcpt", descriptor_output, pydocopt_input]
+
+        with pytest.raises(ImportError, match="Invalid docopt script"):
+            bosh(args)
+            self.fail("Did not raise ImportError or" +
+                      " message did not match Invalid docopt script")
+
+        if op.isfile(descriptor_output):
+            self.fail("Output file should not exist")
+
+    def test_docopt_nf(self):
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/naval_fate")
+        pydocopt_input = op.join(base_path, "naval_fate.py")
+        descriptor_output = op.join(base_path, "naval_fate_descriptor.json")
+
+        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        bosh(import_args)
+
+        test_invocation = op.join(base_path, "nf_invoc_new.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        test_invocation = op.join(base_path, "nf_invoc_move.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        test_invocation = op.join(base_path, "nf_invoc_shoot.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        test_invocation = op.join(base_path, "nf_invoc_mine.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        test_invocation = op.join(base_path, "nf_invoc_help.json")
+        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        bosh(launch_args)
+
+        os.remove(descriptor_output)

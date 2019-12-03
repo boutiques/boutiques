@@ -3,6 +3,7 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 from tabulate import tabulate
 import textwrap
+import simplejson as json
 
 
 class PrettyPrinter():
@@ -11,6 +12,7 @@ class PrettyPrinter():
     def __init__(self, descriptor):
         self.sep = "".join(["="] * 80)
         self.desc = descriptor
+        self.epilog = ""
         self.createHelpText()
 
     def createHelpText(self):
@@ -21,14 +23,6 @@ class PrettyPrinter():
         if self.desc.get("container-image"):
             self.descContainer()
 
-        # Add output information - if applicable
-        if self.desc.get("output-files"):
-            self.descOutputs()
-
-        # Add group information - if applicable
-        if self.desc.get("groups"):
-            self.descGroups()
-
         # Add system requirements - if applicable
         if self.desc.get("suggested-resources"):
             self.descResources()
@@ -37,8 +31,16 @@ class PrettyPrinter():
         if self.desc.get("error-codes"):
             self.descErrors()
 
-        self.descInputs()
+        # Add group information - if applicable
+        if self.desc.get("groups"):
+            self.descGroups()
 
+        # Add output information - if applicable
+        if self.desc.get("output-files"):
+            self.descOutputs()
+
+        self.descInputs()
+        self.parser.epilog = self.epilog
         self.docstring = self.parser.format_help()
         self.docstring = "\n\n".join(self.docstring.split("\n\n")[1:])
 
@@ -91,34 +93,37 @@ class PrettyPrinter():
     def descOutputs(self):
         outputs = self.desc["output-files"]
         output_info = "Output Files:"
+        config_info = "Config Files:"
         for output in outputs:
             required = "Optional" if output.get("optional") else "Required"
-            output_info += "\n\tName: {0} ({1})".format(output["name"],
-                                                        required)
-            output_info += "\n\tFormat: {0}".format(output["path-template"])
+            temp_info = "\n  Name: {0} ({1})".format(output["name"], required)
+            temp_info += "\n\tFormat: {0}".format(output["path-template"])
 
             # Identifies input dependencies based on filename
             depids = ["/".join(self.lut[inp])
                       for inp in self.lut.keys()
                       if inp in output["path-template"]]
             if depids:
-                output_info += ("\n\tFilename depends on Input IDs: "
-                                "{0}".format(", ".join(depids)))
+                temp_info += ("\n\tFilename depends on Input IDs: "
+                              "{0}".format(", ".join(depids)))
 
             # Gets stripped extensions
             if output.get("path-template-stripped-extensions"):
                 exts = ", ".join(output["path-template-stripped-extensions"])
-                output_info += ("\n\tStripped extensions (before substitution):"
-                                " {0}".format(exts))
+                temp_info += ("\n\tStripped extensions (before substitution):"
+                              " {0}".format(exts))
 
             # If a config file, add the template
             if output.get("file-template"):
-                output_info += ("\n\tTemplate:\n\t {0}"
-                                "".format("\n\t ".join(
-                                                    output["file-template"]
-                                                  )))
-            output_info += "\n"
-        self._addSegment(output_info)
+                temp_info += ("\n\tTemplate:\n\t {0}"
+                              "".format("\n\t ".join(output["file-template"])))
+                config_info += temp_info
+            else:
+                output_info += temp_info
+
+        self.epilog = "\n\n{0}\n\n{1}".format(self.sep, config_info) \
+            if config_info is not "Config Files:" else ""
+        self.epilog += "\n\n{0}\n\n{1}".format(self.sep, output_info)
 
     def descGroups(self):
         groups = self.desc["groups"]
@@ -165,13 +170,19 @@ class PrettyPrinter():
                                      formatter_class=RawTextHelpFormatter,
                                      add_help=False)
         inputs = self.CLfields
+        required = self.parser.add_argument_group('required arguments')
 
         # For every command-line key (i.e. input)...
         for clkey in self.lut.keys():
             # Re-initialize an empty argument
             inp_args = []
             inp_kwargs = {}
-            inp_descr = ""
+            opt_inp_descr = ""
+            req_inp_descr = ""
+            opt_inp_desc_header = ""
+            opt_inp_desc_footer = ""
+            req_inp_desc_header = ""
+            req_inp_desc_footer = ""
 
             # Get all inputs with the command-line key
             inps = [inps
@@ -194,18 +205,26 @@ class PrettyPrinter():
             else:
                 inp_args += [clkey]
 
-            # If multiple inputs share a command-line key
-            if len(inps) > 1:
-                inp_descr += "Multiple Options...\n"
-                inp_desc_header = "Option {0}:\n"
-                inp_desc_footer = "\n"
-            else:
-                inp_desc_header = ""
-                inp_desc_footer = ""
+            # If multiple inputs of the same optionality
+            # share a command-line key
+            multi_opt = sum(bool(inp.get("optional")) for inp in inps) > 1
+            multi_req = sum(not bool(inp.get("optional")) for inp in inps) > 1
+
+            if multi_opt:
+                opt_inp_descr += "Multiple Options...\n"
+                opt_inp_desc_header = "Option {0}:\n"
+                opt_inp_desc_footer = "\n"
+            if multi_req:
+                req_inp_descr += "Multiple Options...\n"
+                req_inp_desc_header = "Option {0}:\n"
+                req_inp_desc_footer = "\n"
 
             # For every input with the clkey (usually just 1)...
             for i_inp, inp in enumerate(inps):
-                inp_descr += inp_desc_header.format(i_inp + 1)
+                if bool(inp.get("optional")):
+                    opt_inp_descr += opt_inp_desc_header.format(i_inp + 1)
+                else:
+                    req_inp_descr += req_inp_desc_header.format(i_inp + 1)
 
                 # Grab basic input fields first
                 tmp_inp_descr = ("ID: {0}\nValue Key: {1}\nType: {2}\n"
@@ -285,14 +304,32 @@ class PrettyPrinter():
                     descr_text = "Description: {0}".format(inp["description"])
                 else:
                     descr_text = ""
-                inp_descr += tmp_inp_descr + textwrap.fill(descr_text,
-                                                           subsequent_indent=" "
-                                                           )
-                inp_descr += inp_desc_footer
 
-            # Add the newly created argument to parser
-            inp_kwargs['help'] = textwrap.dedent(inp_descr)
-            self.parser.add_argument(*inp_args, **inp_kwargs)
+                if bool(inp.get("optional")):
+                    opt_inp_descr += tmp_inp_descr \
+                     + textwrap.fill(descr_text, subsequent_indent=" ") \
+                     + opt_inp_desc_footer
+                else:
+                    req_inp_descr += tmp_inp_descr \
+                     + textwrap.fill(descr_text, subsequent_indent=" ") \
+                     + req_inp_desc_footer
+
+            # Add args for required inputs
+            if req_inp_descr is not "":
+                inp_kwargs['help'] = textwrap.dedent(req_inp_descr)
+                required.add_argument(*inp_args, **inp_kwargs)
+
+            # Add args for optional inputs
+            if opt_inp_descr is not "":
+                inp_kwargs['help'] = textwrap.dedent(opt_inp_descr)
+                parsed_flags = list(self.parser._option_string_actions.keys())
+                for i in range(0, len(parsed_flags)):
+                    if "_DUP" in parsed_flags[i]:
+                        parsed_flags[i] = parsed_flags[i][0:-5]
+                if inp_args[0] in parsed_flags:
+                    inp_args[0] = "{0}_DUP{1}".format(
+                        inp_args[0], parsed_flags.count(inp_args[0]))
+                self.parser.add_argument(*inp_args, **inp_kwargs)
 
     def _addSegment(self, segment):
         self.helptext += "\n\n{0}\n\n{1}".format(segment, self.sep)

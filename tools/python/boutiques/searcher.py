@@ -8,18 +8,41 @@ from operator import itemgetter
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
 
+try:
+    # Python 3
+    from urllib.parse import quote
+except ImportError:
+    # Python 2
+    from urllib import quote
+
 
 class Searcher():
 
     def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
+
         if query is not None:
             self.query = query
+            if not exact_match:
+                terms = self.query.split(" ")
+                self.query_line = ''
+                for t in terms:
+                    uncased_term = ''
+                    for ch in t:
+                        uncased_term = uncased_term + "[" + ch.upper() +\
+                            ch.lower() + "]"
+                    uncased_term = quote(uncased_term)
+                    self.query_line = self.query_line + \
+                        ' AND (/.*%s.*/)' % uncased_term
+            else:
+                self.query_line =\
+                        ' AND (/%s/)' % self.query
         else:
-            self.query = 'boutiques'
+            self.query_line = ''
+            self.query = ''
 
-        if not exact_match:
-            self.query = '*' + self.query + '*'
+        if(verbose):
+            print_info("Using Query Line: " + self.query_line)
 
         self.verbose = verbose
         self.sandbox = sandbox
@@ -54,10 +77,12 @@ class Searcher():
 
     def zenodo_search(self):
         # Get all results
-        r = requests.get(self.zenodo_endpoint + '/api/records/?q=%s&'
-                         'keywords=boutiques&keywords=schema&'
-                         'keywords=version&file_type=json&type=software'
-                         '&page=1&size=%s' % (self.query, 9999))
+        r = requests.get(self.zenodo_endpoint + '/api/records/?q='
+                         'keywords:(/Boutiques/) AND '
+                         'keywords:(/schema-version.*/)'
+                         '%s'
+                         '&file_type=json&type=software&'
+                         'page=1&size=%s' % (self.query_line, 9999))
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
@@ -121,7 +146,9 @@ class Searcher():
         id = "zenodo." + str(hit["id"])
         title = hit["metadata"]["title"]
         description = hit["metadata"]["description"]
-        downloads = hit["stats"]["version_downloads"]
+        downloads = 0
+        if "version_downloads" in hit["stats"]:
+            downloads = hit["stats"]["version_downloads"]
         return (id, title, description, downloads)
 
     # truncates every value of a dictionary whose length is
