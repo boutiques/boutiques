@@ -184,15 +184,20 @@ class DataHandler(object):
                 'creators': [{'name': self.author}]
             }
         }
+
+        # Get unique list of tool names and descriptors
+        unique_names = set([v['summary']['name']
+                            for v in records_dict.values()])
+        unique_descriptors = set([v['summary']['descriptor-doi']
+                                  for v in records_dict.values()])
+
         # Add tool name(s) to keywords
-        data['metadata']['keywords'] = [v['summary']['name']
-                                        for k, v in records_dict.items()]
+        data['metadata']['keywords'] = [v for v in unique_names]
         data['metadata']['keywords'].insert(0, 'Boutiques')
         # Add descriptor link(s) to related identifiers
         data['metadata']['related_identifiers'] = \
-            [{'identifier': url.format(v['summary']['descriptor-doi']
-                                       .split('.')[2]),
-             'relation': 'hasPart'} for k, v in records_dict.items()]
+            [{'identifier': url.format(v.split('.')[2]),
+              'relation': 'hasPart'} for v in unique_descriptors]
         return data
 
     def _zenodo_upload_dataset(self, deposition_id, file):
