@@ -45,13 +45,6 @@ def CreateBoshDocs():
                     apiNames[apiName] = {apiName: apiFunction}
         return apiNames
 
-    def getPyApiTextByName(api):
-        import subprocess
-        apiProcess = subprocess.Popen(
-            "bosh {0} -h".format(api), shell=True, stdout=subprocess.PIPE)
-        output = apiProcess.stdout.read()
-        return output.decode()
-
     # Start CLI docs .rst files creation
     boshFileText = readFile("../python/boutiques/bosh.py")
     indexTemplate = readFile("./_templates/index.rst")
@@ -64,10 +57,7 @@ def CreateBoshDocs():
     for api in sorted(apiNames):
         # Add api reference to index doc string
         indexDocString += '    _{0}\n'.format(api)
-        # Define Python API docs
-        docString = 'Python API\n{0}\n'.format('='*len("Python API"))
-        pythonAPIText = getPyApiTextByName(api)
-        docString += '{0}\n'.format(pythonAPIText)
+        docString = ""
         # Generate structure for each API
         for subApi in sorted(apiNames[api]):
             subDocString = '**{0}**\n'.format(subApi)
@@ -90,3 +80,5 @@ def CreateBoshDocs():
 
 
 CreateBoshDocs()
+subprocess.Popen(["make", "clean"], cwd="./").wait()
+make = subprocess.Popen(["make", "html"], cwd="./").wait()
