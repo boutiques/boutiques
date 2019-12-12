@@ -1,0 +1,537 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Boutiques &mdash; Boutiques https://github.com/boutiques/boutiques/ documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python API" href="_bosh.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> Boutiques
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Bosh Command-line APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html#bosh"><strong>bosh</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_create.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_create.html#create"><strong>create</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_data.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_data.html#data"><strong>data</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html#evaluate"><strong>evaluate</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html#example"><strong>example</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html#execute"><strong>execute</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html#exporter"><strong>exporter</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html#importer"><strong>importer</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html#invocation"><strong>invocation</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html#pprint"><strong>pprint</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html#publish"><strong>publish</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html#pull"><strong>pull</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html#search"><strong>search</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html#test"><strong>test</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html#validate"><strong>validate</strong></a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Boutiques</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Boutiques</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="boutiques">
+<h1>Boutiques<a class="headerlink" href="#boutiques" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://zenodo.org/badge/latestdoi/32616811"><img alt="https://zenodo.org/badge/32616811.svg" src="https://zenodo.org/badge/32616811.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/boutiques"><img alt="https://img.shields.io/pypi/v/boutiques.svg" src="https://img.shields.io/pypi/v/boutiques.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/boutiques"><img alt="https://img.shields.io/pypi/pyversions/boutiques.svg" src="https://img.shields.io/pypi/pyversions/boutiques.svg" /></a>
+<a class="reference external image-reference" href="https://travis-ci.org/boutiques/boutiques"><img alt="https://travis-ci.org/boutiques/boutiques.svg?branch=develop" src="https://travis-ci.org/boutiques/boutiques.svg?branch=develop" /></a>
+<a class="reference external image-reference" href="https://coveralls.io/github/boutiques/boutiques?branch=develop"><img alt="https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop" src="https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop" /></a>
+<p>Boutiques is a cross-platform descriptive command-line framework for
+applications.</p>
+</div>
+<div class="section" id="the-power-of-boutiques-tools">
+<h1>The Power of Boutiques Tools<a class="headerlink" href="#the-power-of-boutiques-tools" title="Permalink to this headline">¶</a></h1>
+<p>While the Boutiques framework enables a descriptive representation of
+command-line utilities and informs users of their usage, the Boutiques
+Python tool provides users with functionality to perform a variety of
+operations on these descriptors.</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Simple! Just open your favourite terminal and type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install boutiques
+</pre></div>
+</div>
+<p>Alongside installing the Boutiques package, this will also ensure the
+dependencies are installed: <code class="docutils literal notranslate"><span class="pre">simplejson</span></code>, <code class="docutils literal notranslate"><span class="pre">jsonschema</span></code>,
+<code class="docutils literal notranslate"><span class="pre">requests</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest</span></code>, <code class="docutils literal notranslate"><span class="pre">termcolor</span></code>, <code class="docutils literal notranslate"><span class="pre">pyyaml</span></code>, <code class="docutils literal notranslate"><span class="pre">tabulate</span></code> and
+<code class="docutils literal notranslate"><span class="pre">mock</span></code>.</p>
+<p>If you want the latest changes that aren’t officially released yet, you
+can also install directly from GitHub:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install &quot;git+https://github.com/boutiques/boutiques@develop#egg=boutiques&amp;subdirectory=tools/python&quot;
+</pre></div>
+</div>
+</div>
+<div class="section" id="command-line-api">
+<h2>Command-Line API<a class="headerlink" href="#command-line-api" title="Permalink to this headline">¶</a></h2>
+<p>The command-line API for Boutiques can be accessed through your new
+favourite command, <strong>``bosh``</strong>. The Boutiques Shell (<code class="docutils literal notranslate"><span class="pre">bosh</span></code>) provides
+an access point to all of the tools wrapped within Boutiques and has
+some <code class="docutils literal notranslate"><span class="pre">--help</span></code> text to keep you moving forward if you feel like you’re
+getting stuck.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Bosh Command-line APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html#bosh"><strong>bosh</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_create.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_create.html#create"><strong>create</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_data.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_data.html#data"><strong>data</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html#evaluate"><strong>evaluate</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html#example"><strong>example</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html#execute"><strong>execute</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html#exporter"><strong>exporter</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html#importer"><strong>importer</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html#invocation"><strong>invocation</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html#pprint"><strong>pprint</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html#publish"><strong>publish</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html#pull"><strong>pull</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html#search"><strong>search</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html#test"><strong>test</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html#validate"><strong>validate</strong></a></li>
+</ul>
+</div>
+<div class="section" id="search-for-tools">
+<h3>Search For Tools<a class="headerlink" href="#search-for-tools" title="Permalink to this headline">¶</a></h3>
+<p>Perhaps someone has already described the tool you are looking for and
+you could reuse their work. For instance, if you are looking for a tool
+from the FSL suite, try:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh search fsl
+</pre></div>
+</div>
+<p>Search returns a list of identifiers for tools matching your query. You
+can use these identifiers in any <code class="docutils literal notranslate"><span class="pre">bosh</span></code> command transparently. Even
+better, these identifiers are <a class="reference external" href="https://www.doi.org">Digital Object
+Identifiers</a> hosted on
+<a class="reference external" href="https://zenodo.org/">Zenodo</a>, they will never change and can’t be
+deleted!</p>
+</div>
+<div class="section" id="import-your-tool">
+<h3>Import Your Tool<a class="headerlink" href="#import-your-tool" title="Permalink to this headline">¶</a></h3>
+<p>If you’re in the lucky set of people with a Boutiques descriptor from a
+previous schema iteration (such as <code class="docutils literal notranslate"><span class="pre">0.4</span></code>), or you have a <a class="reference external" href="http://bids-apps.neuroimaging.io">BIDS
+app</a>, you can easily make yourself
+a descriptor from the command-line. For instance, let’s say you have a
+BIDS app at <code class="docutils literal notranslate"><span class="pre">/awesome/app/</span></code>, you would run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh import bids descriptor.json /awesome/app/
+</pre></div>
+</div>
+<p>Very exciting, you now have a Boutiques descriptor for your app! If you
+aren’t in one of those unique cases, unfortunately you’ll still need to
+generate your descriptor by hand according to the
+<a class="reference external" href="./tools/python/boutiques/schema/descriptor.schema.json">schema</a>.</p>
+</div>
+<div class="section" id="create-a-new-descriptor">
+<h3>Create a New Descriptor<a class="headerlink" href="#create-a-new-descriptor" title="Permalink to this headline">¶</a></h3>
+<p>There are two additional ways to get you started with creating Boutiques
+descriptors, both wrapped up in the “create” module of Boutiques. First,
+if you just want an example descriptor that shows many of the properties
+you can later set in Boutiques, you should use the command line
+interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh create my-new-descriptor.json
+</pre></div>
+</div>
+<p>However, if you want a bit more of a head start and your tool is built
+in Python using the <code class="docutils literal notranslate"><span class="pre">argparse</span></code> library, we can help more! In the
+Python script with your argparser defined, simply add the following
+lines to get yourself a minimal corresponding descriptor:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">boutiques.creator</span> <span class="k">as</span> <span class="nn">bc</span>
+<span class="n">newDescriptor</span> <span class="o">=</span> <span class="n">bc</span><span class="o">.</span><span class="n">CreateDescriptor</span><span class="p">(</span><span class="n">myparser</span><span class="p">,</span> <span class="n">execname</span><span class="o">=</span><span class="s2">&quot;/command/to/run/exec&quot;</span><span class="p">)</span>
+<span class="n">newDescriptor</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;my-new-descriptor.json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>There are additional custom arguments which can be supplied to this
+script, such as tags for your tool. It is also worth noting that no
+interpretation of output files is attempted by this tool, so your
+descriptor could certainly be enhanced by addind these and other
+features available through Boutiques, such as tests, tags, error codes,
+groups, and container images.</p>
+<p>Once you’ve created your descriptor this way you can translate your
+arguments to a Boutiques-style invocation using the following code block
+on runtime:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">args</span> <span class="o">=</span> <span class="n">myparser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="n">invoc</span> <span class="o">=</span> <span class="n">newDescriptor</span><span class="o">.</span><span class="n">createInvocation</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+<span class="c1"># Then, if you want to save them to a file...</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;my-inputs.json&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fhandle</span><span class="p">:</span>
+    <span class="n">fhandle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">invoc</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="validation">
+<h3>Validation<a class="headerlink" href="#validation" title="Permalink to this headline">¶</a></h3>
+<p>You just created a Boutiques descriptor (compliant with the
+<a class="reference external" href="./tools/python/boutiques/schema/descriptor.schema.json">schema</a>, of
+course) named <code class="docutils literal notranslate"><span class="pre">descriptor.json</span></code> - Congratulations! Now, you need to
+quickly validate it to make sure that you didn’t accidentally break any
+rules in this definition (like requiring a “flag” input). You can
+validate your schema like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh validate descriptor.json
+</pre></div>
+</div>
+<p>Depending on the status of your descriptor, <code class="docutils literal notranslate"><span class="pre">bosh</span></code> will either tell
+you it’s A-OK or tell you where the problems are and what you should
+fix. If you want to know more about some extra options packed into this
+validator, you can check them with <code class="docutils literal notranslate"><span class="pre">bosh</span> <span class="pre">validate</span> <span class="pre">-h</span></code>, as one may
+expect.</p>
+</div>
+<div class="section" id="simulate-execution">
+<h3>Simulate Execution<a class="headerlink" href="#simulate-execution" title="Permalink to this headline">¶</a></h3>
+<p>Now that you’ve got a valid descriptor, you need to make sure it is
+actually describing <em>your</em> tool and command-line. One of the easiest
+ways to do this is by simulating inputs for fake executions of your
+tool. You can do this using the <code class="docutils literal notranslate"><span class="pre">exec</span></code> function in <code class="docutils literal notranslate"><span class="pre">bosh</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh exec simulate descriptor.json -r -n 5
+</pre></div>
+</div>
+<p>You just simulated 5 sets of random inputs which were dumped to our
+terminal for you to validate. If anything seems fishy, you can update
+your descriptor and ensure you’re describing the command-line you want.
+If you had a particular set of inputs in mind, you could pass them in
+with the <code class="docutils literal notranslate"><span class="pre">-i</span></code> flag rather than using the <code class="docutils literal notranslate"><span class="pre">-r</span></code> and <code class="docutils literal notranslate"><span class="pre">-n</span></code> flags.
+Again, as I’m sure you’ve guessed, you can learn more here with
+<code class="docutils literal notranslate"><span class="pre">bosh</span> <span class="pre">exec</span> <span class="pre">simulate</span> <span class="pre">-h</span></code>.</p>
+</div>
+<div class="section" id="launch-your-tool">
+<h3>Launch Your Tool<a class="headerlink" href="#launch-your-tool" title="Permalink to this headline">¶</a></h3>
+<p>Your descriptor has now been vetted both by the validator and simulation
+to describe meaningful command-lines for your tool - now it’s time to
+put it to work! You can also use the <code class="docutils literal notranslate"><span class="pre">exec</span></code> function to launch an
+analysis, provided you’ve described your inputs in <code class="docutils literal notranslate"><span class="pre">invocation.json</span></code>
+with the matching key-value pairs as in your descriptor (this is called
+the <code class="docutils literal notranslate"><span class="pre">invocationSchema</span></code>, which you can also generate and learn about
+with <code class="docutils literal notranslate"><span class="pre">bosh</span> <span class="pre">invocation</span></code>). One catch: we assume you have
+<a class="reference external" href="https://docker.com">Docker</a> or
+<a class="reference external" href="https://singularity.lbl.gov">Singularity</a> installed. A fair
+assumption, nowadays? We hope so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh exec launch descriptor.json invocation.json
+</pre></div>
+</div>
+<p>You just launched your tool! You should be seeing outputs to your
+terminal, and by default your current working directory will be mounted
+to the container. You can mount more volumes with <code class="docutils literal notranslate"><span class="pre">-v</span></code> (consistent
+with Docker), and see what other options are available, such as
+switching users in the container, through the usual help menu,
+<code class="docutils literal notranslate"><span class="pre">bosh</span> <span class="pre">exec</span> <span class="pre">launch</span> <span class="pre">-h</span></code>.</p>
+</div>
+<div class="section" id="test-your-tool">
+<h3>Test Your Tool<a class="headerlink" href="#test-your-tool" title="Permalink to this headline">¶</a></h3>
+<p>You may now want to write a test for your descriptor, so that everyone
+using it could check that it produces correct results. This can be done
+by extending the tool descriptor with a <code class="docutils literal notranslate"><span class="pre">tests</span></code> property. For
+instance, the description below would test if the execution of the
+specified invocation returns with exit code 0 and produces a file in
+output <code class="docutils literal notranslate"><span class="pre">logfile</span></code> with the right MD5 hash.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;tests&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test1&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;invocation&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;config_num&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="s2">&quot;enum_input&quot;</span><span class="p">:</span> <span class="s2">&quot;val1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;file_input&quot;</span><span class="p">:</span> <span class="s2">&quot;/tests/image.nii.gz&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;list_int_input&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="mi">1</span><span class="p">,</span>
+                    <span class="mi">2</span><span class="p">,</span>
+                    <span class="mi">3</span>
+                <span class="p">],</span>
+                <span class="s2">&quot;str_input&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;foo&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;bar&quot;</span>
+                <span class="p">]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;assertions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;exit-code&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;output-files&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;logfile&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;md5-reference&quot;</span><span class="p">:</span> <span class="s2">&quot;0868f0b9bf25d4e6a611be8f02a880b5&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>You can then test your descriptor by simply typing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh test descriptor.json
+</pre></div>
+</div>
+</div>
+<div class="section" id="evaluate-your-usage">
+<h3>Evaluate Your Usage<a class="headerlink" href="#evaluate-your-usage" title="Permalink to this headline">¶</a></h3>
+<p>If you’ve been using your tool and forget what exactly that output file
+will be named, or if it’s optional, but find re-reading the descriptor a
+bit cumbersome, you should just evaluate your invocation! If we wanted
+to check the location of our output corresponding to the id
+<code class="docutils literal notranslate"><span class="pre">my_batmobile</span></code>, or which of our inputs are numbers and optional, we
+could do the following two queries, respectively:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh evaluate descriptor.json invocation.json output-files/id=my_batmobile inputs/type=Number,optional=True
+[{&quot;my_batmobile&quot;: &quot;/the/batcave/batmobile.car&quot;}, {&quot;bad_guys&quot;: &quot;0&quot;, &quot;times_saved_gotham&quot;: &quot;5000&quot;}]
+</pre></div>
+</div>
+</div>
+<div class="section" id="publish-your-tool">
+<h3>Publish Your Tool<a class="headerlink" href="#publish-your-tool" title="Permalink to this headline">¶</a></h3>
+<p>Congratulations on successfully running your analysis! So excited about
+your tool, you now want to share this descriptor with the world. Use the
+<code class="docutils literal notranslate"><span class="pre">publish</span></code> function in <code class="docutils literal notranslate"><span class="pre">bosh</span></code> - it will push your tool on the
+<a class="reference external" href="https://zenodo.org/search?page=1&amp;size=20&amp;keywords=boutiques&amp;keywords=schema&amp;keywords=version&amp;file_type=json&amp;type=software">Zenodo</a>
+resource-sharing portal allowing other to use it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ bosh publish descriptor.json
+</pre></div>
+</div>
+<p>Your tool is now being shared in a packaged and fully described fashion,
+making it easier than ever to reproduce and extend your work! As always,
+learn more about this feature with <code class="docutils literal notranslate"><span class="pre">bosh</span> <span class="pre">publish</span> <span class="pre">-h</span></code>.</p>
+</div>
+<div class="section" id="execution-records">
+<h3>Execution Records<a class="headerlink" href="#execution-records" title="Permalink to this headline">¶</a></h3>
+<p>Want to check up on what happened during a previous analysis? The
+details of each execution are captured and recorded in a publicly safe
+format so that you can review past analysis runs. These records are
+stored in the Boutiques cache and capture each executions’ descriptor,
+invocation and output results. Input and output file hashes are included
+to easily compare results between different analyses.</p>
+</div>
+</div>
+<div class="section" id="python-api">
+<h2>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h2>
+<p>Now that you’ve spent all that time learning the command-line API, we’ve
+got some good news for you: you already know the Python API, too. The
+interfaces are entirely consistent with those exposed on the
+command-line, so you just need to do the following, to say, validate
+your schema:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="kn">import</span> <span class="nn">boutiques</span>
+<span class="o">&gt;</span> <span class="n">boutiques</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="s1">&#39;descriptor.json&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Whether you’re working from the shell or a Python script, <code class="docutils literal notranslate"><span class="pre">bosh</span></code> will
+treat you exactly the same.</p>
+<p>And if it’s easier for you, you can even generate Python functions that
+launch your tools directly! For instance, this will launch FSL’s mcflirt
+from your Python program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="kn">from</span> <span class="nn">boutiques.descriptor2func</span> <span class="k">import</span> <span class="n">function</span>
+<span class="o">&gt;</span> <span class="n">mcflirt</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="s1">&#39;zenodo.2602109&#39;</span><span class="p">)</span>
+<span class="o">&gt;</span> <span class="n">mcflirt</span><span class="p">(</span><span class="n">in_file</span><span class="o">=</span><span class="s1">&#39;/home/glatard/data/test.nii.gz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<p>Excited by the project and want to get involved?! <em>Please</em> check out our
+<a class="reference external" href="./CONTRIBUTING.md">contributing guide</a>, and look through the
+<a class="reference external" href="https://github.com/boutiques/boutiques/issues/">issues</a> (in
+particular, those tagged with
+“<a class="reference external" href="https://github.com/boutiques/boutiques/issues?utf8=%E2%9C%93&amp;q=is%3Aissue%20is%3Aopen%20label%3Abeginner">beginner</a>”)
+to start seeing where you can lend a hand. We look forward to approving
+your amazing contributions!</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="_bosh.html" class="btn btn-neutral float-right" title="Python API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, https://github.com/boutiques/boutiques/
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

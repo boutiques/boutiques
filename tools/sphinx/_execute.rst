@@ -1,0 +1,35 @@
+Python API
+==========
+
+
+**execute**
+===========
+
+.. argparse::
+    :module: bosh
+    :func: parser_execute
+    :prog: bosh execute
+
+**execute launch**
+------------------
+
+.. argparse::
+    :module: bosh
+    :func: parser_executeLaunch
+    :prog: bosh execute launch
+
+**execute prepare**
+-------------------
+
+.. argparse::
+    :module: bosh
+    :func: parser_executePrepare
+    :prog: bosh execute prepare
+
+**execute simulate**
+--------------------
+
+.. argparse::
+    :module: bosh
+    :func: parser_executeSimulate
+    :prog: bosh execute simulate

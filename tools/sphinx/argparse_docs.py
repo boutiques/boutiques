@@ -1,4 +1,5 @@
 import simplejson as json
+import boutiques
 
 
 def CreateBoshDocs():
@@ -44,6 +45,14 @@ def CreateBoshDocs():
                     apiNames[apiName] = {apiName: apiFunction}
         return apiNames
 
+    def getPyApiTextByName(api):
+        import subprocess
+        apiProcess = subprocess.Popen(
+            "bosh {0} -h".format(api), shell=True, stdout=subprocess.PIPE)
+        output = apiProcess.stdout.read()
+        return output.decode()
+
+    # Start CLI docs .rst files creation
     boshFileText = readFile("../python/boutiques/bosh.py")
     indexTemplate = readFile("./_templates/index.rst")
     # Split readme into two, slicing at command line api section
@@ -55,7 +64,10 @@ def CreateBoshDocs():
     for api in sorted(apiNames):
         # Add api reference to index doc string
         indexDocString += '    _{0}\n'.format(api)
-        docString = ""
+        # Define Python API docs
+        docString = 'Python API\n{0}\n'.format('='*len("Python API"))
+        pythonAPIText = getPyApiTextByName(api)
+        docString += '{0}\n'.format(pythonAPIText)
         # Generate structure for each API
         for subApi in sorted(apiNames[api]):
             subDocString = '**{0}**\n'.format(subApi)

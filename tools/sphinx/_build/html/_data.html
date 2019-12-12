@@ -1,0 +1,376 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Python API &mdash; Boutiques https://github.com/boutiques/boutiques/ documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python API" href="_evaluate.html" />
+    <link rel="prev" title="Python API" href="_create.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Boutiques
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Bosh Command-line APIs</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html#bosh"><strong>bosh</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_create.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_create.html#create"><strong>create</strong></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#data"><strong>data</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Positional Arguments">Positional Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-delete"><strong>data delete</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#data-inspect"><strong>data inspect</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#data-publish"><strong>data publish</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html#evaluate"><strong>evaluate</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html#example"><strong>example</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html#execute"><strong>execute</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html#exporter"><strong>exporter</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html#importer"><strong>importer</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html#invocation"><strong>invocation</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html#pprint"><strong>pprint</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html#publish"><strong>publish</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html#pull"><strong>pull</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html#search"><strong>search</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html#test"><strong>test</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html#validate"><strong>validate</strong></a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Boutiques</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Python API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/_data.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="python-api">
+<h1>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h1>
+<p>usage: Manage execution data collection. [–help] {inspect,publish,delete}</p>
+<dl>
+<dt>positional arguments:</dt><dd><dl class="simple">
+<dt>{inspect,publish,delete}</dt><dd><p>Manage execution data records. Inspect: displays the
+unpublished records currently in the cache. Publish:
+publishes contents of cache to Zenodo as a public data
+set. Requires a Zenodo access token, see
+<a class="reference external" href="http://developers.zenodo.org/#authentication">http://developers.zenodo.org/#authentication</a>. Delete:
+remove one or more records from the cache.</p>
+</dd>
+</dl>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">--help</span>, <span class="option">-h</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="data">
+<h1><strong>data</strong><a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">bosh</span> <span class="n">data</span> <span class="p">[</span><span class="o">--</span><span class="n">help</span><span class="p">]</span> <span class="p">{</span><span class="n">inspect</span><span class="p">,</span><span class="n">publish</span><span class="p">,</span><span class="n">delete</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="Positional Arguments">
+<h2>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd>action</kbd></dt>
+<dd><p>Possible choices: inspect, publish, delete</p>
+<p>Manage execution data records. Inspect: displays the unpublished records currently in the cache. Publish: publishes contents of cache to Zenodo as a public data set. Requires a Zenodo access token, see <a class="reference external" href="http://developers.zenodo.org/#authentication">http://developers.zenodo.org/#authentication</a>. Delete: remove one or more records from the cache.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Named Arguments">
+<h2>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd>--help, -h</kbd></dt>
+<dd><p>show this help message and exit</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="data-delete">
+<h2><strong>data delete</strong><a class="headerlink" href="#data-delete" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">bosh</span> <span class="n">data</span> <span class="n">delete</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="nb">int</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments">
+<h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>-f, --file</kbd></dt>
+<dd><p>Filename of record to delete.</p>
+</dd>
+<dt><kbd>--no-int, -y</kbd></dt>
+<dd><p>disable interactive input.</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="data-inspect">
+<h2><strong>data inspect</strong><a class="headerlink" href="#data-inspect" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">bosh</span> <span class="n">data</span> <span class="n">inspect</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments">
+<h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>-e, --example</kbd></dt>
+<dd><p>Display example data file contents.</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="data-publish">
+<h2><strong>data publish</strong><a class="headerlink" href="#data-publish" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">bosh</span> <span class="n">data</span> <span class="n">publish</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">a</span> <span class="n">AUTHOR</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span> <span class="n">FILE</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">i</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="nb">int</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span>
+                         <span class="p">[</span><span class="o">--</span><span class="n">sandbox</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">zenodo</span><span class="o">-</span><span class="n">token</span> <span class="n">ZENODO_TOKEN</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">nexus</span><span class="p">]</span>
+                         <span class="p">[</span><span class="o">--</span><span class="n">nexus</span><span class="o">-</span><span class="n">token</span> <span class="n">NEXUS_TOKEN</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">nexus</span><span class="o">-</span><span class="n">org</span> <span class="n">NEXUS_ORG</span><span class="p">]</span>
+                         <span class="p">[</span><span class="o">--</span><span class="n">nexus</span><span class="o">-</span><span class="n">project</span> <span class="n">NEXUS_PROJECT</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="Named Arguments">
+<h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
+<dl class="option-list">
+<dt><kbd>-a, --author</kbd></dt>
+<dd><p>Set the author name for the data set publication. Defaults to anonymous.</p>
+</dd>
+<dt><kbd>-f, --file</kbd></dt>
+<dd><p>Filename of record to publish alone as a data set.</p>
+</dd>
+<dt><kbd>-i, --individually</kbd></dt>
+<dd><p>Publishes all data files in cache as independent data sets, By Default will publish files in bulk data sets.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--no-int, -y</kbd></dt>
+<dd><p>disable interactive input.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>-v, --verbose</kbd></dt>
+<dd><p>print information messages.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--sandbox</kbd></dt>
+<dd><p>publish to Zenodo’s sandbox instead of production server. Recommended for tests.</p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--zenodo-token</kbd></dt>
+<dd><p>Zenodo API token to use for authentication. If not used, token will be read from configuration file or requested interactively.</p>
+</dd>
+<dt><kbd>--nexus</kbd></dt>
+<dd><p>Publish to Nexus instead of Zenodo. Sandbox URL is <a class="reference external" href="https://sandbox.bluebrainnexus.io">https://sandbox.bluebrainnexus.io</a></p>
+<p>Default: False</p>
+</dd>
+<dt><kbd>--nexus-token</kbd></dt>
+<dd><p>Nexus API token to use for authentication.</p>
+</dd>
+<dt><kbd>--nexus-org</kbd></dt>
+<dd><p>Nexus organization to publish to.</p>
+</dd>
+<dt><kbd>--nexus-project</kbd></dt>
+<dd><p>Nexus project to publish to.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="_evaluate.html" class="btn btn-neutral float-right" title="Python API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="_create.html" class="btn btn-neutral float-left" title="Python API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, https://github.com/boutiques/boutiques/
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

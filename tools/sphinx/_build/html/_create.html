@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Python API &mdash; Boutiques https://github.com/boutiques/boutiques/ documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Python API" href="_data.html" />
+    <link rel="prev" title="Python API" href="_bosh.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Boutiques
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Bosh Command-line APIs</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_bosh.html#bosh"><strong>bosh</strong></a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#create"><strong>create</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Positional Arguments">Positional Arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="_data.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_data.html#data"><strong>data</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_evaluate.html#evaluate"><strong>evaluate</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_example.html#example"><strong>example</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_execute.html#execute"><strong>execute</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_exporter.html#exporter"><strong>exporter</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_importer.html#importer"><strong>importer</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_invocation.html#invocation"><strong>invocation</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pprint.html#pprint"><strong>pprint</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_publish.html#publish"><strong>publish</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_pull.html#pull"><strong>pull</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_search.html#search"><strong>search</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_test.html#test"><strong>test</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_validate.html#validate"><strong>validate</strong></a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Boutiques</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Python API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/_create.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="python-api">
+<h1>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h1>
+<dl>
+<dt>usage: Boutiques descriptor creator [-h] [–docker-image DOCKER_IMAGE]</dt><dd><p>[–use-singularity]
+descriptor</p>
+</dd>
+<dt>positional arguments:</dt><dd><p>descriptor            Output file to store descriptor in.</p>
+</dd>
+<dt>optional arguments:</dt><dd><dl class="option-list">
+<dt><kbd><span class="option">-h</span>, <span class="option">--help</span></kbd></dt>
+<dd><p>show this help message and exit</p>
+</dd>
+<dt><kbd><span class="option">--docker-image <var>DOCKER_IMAGE</var></span>, <span class="option">-d <var>DOCKER_IMAGE</var></span></kbd></dt>
+<dd><p>Name of Docker image on DockerHub.</p>
+</dd>
+<dt><kbd><span class="option">--use-singularity</span>, <span class="option">-u</span></kbd></dt>
+<dd><p>When –docker-image is used. Specify to use
+singularity to run it.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div>
+<div class="section" id="create">
+<h1><strong>create</strong><a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">bosh</span> <span class="n">create</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">docker</span><span class="o">-</span><span class="n">image</span> <span class="n">DOCKER_IMAGE</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">use</span><span class="o">-</span><span class="n">singularity</span><span class="p">]</span>
+                   <span class="n">descriptor</span>
+</pre></div>
+</div>
+<div class="section" id="Positional Arguments">
+<h2>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd>descriptor</kbd></dt>
+<dd><p>Output file to store descriptor in.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Named Arguments">
+<h2>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h2>
+<dl class="option-list">
+<dt><kbd>--docker-image, -d</kbd></dt>
+<dd><p>Name of Docker image on DockerHub.</p>
+</dd>
+<dt><kbd>--use-singularity, -u</kbd></dt>
+<dd><p>When –docker-image is used. Specify to use singularity to run it.</p>
+<p>Default: False</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="_data.html" class="btn btn-neutral float-right" title="Python API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="_bosh.html" class="btn btn-neutral float-left" title="Python API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, https://github.com/boutiques/boutiques/
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
