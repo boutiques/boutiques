@@ -4,15 +4,7 @@ import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
 
 
-def mock_get(*args, **kwargs):
-    query = args[0].split("=")[1]
-    query = query[:query.find("&")]
-
-    exact = False
-    if "*" not in query:
-        exact = True
-
-    query = query.replace("*", '')
+def mock_get(query, exact, *args, **kwargs):
     max_results = args[0].split("=")[-1]
 
     # Long description text to test truncation
@@ -41,32 +33,40 @@ def mock_get(*args, **kwargs):
 
 class TestSearch(TestCase):
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_all(self, mocked_get):
+    @mock.patch('requests.get')
+    def test_search_all(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("", False, *args, **kwargs)
         results = bosh(["search"])
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
                          ["ID", "TITLE", "DESCRIPTION",
                           "DOWNLOADS"])
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_query(self, mock_get):
+    @mock.patch('requests.get')
+    def test_search_query(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("Example Tool 5", False, *args, **kwargs)
         results = bosh(["search", "Example Tool 5"])
         self.assertGreater(len(results), 0)
         self.assertIn('Example Tool 5', [d['TITLE'] for d in results])
         self.assertIn('foo-Example Tool 5', [d['TITLE'] for d in results])
         self.assertIn('Example Tool 5-bar', [d['TITLE'] for d in results])
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_exact_match(self, mock_get):
+    @mock.patch('requests.get')
+    def test_search_exact_match(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("Example Tool 5", True, *args, **kwargs)
         results = bosh(["search", "Example Tool 5", "--exact"])
         self.assertGreater(len(results), 0)
         self.assertIn('Example Tool 5', [d['TITLE'] for d in results])
         self.assertNotIn('foo-Example Tool 5', [d['TITLE'] for d in results])
         self.assertNotIn('Example Tool 5-bar', [d['TITLE'] for d in results])
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_verbose(self, mock_get):
+    @mock.patch('requests.get')
+    def test_search_verbose(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("", False, *args, **kwargs)
         results = bosh(["search", "-v"])
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
@@ -75,28 +75,36 @@ class TestSearch(TestCase):
                           "DOI", "SCHEMA VERSION",
                           "CONTAINER", "TAGS"])
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_specify_max_results(self, mock_get):
+    @mock.patch('requests.get')
+    def test_search_specify_max_results(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("boutiques", False, *args, **kwargs)
         results = bosh(["search", "-m", "20"])
         self.assertEqual(len(results), 20)
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_sorts_by_num_downloads(self, mock_get):
+    @mock.patch('requests.get')
+    def test_search_sorts_by_num_downloads(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("boutiques", False, *args, **kwargs)
         results = bosh(["search"])
         downloads = []
         for r in results:
             downloads.append(r["DOWNLOADS"])
         self.assertEqual(sorted(downloads, reverse=True), downloads)
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_truncates_long_text(self, mock_get):
+    @mock.patch('requests.get')
+    def test_search_truncates_long_text(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("boutiques", False, *args, **kwargs)
         results = bosh(["search"])
         for r in results:
             for k, v in r.items():
                 self.assertLessEqual(len(str(v)), 43)
 
-    @mock.patch('requests.get', side_effect=mock_get)
-    def test_search_no_trunc(self, mock_get):
+    @mock.patch('requests.get')
+    def test_search_no_trunc(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("boutiques", False, *args, **kwargs)
         results = bosh(["search", "--no-trunc"])
         has_no_trunc = False
         for r in results:
