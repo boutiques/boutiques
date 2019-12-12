@@ -21,8 +21,8 @@ DEPS = [
          "docopt"
        ]
 
-#if sys.version_info >= (3, 5):
-#    DEPS.append("nexus-sdk")
+if sys.version_info >= (3, 5):
+    DEPS.append("nexus-sdk")
 
 setup(name="boutiques",
       version=VERSION,
