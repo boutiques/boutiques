@@ -69,12 +69,10 @@ def validate_descriptor(json_file, **kwargs):
         # Return the type of a conditional expression's substring
         def getSubstringType(s):
             s = s.strip()
-            if s in schema_types or s == "Integer":
+            if s in schema_types:
                 # Can't realistically distinguish File from String
                 return s if s != "File" else "String"
-            elif re.search(r'^[0-9]+$', s):
-                return "Integer"
-            elif re.search(r'^[0-9]+\.?[0-9]*$', s):
+            elif re.search(r'^[0-9]*\.?[0-9]+$', s):
                 return "Number"
             elif re.search(r'^(True|False|false|true)$', s):
                 return "Flag"
@@ -239,9 +237,7 @@ def validate_descriptor(json_file, **kwargs):
                       not keyword.iskeyword(s[1]) and
                       s[1].isalnum() and not s[1].isdigit()]:
                 if s[1] in [i['id'] for i in descriptor['inputs']]:
-                    splitExp[s[0]] = "Integer" if\
-                        'integer' in inById(s[1]) and\
-                        inById(s[1])['integer'] else inById(s[1])['type']
+                    splitExp[s[0]] = inById(s[1])['type']
             # Check if the conditional expression is valid
             if not isValidConditionalExp(" ".join(splitExp)):
                 errors += [msg_template.format(templateKey)]
