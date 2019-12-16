@@ -16,7 +16,7 @@ from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info, print_warning
 from boutiques.dataHandler import getDataCacheDir
-from boutiques.util.utils import extractFileName, loadJson
+from boutiques.util.utils import extractFileName, loadJson, conditionalExpFormat
 
 
 class ExecutorOutput():
@@ -1075,24 +1075,6 @@ class LocalExecutor(object):
             self.out_dict[outputId] = outputFileName
 
     def _getCondPathTemplateExp(self, templateKey):
-        def conditionalExpFormat(s):
-            # ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
-            # "(opt1<=10.1)" becomes " ( opt1 <= 10.1 ) "
-            cleanedExpression = ""
-            idx = 0
-            while idx < len(s):
-                c = s[idx]
-                if c in ['=', '!', '<', '>']:
-                    cleanedExpression += " {0}{1}".format(
-                        c, "=" if s[idx+1] == "=" else " ")
-                    idx += 1
-                elif c in ['(', ')']:
-                    cleanedExpression += " {0} ".format(c)
-                else:
-                    cleanedExpression += c
-                idx += 1
-            return cleanedExpression
-
         splitExp = conditionalExpFormat(templateKey).split()
         parsedExp = []
         for word in [word.strip() for word in splitExp if len(word) > 0]:

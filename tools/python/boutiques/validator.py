@@ -7,7 +7,7 @@ import simplejson as json
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
-from boutiques.util.utils import loadJson
+from boutiques.util.utils import loadJson, conditionalExpFormat
 from boutiques.logger import raise_error, print_info
 
 
@@ -23,13 +23,16 @@ def validate_descriptor(json_file, **kwargs):
     """
     path, fil = op.split(bfile)
     schema_file = op.join(path, "schema", "descriptor.schema.json")
-    allowed_keywords = ['and', 'or', 'false', 'true']
-    allowed_comparators = ['==', '!=', '<', '>', '<=', '>=']
-    schema_types = ["Number", "Flag", "String", "File"]
 
     # Load schema
     with open(schema_file) as fhandle:
         schema = json.load(fhandle)
+
+    # Load input types according to the schema
+    schema_types = schema['properties']['inputs'][
+        'items']['properties']['type']['enum']
+    allowed_keywords = ['and', 'or', 'false', 'true']
+    allowed_comparators = ['==', '!=', '<', '>', '<=', '>=']
 
     # Load descriptor
     descriptor = loadJson(json_file)
@@ -62,30 +65,15 @@ def validate_descriptor(json_file, **kwargs):
             return descriptor["inputs"][inputGet("id").index(i)]
         return {}
 
-    def conditionalExpFormat(s):
-        # ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
-        # "(opt1<=10.1)" becomes " ( opt1 <= 10.1 ) "
-        cleanedExpression = ""
-        idx = 0
-        while idx < len(s):
-            c = s[idx]
-            if c in ['=', '!', '<', '>']:
-                cleanedExpression += " {0}{1}".format(
-                    c, "=" if s[idx+1] == "=" else " ")
-                idx += 1
-            elif c in ['(', ')']:
-                cleanedExpression += " {0} ".format(c)
-            else:
-                cleanedExpression += c
-            idx += 1
-        return cleanedExpression
-
     def isValidConditionalExp(exp):
         # Return the type of a conditional expression's substring
         def getSubstringType(s):
             s = s.strip()
-            if s in schema_types:
-                return s
+            if s in schema_types or s == "Integer":
+                # Can't realistically distinguish File from String
+                return s if s != "File" else "String"
+            elif re.search(r'^[0-9]+$', s):
+                return "Integer"
             elif re.search(r'^[0-9]+\.?[0-9]*$', s):
                 return "Number"
             elif re.search(r'^(True|False|false|true)$', s):
@@ -251,8 +239,10 @@ def validate_descriptor(json_file, **kwargs):
                       not keyword.iskeyword(s[1]) and
                       s[1].isalnum() and not s[1].isdigit()]:
                 if s[1] in [i['id'] for i in descriptor['inputs']]:
-                    splitExp[s[0]] = inById(s[1])['type']
-
+                    splitExp[s[0]] = "Integer" if\
+                        'integer' in inById(s[1]) and\
+                        inById(s[1])['integer'] else inById(s[1])['type']
+            # Check if the conditional expression is valid
             if not isValidConditionalExp(" ".join(splitExp)):
                 errors += [msg_template.format(templateKey)]
 
