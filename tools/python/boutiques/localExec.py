@@ -878,11 +878,9 @@ class LocalExecutor(object):
             if self.debug:
                 print_info("Input: " + str(self.in_dict))
             # Check results (as much as possible)
-            tempInvoc = "generatedInvocations.json"
-            with open(tempInvoc, 'w+') as fhandle:
-                fhandle.write(json.dumps(self.in_dict))
             try:
-                boutiques.invocation(self.desc_path, "-i", tempInvoc)
+                boutiques.invocation(
+                    self.desc_path, "-i", json.dumps(self.in_dict))
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception as e:  # Avoid BaseExceptions like SystemExit
@@ -891,10 +889,6 @@ class LocalExecutor(object):
                 for err in self.errs:
                     sys.stderr.write("\t" + str(err) + "\n")
                 raise e  # Pass on (throw) the caught exception
-            finally:
-                # remove invocation generated for validation
-                if os.path.exists(tempInvoc):
-                    os.remove(tempInvoc)
             # Add new command line
             self.cmd_line.append(self._generateCmdLineFromInDict())
 
@@ -928,11 +922,9 @@ class LocalExecutor(object):
         # if no value has been given
         addDefaultValues(self.desc_dict, self.in_dict)
         # Check results (as much as possible)
-        tempInvoc = "generatedInvocations.json"
-        with open(tempInvoc, 'w+') as fhandle:
-            fhandle.write(json.dumps(self.in_dict))
         try:
-            boutiques.invocation(self.desc_path, "-i", tempInvoc)
+            boutiques.invocation(
+                self.desc_path, "-i", json.dumps(self.in_dict))
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write("An error occurred in validation\n"
                              "Previously saved issues\n")
@@ -940,10 +932,6 @@ class LocalExecutor(object):
                 # Write any errors we found
                 sys.stderr.write("\t" + str(err) + "\n")
             raise  # Raise the exception that caused failure
-        finally:
-            # remove invocation generated for validation
-            if os.path.exists(tempInvoc):
-                os.remove(tempInvoc)
         # Build and save output command line (as a single-entry list)
         self.cmd_line = [self._generateCmdLineFromInDict()]
 
