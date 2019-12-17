@@ -39,6 +39,7 @@ class TestExample(TestCase):
 
         self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
 
+    @pytest.mark.skip(reason="Discontinued localexec._validateDict")
     def test_example_internal_validator_false_flag(self):
         descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
                                                  'example-invocation/'
