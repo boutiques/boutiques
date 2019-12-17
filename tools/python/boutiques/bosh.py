@@ -8,7 +8,6 @@ import os.path as op
 import tempfile
 import pytest
 from argparse import ArgumentParser, RawTextHelpFormatter
-from argparse import RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter, MetavarTypeHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
@@ -24,25 +23,15 @@ from boutiques.logger import raise_error
 from tabulate import tabulate
 
 
-def parser_pprint(helptext):
-    parser = ArgumentParser(helptext, formatter_class=RawTextHelpFormatter)
-    parser.add_argument("descriptor", action="store")
+def parser_pprint():
+    parser = ArgumentParser("Boutiques pretty-print for generating help text")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor.")
     return parser
 
 
 def pprint(*params):
-    """
-    Boutiques pretty-print for generating help text
-
-    usage: bosh pprint [-h] descriptor
-
-    positional arguments:
-        descriptor  The boutiques descriptor
-
-    optional arguments:
-        -h, --help  Show this help message and exit
-    """
-    parser = parser_pprint(__doc__)
+    parser = parser_pprint()
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import PrettyPrinter
@@ -52,7 +41,7 @@ def pprint(*params):
     return prettyclass.docstring
 
 
-pprint.__doc__ = parser_pprint.__doc__
+pprint.__doc__ = parser_pprint().format_usage()
 
 
 def parser_create():
@@ -79,6 +68,9 @@ def create(*params):
     return None
 
 
+create.__doc__ = parser_create().format_help()
+
+
 def parser_validate():
     parser = ArgumentParser("Boutiques descriptor validator")
     parser.add_argument("descriptor", action="store",
@@ -102,6 +94,9 @@ def validate(*params):
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
+
+
+validate.__doc__ = parser_validate().format_help()
 
 
 def parser_execute():
@@ -295,6 +290,12 @@ def execute(*params):
                               0, "", [], [], "", "", "hide")
 
 
+execute.__doc__ = parser_execute().format_help() + "\n\n"
+execute.__doc__ += parser_executeLaunch().format_help() + "\n\n"
+execute.__doc__ += parser_executeSimulate().format_help() + "\n\n"
+execute.__doc__ += parser_executePrepare().format_help()
+
+
 def parser_importer():
     parser = ArgumentParser("Imports old descriptor or BIDS app or CWL"
                             " descriptor to spec.")
@@ -334,6 +335,9 @@ def importer(*params):
         importer.import_docopt(params[1])
 
 
+importer.__doc__ = parser_importer().format_help()
+
+
 def parser_exporter():
     parser = ArgumentParser("Export Boutiques descriptor to other formats.")
     parser.add_argument("type", help="Type of export we are performing.",
@@ -359,6 +363,9 @@ def exporter(*params):
     exporter = Exporter(descriptor, results.identifier)
     if results.type == "carmin":
         exporter.carmin(output)
+
+
+exporter.__doc__ = parser_exporter().format_help()
 
 
 def parser_publish():
@@ -410,6 +417,9 @@ def publish(*params):
         return publisher.doi
 
 
+publish.__doc__ = parser_publish().format_help()
+
+
 def parser_invocation():
     parser = ArgumentParser("Creates invocation schema and validates"
                             " invocations. Uses descriptor's invocation"
@@ -448,9 +458,12 @@ def invocation(*params):
         validateSchema(invSchema, data)
 
 
+invocation.__doc__ = parser_invocation().format_help()
+
+
 def parser_evaluate():
-    parser = ArgumentParser("Evaluates parameter values for a descriptor"
-                            " and invocation")
+    parser = ArgumentParser("Evaluates parameter values for a descriptor "
+                            "and invocation")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
@@ -484,6 +497,9 @@ def evaluate(*params):
     for query in result.query:
         query_results += [evaluateEngine(executor, query)]
     return query_results[0] if len(query_results) == 1 else query_results
+
+
+evaluate.__doc__ = parser_evaluate().format_help()
 
 
 def parser_test():
@@ -521,6 +537,9 @@ def test(*params):
     return pytest.main([test_path, "--descriptor", result.descriptor])
 
 
+test.__doc__ = parser_test().format_help()
+
+
 def parser_search():
     parser = ArgumentParser("Search Zenodo for Boutiques descriptors. "
                             "When no term is supplied, will search for "
@@ -553,8 +572,11 @@ def search(*params):
     return searcher.search()
 
 
+search.__doc__ = parser_search().format_help()
+
+
 def parser_example():
-    parser = ArgumentParser("Generates example invocation from a valid"
+    parser = ArgumentParser("Generates example invocation from a valid "
                             "descriptor")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, "
@@ -583,6 +605,9 @@ def example(*params):
     return json.dumps(executor.in_dict, indent=4, sort_keys=True)
 
 
+example.__doc__ = parser_example().format_help()
+
+
 def parser_pull():
     parser = ArgumentParser("Ensures that Zenodo descriptors are locally "
                             "cached, downloading them if needed.")
@@ -606,6 +631,9 @@ def pull(*params):
     from boutiques.puller import Puller
     puller = Puller(result.zids, result.verbose, result.sandbox)
     return puller.pull()
+
+
+pull.__doc__ = parser_pull().format_help()
 
 
 def parser_data():
@@ -715,6 +743,12 @@ def data(*params):
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
         return dataHandler.delete(results.file, results.no_int)
+
+
+data.__doc__ = parser_data().format_help() + "\n\n"
+data.__doc__ += parser_dataInspect().format_help() + "\n\n"
+data.__doc__ += parser_dataPublish().format_help() + "\n\n"
+data.__doc__ += parser_dataDelete().format_help()
 
 
 def parser_bosh():
@@ -863,3 +897,6 @@ def bosh(args=None):
                 print(e)
             return 99  # Note: this conflicts with tool error codes.
         raise e
+
+
+bosh.__doc__ = parser_bosh().format_help()

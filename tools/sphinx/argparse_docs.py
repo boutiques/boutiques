@@ -1,4 +1,5 @@
 import simplejson as json
+import subprocess
 import boutiques
 
 
@@ -12,6 +13,9 @@ def CreateBoshDocs():
     def createDocsPage(path, docString):
         with open(path, "w+") as page:
             page.write(docString)
+
+    def getApiDocs(api):
+        return getattr(boutiques, api).__doc__
 
     # Generate a structure to represent bosh APIs and subAPIs
     def GenerateApiTree(boshFileText, ):
@@ -72,6 +76,9 @@ def CreateBoshDocs():
                 apiNames[api][subApi],
                 subApi if subApi == "bosh" else "bosh " + subApi)
             docString += "\n" + subDocString
+        docString += "\nPython API\n{0}\n".format('-'*10)
+        docString += ("\n.. autofunction:: boutiques.{0}"
+                      "\n".format(api))
         # Create a RST page per api
         createDocsPage("_{0}.rst".format(api), docString)
     # Create index RST page
