@@ -1,4 +1,4 @@
 
 .. toctree::
-    :caption: Bosh Command-line APIs
+    :caption: Bosh tool documentation
     :maxdepth: 1

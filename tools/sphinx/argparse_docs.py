@@ -69,16 +69,22 @@ def CreateBoshDocs():
             headerType = "-" if subApi != api else "="
             subDocString += '{0}\n'.format(headerType*(len(subApi) + 4))
             # Define doc block by sub-command
+            toolName = subApi if subApi == "bosh" else "bosh " + subApi
+            subDocString += "\nCommand-line tool\n{0}\n".format('^'*19) if\
+                subApi == api else ""
             subDocString += ("\n.. argparse::"
                              "\n    :module: bosh"
                              "\n    :func: {0}"
-                             "\n    :prog: {1}\n").format(
-                apiNames[api][subApi],
-                subApi if subApi == "bosh" else "bosh " + subApi)
+                             "\n    :prog: {1}\n").format(apiNames[api][subApi],
+                                                          toolName)
             docString += "\n" + subDocString
-        docString += "\nPython API\n{0}\n".format('-'*10)
-        docString += ("\n.. autofunction:: boutiques.{0}"
-                      "\n".format(api))
+
+        subDocString = "\n{0}\n\nPython API\n{1}\n".format('-'*10, '^'*14)
+        subDocString += ("\n:boutiques.{0}(\*params):"
+                            "\n   Refer to the `Command-line tool`_ "
+                            "section above\n").format(api)
+        docString += "\n" + subDocString
+
         # Create a RST page per api
         createDocsPage("_{0}.rst".format(api), docString)
     # Create index RST page
