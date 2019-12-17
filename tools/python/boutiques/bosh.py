@@ -8,6 +8,7 @@ import os.path as op
 import tempfile
 import pytest
 from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import RawDescriptionHelpFormatter, ArgumentDefaultsHelpFormatter, MetavarTypeHelpFormatter
 from jsonschema import ValidationError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
@@ -23,15 +24,25 @@ from boutiques.logger import raise_error
 from tabulate import tabulate
 
 
-def parser_pprint():
-    parser = ArgumentParser("Boutiques pretty-print for generating help text")
-    parser.add_argument("descriptor", action="store",
-                        help="The Boutiques descriptor.")
+def parser_pprint(helptext):
+    parser = ArgumentParser(helptext, formatter_class=RawTextHelpFormatter)
+    parser.add_argument("descriptor", action="store")
     return parser
 
 
-def prettyprint(*params):
-    parser = parser_pprint()
+def pprint(*params):
+    """
+    Boutiques pretty-print for generating help text
+
+    usage: bosh pprint [-h] descriptor
+
+    positional arguments:
+        descriptor  The boutiques descriptor
+
+    optional arguments:
+        -h, --help  Show this help message and exit
+    """
+    parser = parser_pprint(__doc__)
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import PrettyPrinter
@@ -39,6 +50,9 @@ def prettyprint(*params):
     prettyclass = PrettyPrinter(desc)
 
     return prettyclass.docstring
+
+
+pprint.__doc__ = parser_pprint.__doc__
 
 
 def parser_create():
@@ -813,7 +827,7 @@ def bosh(args=None):
             out = test(*params)
             return bosh_return(out)
         elif func == "pprint":
-            out = prettyprint(*params)
+            out = pprint(*params)
             return bosh_return(out)
         elif func == "search":
             out = search(*params)
