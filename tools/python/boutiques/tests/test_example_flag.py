@@ -40,6 +40,7 @@ class TestExampleFlag(TestCase):
         self.assertEqual(ret.shell_command.replace("  ", " ").strip(),
                          "/bin/true -b")
 
+    @pytest.mark.skip(reason="Discontinued localexec._validateDict")
     def test_example_flag_4(self):
         self.maxDiff = None
         test_desc = os.path.join(
