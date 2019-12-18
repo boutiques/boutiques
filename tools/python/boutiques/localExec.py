@@ -16,7 +16,7 @@ from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info, print_warning
 from boutiques.dataHandler import getDataCacheDir
-from boutiques.util.utils import extractFileName, loadJson
+from boutiques.util.utils import extractFileName, loadJson, conditionalExpFormat
 
 
 class ExecutorOutput():
@@ -438,6 +438,9 @@ class LocalExecutor(object):
                 try:
                     os.mkdir(lockDir)
                 except OSError:
+                    print_info("Another process seems to be pulling the "
+                               "image ({} exists), sleeping 5 seconds"
+                               .format(lockDir))
                     time.sleep(5)
                 else:
                     try:
@@ -501,20 +504,25 @@ class LocalExecutor(object):
         if "SINGULARITY_PULLFOLDER" in os.environ:
             del os.environ["SINGULARITY_PULLFOLDER"]
 
-    def _isDockerInstalled(self):
-        return not subprocess.Popen("type docker 1>/dev/null",
+    def _isCommandInstalled(self, command):
+        return not subprocess.Popen("type {} &>/dev/null".format(command),
                                     shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
                                   forceDocker=False):
-        if (self._isDockerInstalled() and
+        if (self._isCommandInstalled('docker') and
                 (conType == 'docker' and not forceSing or
                  forceDocker)):
             return "docker"
-        else:
+
+        if self._isCommandInstalled('singularity'):
             return "singularity"
+
+        raise_error(ExecutorError, ("Could not find any container engine. " +
+                                    "Make sure that Docker or Singularity " +
+                                    "is installed."))
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
@@ -1021,73 +1029,30 @@ class LocalExecutor(object):
         if not hasattr(self, 'out_dict'):
             # a dictionary that will contain the output file names
             self.out_dict = {}
-        for outputId in [x['id'] for x in self.outputs
-                         if 'path-template' in x]:
-            if outputId in list(self.out_dict.keys()):
-                outputFileName = self.out_dict[outputId]
-            else:
-                outputFileName = self.safeGet(outputId, 'path-template')
-            stripped_extensions = self.safeGet(
-                                        outputId,
-                                        "path-template-stripped-extensions")
-            if stripped_extensions is None:
-                stripped_extensions = []
-            se = stripped_extensions  # Renaming variable to save space
-            # We keep the unfound keys because they will be
-            # substituted in a second call to the method in case
-            # they are output keys
-            outputFileName = self._rkit(outputFileName,
-                                        use_flags=False,
-                                        unfound_keys="keep",
-                                        stripped_extensions=se,
-                                        is_output=True,
-                                        escape_special_chars=False)
+        for outputId, isPathTemplate in [(x['id'], 'path-template' in x)
+                                         for x in self.outputs]:
+            if isPathTemplate:
+                if outputId in list(self.out_dict.keys()):
+                    outputFileName = self.out_dict[outputId]
+                else:
+                    outputFileName = self.safeGet(outputId, 'path-template')
 
-            if self.safeGet(outputId, 'uses-absolute-path'):
-                outputFileName = os.path.abspath(outputFileName)
-            self.out_dict[outputId] = outputFileName
-
-        # if 'conditional-path-template' in outputItem
-        # (key=conditions, value=path)
-        # Initialize file name with path template or existing value
-        for outputId in [x['id'] for x in self.outputs
-                         if 'conditional-path-template' in x]:
-
-            for boolObj in self.safeGet(outputId, 'conditional-path-template'):
-                # Surround expression chars with space
-                # Then split by space to isolate ids
-                boolExp = list(boolObj)[0]
-                splitExp = "".join(
-                    [c if c.isalnum() or c == "_" else
-                     " {0} ".format(c) for c in boolExp]).split(" ")
-                parsedExp = []
-                for word in [word.strip() for word in splitExp]:
-                    all_ids = [i['id'] for i in (self.inputs + self.outputs)]
-                    # Substitute boolean expression key by its value
-                    in_out_dict = self.in_dict.copy()
-                    in_out_dict.update(self.out_dict)
-                    if word in in_out_dict:
-                        value = "{0}".format(in_out_dict[word])
-                        if value.replace(".", "").replace("-", "").isdigit():
-                            parsedExp.append(in_out_dict[word])
-                        else:
-                            parsedExp.append("\"{0}\"".format(value))
-                    # Boolean expression key is not chosen (optional input),
-                    # therefore expression is false
-                    elif word in all_ids:
-                        parsedExp = ["False"]
+            # if 'conditional-path-template' in outputItem
+            # (key=conditions, value=path)
+            # Initialize file name with path template or existing value
+            elif not isPathTemplate:
+                for templateObj in self.safeGet(outputId,
+                                                'conditional-path-template'):
+                    templateKey = list(templateObj.keys())[0]
+                    condition = self._getCondPathTemplateExp(templateKey)
+                    # If condition is true, set fileName
+                    # Stop checking (if-elif...)
+                    if condition == "default":
+                        outputFileName = templateObj["default"]
                         break
-                    # Word is an expression char, just append it
-                    else:
-                        parsedExp.append(word)
-                # If expression is true, set fileName
-                # Stop checking (if-elif...)
-                if " ".join("{0}".format(w) for w in parsedExp) == "default":
-                    outputFileName = boolObj["default"]
-                    break
-                elif eval(" ".join("{0}".format(w) for w in parsedExp)):
-                    outputFileName = boolObj[boolExp]
-                    break
+                    elif eval(condition):
+                        outputFileName = templateObj[templateKey]
+                        break
 
             stripped_extensions = self.safeGet(
                                         outputId,
@@ -1108,6 +1073,30 @@ class LocalExecutor(object):
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
+
+    def _getCondPathTemplateExp(self, templateKey):
+        splitExp = conditionalExpFormat(templateKey).split()
+        parsedExp = []
+        for word in [word.strip() for word in splitExp if len(word) > 0]:
+            all_ids = [i['id'] for i in (self.inputs + self.outputs)]
+            # Substitute boolean expression key by its value
+            in_out_dict = self.in_dict.copy()
+            in_out_dict.update(self.out_dict)
+            if word in in_out_dict:
+                value = "{0}".format(in_out_dict[word])
+                if value.replace(".", "").replace("-", "").isdigit():
+                    parsedExp.append(in_out_dict[word])
+                else:
+                    parsedExp.append("\"{0}\"".format(value))
+            # Boolean expression key is not chosen (optional input),
+            # therefore expression is false
+            elif word in all_ids:
+                parsedExp = ["False"]
+                break
+            # Word is an expression char, just append it
+            else:
+                parsedExp.append(word)
+        return " ".join("{0}".format(w) for w in parsedExp)
 
     # Private method to write configuration files
     # Configuration files are output files that have a file-template

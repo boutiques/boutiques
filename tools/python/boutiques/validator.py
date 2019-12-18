@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-import simplejson
+import re
+import keyword
 import os.path as op
 import simplejson as json
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
-from boutiques.util.utils import loadJson
+from boutiques.util.utils import loadJson, conditionalExpFormat
 from boutiques.logger import raise_error, print_info
 
 
@@ -26,6 +27,12 @@ def validate_descriptor(json_file, **kwargs):
     # Load schema
     with open(schema_file) as fhandle:
         schema = json.load(fhandle)
+
+    # Load input types according to the schema
+    schema_types = schema['properties']['inputs'][
+        'items']['properties']['type']['enum']
+    allowed_keywords = ['and', 'or', 'false', 'true']
+    allowed_comparators = ['==', '!=', '<', '>', '<=', '>=']
 
     # Load descriptor
     descriptor = loadJson(json_file)
@@ -57,6 +64,65 @@ def validate_descriptor(json_file, **kwargs):
         if i in inputGet("id"):
             return descriptor["inputs"][inputGet("id").index(i)]
         return {}
+
+    def isValidConditionalExp(exp):
+        # Return the type of a conditional expression's substring
+        def getSubstringType(s):
+            s = s.strip()
+            if s in schema_types:
+                # Can't realistically distinguish File from String
+                return s if s != "File" else "String"
+            elif re.search(r'^[0-9]*\.?[0-9]+$', s):
+                return "Number"
+            elif re.search(r'^(True|False|false|true)$', s):
+                return "Flag"
+            else:
+                return "String"
+
+        # Recursively check boolean expression by replacing variables with
+        # their expected value type [Number, String, File, Flag]
+        brackets, startIdx, endIdx = 0, 0, 0
+        rebuiltExp = ""
+        for idx, c in enumerate(exp):
+            if c == '(':
+                brackets += 1
+                startIdx = idx + 1
+            elif c == ')':
+                brackets -= 1
+                if brackets == 0:
+                    endIdx = idx
+                    isValidSubExp = isValidConditionalExp(exp[startIdx:endIdx])
+                    # Immediately return false if sub expression is not valid
+                    if not isValidSubExp:
+                        return False
+                    else:
+                        rebuiltExp += "{0}".format(isValidSubExp)
+            elif brackets == 0:
+                rebuiltExp += "{0}".format(c)
+        rebuiltExp = rebuiltExp.strip()
+
+        # If there are no more parentheses, check if sub-expression is valid
+        # rebuiltExp should only be two values separated by operator: x >= y
+        # or values separated by 'AND'/'OR': x and y and z
+        if '(' not in rebuiltExp and ')' not in rebuiltExp:
+            expElements = rebuiltExp.split()
+            for idx, e in enumerate(expElements):
+                e = e.strip()
+                # Compare types of elements neighbouring allowed_comparators
+                if e in allowed_comparators and\
+                   getSubstringType(expElements[idx-1]) !=\
+                   getSubstringType(expElements[idx+1]):
+                    return False
+                # Check if keyword element is part of allowed keywords
+                if keyword.iskeyword(e) and e.lower() not in allowed_keywords:
+                    return False
+                # Check elements neighbouring and/or keywords are valid words
+                if e.lower() in ["and", "or"] and (
+                   expElements[idx-1] not in schema_types + ["True", "False"]
+                   or
+                   expElements[idx+1] not in schema_types + ["True", "False"]):
+                    return False
+        return True
 
     # Begin looking at Boutiques-specific failures
     errors = []
@@ -125,15 +191,56 @@ def validate_descriptor(json_file, **kwargs):
     if 'output-files' in descriptor:
         # Verify output file with non-optional conditional file template
         # contains a default path
-        msg_template = ("OutputError: \"{0}\": Non-optional output-file with "
+        msg_template = ("OutputError: \"{0}\". Non-optional output-file with "
                         "conditional-path-template must contain "
                         "\"default\" path-template.")
+
+        cond_outfiles_keys = []
         for outF in [o for o in descriptor["output-files"] if
                      'conditional-path-template' in o and not o['optional']]:
             out_keys = [list(obj.keys())[0] for obj in
                         outF['conditional-path-template']]
+            cond_outfiles_keys.extend(out_keys)
             if 'default' not in out_keys:
                 errors += [msg_template.format(outF['id'])]
+
+            # Verify output keys contain only one default condition
+            if out_keys.count('default') > 1:
+                errors += ["OutputError: \"{0}\". Only one \"default\" "
+                           "condition is permitted in a "
+                           "conditional-path-template.".format(outF['id'])]
+
+        # Verify output key contains variables that correspond to input IDs
+        # or is 'default'
+        msg_template = ("OutputError: \"{0}\" contains non-python keyword and "
+                        "non-ID string: \"{1}\"")
+        for templateKey in cond_outfiles_keys:
+            splitExp = conditionalExpFormat(templateKey).split()
+            if splitExp[0] == 'default' and len(splitExp) == 1:
+                continue
+            for s in [s for s in splitExp if not keyword.iskeyword(s) and
+                      s.isalnum() and not s.isdigit() and
+                      s not in [i['id'] for i in descriptor['inputs']] and
+                      s not in [i['id'] for i in descriptor['output-files']]]:
+                errors += [msg_template.format(outF['id'], s)]
+
+        # Verify variable is being evaluated against a value of the same type
+        msg_template = ("OutputError: Conditional output \"{0}\" contains "
+                        "invalid conditional expression. Verify arguments' "
+                        "type and allowed keywords in expression.")
+        for templateKey in cond_outfiles_keys:
+            splitExp = conditionalExpFormat(templateKey).split()
+            if splitExp[0] == 'default' and len(splitExp) == 1:
+                continue
+            # Replace variable by it's type according to the descriptor schema
+            for s in [s for s in enumerate(splitExp) if
+                      not keyword.iskeyword(s[1]) and
+                      s[1].isalnum() and not s[1].isdigit()]:
+                if s[1] in [i['id'] for i in descriptor['inputs']]:
+                    splitExp[s[0]] = inById(s[1])['type']
+            # Check if the conditional expression is valid
+            if not isValidConditionalExp(" ".join(splitExp)):
+                errors += [msg_template.format(templateKey)]
 
     # Verify inputs
     for inp in descriptor["inputs"]:

@@ -438,10 +438,16 @@ class TestExample1(BaseTest):
         self.assertIn("Local copy", ret.container_location)
         self.assertIn("docker run", ret.container_command)
 
+    def docker_not_installed(command):
+        if command == 'docker':
+            return False
+        else:
+            return True
+
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
-    @mock.patch('boutiques.localExec.LocalExecutor._isDockerInstalled',
-                return_value=False)
+    @mock.patch('boutiques.localExec.LocalExecutor._isCommandInstalled',
+                side_effect=docker_not_installed)
     def test_example1_exec_docker_not_installed(self,
                                                 mock_docker_not_installed):
         self.clean_up()
@@ -459,24 +465,6 @@ class TestExample1(BaseTest):
         self.assertIn("Local (boutiques-example1-test.simg)",
                       ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
-
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
-    def test_example1_conditional_outputFiles_created(self):
-        base_path = os.path.join(os.path.split(bfile)[0], "tests/output_files/")
-        ex = bosh.execute("launch",
-                          os.path.join(
-                              base_path,
-                              "example1_docker_conditional_outputFiles.json"),
-                          os.path.join(
-                              base_path,
-                              "example1_conditional_invoc.json"),
-                          "--skip-data-collection")
-        self.assertEqual("TEST.one.three.two_out1.txt (out1, Required)",
-                         str(ex.output_files[0]))
-        self.assertEqual("TEST_string1.txt (out2, Required)",
-                         str(ex.output_files[1]))
-        self.assertEqual([], ex.missing_files)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")

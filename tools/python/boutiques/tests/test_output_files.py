@@ -19,7 +19,8 @@ class TestOutputFiles(TestCase):
         test_desc_path = op.join(
             op.split(bfile)[0],
             "tests/output_files/test_desc.json")
-        os.remove(test_desc_path)
+        if os.path.exists(test_desc_path):
+            os.remove(test_desc_path)
 
     def test_output_conditional_path_template_validity(self):
         base_path = op.join(op.split(bfile)[0], "tests/output_files/")
@@ -103,7 +104,67 @@ class TestOutputFiles(TestCase):
         validate_missing_default = subprocess.Popen(command, shell=True,
                                                     stdout=subprocess.PIPE)
         process_output = validate_missing_default.stdout.read()
-        self.assertIn("OutputError: \"out2\": Non-optional output-file "
-                      "with conditional-path-template "
-                      "must contain \"default\" path-template.",
+        self.assertIn("OutputError: \"out2\". Non-optional output-file with "
+                      "conditional-path-template must contain "
+                      "\"default\" path-template.",
+                      process_output.decode())
+
+        # Test duplicate default condition in CPT
+        test_json['output-files'][0]['conditional-path-template'].extend(
+            [{"default": "[PARAM2]_default.txt"},
+             {"default": "[PARAM1]_default.txt"}])
+        with open(test_desc_path, 'w+') as test_desc:
+            test_desc.write(json.dumps(test_json))
+        validate_duplicate_default = subprocess.Popen(command, shell=True,
+                                                      stdout=subprocess.PIPE)
+        process_output = validate_duplicate_default.stdout.read()
+        self.assertIn("OutputError: \"out2\". Only one \"default\" condition "
+                      "is permitted in a conditional-path-template.",
+                      process_output.decode())
+
+    def test_conditional_path_template_expressions(self):
+        base_path = op.join(op.split(bfile)[0], "tests/output_files/")
+        base_desc_path = op.join(base_path, "test_fixANDcond_output_desc.json")
+        test_desc_path = op.join(base_path, "test_desc.json")
+
+        template_desc_json = {}
+        with open(base_desc_path, 'r') as base_desc:
+            template_desc_json = json.load(base_desc)
+
+        test_json = {k: template_desc_json[k] for k in template_desc_json if
+                     k is not 'output-files'}
+        output_list = template_desc_json['output-files']
+
+        # Test non-optional conditional-path-template with wrong ID name
+        test_json['output-files'] = [out for out in output_list if
+                                     'path-template' not in out]
+        test_json['output-files'][0]['conditional-path-template'].append(
+            {"bob": "invalid.txt"})
+        with open(test_desc_path, 'w+') as test_desc:
+            test_desc.write(json.dumps(test_json))
+        command = ("bosh validate " + test_desc_path)
+        validate_wrong_ID = subprocess.Popen(command, shell=True,
+                                             stdout=subprocess.PIPE)
+        process_output = validate_wrong_ID.stdout.read()
+        self.assertIn("OutputError: \"out2\" contains non-python "
+                      "keyword and non-ID string: \"bob\"",
+                      process_output.decode())
+
+    def test_conditional_path_template_comparison_types(self):
+        base_path = op.join(op.split(bfile)[0], "tests/output_files/")
+        test_desc_path = op.join(
+            base_path, "test_cond_output_invalid_types.json")
+
+        command = ("bosh validate " + test_desc_path)
+        validate_wrong_ID = subprocess.Popen(command, shell=True,
+                                             stdout=subprocess.PIPE)
+        process_output = validate_wrong_ID.stdout.read()
+        self.assertIn("\"opt1 and (opt2 > \"10.00\")\" contains "
+                      "invalid conditional expression.",
+                      process_output.decode())
+        self.assertIn("\"opt1 and opt2 and (opt1 == \"False\")\" contains "
+                      "invalid conditional expression.",
+                      process_output.decode())
+        self.assertIn("\"param1 < 10.0\" contains "
+                      "invalid conditional expression.",
                       process_output.decode())
