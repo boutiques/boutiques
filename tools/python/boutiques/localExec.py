@@ -17,8 +17,7 @@ from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info, print_warning
 from boutiques.dataHandler import getDataCacheDir
-from boutiques.util.utils import extractFileName, loadJson
-from boutiques.validator import validate_descriptor
+from boutiques.util.utils import extractFileName, loadJson, conditionalExpFormat
 
 
 class ExecutorOutput():
@@ -1033,12 +1032,31 @@ class LocalExecutor(object):
         if not hasattr(self, 'out_dict'):
             # a dictionary that will contain the output file names
             self.out_dict = {}
-        for outputId in [x['id'] for x in self.outputs]:
+        for outputId, isPathTemplate in [(x['id'], 'path-template' in x)
+                                         for x in self.outputs]:
+            if isPathTemplate:
+                if outputId in list(self.out_dict.keys()):
+                    outputFileName = self.out_dict[outputId]
+                else:
+                    outputFileName = self.safeGet(outputId, 'path-template')
+
+            # if 'conditional-path-template' in outputItem
+            # (key=conditions, value=path)
             # Initialize file name with path template or existing value
-            if outputId in list(self.out_dict.keys()):
-                outputFileName = self.out_dict[outputId]
-            else:
-                outputFileName = self.safeGet(outputId, 'path-template')
+            elif not isPathTemplate:
+                for templateObj in self.safeGet(outputId,
+                                                'conditional-path-template'):
+                    templateKey = list(templateObj.keys())[0]
+                    condition = self._getCondPathTemplateExp(templateKey)
+                    # If condition is true, set fileName
+                    # Stop checking (if-elif...)
+                    if condition == "default":
+                        outputFileName = templateObj["default"]
+                        break
+                    elif eval(condition):
+                        outputFileName = templateObj[templateKey]
+                        break
+
             stripped_extensions = self.safeGet(
                                         outputId,
                                         "path-template-stripped-extensions")
@@ -1058,6 +1076,30 @@ class LocalExecutor(object):
             if self.safeGet(outputId, 'uses-absolute-path'):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
+
+    def _getCondPathTemplateExp(self, templateKey):
+        splitExp = conditionalExpFormat(templateKey).split()
+        parsedExp = []
+        for word in [word.strip() for word in splitExp if len(word) > 0]:
+            all_ids = [i['id'] for i in (self.inputs + self.outputs)]
+            # Substitute boolean expression key by its value
+            in_out_dict = self.in_dict.copy()
+            in_out_dict.update(self.out_dict)
+            if word in in_out_dict:
+                value = "{0}".format(in_out_dict[word])
+                if value.replace(".", "").replace("-", "").isdigit():
+                    parsedExp.append(in_out_dict[word])
+                else:
+                    parsedExp.append("\"{0}\"".format(value))
+            # Boolean expression key is not chosen (optional input),
+            # therefore expression is false
+            elif word in all_ids:
+                parsedExp = ["False"]
+                break
+            # Word is an expression char, just append it
+            else:
+                parsedExp.append(word)
+        return " ".join("{0}".format(w) for w in parsedExp)
 
     # Private method to write configuration files
     # Configuration files are output files that have a file-template

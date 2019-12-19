@@ -561,6 +561,20 @@
                         "minLength": 1,
                         "type": "string"
                     },
+                    "conditional-path-template": {
+                        "id": "http://github.com/boutiques/boutiques-schema/output/conditional-path-template",
+                        "description": "List of objects containing boolean statement (Limited python syntax: ==, !=, <, >, <=, >=, and, or) and output file paths relative to the execution directory, assign path of first true boolean statement. May contain input value keys, \"default\" object required if \"optional\" set to True . Example list: \"[{\"[PARAM1] > 8\": \"outputs/[INPUT1].txt\"}, {\"default\": \"outputs/default.txt\"}]\".",
+                        "minLength": 1,
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "propertyNames": {
+                                    "pattern": "^[A-Za-z0-9_><=!)( ]*$"
+                                }
+                            }
+                        }
+                    },
                     "path-template-stripped-extensions": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/path-template-stripped-extensions",
                         "description": "List of file extensions that will be stripped from the input values before being substituted in the path template. Example: [\".nii\",\".nii.gz\"].",
@@ -605,9 +619,17 @@
                 },
                 "required": [
                     "id",
-                    "name",
-                    "path-template"
+                    "name"
                 ],
+                "oneOf":[{
+                    "properties": {
+                        "path-template": {"enum": [true]}
+                    }
+                }, {
+                    "properties": {
+                        "conditional-path-template": {"enum": [true]}
+                    }
+                }],
                 "anyOf": [{
                     "properties": {
                         "file-template": {
@@ -620,8 +642,7 @@
                 }, {
                     "properties": {
                         "file-template": { "enum": [false]} }
-                }
-                         ],
+                }],
                 "dependencies": {
                     "command-line-flag-separator": ["command-line-flag"]
                 },
