@@ -70,7 +70,7 @@ class TestPPrint(TestCase):
     def test_duplcate_flags(self):
         fil = op.join(op.split(bfile)[0],
                       'schema/examples/good_dupFlags.json')
-        prettystring = bosh.prettyprint(fil)
+        prettystring = bosh.pprint(fil)
         self.assertIn("-duplicate", prettystring)
         self.assertIn("-duplicate_DUP1", prettystring)
         self.assertIn("-duplicate_DUP2", prettystring)
