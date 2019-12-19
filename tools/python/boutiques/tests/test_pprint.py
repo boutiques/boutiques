@@ -13,13 +13,13 @@ class TestPPrint(TestCase):
     def test_doesntcrash(self):
         fil = op.join(op.split(bfile)[0],
                       'schema/examples/test_pretty_print.json')
-        prettystring = bosh.prettyprint(fil)
+        prettystring = bosh.pprint(fil)
         self.assertIsInstance(prettystring, string_types)
 
     def test_categories_and_order(self):
         fil = op.join(op.split(bfile)[0],
                       'schema/examples/test_pretty_print.json')
-        prettystring = bosh.prettyprint(fil)
+        prettystring = bosh.pprint(fil)
         i_tl_descs = prettystring.index("Tool name")
         i_con_info = prettystring.index("Container Information")
         i_sugg_res = prettystring.index("Suggested Resources")
@@ -45,7 +45,7 @@ class TestPPrint(TestCase):
     def test_input_optionality_separation(self):
         fil = op.join(op.split(bfile)[0],
                       'schema/examples/test_pretty_print.json')
-        prettystring = bosh.prettyprint(fil)
+        prettystring = bosh.pprint(fil)
         inputs = prettystring.split("=" * 80)[6].split("arguments:")
         positional_inputs = inputs[1]
         optional_inputs = inputs[2]
@@ -58,7 +58,7 @@ class TestPPrint(TestCase):
         self.maxDiff = None
         fil = op.join(op.split(bfile)[0],
                       'schema/examples/test_pretty_print.json')
-        prettystring = bosh.prettyprint(fil)
+        prettystring = bosh.pprint(fil)
         categories = prettystring.split("=" * 80)
         configs = categories[7]
         outputs = categories[8]
