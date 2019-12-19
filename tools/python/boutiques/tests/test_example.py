@@ -39,22 +39,6 @@ class TestExample(TestCase):
 
         self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
 
-    def test_example_internal_validator_false_flag(self):
-        descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
-                                                 'example-invocation/'
-                                                 'example_descriptor.json')
-        invocation = op.join(op.split(bfile)[0], 'schema/examples/'
-                                                 'example-invocation/'
-                                                 'example_invocation.json')
-        command = ("bosh exec simulate -i " + invocation + " " + descriptor)
-
-        process = subprocess.Popen(command, shell=True,
-                                   stderr=subprocess.PIPE)
-        error = process.stderr.read().decode("utf-8")
-
-        self.assertIn("d2 (False) flag is set to true or otherwise omitted",
-                      error)
-
     def test_example_requires_group_complete_x10(self):
         descriptor = op.join(op.split(bfile)[0],
                              'tests/docopt/valid/test_valid.json')
