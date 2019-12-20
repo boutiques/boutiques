@@ -11,9 +11,9 @@ import subprocess
 import time
 import datetime
 import hashlib
+import boutiques
 import os.path as op
 from termcolor import colored
-from boutiques import invocation
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info, print_warning
 from boutiques.dataHandler import getDataCacheDir
@@ -878,7 +878,7 @@ class LocalExecutor(object):
                 print_info("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
-                invocation(self.desc_path, "-i", json.dumps(self.in_dict))
+                boutiques.invocation(self.desc_path, "-i", json.dumps(self.in_dict))
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception as e:  # Avoid BaseExceptions like SystemExit
@@ -921,7 +921,7 @@ class LocalExecutor(object):
         addDefaultValues(self.desc_dict, self.in_dict)
         # Check results (as much as possible)
         try:
-            invocation(self.desc_path, "-i", json.dumps(self.in_dict))
+            boutiques.invocation(self.desc_path, "-i", json.dumps(self.in_dict))
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write("An error occurred in validation\n"
                              "Previously saved issues\n")
