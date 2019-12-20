@@ -41,3 +41,25 @@ def loadJson(userInput, verbose=False):
         return json.loads(userInput)
     except ValueError:
         raise_error(LoadError, e)
+
+
+# Helper function that takes a conditional path template key as input,
+# and outputs a formatted string that isolates variables/values from
+# operators, parentheses, and python keywords with a space.
+# ex: "(opt1>2)" becomes " ( opt1 > 2 ) "
+# "(opt1<=10.1)" becomes " ( opt1 <= 10.1 ) "
+def conditionalExpFormat(s):
+    cleanedExpression = ""
+    idx = 0
+    while idx < len(s):
+        c = s[idx]
+        if c in ['=', '!', '<', '>']:
+            cleanedExpression += " {0}{1}".format(
+                c, "=" if s[idx+1] == "=" else " ")
+            idx += 1
+        elif c in ['(', ')']:
+            cleanedExpression += " {0} ".format(c)
+        else:
+            cleanedExpression += c
+        idx += 1
+    return cleanedExpression
