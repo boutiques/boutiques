@@ -878,7 +878,8 @@ class LocalExecutor(object):
                 print_info("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
-                boutiques.invocation(self.desc_path, "-i", json.dumps(self.in_dict))
+                boutiques.invocation(
+                    self.desc_path, "-i", json.dumps(self.in_dict))
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception as e:  # Avoid BaseExceptions like SystemExit
