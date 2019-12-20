@@ -11,6 +11,7 @@ import subprocess
 import time
 import datetime
 import hashlib
+import boutiques
 import os.path as op
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
@@ -877,7 +878,8 @@ class LocalExecutor(object):
                 print_info("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
-                self._validateDict()
+                boutiques.invocation(
+                    self.desc_path, "-i", json.dumps(self.in_dict))
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception as e:  # Avoid BaseExceptions like SystemExit
@@ -920,7 +922,7 @@ class LocalExecutor(object):
         addDefaultValues(self.desc_dict, self.in_dict)
         # Check results (as much as possible)
         try:
-            self._validateDict()
+            boutiques.invocation(self.desc_path, "-i", json.dumps(self.in_dict))
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write("An error occurred in validation\n"
                              "Previously saved issues\n")
@@ -1158,175 +1160,6 @@ class LocalExecutor(object):
               ('s' if len(self.cmd_line) > 1 else '') + ':')
         for cmd in self.cmd_line:
             print(cmd)
-
-    # Private method for validating input parameters
-    def _validateDict(self):
-        # Holder for errors
-        self.errs = []
-
-        # Return whether s is a proper number; if intCheck is true,
-        # also check if it is an int
-        def isNumber(s, intCheck=False):
-            try:
-                int(s) if intCheck else float(s)
-                return True
-            except ValueError:
-                return False
-        # Check individual inputs
-        for key in self.in_dict:
-            isList = self.safeGet(key, "list")
-            # Get current value and schema descriptor properties
-            val, targ = self.in_dict[key], self.byId(key)
-
-            # A little closure helper to check if input values satisfy
-            # the json descriptor's constraints
-            # Checks whether 'value' is appropriate for parameter
-            # 'input' by running 'isGood' on it
-            # If the input parameter is bad, it adds 'msg' to the list of errors
-            def check(keyname, isGood, msg, value):  # Checks input values
-                # No need to check constraints if they were not specified
-                dontCheck = ((keyname not in list(targ.keys())) or
-                             (targ[keyname] is False))
-                # Keyname = None is a flag to check the type
-                if (keyname is not None) and dontCheck:
-                    return
-                # The input function is used to check whether
-                # the input parameter is acceptable
-                if not isGood(value, keyname):
-                    self.errs.append(key + ' (' + str(value) + ') ' + msg)
-            # The id exists as an input and is not duplicate
-            if len([k for k in self.inputs if k['id'] == key]) != 1:
-                self.errs.append(key+' is an invalid id')
-            # Types are correct
-            if targ["type"] == "Number":
-                # Number type and constraints are not violated
-                # (note the lambda safety checks)
-                for v in (val if isList else [val]):
-                    check('minimum', lambda x, y: float(x) >= targ[y],
-                          "violates minimum value", v)
-                    check('exclusive-minimum',
-                          lambda x, y: float(x) > targ['minimum'],
-                          "violates exclusive min value", v)
-                    check('maximum', lambda x, y: float(x) <= targ[y],
-                          "violates maximum value", v)
-                    check('exclusive-maximum',
-                          lambda x, y: float(x) < targ['maximum'],
-                          "violates exclusive max value", v)
-                    check('integer', lambda x, y: isNumber(x, True),
-                          "violates integer requirement", v)
-                    check(None, lambda x, y: isNumber(x), "is not a number", v)
-            elif self.safeGet(targ['id'], 'value-choices'):
-                # Value is in the list of allowed values
-                if isinstance(val, list):
-                    fn = (lambda x, y: all([x1 in targ[y] for x1 in x]))
-                else:
-                    fn = (lambda x, y: x in targ[y])
-                check('value-choices', fn,
-                      "is not a valid enum choice", val)
-            elif targ["type"] == "Flag":
-                # Should be 'true' or 'false' when lower-cased
-                # (based on our transformations of the input)
-                check(None,
-                      lambda x, y: type(x) == bool,
-                      "is not a valid flag value", val)
-                check(None,
-                      lambda x, y: x,
-                      "flag is set to true or otherwise omitted", val)
-            elif targ["type"] == "File":
-                # Check path-type (absolute vs relative)
-                if not self.forcePathType:
-                    for ftarg in (str(val).split() if isList else [val]):
-                        check('uses-absolute-path',
-                              lambda x, y: os.path.isabs(x),
-                              "is not an absolute path", ftarg)
-                else:
-                    # Replace incorrectly specified paths if desired
-                    replacementFiles = []
-                    launchDir = os.getcwd()
-                    if self.launchDir is not None:
-                        launchDir = self.launchDir
-                    for ftarg in (val if isList else [val]):
-                        # Special case 1: launchdir is specified and we
-                        # want to use absolute path
-                        # Note: in this case, the pwd is mounted as the
-                        # launchdir; we do not attempt to move files if they
-                        # will not be mounted, currently
-                        # That is, specified files that are not in the pwd or a
-                        # subfolder will not be mounted to the container
-                        if (targ.get('uses-absolute-path') is True and
-                           self.launchDir is not None):
-                            # relative path to target, from the pwd
-                            relpath = os.path.relpath(ftarg, os.getcwd())
-                            # absolute path in the container
-                            mountedAbsPath = os.path.join(launchDir, relpath)
-                            replacementFiles.append(
-                                        os.path.abspath(mountedAbsPath))
-                        # If the input uses-absolute-path, replace
-                        # the path with its absolute version
-                        elif targ.get('uses-absolute-path') is True:
-                            replacementFiles.append(os.path.abspath(ftarg))
-                        else:
-                            replacementFiles.append(ftarg)
-                    # Replace old val with the new one
-                    if len(replacementFiles) == 1:
-                        self.in_dict[key] = replacementFiles[0]
-                    else:
-                        self.in_dict[key] = replacementFiles
-            # List length constraints are satisfied
-            if isList:
-                check('min-list-entries',
-                      lambda x, y: len(x) >= targ[y],
-                      "violates min size", val)
-            if isList:
-                check('max-list-entries',
-                      lambda x, y: len(x) <= targ[y],
-                      "violates max size", val)
-        # Required inputs are present
-        for reqId in [v['id'] for v in self.inputs if not v.get('optional')]:
-            if reqId not in list(self.in_dict.keys()):
-                self.errs.append('Required input ' + str(reqId) +
-                                 ' is not present')
-        # Disables/requires is satisfied
-        for givenVal in [v for v in self.inputs
-                         if v['id'] in list(self.in_dict.keys())]:
-            # Check that requirements are present
-            for r in self.reqsOf(givenVal['id']):
-                if r not in list(self.in_dict.keys()):
-                    members = self.safeGrpGet(r, "members")
-                    if not any(m in list(self.in_dict.keys()) for m in members):
-                        self.errs.append('Input ' + str(givenVal['id']) +
-                                         ' is missing requirement '+str(r))
-            for d in (givenVal['disables-inputs']
-                      if 'disables-inputs' in list(givenVal.keys()) else []):
-                # Check if a disabler is present
-                if d in list(self.in_dict.keys()):
-                    self.errs.append('Input ' + str(d) +
-                                     ' should be disabled by ' +
-                                     str(givenVal['id']))
-        # Group one-is-required/mutex is ok
-        for group, mbs in [(x, x["members"]) for x in self.groups]:
-            # Check that the set of parameters in mutually
-            # exclusive groups have at most one member present
-            if (("mutually-exclusive" in list(group.keys())) and
-               group["mutually-exclusive"]):
-                if len(set.intersection(set(mbs),
-                                        set(self.in_dict.keys()))) > 1:
-                    self.errs.append('Group ' + str(group["id"]) +
-                                     ' is supposed to be mutex')
-            # Check that the set of parameters in one-is-required
-            # groups have at least one member present
-            if (("one-is-required" in list(group.keys())) and
-               group["one-is-required"]):
-                if len(set.intersection(set(mbs),
-                                        set(self.in_dict.keys()))) < 1:
-                    self.errs.append('Group ' + str(group["id"]) +
-                                     ' requires one member to be present')
-        # Fast-fail if there was a problem with the input parameters
-        if len(self.errs) != 0:
-            message = "Problems found with prospective input:\n"
-            for err in self.errs:
-                message += ("\t" + err + "\n")
-            raise_error(ExecutorError, message)
 
     # Private method to generate summary object of data
     # collection file containing the tool name and descriptor DOI
