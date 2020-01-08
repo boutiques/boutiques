@@ -1,5 +1,5 @@
 from boutiques.util.utils import loadJson
-from boutiques import validate, execute, prettyprint
+from boutiques import validate, execute, pprint
 import json
 
 
@@ -52,7 +52,7 @@ def function(descriptor):
         list in descriptor help below.
 
 '''.format(f.__name__, f.__name__, descriptor_json['inputs'][0]['id']))
-    doc.append(prettyprint(descriptor))
+    doc.append(pprint(descriptor))
     f.__doc__ = ''.join(doc)
 
     return f

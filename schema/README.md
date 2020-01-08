@@ -1238,13 +1238,14 @@ All items must be of the type:
 |----------|------|----------|
 | `command-line-flag`| string | Optional |
 | `command-line-flag-separator`| string | Optional |
+| `conditional-path-template`| array | Optional |
 | `description`| string | Optional |
 | `file-template`| array | Optional |
 | `id`| string | **Required** |
 | `list`| boolean | Optional |
 | `name`| string | **Required** |
 | `optional`| boolean | Optional |
-| `path-template`| string | **Required** |
+| `path-template`| string | Optional |
 | `path-template-stripped-extensions`| array | Optional |
 | `uses-absolute-path`| boolean | Optional |
 | `value-key`| string | Optional |
@@ -1283,6 +1284,62 @@ Separator used between flags and their arguments. Defaults to a single space.
 
 
 `string`
+
+
+
+
+
+
+
+
+#### conditional-path-template
+
+List of objects containing boolean statement (Limited python syntax: ==, !=, <, >, <=, >=, and, or) and output file paths relative to the execution directory, assign path of first true boolean statement. May contain input value keys, "default" object required if "optional" set to True . Example list: "[{"[PARAM1] > 8": "outputs/[INPUT1].txt"}, {"default": "outputs/default.txt"}]".
+
+`conditional-path-template`
+* is optional
+* type: `object[]`
+
+
+##### conditional-path-template Type
+
+
+Array type: `object[]`
+
+All items must be of the type:
+`object` with following properties:
+
+
+| Property | Type | Required |
+|----------|------|----------|
+| `propertyNames`|  | Optional |
+
+
+
+#### propertyNames
+
+undefined
+
+`propertyNames`
+* is optional
+* type: complex
+
+##### propertyNames Type
+
+Unknown type ``.
+
+```json
+{
+  "pattern": "^[A-Za-z0-9_><=!)( ]*$",
+  "simpletype": "complex"
+}
+```
+
+
+
+
+
+
 
 
 
@@ -1429,7 +1486,7 @@ True if output may not be produced by the tool.
 Describes the output file path relatively to the execution directory. May contain input value keys. Example: "results/[INPUT1]_brain.mnc".
 
 `path-template`
-* is **required**
+* is optional
 * type: `string`
 
 ##### path-template Type

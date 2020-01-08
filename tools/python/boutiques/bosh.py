@@ -23,10 +23,15 @@ from boutiques.logger import raise_error
 from tabulate import tabulate
 
 
-def prettyprint(*params):
+def parser_pprint():
     parser = ArgumentParser("Boutiques pretty-print for generating help text")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
+    return parser
+
+
+def pprint(*params):
+    parser = parser_pprint()
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import PrettyPrinter
@@ -35,7 +40,10 @@ def prettyprint(*params):
     return prettyclass.docstring
 
 
-def create(*params):
+pprint.__doc__ = parser_pprint().format_usage()
+
+
+def parser_create():
     parser = ArgumentParser("Boutiques descriptor creator")
     parser.add_argument("descriptor", action="store",
                         help="Output file to store descriptor in.")
@@ -44,6 +52,11 @@ def create(*params):
     parser.add_argument("--use-singularity", '-u', action="store_true",
                         help="When --docker-image is used. Specify to "
                              "use singularity to run it.")
+    return parser
+
+
+def create(*params):
+    parser = parser_create()
     results = parser.parse_args(params)
 
     from boutiques.creator import CreateDescriptor
@@ -54,7 +67,10 @@ def create(*params):
     return None
 
 
-def validate(*params):
+create.__doc__ = parser_create().format_help()
+
+
+def parser_validate():
     parser = ArgumentParser("Boutiques descriptor validator")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
@@ -64,6 +80,11 @@ def validate(*params):
     parser.add_argument("--format", "-f", action="store_true",
                         help="If descriptor is valid, rewrite it with sorted"
                         " keys.")
+    return parser
+
+
+def validate(*params):
+    parser = parser_validate()
     results = parser.parse_args(params)
 
     from boutiques.validator import validate_descriptor
@@ -74,7 +95,10 @@ def validate(*params):
         validate_bids(descriptor, valid=True)
 
 
-def execute(*params):
+validate.__doc__ = parser_validate().format_help()
+
+
+def parser_execute():
     parser = ArgumentParser("Boutiques local executor", add_help=False)
     parser.add_argument("mode", action="store",
                         help="Mode of operation to use. Launch: takes a "
@@ -87,7 +111,85 @@ def execute(*params):
                         choices=["launch", "simulate", "prepare"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
+    return parser
 
+
+def parser_executeLaunch():
+    parser = ArgumentParser("Launches an invocation.")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor as a JSON file, "
+                        "JSON string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("invocation", action="store",
+                        help="Input JSON complying to invocation.")
+    parser.add_argument("-v", "--volumes", action="append", type=str,
+                        help="Volumes to mount when launching the "
+                        "container. Format consistently the following:"
+                        " /a:/b will mount local directory /a to "
+                        "container directory /b.")
+    parser.add_argument("-x", "--debug", action="store_true",
+                        help="Keeps temporary scripts used during "
+                        "execution, and prints additional debug "
+                        "messages.")
+    parser.add_argument("-u", "--user", action="store_true",
+                        help="Runs the container as local user ({0})"
+                        " instead of root.".format(os.getenv("USER")))
+    parser.add_argument("-s", "--stream", action="store_true",
+                        help="Streams stdout and stderr in real time "
+                        "during execution.")
+    parser.add_argument("--imagepath", action="store",
+                        help="Path to Singularity image. "
+                        "If not specified, will use current directory.")
+    parser.add_argument("--skip-data-collection", action="store_true",
+                        help="Skips execution data collection and saving"
+                        "to cache.")
+    parser.add_argument("--provenance", action="store", type=json.loads,
+                        help="Append JSON object to the generated record.")
+    force_group = parser.add_mutually_exclusive_group()
+    force_group.add_argument("--force-docker", action="store_true",
+                             help="Tries to run Singularity images with "
+                             "Docker. This only works if the image is on"
+                             "Docker Hub, i.e. has index docker://")
+    force_group.add_argument("--force-singularity", action="store_true",
+                             help="Tries to run Docker images with "
+                             "Singularity.")
+    return parser
+
+
+def parser_executeSimulate():
+    parser = ArgumentParser("Simulates an invocation.")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor as a JSON file, "
+                        "JSON string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("-i", "--input", action="store",
+                        help="Input JSON complying to invocation.")
+    parser.add_argument("-j", "--json", action="store_true",
+                        help="Flag to generate invocation in JSON format.")
+    parser.add_argument("-c", "--complete", action="store_true",
+                        help="Include optional parameters.")
+    return parser
+
+
+def parser_executePrepare():
+    parser = ArgumentParser("Pulls the container image for a given "
+                            "descriptor")
+    parser.add_argument("descriptor", action="store",
+                        help="The Boutiques descriptor as a JSON file, "
+                        "JSON string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("-x", "--debug", action="store_true",
+                        help="Keeps temporary scripts used during "
+                        "execution, and prints additional debug "
+                        "messages.")
+    parser.add_argument("-s", "--stream", action="store_true",
+                        help="Streams stdout and stderr in real time "
+                        "during execution.")
+    parser.add_argument("--imagepath", action="store",
+                        help="Path to Singularity image. "
+                        "If not specified, will use current directory.")
+    return parser
+
+
+def execute(*params):
+    parser = parser_execute()
     helps = any([True for ht in ["--help", "-h"] if ht in params])
     if len(params) <= 1 and helps:
         parser.print_help()
@@ -98,43 +200,7 @@ def execute(*params):
     params += ["--help"] if args.help is True else []
 
     if mode == "launch":
-        parser = ArgumentParser("Launches an invocation.")
-        parser.add_argument("descriptor", action="store",
-                            help="The Boutiques descriptor as a JSON file, "
-                            "JSON string or Zenodo ID (prefixed by 'zenodo.').")
-        parser.add_argument("invocation", action="store",
-                            help="Input JSON complying to invocation.")
-        parser.add_argument("-v", "--volumes", action="append", type=str,
-                            help="Volumes to mount when launching the "
-                            "container. Format consistently the following:"
-                            " /a:/b will mount local directory /a to "
-                            "container directory /b.")
-        parser.add_argument("-x", "--debug", action="store_true",
-                            help="Keeps temporary scripts used during "
-                            "execution, and prints additional debug "
-                            "messages.")
-        parser.add_argument("-u", "--user", action="store_true",
-                            help="Runs the container as local user ({0})"
-                            " instead of root.".format(os.getenv("USER")))
-        parser.add_argument("-s", "--stream", action="store_true",
-                            help="Streams stdout and stderr in real time "
-                            "during execution.")
-        parser.add_argument("--imagepath", action="store",
-                            help="Path to Singularity image. "
-                            "If not specified, will use current directory.")
-        parser.add_argument("--skip-data-collection", action="store_true",
-                            help="Skips execution data collection and saving"
-                            "to cache.")
-        parser.add_argument("--provenance", action="store", type=json.loads,
-                            help="Append JSON object to the generated record.")
-        force_group = parser.add_mutually_exclusive_group()
-        force_group.add_argument("--force-docker", action="store_true",
-                                 help="Tries to run Singularity images with "
-                                 "Docker. This only works if the image is on"
-                                 "Docker Hub, i.e. has index docker://")
-        force_group.add_argument("--force-singularity", action="store_true",
-                                 help="Tries to run Docker images with "
-                                 "Singularity.")
+        parser = parser_executeLaunch()
         results = parser.parse_args(params)
         descriptor = results.descriptor
         inp = results.invocation
@@ -160,16 +226,7 @@ def execute(*params):
         return executor.execute(results.volumes)
 
     if mode == "simulate":
-        parser = ArgumentParser("Simulates an invocation.")
-        parser.add_argument("descriptor", action="store",
-                            help="The Boutiques descriptor as a JSON file, "
-                            "JSON string or Zenodo ID (prefixed by 'zenodo.').")
-        parser.add_argument("-i", "--input", action="store",
-                            help="Input JSON complying to invocation.")
-        parser.add_argument("-j", "--json", action="store_true",
-                            help="Flag to generate invocation in JSON format.")
-        parser.add_argument("-c", "--complete", action="store_true",
-                            help="Include optional parameters.")
+        parser = parser_executeSimulate()
         results = parser.parse_args(params)
 
         descriptor = results.descriptor
@@ -208,21 +265,7 @@ def execute(*params):
                               0, "", [], [], os.linesep.join(sout), "", "hide")
 
     if mode == "prepare":
-        parser = ArgumentParser("Pulls the container image for a given "
-                                "descriptor")
-        parser.add_argument("descriptor", action="store",
-                            help="The Boutiques descriptor as a JSON file, "
-                            "JSON string or Zenodo ID (prefixed by 'zenodo.').")
-        parser.add_argument("-x", "--debug", action="store_true",
-                            help="Keeps temporary scripts used during "
-                            "execution, and prints additional debug "
-                            "messages.")
-        parser.add_argument("-s", "--stream", action="store_true",
-                            help="Streams stdout and stderr in real time "
-                            "during execution.")
-        parser.add_argument("--imagepath", action="store",
-                            help="Path to Singularity image. "
-                            "If not specified, will use current directory.")
+        parser = parser_executePrepare()
         results = parser.parse_args(params)
         descriptor = results.descriptor
 
@@ -246,7 +289,13 @@ def execute(*params):
                               0, "", [], [], "", "", "hide")
 
 
-def importer(*params):
+execute.__doc__ = parser_execute().format_help() + "\n\n"
+execute.__doc__ += parser_executeLaunch().format_help() + "\n\n"
+execute.__doc__ += parser_executeSimulate().format_help() + "\n\n"
+execute.__doc__ += parser_executePrepare().format_help()
+
+
+def parser_importer():
     parser = ArgumentParser("Imports old descriptor or BIDS app or CWL"
                             " descriptor to spec.")
     parser.add_argument("type", help="Type of import we are performing",
@@ -262,6 +311,11 @@ def importer(*params):
                         "the invocation if any.")
     parser.add_argument("-i", "--input-invocation", help="Input invocation "
                         " for CWL if any.")
+    return parser
+
+
+def importer(*params):
+    parser = parser_importer()
     results = parser.parse_args(params)
 
     from boutiques.importer import Importer
@@ -280,7 +334,10 @@ def importer(*params):
         importer.import_docopt(params[1])
 
 
-def exporter(*params):
+importer.__doc__ = parser_importer().format_help()
+
+
+def parser_exporter():
     parser = ArgumentParser("Export Boutiques descriptor to other formats.")
     parser.add_argument("type", help="Type of export we are performing.",
                         choices=["carmin"])
@@ -289,6 +346,11 @@ def exporter(*params):
                                              "CARMIN export.")
     parser.add_argument("output", help="Output file where to write the"
                         " converted descriptor.")
+    return parser
+
+
+def exporter(*params):
+    parser = parser_exporter()
     results = parser.parse_args(params)
 
     descriptor = results.descriptor
@@ -302,7 +364,10 @@ def exporter(*params):
         exporter.carmin(output)
 
 
-def publish(*params):
+exporter.__doc__ = parser_exporter().format_help()
+
+
+def parser_publish():
     parser = ArgumentParser("Boutiques publisher",
                             description="A publisher of Boutiques tools"
                             " in Zenodo (http://zenodo.org). Requires "
@@ -331,7 +396,11 @@ def publish(*params):
                        help="Zenodo ID of an existing record you wish to "
                        "update with a new version, prefixed by "
                        "'zenodo.' (e.g. zenodo.123456).")
+    return parser
 
+
+def publish(*params):
+    parser = parser_publish()
     results = parser.parse_args(params)
 
     from boutiques.publisher import Publisher
@@ -347,7 +416,10 @@ def publish(*params):
         return publisher.doi
 
 
-def invocation(*params):
+publish.__doc__ = parser_publish().format_help()
+
+
+def parser_invocation():
     parser = ArgumentParser("Creates invocation schema and validates"
                             " invocations. Uses descriptor's invocation"
                             " schema if it exists, otherwise creates one.")
@@ -362,6 +434,11 @@ def invocation(*params):
                         help="If descriptor doesn't have an invocation "
                         "schema, creates one and writes it to the descriptor"
                         " file ")
+    return parser
+
+
+def invocation(*params):
+    parser = parser_invocation()
     result = parser.parse_args(params)
     validate(result.descriptor)
     descriptor = loadJson(result.descriptor)
@@ -380,9 +457,12 @@ def invocation(*params):
         validateSchema(invSchema, data)
 
 
-def evaluate(*params):
-    parser = ArgumentParser("Evaluates parameter values for a descriptor"
-                            " and invocation")
+invocation.__doc__ = parser_invocation().format_help()
+
+
+def parser_evaluate():
+    parser = ArgumentParser("Evaluates parameter values for a descriptor "
+                            "and invocation")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
@@ -396,6 +476,11 @@ def evaluate(*params):
                         "(i.e. output-files/optional=false,id=myfile). "
                         "Perform multiple queries by separating them with a "
                         "space.")
+    return parser
+
+
+def evaluate(*params):
+    parser = parser_evaluate()
     result = parser.parse_args(params)
 
     # Generate object that will parse the invocation and descriptor
@@ -413,13 +498,20 @@ def evaluate(*params):
     return query_results[0] if len(query_results) == 1 else query_results
 
 
-def test(*params):
+evaluate.__doc__ = parser_evaluate().format_help()
 
+
+def parser_test():
     parser = ArgumentParser("Perform all the tests defined within the"
                             " given descriptor")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
+    return parser
+
+
+def test(*params):
+    parser = parser_test()
     result = parser.parse_args(params)
 
     # Generation of the invocation schema (and descriptor validation).
@@ -444,7 +536,10 @@ def test(*params):
     return pytest.main([test_path, "--descriptor", result.descriptor])
 
 
-def search(*params):
+test.__doc__ = parser_test().format_help()
+
+
+def parser_search():
     parser = ArgumentParser("Search Zenodo for Boutiques descriptors. "
                             "When no term is supplied, will search for "
                             "all descriptors.")
@@ -462,7 +557,11 @@ def search(*params):
                         help="Do not truncate long tool descriptions.")
     parser.add_argument("-e", "--exact", action="store_true",
                         help="Only return results containing the exact query.")
+    return parser
 
+
+def search(*params):
+    parser = parser_search()
     result = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
@@ -472,14 +571,22 @@ def search(*params):
     return searcher.search()
 
 
-def example(*params):
-    parser = ArgumentParser("Generates example invocation from a valid"
+search.__doc__ = parser_search().format_help()
+
+
+def parser_example():
+    parser = ArgumentParser("Generates example invocation from a valid "
                             "descriptor")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, "
                         "JSON string or Zenodo ID (prefixed by 'zenodo.').")
     parser.add_argument("-c", "--complete", action="store_true",
                         help="Include optional parameters.")
+    return parser
+
+
+def example(*params):
+    parser = parser_example()
     results = parser.parse_args(params)
 
     descriptor = results.descriptor
@@ -497,7 +604,10 @@ def example(*params):
     return json.dumps(executor.in_dict, indent=4, sort_keys=True)
 
 
-def pull(*params):
+example.__doc__ = parser_example().format_help()
+
+
+def parser_pull():
     parser = ArgumentParser("Ensures that Zenodo descriptors are locally "
                             "cached, downloading them if needed.")
 
@@ -510,7 +620,11 @@ def pull(*params):
     parser.add_argument("--sandbox", action="store_true",
                         help="pull from Zenodo's sandbox instead of "
                         "production server. Recommended for tests.")
+    return parser
 
+
+def pull(*params):
+    parser = parser_pull()
     result = parser.parse_args(params)
 
     from boutiques.puller import Puller
@@ -518,7 +632,10 @@ def pull(*params):
     return puller.pull()
 
 
-def data(*params):
+pull.__doc__ = parser_pull().format_help()
+
+
+def parser_data():
     parser = ArgumentParser("Manage execution data collection.", add_help=False)
 
     parser.add_argument("action", action="store",
@@ -531,7 +648,63 @@ def data(*params):
                         choices=["inspect", "publish", "delete"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
+    return parser
 
+
+def parser_dataInspect():
+    parser = ArgumentParser("Displays contents of cache")
+    parser.add_argument("-e", "--example", action="store_true",
+                        help="Display example data file contents.")
+    return parser
+
+
+def parser_dataPublish():
+    parser = ArgumentParser("Publishes record(s) to a data set.")
+    parser.add_argument("-a", "--author", action="store",
+                        help="Set the author name for the data set "
+                        "publication. Defaults to anonymous.")
+    parser.add_argument("-f", "--file", action="store",
+                        help="Filename of record to publish alone as a "
+                        "data set.")
+    parser.add_argument("-i", "--individually", action="store_true",
+                        help="Publishes all data files in cache as "
+                        "independent data sets, By Default will publish "
+                        "files in bulk data sets.")
+    parser.add_argument("--no-int", '-y', action="store_true",
+                        help="disable interactive input.")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="print information messages.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="publish to Zenodo's sandbox instead of "
+                        "production server. Recommended for tests.")
+    parser.add_argument("--zenodo-token", action="store",
+                        help="Zenodo API token to use for authentication. "
+                        "If not used, token will be read from "
+                        "configuration file or requested interactively.")
+    parser.add_argument("--nexus", action="store_true",
+                        help="Publish to Nexus instead of Zenodo. "
+                        "Sandbox URL is "
+                        "https://sandbox.bluebrainnexus.io")
+    parser.add_argument("--nexus-token", action="store",
+                        help="Nexus API token to use for authentication. ")
+    parser.add_argument("--nexus-org", action="store",
+                        help="Nexus organization to publish to. ")
+    parser.add_argument("--nexus-project", action="store",
+                        help="Nexus project to publish to. ")
+    return parser
+
+
+def parser_dataDelete():
+    parser = ArgumentParser("Delete data record(s) in cache.")
+    parser.add_argument("-f", "--file", action="store",
+                        help="Filename of record to delete.")
+    parser.add_argument("--no-int", '-y', action="store_true",
+                        help="disable interactive input.")
+    return parser
+
+
+def data(*params):
+    parser = parser_data()
     helps = any([True for ht in ["--help", "-h"] if ht in params])
     if len(params) <= 1 and helps:
         parser.print_help()
@@ -542,9 +715,7 @@ def data(*params):
     params += ["--help"] if args.help is True else []
 
     if action == "inspect":
-        parser = ArgumentParser("Displays contents of cache")
-        parser.add_argument("-e", "--example", action="store_true",
-                            help="Display example data file contents.")
+        parser = parser_dataInspect()
         results = parser.parse_args(params)
 
         from boutiques.dataHandler import DataHandler
@@ -552,38 +723,7 @@ def data(*params):
         return dataHandler.inspect(results.example)
 
     if action == "publish":
-        parser = ArgumentParser("Publishes record(s) to a data set.")
-        parser.add_argument("-a", "--author", action="store",
-                            help="Set the author name for the data set "
-                            "publication. Defaults to anonymous.")
-        parser.add_argument("-f", "--file", action="store",
-                            help="Filename of record to publish alone as a "
-                            "data set.")
-        parser.add_argument("-i", "--individually", action="store_true",
-                            help="Publishes all data files in cache as "
-                            "independent data sets, By Default will publish "
-                            "files in bulk data sets.")
-        parser.add_argument("--no-int", '-y', action="store_true",
-                            help="disable interactive input.")
-        parser.add_argument("-v", "--verbose", action="store_true",
-                            help="print information messages.")
-        parser.add_argument("--sandbox", action="store_true",
-                            help="publish to Zenodo's sandbox instead of "
-                            "production server. Recommended for tests.")
-        parser.add_argument("--zenodo-token", action="store",
-                            help="Zenodo API token to use for authentication. "
-                            "If not used, token will be read from "
-                            "configuration file or requested interactively.")
-        parser.add_argument("--nexus", action="store_true",
-                            help="Publish to Nexus instead of Zenodo. "
-                                 "Sandbox URL is "
-                                 "https://sandbox.bluebrainnexus.io")
-        parser.add_argument("--nexus-token", action="store",
-                            help="Nexus API token to use for authentication. ")
-        parser.add_argument("--nexus-org", action="store",
-                            help="Nexus organization to publish to. ")
-        parser.add_argument("--nexus-project", action="store",
-                            help="Nexus project to publish to. ")
+        parser = parser_dataPublish()
         results = parser.parse_args(params)
 
         from boutiques.dataHandler import DataHandler
@@ -596,11 +736,7 @@ def data(*params):
                                    results.nexus)
 
     if action == "delete":
-        parser = ArgumentParser("Delete data record(s) in cache.")
-        parser.add_argument("-f", "--file", action="store",
-                            help="Filename of record to delete.")
-        parser.add_argument("--no-int", '-y', action="store_true",
-                            help="disable interactive input.")
+        parser = parser_dataDelete()
         results = parser.parse_args(params)
 
         from boutiques.dataHandler import DataHandler
@@ -608,17 +744,23 @@ def data(*params):
         return dataHandler.delete(results.file, results.no_int)
 
 
-def bosh(args=None):
+data.__doc__ = parser_data().format_help() + "\n\n"
+data.__doc__ += parser_dataInspect().format_help() + "\n\n"
+data.__doc__ += parser_dataPublish().format_help() + "\n\n"
+data.__doc__ += parser_dataDelete().format_help()
+
+
+def parser_bosh():
     parser = ArgumentParser(add_help=False,
                             formatter_class=RawTextHelpFormatter)
     helptext = r'''
-               BOUTIQUES COMMANDS
+BOUTIQUES COMMANDS
 
 TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
 * export: export a descriptor to other formats.
 * import: create a descriptor for a BIDS app or update a descriptor from \
-    an older version of the schema.
+an older version of the schema.
 * validate: validate an existing boutiques descriptor.
 
 TOOL USAGE & EXECUTION
@@ -629,7 +771,7 @@ TOOL USAGE & EXECUTION
 
 TOOL SEARCH & PUBLICATION
 * publish: create an entry in Zenodo for the descriptor and adds the DOI \
-    created by Zenodo to the descriptor.
+created by Zenodo to the descriptor.
 * pull: download a descriptor from Zenodo.
 * search: search Zenodo for descriptors.
 
@@ -641,19 +783,23 @@ OTHER
 * invocation: generate or validate inputs against the invocation schema
 * for a given descriptor.
 * version: print the Boutiques version.
-'''
+    '''
     parser.add_argument("function", action="store", nargs="?",
                         help=helptext,
                         choices=sorted(
                                 ["create", "validate", "exec",
-                                 "import", "export", "publish",
-                                 "invocation", "evaluate", "test",
-                                 "example", "search", "pull",
-                                 "data", "pprint", "version"]))
+                                    "import", "export", "publish",
+                                    "invocation", "evaluate", "test",
+                                    "example", "search", "pull",
+                                    "data", "pprint", "version"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
+    return parser
 
+
+def bosh(args=None):
+    parser = parser_bosh()
     args, params = parser.parse_known_args(args)
     func = args.function
     params += ["--help"] if args.help is True else []
@@ -714,7 +860,7 @@ OTHER
             out = test(*params)
             return bosh_return(out)
         elif func == "pprint":
-            out = prettyprint(*params)
+            out = pprint(*params)
             return bosh_return(out)
         elif func == "search":
             out = search(*params)
@@ -750,3 +896,6 @@ OTHER
                 print(e)
             return 99  # Note: this conflicts with tool error codes.
         raise e
+
+
+bosh.__doc__ = parser_bosh().format_help()

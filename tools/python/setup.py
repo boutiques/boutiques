@@ -21,8 +21,8 @@ DEPS = [
          "docopt"
        ]
 
-#if sys.version_info >= (3, 5):
-#    DEPS.append("nexus-sdk")
+if sys.version_info >= (3, 5):
+    DEPS.append("nexus-sdk")
 
 setup(name="boutiques",
       version=VERSION,
@@ -53,7 +53,7 @@ setup(name="boutiques",
       tests_require=["pytest"],
       setup_requires=DEPS,
       install_requires=DEPS,
-      entry_points=  {
+      entry_points={
         "console_scripts": [
             "bosh=boutiques.bosh:bosh",
         ]

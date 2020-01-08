@@ -10,6 +10,7 @@ from boutiques.util.utils import LoadError
 import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
     example_boutiques_tool
+from boutiques import __file__ as bfile
 
 
 def mock_get():
@@ -464,6 +465,26 @@ class TestExample1(BaseTest):
         self.assertIn("Local (boutiques-example1-test.simg)",
                       ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_conditional_outputFiles_created(self):
+        base_path = os.path.join(os.path.split(bfile)[0], "tests/output_files/")
+        ex = bosh.execute("launch",
+                          os.path.join(
+                              base_path,
+                              "example1_docker_conditional_outputFiles.json"),
+                          os.path.join(
+                              base_path,
+                              "example1_conditional_invoc.json"),
+                          "--skip-data-collection")
+
+        outFileList = [str(out) for out in ex.output_files]
+        self.assertIn("TEST.one.three.two_out1.txt (out1, Required)",
+                      outFileList)
+        self.assertIn("TEST_string1.txt (out2, Required)",
+                      outFileList)
+        self.assertEqual([], ex.missing_files)
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
