@@ -1,0 +1,28 @@
+{
+    "command-line": "env > stdout.txt",
+    "description": "Tool imported from CWL.",
+    "environment-variables": [
+        {
+            "name": "HELLO",
+            "value": "[MESSAGE]"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "message",
+            "name": "message",
+            "type": "String",
+            "value-key": "[MESSAGE]"
+        }
+    ],
+    "name": "env",
+    "output-files": [
+        {
+            "id": "stdout",
+            "name": "Standard output",
+            "path-template": "stdout.txt"
+        }
+    ],
+    "schema-version": "0.5",
+    "tool-version": "unknown"
+}

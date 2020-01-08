@@ -1,0 +1,134 @@
+{
+    "command-line": "/path/to/myscript.py [MYARG1] [MYARG2] [MYARG3] [MYSUBPARSER] [SUBOPTION1] [SUBOPTION2] [SUBOPTION3] [SUBOPTIONFLAG1] [SUBOPTIONFLAG2] [SUBOPTLISTFLAG]",
+    "description": "tool description",
+    "inputs": [
+        {
+            "description": "my help 1",
+            "id": "myarg1",
+            "list": true,
+            "name": "myarg1",
+            "optional": false,
+            "type": "String",
+            "value-key": "[MYARG1]"
+        },
+        {
+            "description": "my help 2",
+            "id": "myarg2",
+            "name": "myarg2",
+            "optional": false,
+            "type": "Number",
+            "value-key": "[MYARG2]"
+        },
+        {
+            "command-line-flag": "--myarg3",
+            "description": "my help 3",
+            "id": "myarg3",
+            "name": "myarg3",
+            "optional": true,
+            "type": "String",
+            "value-key": "[MYARG3]"
+        },
+        {
+            "description": "the first sub option option",
+            "id": "suboption1",
+            "name": "suboption1",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SUBOPTION1]"
+        },
+        {
+            "default-value": "hello",
+            "description": "the first sub option option",
+            "id": "suboption2",
+            "name": "suboption2",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "hello",
+                "goodbye"
+            ],
+            "value-key": "[SUBOPTION2]"
+        },
+        {
+            "description": "the second sub option option",
+            "id": "suboption3",
+            "name": "suboption3",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SUBOPTION3]"
+        },
+        {
+            "command-line-flag": "--suboptionflag1",
+            "description": "the bool opt flag",
+            "id": "suboptionflag1",
+            "name": "suboptionflag1",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SUBOPTIONFLAG1]"
+        },
+        {
+            "command-line-flag": "--suboptionflag2",
+            "description": "the second sub option flag",
+            "id": "suboptionflag2",
+            "name": "suboptionflag2",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[SUBOPTIONFLAG2]"
+        },
+        {
+            "command-line-flag": "--suboptlistflag",
+            "description": "listy flag",
+            "id": "suboptlistflag",
+            "list": true,
+            "name": "suboptlistflag",
+            "optional": true,
+            "type": "String",
+            "value-key": "[SUBOPTLISTFLAG]"
+        },
+        {
+            "description": "the choices you will make",
+            "id": "mysubparser",
+            "name": "mysubparser",
+            "optional": true,
+            "type": "String",
+            "value-choices": [
+                "option1",
+                "option2"
+            ],
+            "value-disables": {
+                "option1": [
+                    "suboptionflag2",
+                    "suboptionflag1",
+                    "suboption3",
+                    "suboptlistflag"
+                ],
+                "option2": [
+                    "suboption1",
+                    "suboption2"
+                ]
+            },
+            "value-key": "[MYSUBPARSER]",
+            "value-requires": {
+                "option1": [
+                    "suboption1",
+                    "suboption2"
+                ],
+                "option2": [
+                    "suboption3"
+                ]
+            }
+        }
+    ],
+    "name": "tool name",
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "tags": {
+        "foo": "bar",
+        "purpose": "testing-creator"
+    },
+    "tool-version": "v0.1.0"
+}
