@@ -224,7 +224,8 @@ class LocalExecutor(object):
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
-        # Export environment variables, if they are specified in the descriptor
+        # Export environment variables, 
+        #  if they are specified in the descriptor
         envVars = {}
         if 'environment-variables' in list(self.desc_dict.keys()):
             variables = [(p['name'], p['value']) for p in
@@ -246,8 +247,8 @@ class LocalExecutor(object):
         if conIsPresent:
             # Figure out which container type to use
             conTypeToUse = self._chooseContainerTypeToUse(conType,
-                                                          self.forceSingularity,
-                                                          self.forceDocker)
+                                                        self.forceSingularity,
+                                                        self.forceDocker)
             # Pull the container
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
@@ -278,10 +279,12 @@ class LocalExecutor(object):
                     for opt in conOpts:
                         conOptsString += opt + ' '
             # Run it in docker
-            # Note: on Windows, users must give path following this format (compatible with docker): /c/a/windows/path
+            # Note: on Windows, users must give path following 
+            #       this format (compatible with docker): /c/a/windows/path
             mount_strings = [] if not mount_strings else mount_strings
-            
-            # Normalize the path so that is follows this format (compatible with docker): /c/a/windows/or/linux/path
+
+            # Normalize the path so that it follows 
+            #  this docker compatible format: /c/a/windows/or/linux/path
             # Do nothing on linux paths
             # If the path begins with C: or any other capital letter:
             #  - replace '\\' with '/'
@@ -296,11 +299,15 @@ class LocalExecutor(object):
                 return path
 
             # Make path absolute and normalized
-            # The resulting path must follow this format (compatible with docker): /c/a/windows/or/linux/path
+            # The resulting path must follow 
+            # this docker compatible format: /c/a/windows/or/linux/path
             def makePathAbsolute(path):
                 # If path is already absolute: do nothing 
-                # (Note that on Windows, op.realpath(/c/path/to/file) returns C:\\c\\path\\to\\file, so we should avoid applying op.realpath() if already absolute)
-                # (On both Windows and Linux, paths beginning with '/' are considered absolute)
+                # (Note that on Windows, op.realpath(/c/path/to/file) 
+                #  returns C:\\c\\path\\to\\file, so we should 
+                #  avoid applying op.realpath() if already absolute)
+                # (On both Windows and Linux, 
+                #  paths beginning with '/' are considered absolute)
                 if op.isabs(path):
                     # If path is absolute, it must be normalized
                     return normalizePath(path)
@@ -312,7 +319,8 @@ class LocalExecutor(object):
             launchDir = normalizePath(launchDir)
             dsname = normalizePath(dsname)
 
-            mount_strings = [ makePathAbsolute(m.split(":")[0]) + ":" + m.split(":")[1] for m in mount_strings]
+            mount_strings = [makePathAbsolute(m.split(":")[0]) + ":" \
+                                + m.split(":")[1] for m in mount_strings]
             mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
 
             if conTypeToUse == 'docker':
@@ -539,7 +547,8 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isCommandInstalled(self, command):
-        return not subprocess.Popen("{} --version".format(command), shell=True).wait()
+        return not subprocess.Popen("{} --version".format(command), 
+                                    shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
