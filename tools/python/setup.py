@@ -15,7 +15,7 @@ DEPS = [
          "pytest",
          "termcolor",
          "pyyaml==5.2; python_version == '3.4'",
-         "pyyaml; python_version != '3.4'"
+         "pyyaml; python_version != '3.4'",
          "jsonschema",
          "tabulate",
          "mock",
