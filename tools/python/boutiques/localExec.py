@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 import simplejson as json
 import random as rnd
 import string
@@ -224,7 +225,8 @@ class LocalExecutor(object):
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
-        # Export environment variables, if they are specified in the descriptor
+        # Export environment variables,
+        #  if they are specified in the descriptor
         envVars = {}
         if 'environment-variables' in list(self.desc_dict.keys()):
             variables = [(p['name'], p['value']) for p in
@@ -245,9 +247,10 @@ class LocalExecutor(object):
         container_command = ""
         if conIsPresent:
             # Figure out which container type to use
-            conTypeToUse = self._chooseContainerTypeToUse(conType,
-                                                          self.forceSingularity,
-                                                          self.forceDocker)
+            conTypeToUse = \
+                self._chooseContainerTypeToUse(conType,
+                                               self.forceSingularity,
+                                               self.forceDocker)
             # Pull the container
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
@@ -278,10 +281,50 @@ class LocalExecutor(object):
                     for opt in conOpts:
                         conOptsString += opt + ' '
             # Run it in docker
+            # Note: on Windows, users must give path following
+            #       this format (compatible with docker): /c/a/windows/path
             mount_strings = [] if not mount_strings else mount_strings
-            mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
-                             for m in mount_strings]
-            mount_strings.append(op.realpath('./') + ':' + launchDir)
+
+            # Normalize the path so that it follows
+            #  this docker compatible format: /c/a/windows/or/linux/path
+            # Do nothing on linux paths
+            # If the path begins with C: or any other capital letter:
+            #  - replace '\\' with '/'
+            #  - prefix the path with '/'
+            #  - lowercase the drive letter
+            #  - remove the ':'
+            def normalizePath(path):
+                regexResult = re.match(r"^([A-Z]):", path)
+                if regexResult:
+                    path = path.replace("\\", "/")
+                    path = "/" + path[0].lower() + path[2:]
+                return path
+
+            # Make path absolute and normalized
+            # The resulting path must follow
+            # this docker compatible format: /c/a/windows/or/linux/path
+            def makePathAbsolute(path):
+                # If path is already absolute: do nothing
+                # (Note that on Windows, op.realpath(/c/path/to/file)
+                #  returns C:\\c\\path\\to\\file, so we should
+                #  avoid applying op.realpath() if already absolute)
+                # (On both Windows and Linux,
+                #  paths beginning with '/' are considered absolute)
+                if op.isabs(path):
+                    # If path is absolute, it must be normalized
+                    return normalizePath(path)
+                # Make path absolute
+                path = op.realpath(path)
+                # Normalize it
+                return normalizePath(path)
+
+            launchDir = normalizePath(launchDir)
+            dsname = normalizePath(dsname)
+
+            mount_strings = [makePathAbsolute(m.split(":")[0]) + ":"
+                             + m.split(":")[1] for m in mount_strings]
+            mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
+
             if conTypeToUse == 'docker':
                 envString = " "
                 if envVars:
@@ -506,7 +549,7 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isCommandInstalled(self, command):
-        return not subprocess.Popen("type {} &>/dev/null".format(command),
+        return not subprocess.Popen("{} --version".format(command),
                                     shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
@@ -1258,7 +1301,7 @@ class LocalExecutor(object):
     # summary, publicInput an publicOutput are combined and
     # written to a file in .cache
     def _saveDataCaptureToCache(self):
-        date_time = datetime.datetime.now().isoformat()
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
         # Combine three modules plus provenance in master dictionary
@@ -1305,7 +1348,7 @@ class LocalExecutor(object):
             return match
         # Write descriptor to data cache and save return filename
         content = json.dumps(self.desc_dict, indent=4)
-        date_time = datetime.datetime.now().isoformat()
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
         path = os.path.join(data_cache_dir, filename)
         file = open(path, 'w+')
