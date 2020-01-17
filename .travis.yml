@@ -1,6 +1,6 @@
-dist: Bionic
-sudo: required
+dist: bionic
 language: python
+os: linux
 
 services:
 - docker
@@ -25,7 +25,6 @@ before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential libarchive-dev
 - npm install jsonlint -g 
-#- eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
