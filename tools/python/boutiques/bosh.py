@@ -144,6 +144,9 @@ def parser_executeLaunch():
                         "to cache.")
     parser.add_argument("--provenance", action="store", type=json.loads,
                         help="Append JSON object to the generated record.")
+    parser.add_argument("--no-container", action="store_true",
+                        help="Execution takes place outside of container,"
+                        + " tool is executed in command line.")
     force_group = parser.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "
@@ -221,7 +224,8 @@ def execute(*params):
                                   "forceDocker": results.force_docker,
                                   "forceSingularity":
                                       results.force_singularity,
-                                  "provenance": results.provenance})
+                                  "provenance": results.provenance,
+                                  "noContainer": results.no_container})
         # Execute it
         return executor.execute(results.volumes)
 

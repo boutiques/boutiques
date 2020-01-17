@@ -221,7 +221,8 @@ class LocalExecutor(object):
         '''
         command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
-        conType, conImage = con.get('type'), con.get('image'),
+        conType, conImage = con.get('type'),\
+            con.get('image') if not self.noContainer else None
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
@@ -230,7 +231,7 @@ class LocalExecutor(object):
         envVars = {}
         if 'environment-variables' in list(self.desc_dict.keys()):
             variables = [(p['name'], p['value']) for p in
-                         self.desc_dict['environment-variables']]
+                        self.desc_dict['environment-variables']]
             for (envVarName, envVarValue) in variables:
                 os.environ[envVarName] = envVarValue
                 envVars[envVarName] = envVarValue
@@ -239,8 +240,8 @@ class LocalExecutor(object):
         # mount of files starting with a '.', hence this one does not
         millitime = int(time.time()*1000)
         dsname = ('temp-' +
-                  str(random.SystemRandom().randint(0, int(millitime))) +
-                  "-" + str(millitime) + '.localExec.boshjob.sh')
+                str(random.SystemRandom().randint(0, int(millitime))) +
+                "-" + str(millitime) + '.localExec.boshjob.sh')
         dsname = op.realpath(dsname)
         # If container is present, alter the command template accordingly
         container_location = ""
