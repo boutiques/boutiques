@@ -1,4 +1,4 @@
-dist: Xenial
+dist: Bionic
 sudo: required
 language: python
 
