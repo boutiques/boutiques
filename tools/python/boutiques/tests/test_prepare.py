@@ -9,10 +9,7 @@ from boutiques.localExec import ExecutorError
 import mock
 import sys
 from boutiques_mocks import *
-if sys.version_info < (2, 7):
-    from unittest2 import TestCase
-else:
-    from unittest import TestCase
+from unittest import TestCase
 
 
 def mock_mkdir():

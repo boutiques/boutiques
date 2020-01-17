@@ -7,10 +7,7 @@ from boutiques import bosh
 from boutiques import __file__ as bfile
 from boutiques.exporter import ExportError
 from os.path import join as opj
-if sys.version_info < (2, 7):
-    from unittest2 import TestCase
-else:
-    from unittest import TestCase
+from unittest import TestCase
 
 
 class TestExport(TestCase):
