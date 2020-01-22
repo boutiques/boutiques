@@ -102,7 +102,8 @@ class TestPrepare(TestCase):
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-latest.simg"))
-        self.assertIn("Could not pull Singularity image", e)
+        self.assertIn("Could not pull Singularity image",
+                      str(e.getrepr(style='long')))
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir())
     @mock.patch('boutiques.localExec.LocalExecutor._singConExists',
@@ -141,7 +142,8 @@ class TestPrepare(TestCase):
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-test.simg"))
-        self.assertIn("Unable to retrieve Singularity image", e)
+        self.assertIn("Unable to retrieve Singularity image",
+                      str(e.getrepr(style='long')))
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir_timeout())
     @mock.patch('time.sleep', side_effect=mock_sleep())

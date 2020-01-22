@@ -40,7 +40,7 @@ class TestLogger(TestCase):
                                       "example1_docker.json"),
                          invocationStr,
                          "--skip-data-collection")
-        self.assertIn("[ ERROR ]", e)
+        self.assertIn("[ ERROR ]", str(e.getrepr(style='long')))
 
     @mock.patch('requests.get', side_effect=mock_get)
     def test_print_info(self, mock_get):

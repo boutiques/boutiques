@@ -171,7 +171,7 @@ class TestExample1(BaseTest):
                          "-u",
                          invocationStr,
                          "--skip-data-collection")
-        self.assertIn("Cannot parse input", e)
+        self.assertIn("Cannot parse input", str(e.getrepr(style='long')))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
@@ -307,7 +307,8 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2")))
-        self.assertIn("Could not pull Singularity image", e)
+        self.assertIn("Could not pull Singularity image",
+                      str(e.getrepr(style='long')))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
