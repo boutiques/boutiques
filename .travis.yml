@@ -1,23 +1,22 @@
-dist: trusty
-sudo: required
+dist: xenial
 language: python
+os: linux
 
 services:
 - docker
 
 python:
-- 2.7
-- 3.4
 - 3.5
-- 3.5-dev
 - 3.6
-- 3.6-dev
-- 3.7-dev
-- nightly
-- pypy-5.4.1
+- 3.7
+- 3.8
+- 3.8-dev
 
 node_js:
 - 5
+
+go:
+- 1.12
 
 env:
 - SINGVER=3.4.2  # the version of docker2singularity used below should match this one
@@ -26,7 +25,6 @@ before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential libarchive-dev
 - npm install jsonlint -g 
-- eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.12 bash)"
 - docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)

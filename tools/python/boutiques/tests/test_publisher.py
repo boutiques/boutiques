@@ -10,10 +10,7 @@ import os.path as op
 import sys
 import mock
 from boutiques_mocks import *
-if sys.version_info < (2, 7):
-    from unittest2 import TestCase
-else:
-    from unittest import TestCase
+from unittest import TestCase
 
 
 def mock_get_publish_then_update():

@@ -197,8 +197,6 @@ class TestDataHandler(TestCase):
         self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))),
                          2)
 
-    @skipIf(sys.version_info < (3, 5),
-            'Python version has to be >= 3.5')
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('boutiques.nexusHelper.NexusHelper.read_credentials',
@@ -212,8 +210,6 @@ class TestDataHandler(TestCase):
         self.assertIn("Cannot find Nexus credentials.",
                       str(e.exception))
 
-    @skipIf(sys.version_info < (3, 5),
-            'Python version has to be >= 3.5')
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('boutiques.nexusHelper.NexusHelper.read_credentials',
@@ -228,8 +224,6 @@ class TestDataHandler(TestCase):
         self.assertIn("Cannot find Nexus organization.",
                       str(e.exception))
 
-    @skipIf(sys.version_info < (3, 5),
-            'Python version has to be >= 3.5')
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('boutiques.nexusHelper.NexusHelper.read_credentials',
@@ -245,8 +239,6 @@ class TestDataHandler(TestCase):
         self.assertIn("Cannot find Nexus project.",
                       str(e.exception))
 
-    @skipIf(sys.version_info < (3, 5),
-            'Python version has to be >= 3.5')
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('boutiques.nexusHelper.NexusHelper.get_nexus_endpoint',
@@ -263,8 +255,6 @@ class TestDataHandler(TestCase):
         self.assertIn("Cannot access Nexus endpoint",
                       str(e.exception))
 
-    @skipIf(sys.version_info < (3, 5),
-            'Python version has to be >= 3.5')
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     def test_publish_nexus_invalid_token(self, mock_dir):
@@ -279,8 +269,6 @@ class TestDataHandler(TestCase):
         self.assertIn("Cannot authenticate to Nexus API, check "
                       "your access token", str(e.exception))
 
-    @skipIf(sys.version_info < (3, 5),
-            'Python version has to be >= 3.5')
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
     @mock.patch('boutiques.nexusHelper.NexusHelper.get_config_file',
