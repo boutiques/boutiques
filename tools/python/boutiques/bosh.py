@@ -145,8 +145,9 @@ def parser_executeLaunch():
     parser.add_argument("--provenance", action="store", type=json.loads,
                         help="Append JSON object to the generated record.")
     parser.add_argument("--no-container", action="store_true",
-                        help="Execution takes place outside of container,"
-                        + " tool is executed in command line.")
+                        help="Launch invocation on the host computer, with "
+                        "no container. If 'container-image' appears in the "
+                        "descriptor, it is ignored.")
     force_group = parser.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "

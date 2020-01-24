@@ -45,6 +45,12 @@ class Publisher():
                         "descriptor.")
         self.creator = self.descriptor['author']
 
+        # Get tool container and check that it's defined
+        if self.descriptor.get("container-image") is None:
+            raise_error(ZenodoError, "Tool must have a container image to be "
+                        "published. Add a 'container-image' property to your "
+                        "descriptor.")
+
         # If in replace mode, make sure descriptor has a DOI and get the ID.
         # Otherwise, make sure the descriptor does not have a DOI.
         if replace:
