@@ -221,7 +221,8 @@ class LocalExecutor(object):
         '''
         command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
-        conType, conImage = con.get('type'), con.get('image'),
+        conType, conImage = con.get('type'),\
+            con.get('image') if not self.noContainer else None
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
