@@ -760,7 +760,7 @@ TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
 * export: export a descriptor to other formats.
 * import: create a descriptor for a BIDS app or update a descriptor from \
-an older version of the schema.
+an older version of the schema. Options: "bids", "0.4", "cwl", "docopt"
 * validate: validate an existing boutiques descriptor.
 
 TOOL USAGE & EXECUTION
