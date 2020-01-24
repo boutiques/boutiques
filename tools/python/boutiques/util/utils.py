@@ -1,6 +1,7 @@
 import os
 import simplejson as json
 from boutiques.logger import raise_error
+from boutiques import __file__ as bfile
 
 
 # Parses absolute path into filename
@@ -63,3 +64,19 @@ def conditionalExpFormat(s):
             cleanedExpression += c
         idx += 1
     return cleanedExpression
+
+
+# Recursively sorts and returns a descriptor dictionary according to
+# the keys' order in a template descriptor
+def customSortDescriptorByKey(descriptor,
+                              template=os.path.join(
+                                  os.path.dirname(bfile),
+                                  "templates",
+                                  "ordered_keys_desc.json")):
+    template = loadJson(template)
+    # Add k:v to sortedDesc according to their order in template
+    sortedDesc = {key: descriptor[key] for key in template if
+                  key in descriptor}
+    # Add remaining k:v that are missing from template
+    sortedDesc.update(descriptor)
+    return sortedDesc

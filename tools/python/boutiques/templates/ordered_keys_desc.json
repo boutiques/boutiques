@@ -1,0 +1,63 @@
+{
+    "name": "", 
+    "tool-version": "",
+    "command-line": "", 
+    "shell": "",
+    "description": "",
+    "groups": [
+        {
+            "all-or-none": true,
+            "mutually-exclusive": true,
+            "one-is-required": true,
+            "id": "",
+            "name": "",
+            "members": []
+        }
+    ],
+    "inputs": [
+        {
+            "command-line-flag": "",
+            "id": "",
+            "name": "",
+            "type": "",
+            "list": true,
+            "integer": true,
+            "optional": true,
+            "value-key": "",
+            "value-choices": [],
+            "requires-inputs": []
+
+        }
+    ],
+    "output-files": [
+        {
+            "id": "",
+            "name": "",
+            "optional": false,
+            "path-template": "",
+            "optional-path-template": {},
+            "path-template-stripped-extensions": [],
+            "value-key": ""
+        }
+    ],
+    "container-image": {
+        "image": "",
+        "index": "",
+        "type": ""
+    },
+    "suggested-resources": {
+        "cpu-cores": 0,
+        "ram": 0,
+        "walltime-estimate": 0
+    },
+    "error-codes": [
+        {
+            "code": 0,
+            "description": ""
+        }
+    ],
+    "tags": {
+        "purpose": "",
+        "status": ""
+    }
+}
