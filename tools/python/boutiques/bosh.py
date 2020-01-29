@@ -302,14 +302,17 @@ execute.__doc__ += parser_executePrepare().format_help()
 
 def parser_importer():
     parser = ArgumentParser("Imports old descriptor or BIDS app or CWL"
-                            " descriptor to spec.")
-    parser.add_argument("type", help="Type of import we are performing",
-                        choices=["bids", "0.4", "cwl", "dcpt"])
+                            " descriptor or docopt script to spec.")
+    parser.add_argument("type", help="Type of import we are performing."
+                        " Allowed values: {" +
+                        ", ".join(["bids", "0.4", "cwl", "docopt"]) + "}",
+                        choices=["bids", "0.4", "cwl", "docopt"],
+                        metavar='type')
     parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
     parser.add_argument("input_descriptor", help="Input descriptor to be"
                         " converted. For '0.4', is JSON descriptor,"
-                        " for 'dcpt' is JSON descriptor,"
+                        " for 'docopt' is JSON descriptor,"
                         " for 'bids' is base directory of BIDS app,"
                         " for 'cwl' is YAML descriptor.")
     parser.add_argument("-o", "--output-invocation", help="Where to write "
@@ -334,7 +337,7 @@ def importer(*params):
         importer.import_bids()
     elif results.type == "cwl":
         importer.import_cwl()
-    elif results.type == "dcpt":
+    elif results.type == "docopt":
         create(params[1])
         importer.import_docopt(params[1])
 
@@ -765,7 +768,7 @@ TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
 * export: export a descriptor to other formats.
 * import: create a descriptor for a BIDS app or update a descriptor from \
-an older version of the schema.
+an older version of the schema. Options: "bids", "0.4", "cwl", "docopt"
 * validate: validate an existing boutiques descriptor.
 
 TOOL USAGE & EXECUTION
