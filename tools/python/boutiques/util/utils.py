@@ -73,10 +73,56 @@ def customSortDescriptorByKey(descriptor,
                                   os.path.dirname(bfile),
                                   "templates",
                                   "ordered_keys_desc.json")):
+
+    def sortListedObjects(objList, template):
+        sortedObjList = []
+        for obj in objList:
+            sortedObj = {key: obj[key] for key in template if
+                         key in obj}
+            sortedObj.update(obj)
+            sortedObjList.append(sortedObj)
+
+        # Safety: return original if sortedObjList is faulty
+        try:
+            for obj, sobj in zip(objList, sortedObjList):
+                if obj != sobj:
+                    sortedObjList = objList
+                    break
+        except Exception:
+            print("[ERROR] Sorted list does not represent original list.")
+            return objList
+        return sortedObjList
+
     template = loadJson(template)
+    sortedDesc = {}
     # Add k:v to sortedDesc according to their order in template
-    sortedDesc = {key: descriptor[key] for key in template if
-                  key in descriptor}
+    for key in [k for k in template if k in descriptor]:
+        if type(descriptor[key]) is list:
+            sortedDesc[key] =\
+                sortListedObjects(descriptor[key], template[key][0])
+        else:
+            sortedDesc[key] = descriptor[key]
+
     # Add remaining k:v that are missing from template
     sortedDesc.update(descriptor)
+    if sortedDesc != descriptor:
+        return descriptor
     return sortedDesc
+
+
+# Recursively sorts tool invocations according to descriptor's inputs'
+def customSortInvocationByInput(invocation, descriptor):
+    descriptor = loadJson(descriptor)
+    try:
+        # sort invoc according to input's order in decsriptor
+        sortedInvoc = {key: invocation[key] for key in
+                       [inp['id'] for inp in descriptor['inputs']
+                        if descriptor['inputs'] is not None]
+                       if key in invocation}
+        if sortedInvoc != invocation:
+            return invocation
+    except Exception:
+        print("[ERROR] Sorted invocation does not"
+              " represent original invocation")
+        return invocation
+    return sortedInvoc

@@ -1,28 +1,28 @@
 {
-    "name": "", 
-    "tool-version": "",
-    "command-line": "", 
-    "shell": "",
+    "name": "",
+    "author": "",
     "description": "",
-    "groups": [
-        {
-            "all-or-none": true,
-            "mutually-exclusive": true,
-            "one-is-required": true,
-            "id": "",
-            "name": "",
-            "members": []
-        }
-    ],
+    "descriptor-url": "",
+    "tool-version": "",
+    "schema-version": "",
+    "command-line": "",
+    "shell": "",
+    "container-image": {
+        "image": "",
+        "index": "",
+        "type": ""
+    },
     "inputs": [
         {
-            "command-line-flag": "",
-            "id": "",
             "name": "",
+            "id": "",
+            "description": "",
             "type": "",
             "list": true,
             "integer": true,
             "optional": true,
+            "default-value": "",
+            "command-line-flag": "",
             "value-key": "",
             "value-choices": [],
             "requires-inputs": []
@@ -31,19 +31,31 @@
     ],
     "output-files": [
         {
-            "id": "",
             "name": "",
+            "id": "",
+            "description": "",
+            "list": false,
             "optional": false,
             "path-template": "",
-            "optional-path-template": {},
+            "conditional-path-template": {},
             "path-template-stripped-extensions": [],
             "value-key": ""
         }
     ],
-    "container-image": {
-        "image": "",
-        "index": "",
-        "type": ""
+    "groups": [
+        {
+            "all-or-none": true,
+            "mutually-exclusive": true,
+            "one-is-required": true,
+            "name": "",
+            "id": "",
+            "members": []
+        }
+    ],
+    "tags": {
+        "domain": "",
+        "status": "",
+        "purpose": ""
     },
     "suggested-resources": {
         "cpu-cores": 0,
@@ -56,8 +68,5 @@
             "description": ""
         }
     ],
-    "tags": {
-        "purpose": "",
-        "status": ""
-    }
+    "custom": {}
 }

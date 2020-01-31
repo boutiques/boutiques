@@ -3,6 +3,7 @@
 from boutiques.validator import validate_descriptor, ValidationError
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
+from boutiques.util.utils import customSortDescriptorByKey
 import simplejson as json
 import requests
 import os
@@ -149,7 +150,8 @@ class Publisher():
             self.zenodo_access_token, deposition_id, "Descriptor")
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
-            f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+            f.write(json.dumps(
+                 customSortDescriptorByKey(self.descriptor), indent=4))
 
     def create_metadata(self):
         data = {
