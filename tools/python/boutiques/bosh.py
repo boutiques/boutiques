@@ -144,6 +144,10 @@ def parser_executeLaunch():
                         "to cache.")
     parser.add_argument("--provenance", action="store", type=json.loads,
                         help="Append JSON object to the generated record.")
+    parser.add_argument("--no-container", action="store_true",
+                        help="Launch invocation on the host computer, with "
+                        "no container. If 'container-image' appears in the "
+                        "descriptor, it is ignored.")
     force_group = parser.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "
@@ -221,7 +225,8 @@ def execute(*params):
                                   "forceDocker": results.force_docker,
                                   "forceSingularity":
                                       results.force_singularity,
-                                  "provenance": results.provenance})
+                                  "provenance": results.provenance,
+                                  "noContainer": results.no_container})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -309,7 +314,7 @@ def parser_importer():
                         " descriptor will be written.")
     parser.add_argument("input_descriptor", help="Input descriptor to be"
                         " converted. For '0.4', is JSON descriptor,"
-                        " for 'dcpt' is JSON descriptor,"
+                        " for 'docopt' is JSON descriptor,"
                         " for 'bids' is base directory of BIDS app,"
                         " for 'cwl' is YAML descriptor.")
     parser.add_argument("-o", "--output-invocation", help="Where to write "
@@ -334,7 +339,7 @@ def importer(*params):
         importer.import_bids()
     elif results.type == "cwl":
         importer.import_cwl()
-    elif results.type == "dcpt":
+    elif results.type == "docopt":
         create(params[1])
         importer.import_docopt(params[1])
 
@@ -766,7 +771,7 @@ TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
 * export: export a descriptor to other formats.
 * import: create a descriptor for a BIDS app or update a descriptor from \
-an older version of the schema.
+an older version of the schema. Options: "bids", "0.4", "cwl", "docopt"
 * validate: validate an existing boutiques descriptor.
 
 TOOL USAGE & EXECUTION

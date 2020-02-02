@@ -145,7 +145,7 @@ class TestImport(TestCase):
         pydocopt_input = op.join(base_path, "test_valid.py")
         descriptor_output = op.join(base_path, "test_valid_output.json")
 
-        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        import_args = ["import", "docopt", descriptor_output, pydocopt_input]
         bosh(import_args)
 
         test_invocation = op.join(base_path, "valid_invoc_mutex.json")
@@ -159,7 +159,7 @@ class TestImport(TestCase):
         pydocopt_input = op.join(base_path, "test_options.py")
         descriptor_output = op.join(base_path, "test_options_output.json")
 
-        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        import_args = ["import", "docopt", descriptor_output, pydocopt_input]
         bosh(import_args)
 
         test_invocation = op.join(base_path, "test_options_invocation.json")
@@ -173,7 +173,7 @@ class TestImport(TestCase):
         pydocopt_input = op.join(base_path, "test_invalid.py")
         descriptor_output = op.join(base_path, "foobar.json")
 
-        args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        args = ["import", "docopt", descriptor_output, pydocopt_input]
 
         with pytest.raises(ImportError, match="Invalid docopt script"):
             bosh(args)
@@ -188,7 +188,7 @@ class TestImport(TestCase):
         pydocopt_input = op.join(base_path, "naval_fate.py")
         descriptor_output = op.join(base_path, "naval_fate_descriptor.json")
 
-        import_args = ["import", "dcpt", descriptor_output, pydocopt_input]
+        import_args = ["import", "docopt", descriptor_output, pydocopt_input]
         bosh(import_args)
 
         test_invocation = op.join(base_path, "nf_invoc_new.json")

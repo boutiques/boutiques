@@ -214,6 +214,20 @@ class TestPublisher(TestCase):
         self.assertTrue("Tool must have an author to be published."
                         in str(e.exception))
 
+        # Publish a descriptor that doesn't have a container image
+        good_desc = op.join(self.get_examples_dir(), "no_container.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(good_desc, temp_descriptor.name)
+        with self.assertRaises(ZenodoError) as e:
+            no_container = bosh(["publish",
+                                 temp_descriptor.name,
+                                 "--sandbox", "-y", "-v",
+                                 "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                                   "PWr2VeQZgBLErKbfF5RdrKhzzJ"
+                                                   "i8i2hnN8r"])
+        self.assertTrue("Tool must have a container image to be published."
+                        in str(e.exception))
+
         # Update a descriptor that doesn't have a DOI
         example1_dir = op.join(self.get_examples_dir(), "example1")
         example1_desc = op.join(example1_dir, "example1_docker.json")

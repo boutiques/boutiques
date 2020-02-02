@@ -130,17 +130,17 @@ class Importer():
         docstring = imp.load_source(
             'docopt_pyscript', self.input_descriptor).__doc__
 
-        dcptImptr = Docopt_Importer(docstring, template_file)
+        docoptImporter = Docopt_Importer(docstring, template_file)
         # The order matters
-        dcptImptr.loadDocoptDescription()
-        dcptImptr.loadDescriptionAndType()
-        dcptImptr.generateInputsAndCommandLine(dcptImptr.pattern)
-        dcptImptr.addInputsRecursive(dcptImptr.dependencies)
-        dcptImptr.determineOptionality()
-        dcptImptr.createRootOneIsRequiredGroup()
+        docoptImporter.loadDocoptDescription()
+        docoptImporter.loadDescriptionAndType()
+        docoptImporter.generateInputsAndCommandLine(docoptImporter.pattern)
+        docoptImporter.addInputsRecursive(docoptImporter.dependencies)
+        docoptImporter.determineOptionality()
+        docoptImporter.createRootOneIsRequiredGroup()
 
         with open(self.output_descriptor, "w") as output:
-            output.write(json.dumps(dcptImptr.descriptor, indent=4))
+            output.write(json.dumps(docoptImporter.descriptor, indent=4))
 
     def import_bids(self):
         path, fil = os.path.split(__file__)
