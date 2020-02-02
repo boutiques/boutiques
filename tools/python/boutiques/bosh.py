@@ -299,9 +299,12 @@ execute.__doc__ += parser_executePrepare().format_help()
 
 def parser_importer():
     parser = ArgumentParser("Imports old descriptor or BIDS app or CWL"
-                            " descriptor to spec.")
-    parser.add_argument("type", help="Type of import we are performing",
-                        choices=["bids", "0.4", "cwl", "dcpt"])
+                            " descriptor or docopt script to spec.")
+    parser.add_argument("type", help="Type of import we are performing."
+                        " Allowed values: {" +
+                        ", ".join(["bids", "0.4", "cwl", "docopt"]) + "}",
+                        choices=["bids", "0.4", "cwl", "docopt"],
+                        metavar='type')
     parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
     parser.add_argument("input_descriptor", help="Input descriptor to be"
