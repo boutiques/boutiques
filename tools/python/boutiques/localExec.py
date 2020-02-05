@@ -235,7 +235,8 @@ class LocalExecutor(object):
             inputsByValKey = {inp['value-key']: inp for inp in self.inputs}
             for (envVarName, envVarValue) in variables:
                 if envVarValue in inputsByValKey:
-                    envVarValue = self.in_dict[inputsByValKey[envVarValue]['id']]
+                    envVarValue =\
+                        self.in_dict[inputsByValKey[envVarValue]['id']]
                 os.environ[envVarName] = envVarValue
                 envVars[envVarName] = envVarValue
         # Container script constant name
