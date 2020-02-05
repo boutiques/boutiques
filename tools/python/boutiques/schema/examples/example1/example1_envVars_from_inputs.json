@@ -1,0 +1,42 @@
+{
+    "author": "Test author",
+    "command-line": "echo $env_var > file.txt",
+    "container-image": {
+        "container-opts": [
+            "-e",
+            "HOME=$PWD"
+        ],
+        "image": "boutiques/example1:test",
+        "type": "docker"
+    },
+    "environment-variables": [
+        {
+            "name": "ENVAR",
+            "value": "theValue"
+        },
+        {
+            "name": "env_var",
+            "value": "[INPUT]"
+        }
+    ],
+    "description": "This property describes the tool or application",
+    "inputs": [
+        {
+            "id": "env_var", 
+            "name": "Environment Variable", 
+            "type": "File", 
+            "value-key": "[INPUT]"
+        }
+    ],
+    "name": "Test Boutiques Tool",
+    "output-files": [
+        {
+            "id": "output_file", 
+            "name": "output file", 
+            "path-template": "file.txt"
+        }
+    ],
+    "schema-version": "0.5",
+    "tool-doi": "00.0000/example.0000000",
+    "tool-version": "0.0.1"
+}
