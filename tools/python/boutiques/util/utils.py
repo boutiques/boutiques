@@ -82,15 +82,11 @@ def customSortDescriptorByKey(descriptor,
             sortedObj.update(obj)
             sortedObjList.append(sortedObj)
 
-        # Safety: return original if sortedObjList is faulty
-        try:
-            for obj, sobj in zip(objList, sortedObjList):
-                if obj != sobj:
-                    sortedObjList = objList
-                    break
-        except Exception:
-            print("[ERROR] Sorted list does not represent original list.")
+        if len(objList) != len(sortedObjList):
             return objList
+        for obj, sobj in zip(objList, sortedObjList):
+            if obj != sobj:
+                return objList
         return sortedObjList
 
     template = loadJson(template)
@@ -113,16 +109,11 @@ def customSortDescriptorByKey(descriptor,
 # Sorts tool invocations according to descriptor's inputs'
 def customSortInvocationByInput(invocation, descriptor):
     descriptor = loadJson(descriptor)
-    try:
-        # sort invoc according to input's order in decsriptor
-        sortedInvoc = {key: invocation[key] for key in
-                       [inp['id'] for inp in descriptor['inputs']
-                        if descriptor['inputs'] is not None]
-                       if key in invocation}
-        if sortedInvoc != invocation:
-            return invocation
-    except Exception:
-        print("[ERROR] Sorted invocation does not"
-              " represent original invocation")
+    # sort invoc according to input's order in decsriptor
+    sortedInvoc = {key: invocation[key] for key in
+                   [inp['id'] for inp in descriptor['inputs']
+                    if descriptor['inputs'] is not None]
+                   if key in invocation}
+    if sortedInvoc != invocation:
         return invocation
     return sortedInvoc

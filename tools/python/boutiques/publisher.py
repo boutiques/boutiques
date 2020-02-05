@@ -156,8 +156,7 @@ class Publisher():
             self.zenodo_access_token, deposition_id, "Descriptor")
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
-            f.write(json.dumps(
-                 customSortDescriptorByKey(self.descriptor), indent=4))
+            f.write(json.dumps(self.descriptor, indent=4))
 
     def create_metadata(self):
         data = {
