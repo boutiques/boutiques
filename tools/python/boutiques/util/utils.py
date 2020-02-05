@@ -66,7 +66,7 @@ def conditionalExpFormat(s):
     return cleanedExpression
 
 
-# Recursively sorts and returns a descriptor dictionary according to
+# Sorts and returns a descriptor dictionary according to
 # the keys' order in a template descriptor
 def customSortDescriptorByKey(descriptor,
                               template=os.path.join(
@@ -110,7 +110,7 @@ def customSortDescriptorByKey(descriptor,
     return sortedDesc
 
 
-# Recursively sorts tool invocations according to descriptor's inputs'
+# Sorts tool invocations according to descriptor's inputs'
 def customSortInvocationByInput(invocation, descriptor):
     descriptor = loadJson(descriptor)
     try:
