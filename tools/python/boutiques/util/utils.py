@@ -1,6 +1,6 @@
 import os
 import simplejson as json
-from boutiques.logger import raise_error
+from boutiques.logger import raise_error, print_warning
 from boutiques import __file__ as bfile
 
 
@@ -86,6 +86,8 @@ def customSortDescriptorByKey(descriptor,
             return objList
         for obj, sobj in zip(objList, sortedObjList):
             if obj != sobj:
+                print_warning("Sorted list does not represent"
+                              " original list.")
                 return objList
         return sortedObjList
 
@@ -102,6 +104,8 @@ def customSortDescriptorByKey(descriptor,
     # Add remaining k:v that are missing from template
     sortedDesc.update(descriptor)
     if sortedDesc != descriptor:
+        print_warning("Sorted descriptor does not represent"
+                      " original descriptor.")
         return descriptor
     return sortedDesc
 
@@ -115,5 +119,7 @@ def customSortInvocationByInput(invocation, descriptor):
                     if descriptor['inputs'] is not None]
                    if key in invocation}
     if sortedInvoc != invocation:
+        print_warning("Sorted invocation does not represent"
+                      " original invocation.")
         return invocation
     return sortedInvoc
