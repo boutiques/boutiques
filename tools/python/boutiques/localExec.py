@@ -233,6 +233,8 @@ class LocalExecutor(object):
             variables = [(p['name'], p['value']) for p in
                          self.desc_dict['environment-variables']]
             for (envVarName, envVarValue) in variables:
+                if envVarName in self.in_dict:
+                    envVarValue = self.in_dict[envVarName]
                 os.environ[envVarName] = envVarValue
                 envVars[envVarName] = envVarValue
         # Container script constant name

@@ -1,0 +1,29 @@
+{
+    "command-line": "echo $env_var > file.txt", 
+    "description": "a tool with no container image", 
+    "inputs": [
+        {
+            "id": "env_var", 
+            "name": "Environment Variable", 
+            "type": "File", 
+            "value-key": "[INPUT]"
+        }
+    ],
+    "name": "Test environment variable as input", 
+    "output-files": [
+        {
+            "id": "output_file", 
+            "name": "output file", 
+            "path-template": "file.txt"
+        }
+    ],
+    "environment-variables": [
+        {
+            "name": "env_var",
+            "value": "[INPUT]"
+        }
+    ],
+    "schema-version": "0.5", 
+    "tool-version": "0.1",
+    "author": "tester"
+}
