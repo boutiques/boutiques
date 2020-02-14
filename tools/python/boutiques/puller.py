@@ -20,8 +20,9 @@ class Puller():
     def __init__(self, zids, verbose=False, sandbox=False):
         # remove zenodo prefix
         self.zenodo_entries = []
-        self.cache_dir = os.path.join(os.path.expanduser('~'), ".cache",
-                                      "boutiques")
+        self.cache_dir = os.path.join(
+            os.path.expanduser('~'), ".cache", "boutiques",
+            "sandbox" if sandbox else "production")
         discarded_zids = zids
         # This removes duplicates, should maintain order
         zids = list(dict.fromkeys(zids))

@@ -20,14 +20,14 @@ class LoadError(Exception):
 
 # Helper function that loads the JSON object coming from either a string,
 # a local file or a file pulled from Zenodo
-def loadJson(userInput, verbose=False):
+def loadJson(userInput, verbose=False, sandbox=False):
     # Check for JSON file (local or from Zenodo)
     json_file = None
     if os.path.isfile(userInput):
         json_file = userInput
     elif userInput.split(".")[0].lower() == "zenodo":
         from boutiques.puller import Puller
-        puller = Puller([userInput], verbose)
+        puller = Puller([userInput], verbose, sandbox)
         json_file = puller.pull()[0]
     if json_file is not None:
         with open(json_file, 'r') as f:

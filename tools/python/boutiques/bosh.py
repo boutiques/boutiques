@@ -27,6 +27,9 @@ def parser_pprint():
     parser = ArgumentParser("Boutiques pretty-print for generating help text")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -35,7 +38,7 @@ def pprint(*params):
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import PrettyPrinter
-    desc = loadJson(results.descriptor)
+    desc = loadJson(results.descriptor, sandbox=results.sandbox)
     prettyclass = PrettyPrinter(desc)
     return prettyclass.docstring
 

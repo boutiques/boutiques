@@ -50,7 +50,8 @@ class TestPull(TestCase):
     def test_pull_multi(self, mock_urlretrieve):
         results = bosh(["pull", "zenodo." +
                         str(example_boutiques_tool.id), "zenodo.2587160"])
-        cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
+        cache_dir = os.path.join(os.path.expanduser('~'),
+                                 ".cache", "boutiques", "production")
         self.assertTrue(os.path.exists(os.path.join(
             cache_dir, "zenodo-" + str(example_boutiques_tool.id) + ".json")))
         self.assertTrue(os.path.exists(os.path.join(cache_dir,
