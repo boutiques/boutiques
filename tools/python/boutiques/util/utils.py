@@ -1,6 +1,7 @@
 import os
 import simplejson as json
-from boutiques.logger import raise_error
+from boutiques.logger import raise_error, print_warning
+from boutiques import __file__ as bfile
 
 
 # Parses absolute path into filename
@@ -63,3 +64,62 @@ def conditionalExpFormat(s):
             cleanedExpression += c
         idx += 1
     return cleanedExpression
+
+
+# Sorts and returns a descriptor dictionary according to
+# the keys' order in a template descriptor
+def customSortDescriptorByKey(descriptor,
+                              template=os.path.join(
+                                  os.path.dirname(bfile),
+                                  "templates",
+                                  "ordered_keys_desc.json")):
+
+    def sortListedObjects(objList, template):
+        sortedObjList = []
+        for obj in objList:
+            sortedObj = {key: obj[key] for key in template if
+                         key in obj}
+            sortedObj.update(obj)
+            sortedObjList.append(sortedObj)
+
+        if len(objList) != len(sortedObjList):
+            return objList
+        for obj, sobj in zip(objList, sortedObjList):
+            if obj != sobj:
+                print_warning("Sorted list does not represent"
+                              " original list.")
+                return objList
+        return sortedObjList
+
+    template = loadJson(template)
+    sortedDesc = {}
+    # Add k:v to sortedDesc according to their order in template
+    for key in [k for k in template if k in descriptor]:
+        if type(descriptor[key]) is list:
+            sortedDesc[key] =\
+                sortListedObjects(descriptor[key], template[key][0])
+        else:
+            sortedDesc[key] = descriptor[key]
+
+    # Add remaining k:v that are missing from template
+    sortedDesc.update(descriptor)
+    if sortedDesc != descriptor:
+        print_warning("Sorted descriptor does not represent"
+                      " original descriptor.")
+        return descriptor
+    return sortedDesc
+
+
+# Sorts tool invocations according to descriptor's inputs'
+def customSortInvocationByInput(invocation, descriptor):
+    descriptor = loadJson(descriptor)
+    # sort invoc according to input's order in decsriptor
+    sortedInvoc = {key: invocation[key] for key in
+                   [inp['id'] for inp in descriptor['inputs']
+                    if descriptor['inputs'] is not None]
+                   if key in invocation}
+    if sortedInvoc != invocation:
+        print_warning("Sorted invocation does not represent"
+                      " original invocation.")
+        return invocation
+    return sortedInvoc

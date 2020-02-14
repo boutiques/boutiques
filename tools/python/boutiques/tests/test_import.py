@@ -23,7 +23,8 @@ class TestImport(TestCase):
     @pytest.fixture(scope='session', autouse=True)
     def clean_up(self):
         yield
-        os.remove("user-image.simg")
+        if os.path.isfile("user-image.simg"):
+            os.remove("user-image.simg")
 
     def test_import_bids_good(self):
         bids_app = opj(op.split(bfile)[0],
@@ -59,9 +60,10 @@ class TestImport(TestCase):
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = open(fout, "U").read().strip()
-        self.assertIn(result, [open(ref_file, "U").read().strip(),
-                               open(ref_file_p2, "U").read().strip()])
+        result = json.loads(open(fout, "U").read().strip())
+        self.assertIn(result,
+                      [json.loads(open(ref_file, "U").read().strip()),
+                       json.loads(open(ref_file_p2, "U").read().strip())])
         os.remove(fout)
 
     def test_upgrade_04_json_obj(self):
@@ -76,9 +78,10 @@ class TestImport(TestCase):
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = open(fout, "U").read().strip()
-        self.assertIn(result, [open(ref_file, "U").read().strip(),
-                               open(ref_file_p2, "U").read().strip()])
+        result = json.loads(open(fout, "U").read().strip())
+        self.assertIn(result,
+                      [json.loads(open(ref_file, "U").read().strip()),
+                       json.loads(open(ref_file_p2, "U").read().strip())])
         os.remove(fout)
 
     def test_import_cwl_valid(self):

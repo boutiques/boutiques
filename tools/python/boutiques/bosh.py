@@ -18,7 +18,7 @@ from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import addDefaultValues
-from boutiques.util.utils import loadJson
+from boutiques.util.utils import loadJson, customSortInvocationByInput
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
@@ -257,7 +257,9 @@ def execute(*params):
             executor.generateRandomParams(1)
 
         if results.json:
-            sout = [json.dumps(executor.in_dict, indent=4, sort_keys=True)]
+            sout = [json.dumps(
+                customSortInvocationByInput(executor.in_dict, descriptor),
+                indent=4)]
             print(sout[0])
         else:
             executor.printCmdLine()
@@ -458,7 +460,7 @@ def invocation(*params):
         if result.write_schema:
             descriptor["invocation-schema"] = invSchema
             with open(result.descriptor, "w") as f:
-                f.write(json.dumps(descriptor, indent=4, sort_keys=True))
+                f.write(json.dumps(descriptor, indent=4))
     if result.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
         data = addDefaultValues(descriptor, loadJson(result.invocation))
@@ -609,7 +611,8 @@ def example(*params):
                               "skipDataCollect": True,
                               "requireComplete": results.complete})
     executor.generateRandomParams(1)
-    return json.dumps(executor.in_dict, indent=4, sort_keys=True)
+    return json.dumps(
+        customSortInvocationByInput(executor.in_dict, descriptor), indent=4)
 
 
 example.__doc__ = parser_example().format_help()

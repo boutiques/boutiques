@@ -1,0 +1,72 @@
+{
+    "name": "",
+    "author": "",
+    "description": "",
+    "descriptor-url": "",
+    "tool-version": "",
+    "schema-version": "",
+    "command-line": "",
+    "shell": "",
+    "container-image": {
+        "image": "",
+        "index": "",
+        "type": ""
+    },
+    "inputs": [
+        {
+            "name": "",
+            "id": "",
+            "description": "",
+            "type": "",
+            "list": true,
+            "integer": true,
+            "optional": true,
+            "default-value": "",
+            "command-line-flag": "",
+            "value-key": "",
+            "value-choices": [],
+            "requires-inputs": []
+
+        }
+    ],
+    "output-files": [
+        {
+            "name": "",
+            "id": "",
+            "description": "",
+            "list": false,
+            "optional": false,
+            "path-template": "",
+            "conditional-path-template": {},
+            "path-template-stripped-extensions": [],
+            "value-key": ""
+        }
+    ],
+    "groups": [
+        {
+            "all-or-none": true,
+            "mutually-exclusive": true,
+            "one-is-required": true,
+            "name": "",
+            "id": "",
+            "members": []
+        }
+    ],
+    "tags": {
+        "domain": "",
+        "status": "",
+        "purpose": ""
+    },
+    "suggested-resources": {
+        "cpu-cores": 0,
+        "ram": 0,
+        "walltime-estimate": 0
+    },
+    "error-codes": [
+        {
+            "code": 0,
+            "description": ""
+        }
+    ],
+    "custom": {}
+}
