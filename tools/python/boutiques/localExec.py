@@ -147,7 +147,7 @@ class LocalExecutor(object):
             setattr(self, option, options.get(option))
 
         # Parse JSON descriptor
-        self.desc_dict = loadJson(desc, self.debug)
+        self.desc_dict = loadJson(desc, self.debug, sandbox=self.sandbox)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -922,8 +922,10 @@ class LocalExecutor(object):
                 print_info("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
-                boutiques.invocation(
-                    self.desc_path, "-i", json.dumps(self.in_dict))
+                args = [self.desc_path, "-i", json.dumps(self.in_dict)]
+                if self.sandbox:
+                    args.append("--sandbox")
+                boutiques.invocation(*args)
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception as e:  # Avoid BaseExceptions like SystemExit
@@ -966,7 +968,10 @@ class LocalExecutor(object):
         addDefaultValues(self.desc_dict, self.in_dict)
         # Check results (as much as possible)
         try:
-            boutiques.invocation(self.desc_path, "-i", json.dumps(self.in_dict))
+            args = [self.desc_path, "-i", json.dumps(self.in_dict)]
+            if self.sandbox:
+                args.append("--sandbox")
+            boutiques.invocation(*args)
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write("An error occurred in validation\n"
                              "Previously saved issues\n")

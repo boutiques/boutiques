@@ -226,7 +226,10 @@ def execute(*params):
         inp = results.invocation
 
         # Validate invocation and descriptor
-        valid = invocation(descriptor, '-i', inp)
+        arguments = [descriptor, '-i', inp]
+        if results.sandbox:
+            arguments.append('--sandbox')
+        valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -242,7 +245,8 @@ def execute(*params):
                                   "forceSingularity":
                                       results.force_singularity,
                                   "provenance": results.provenance,
-                                  "noContainer": results.no_container})
+                                  "noContainer": results.no_container,
+                                  "sandbox": results.sandbox})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -259,6 +263,8 @@ def execute(*params):
         if inp:
             arguments.append('-i')
             arguments.append(inp)
+        if results.sandbox:
+            arguments.append('--sandbox')
         valid = invocation(*arguments)
 
         # Generate object that will perform the commands
@@ -268,7 +274,8 @@ def execute(*params):
                                   "destroyTempScripts": True,
                                   "changeUser": True,
                                   "skipDataCollect": True,
-                                  "requireComplete": results.complete})
+                                  "requireComplete": results.complete,
+                                  "sandbox": results.sandbox})
         if not inp:
             executor.generateRandomParams(1)
 
@@ -291,7 +298,10 @@ def execute(*params):
         descriptor = results.descriptor
 
         # Validate descriptor
-        valid = invocation(descriptor)
+        arguments = [descriptor]
+        if results.sandbox:
+            arguments.append('--sandbox')
+        valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -300,7 +310,8 @@ def execute(*params):
                                   "debug": results.debug,
                                   "stream": results.stream,
                                   "imagePath": results.imagepath,
-                                  "skipDataCollect": True})
+                                  "skipDataCollect": True,
+                                  "sandbox": results.sandbox})
         container_location = executor.prepare()[1]
         print("Container location: " + container_location)
 
@@ -383,10 +394,13 @@ def exporter(*params):
     descriptor = results.descriptor
     output = results.output
 
-    bosh(["validate", results.descriptor])
+    args = [results.descriptor]
+    if results.sandbox:
+        args.append("--sandbox")
+    validate(*args)
 
     from boutiques.exporter import Exporter
-    exporter = Exporter(descriptor, results.identifier)
+    exporter = Exporter(descriptor, results.identifier, sandbox=results.sandbox)
     if results.type == "carmin":
         exporter.carmin(output)
 
@@ -469,21 +483,24 @@ def parser_invocation():
 
 def invocation(*params):
     parser = parser_invocation()
-    result = parser.parse_args(params)
-    validate(result.descriptor, "--sandbox")
-    descriptor = loadJson(result.descriptor, sandbox=result.sandbox)
+    results = parser.parse_args(params)
+    arguments = [results.descriptor]
+    if results.sandbox:
+        arguments.append('--sandbox')
+    validate(*arguments)
+    descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:
         from boutiques.invocationSchemaHandler import generateInvocationSchema
         invSchema = generateInvocationSchema(descriptor)
-        if result.write_schema:
+        if results.write_schema:
             descriptor["invocation-schema"] = invSchema
-            with open(result.descriptor, "w") as f:
+            with open(results.descriptor, "w") as f:
                 f.write(json.dumps(descriptor, indent=4, sort_keys=True))
-    if result.invocation:
+    if results.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        data = addDefaultValues(descriptor, loadJson(result.invocation))
+        data = addDefaultValues(descriptor, loadJson(results.invocation))
         validateSchema(invSchema, data)
 
 
@@ -506,24 +523,28 @@ def parser_evaluate():
                         "(i.e. output-files/optional=false,id=myfile). "
                         "Perform multiple queries by separating them with a "
                         "space.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
 def evaluate(*params):
     parser = parser_evaluate()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
 
     # Generate object that will parse the invocation and descriptor
     from boutiques.localExec import LocalExecutor
-    executor = LocalExecutor(result.descriptor, result.invocation,
+    executor = LocalExecutor(results.descriptor, results.invocation,
                              {"forcePathType": True,
                               "destroyTempScripts": True,
                               "changeUser": True,
-                              "skipDataCollect": True})
+                              "skipDataCollect": True,
+                              "sandbox": results.sandbox})
 
     from boutiques.evaluate import evaluateEngine
     query_results = []
-    for query in result.query:
+    for query in results.query:
         query_results += [evaluateEngine(executor, query)]
     return query_results[0] if len(query_results) == 1 else query_results
 
@@ -537,18 +558,25 @@ def parser_test():
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
 def test(*params):
     parser = parser_test()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
+
+    args = [results.descriptor]
+    if results.sandbox:
+        args.append("--sandbox")
 
     # Generation of the invocation schema (and descriptor validation).
-    invocation(result.descriptor)
+    invocation(*args)
 
     # Extraction of all the invocations defined for the test-cases.
-    descriptor = loadJson(result.descriptor)
+    descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
 
     if (not descriptor.get("tests")):
         # If no tests have been specified, we consider testing successful.
@@ -557,13 +585,16 @@ def test(*params):
     for test in descriptor["tests"]:
         invocation_JSON = test["invocation"]
 
+        testArgs = [results.descriptor, "--invocation",
+                    json.dumps(invocation_JSON)]
+        if results.sandbox:
+            testArgs.append("--sandbox")
         # Check if the invocation is valid.
-        invocation(result.descriptor, "--invocation",
-                   json.dumps(invocation_JSON))
+        invocation(*testArgs)
 
     # Invocations have been properly validated. We can launch the actual tests.
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
-    return pytest.main([test_path, "--descriptor", result.descriptor])
+    return pytest.main([test_path, "--descriptor", results.descriptor])
 
 
 test.__doc__ = parser_test().format_help()
@@ -592,11 +623,11 @@ def parser_search():
 
 def search(*params):
     parser = parser_search()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
-    searcher = Searcher(result.query, result.verbose, result.sandbox,
-                        result.max, result.no_trunc, result.exact)
+    searcher = Searcher(results.query, results.verbose, results.sandbox,
+                        results.max, results.no_trunc, results.exact)
 
     return searcher.search()
 
@@ -623,7 +654,10 @@ def example(*params):
     results = parser.parse_args(params)
 
     descriptor = results.descriptor
-    valid = invocation(descriptor, "--sandbox")
+    arguments = [descriptor]
+    if results.sandbox:
+        arguments.append('--sandbox')
+    valid = invocation(*arguments)
 
     # Generate object that will perform the commands
     from boutiques.localExec import LocalExecutor
@@ -632,7 +666,8 @@ def example(*params):
                               "destroyTempScripts": True,
                               "changeUser": True,
                               "skipDataCollect": True,
-                              "requireComplete": results.complete})
+                              "requireComplete": results.complete,
+                              "sandbox": results.sandbox})
     executor.generateRandomParams(1)
     return json.dumps(executor.in_dict, indent=4, sort_keys=True)
 
@@ -658,10 +693,10 @@ def parser_pull():
 
 def pull(*params):
     parser = parser_pull()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.zids, result.verbose, result.sandbox)
+    puller = Puller(results.zids, results.verbose, results.sandbox)
     return puller.pull()
 
 
