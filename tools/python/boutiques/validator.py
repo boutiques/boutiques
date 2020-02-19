@@ -8,6 +8,7 @@ from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
 from boutiques.util.utils import loadJson, conditionalExpFormat
+from boutiques.util.utils import customSortDescriptorByKey
 from boutiques.logger import raise_error, print_info
 
 
@@ -507,7 +508,8 @@ def validate_descriptor(json_file, **kwargs):
     if errors is None:
         if kwargs.get('format_output'):
             with open(json_file, 'w') as fhandle:
-                fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
+                fhandle.write(json.dumps(
+                    customSortDescriptorByKey(descriptor), indent=4))
         return descriptor
     else:
         raise DescriptorValidationError("\n".join(errors))

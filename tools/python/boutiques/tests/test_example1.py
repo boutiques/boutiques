@@ -487,6 +487,25 @@ class TestExample1(BaseTest):
                       outFileList)
         self.assertEqual([], ex.missing_files)
 
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_environment_variables_from_invoc(self):
+        ex = bosh.execute(
+            "launch",
+            self.get_file_path("example1_envVars_from_inputs.json"),
+            self.get_file_path("../test_input_env_var_invoc.json"),
+            "--skip-data-collection")
+
+        outFileList = [str(out) for out in ex.output_files]
+        try:
+            self.assertIn('file.txt (output_file, Required)', outFileList)
+            with open(outFileList[0].split()[0]) as file:
+                text = file.read()
+                self.assertIn('doesnt/matter/what/this/is/test_path.d', text)
+        finally:
+            if os.path.isfile(outFileList[0].split()[0]):
+                os.remove(outFileList[0].split()[0])
+
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
     @pytest.fixture(autouse=True)

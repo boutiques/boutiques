@@ -10,6 +10,7 @@ from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
 from boutiques.logger import raise_error, print_info, print_warning
+from boutiques.util.utils import customSortDescriptorByKey
 import subprocess
 
 
@@ -44,7 +45,8 @@ class CreateDescriptor(object):
 
     def save(self, filename):
         with open(filename, "w") as f:
-            f.write(json.dumps(self.descriptor, indent=4, sort_keys=True))
+            f.write(json.dumps(
+                customSortDescriptorByKey(self.descriptor), indent=4))
 
     def createInvocation(self, arguments):
         argdict = vars(arguments)
