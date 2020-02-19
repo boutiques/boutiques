@@ -83,6 +83,9 @@ def parser_validate():
     parser.add_argument("--format", "-f", action="store_true",
                         help="If descriptor is valid, rewrite it with sorted"
                         " keys.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -92,7 +95,8 @@ def validate(*params):
 
     from boutiques.validator import validate_descriptor
     descriptor = validate_descriptor(results.descriptor,
-                                     format_output=results.format)
+                                     format_output=results.format,
+                                     sandbox=results.sandbox)
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
@@ -151,6 +155,9 @@ def parser_executeLaunch():
                         help="Launch invocation on the host computer, with "
                         "no container. If 'container-image' appears in the "
                         "descriptor, it is ignored.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     force_group = parser.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "
@@ -173,6 +180,9 @@ def parser_executeSimulate():
                         help="Flag to generate invocation in JSON format.")
     parser.add_argument("-c", "--complete", action="store_true",
                         help="Include optional parameters.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -192,6 +202,9 @@ def parser_executePrepare():
     parser.add_argument("--imagepath", action="store",
                         help="Path to Singularity image. "
                         "If not specified, will use current directory.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -355,6 +368,9 @@ def parser_exporter():
     parser.add_argument("descriptor", help="Boutiques descriptor to export.")
     parser.add_argument("--identifier", help="Identifier to use in"
                                              "CARMIN export.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     parser.add_argument("output", help="Output file where to write the"
                         " converted descriptor.")
     return parser
@@ -445,14 +461,17 @@ def parser_invocation():
                         help="If descriptor doesn't have an invocation "
                         "schema, creates one and writes it to the descriptor"
                         " file ")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
 def invocation(*params):
     parser = parser_invocation()
     result = parser.parse_args(params)
-    validate(result.descriptor)
-    descriptor = loadJson(result.descriptor)
+    validate(result.descriptor, "--sandbox")
+    descriptor = loadJson(result.descriptor, sandbox=result.sandbox)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:
@@ -593,6 +612,9 @@ def parser_example():
                         "JSON string or Zenodo ID (prefixed by 'zenodo.').")
     parser.add_argument("-c", "--complete", action="store_true",
                         help="Include optional parameters.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -601,7 +623,7 @@ def example(*params):
     results = parser.parse_args(params)
 
     descriptor = results.descriptor
-    valid = invocation(descriptor)
+    valid = invocation(descriptor, "--sandbox")
 
     # Generate object that will perform the commands
     from boutiques.localExec import LocalExecutor
