@@ -13,9 +13,10 @@ class ExportError(Exception):
 
 class Exporter():
 
-    def __init__(self, descriptor, identifier):
+    def __init__(self, descriptor, identifier, sandbox=False):
         self.descriptor = descriptor
         self.identifier = identifier
+        self.sandbox = sandbox
 
     def convert_type(self, boutiques_type, is_integer=False, is_list=False):
         if is_list:
@@ -48,7 +49,7 @@ class Exporter():
 
     def carmin(self, output_file):
         carmin_desc = {}
-        descriptor = loadJson(self.descriptor)
+        descriptor = loadJson(self.descriptor, sandbox=self.sandbox)
 
         if descriptor.get('doi'):
             self.identifier = descriptor.get('doi')

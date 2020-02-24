@@ -48,7 +48,8 @@ class TestExample(TestCase):
                                   "destroyTempScripts": True,
                                   "changeUser": True,
                                   "skipDataCollect": True,
-                                  "requireComplete": True})
+                                  "requireComplete": True,
+                                  "sandbox": False})
 
         # Can't create descriptors with mutex group but only one valid example
         # Bosh example is inherently random,

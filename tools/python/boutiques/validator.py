@@ -36,7 +36,7 @@ def validate_descriptor(json_file, **kwargs):
     allowed_comparators = ['==', '!=', '<', '>', '<=', '>=']
 
     # Load descriptor
-    descriptor = loadJson(json_file)
+    descriptor = loadJson(json_file, sandbox=kwargs.get('sandbox'))
 
     # Validate basic JSON schema compliance for descriptor
     # Note: if it fails basic schema compliance we don"t do more checks
