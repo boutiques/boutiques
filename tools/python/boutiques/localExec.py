@@ -390,7 +390,7 @@ class LocalExecutor(object):
             fd = FileDescription(f, file_name, False)
             f_glob = glob(file_name)
             if f_glob:
-                fd = f_glob[0]
+                fd.file_name = f_glob[0]
                 output_files.append(fd)
                 output_files_dict[f] = f_glob[0]
             else:  # file does not exist
