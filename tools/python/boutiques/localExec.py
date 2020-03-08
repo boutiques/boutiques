@@ -14,6 +14,7 @@ import datetime
 import hashlib
 import boutiques
 import os.path as op
+from glob import glob
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info, print_warning
@@ -387,9 +388,11 @@ class LocalExecutor(object):
         for f in all_files.keys():
             file_name = all_files[f]
             fd = FileDescription(f, file_name, False)
-            if op.exists(file_name):
+            f_glob = glob(file_name)
+            if f_glob:
+                fd.file_name = f_glob[0]
                 output_files.append(fd)
-                output_files_dict[f] = file_name
+                output_files_dict[f] = f_glob[0]
             else:  # file does not exist
                 if f in required_files.keys():
                     missing_files.append(fd)
