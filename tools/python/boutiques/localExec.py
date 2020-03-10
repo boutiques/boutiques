@@ -1231,7 +1231,9 @@ class LocalExecutor(object):
     def _findDOI(self, userIn):
         doi_prefix = "10.5281/"
         # DOI in Zenodo reference case
-        if userIn.split(".")[0].lower() == "zenodo":
+        if userIn.startswith(doi_prefix):
+            return userIn
+        elif userIn.split(".")[0].lower() == "zenodo":
             return doi_prefix+userIn
         # File cases
         if os.path.isfile(userIn):

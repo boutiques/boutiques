@@ -26,7 +26,7 @@ def loadJson(userInput, verbose=False, sandbox=False):
     json_file = None
     if os.path.isfile(userInput):
         json_file = userInput
-    elif userInput.split(".")[0].lower() == "zenodo":
+    elif "zenodo" in ".".join(userInput.split('.')[:-1]).lower():
         from boutiques.puller import Puller
         puller = Puller([userInput], verbose, sandbox)
         json_file = puller.pull()[0]
