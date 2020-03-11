@@ -44,9 +44,8 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
 
     # Return if tool has a newer version
     record = zhelper.zenodo_get_record(record_id)
-    if not record['hits']['hits'][0]['metadata'][
-       'relations']['version'][0]['is_last']:
-        new_version = (record['hits']['hits'][0]['metadata']['relations']
+    if not record['metadata']['relations']['version'][0]['is_last']:
+        new_version = (record['metadata']['relations']
                        ['version'][0]['last_child']['pid_value'])
         raise_error(DeprecateError, 'Tool {0} has a newer version '
                                     '(zenodo.{1}), it cannot be deprecated.'

@@ -28,7 +28,8 @@ def mock_get(*args, **kwargs):
         mock_record1.id = int(record_id)
         if record_id == "22222":
             mock_record1.is_last_version = False
-        return mock_zenodo_search([mock_record1])
+        mock_hits = mock_zenodo_search([mock_record1]).json()
+        return MockHttpResponse(200, mock_hits['hits']['hits'][0])
 
     # Deposit command
     if command == "deposit":
