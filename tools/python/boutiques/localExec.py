@@ -523,11 +523,12 @@ class LocalExecutor(object):
     def _pullSingImage(self, conName, conIndex, conImage, imageDir, lockDir):
         # Give the file a temporary name while it's building
         conNameTmp = conName + ".tmp"
+        conImgHasIndex = re.search(r"^[a-zA-Z0-9]+://", conImage) is not None
         # Set the pull directory to the specified imagePath
         if self.imagePath:
             os.environ["SINGULARITY_PULLFOLDER"] = imageDir
         pull_loc = "\"{0}\" {1}{2}".format(conNameTmp,
-                                           conIndex,
+                                           conIndex if not conImgHasIndex else "",
                                            conImage)
         container_location = ("Pulled from {1}{2} ({0} not found "
                               "in current working "
