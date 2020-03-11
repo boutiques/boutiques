@@ -8,12 +8,14 @@ class MockHttpResponse:
 
 
 class MockZenodoRecord:
-    def __init__(self, id, title, description="", filename="", downloads=1):
+    def __init__(self, id, title, description="", filename="", downloads=1,
+                 keywords=[]):
         self.id = id
         self.title = title
         self.filename = filename
         self.downloads = downloads
         self.description = description
+        self.keywords = keywords
 
 
 # Mock object representing the current version of Example Boutiques Tool
@@ -91,6 +93,15 @@ def mock_zenodo_search(mock_records):
                             }
                           ],
                           "description": record.description,
+                          "relations": {
+                            'version': [
+                              {
+                                'count': 4,
+                                'index': 3,
+                                'is_last': {'pid_value': '33333'}
+                              }
+                            ]
+                          },
                           "doi": "10.5281/zenodo.%s" % record.id,
                           "keywords": [
                             "schema-version:0.5",

@@ -22,6 +22,12 @@
             "description": "Tool description.",
             "type": "string"
         },
+        "deprecated-by-doi": {
+            "id": "http://github.com/boutiques/boutiques-schema/deprecated-by-doi",
+            "minLength": 1,
+            "description": "doi of the tool that deprecates the current one. May be set to 'true' if the current tool is deprecated but no specific tool deprecates it.",
+            "type": ["string", "boolean"]
+        },
         "author": {
             "id": "http://github.com/boutiques/boutiques-schema/author",
             "minLength": 1,

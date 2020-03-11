@@ -821,6 +821,44 @@ data.__doc__ += parser_dataPublish().format_help() + "\n\n"
 data.__doc__ += parser_dataDelete().format_help()
 
 
+def parser_deprecate():
+    parser = ArgumentParser("Deprecates a published descriptor by creating a"
+                            " new version with the 'deprecated' tag on Zenodo."
+                            " The descriptor remains available from its Zenodo"
+                            "id, but it won't show in search results. This "
+                            "works by creating a new version of the tool in "
+                            "Zenodo, marked with keyword 'deprecated'.")
+    parser.add_argument("zid", action="store", help="Zenodo id "
+                        "of the descriptor to deprecate, "
+                        "prefixed by 'zenodo.', e.g. zenodo.123456")
+    parser.add_argument("--by", action="store", help="Zenodo id (e.g., "
+                        "zenodo-1234) of a  descriptor that will supersede "
+                        "the deprecated one.")
+    parser.add_argument("--zenodo-token", action="store",
+                        help="Zenodo API token to use for authentication. "
+                        "If not used, token will be read from configuration "
+                        "file or requested interactively.")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print information messages")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="use Zenodo's sandbox instead of "
+                        "production server. Recommended for tests.")
+    return parser
+
+
+def deprecate(*params):
+    parser = parser_deprecate()
+    result = parser.parse_args(params)
+
+    from boutiques.deprecate import deprecate
+    return deprecate(result.zid, by_zenodo_id=result.by,
+                     sandbox=result.sandbox, verbose=result.verbose,
+                     zenodo_token=result.zenodo_token)
+
+
+deprecate.__doc__ = parser_deprecate().format_help()
+
+
 def parser_bosh():
     parser = ArgumentParser(add_help=False,
                             formatter_class=RawTextHelpFormatter)
@@ -841,6 +879,8 @@ TOOL USAGE & EXECUTION
 * test: run pytest on a descriptor detailing tests.
 
 TOOL SEARCH & PUBLICATION
+* deprecate: deprecate a published tool. The tool will still be published and
+usable, but it won't show in search results.
 * publish: create an entry in Zenodo for the descriptor and adds the DOI \
 created by Zenodo to the descriptor.
 * pull: download a descriptor from Zenodo.
@@ -862,7 +902,7 @@ OTHER
                                     "import", "export", "publish",
                                     "invocation", "evaluate", "test",
                                     "example", "search", "pull",
-                                    "data", "pprint", "version"]))
+                                    "data", "pprint", "version", "deprecate"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -946,6 +986,9 @@ def bosh(args=None):
         elif func == "version":
             from boutiques.__version__ import VERSION
             return bosh_return(VERSION)
+        elif func == "deprecate":
+            out = deprecate(*params)
+            return bosh_return(out)
         else:
             parser.print_help()
             raise SystemExit

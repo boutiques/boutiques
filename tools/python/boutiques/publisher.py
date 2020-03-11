@@ -104,10 +104,7 @@ class Publisher():
         if(not self.no_int):
             prompt = ("The descriptor will be published to Zenodo, "
                       "this cannot be undone. Are you sure? (Y/n) ")
-            try:
-                ret = raw_input(prompt)  # Python 2
-            except NameError:
-                ret = input(prompt)  # Python 3
+            ret = input(prompt)
             if ret.upper() != "Y":
                 return
 
@@ -134,10 +131,7 @@ class Publisher():
                               "would you like to update it? "
                               "(Y:Update existing / n:Publish new entry with "
                               "name {}) ".format(self.descriptor.get("name")))
-                    try:
-                        ret = raw_input(prompt)  # Python 2
-                    except NameError:
-                        ret = input(prompt)  # Python 3
+                    ret = input(prompt)
                     if ret.upper() == "Y":
                         publish_update = True
                 else:
@@ -180,7 +174,7 @@ class Publisher():
                 if isinstance(value, bool):
                     keywords.append(key)
                 # Tag is of form 'tag-name':'tag-value', it is a key-value pair
-                if self.is_str(value):
+                if isinstance(value, str):
                     keywords.append(key + ":" + value)
                 # Tag is of form 'tag-name': ['value1', 'value2'], it is a
                 # list of key-value pairs
@@ -190,30 +184,30 @@ class Publisher():
             keywords.append(self.descriptor['container-image']['type'])
         if self.descriptor.get('tests'):
             keywords.append('tested')
+        if self.descriptor.get('deprecated-by-doi'):
+            keywords.append('deprecated')
+            if isinstance(self.descriptor['deprecated-by-doi'], str):
+                keywords.append('deprecated-by-doi:' +
+                                self.descriptor['deprecated-by-doi'])
+            self.addRelatedIdentifiers(
+                data, self.descriptor['deprecated-by-doi'],
+                'isPreviousVersionOf')
+
         if self.url is not None:
-            self.addHasPart(data, self.url)
+            self.addRelatedIdentifiers(data, self.url, 'hasPart')
         if self.online_platforms is not None:
             for p in self.online_platforms:
-                self.addHasPart(data, p)
+                self.addRelatedIdentifiers(data, p, 'hasPart')
         if self.tool_doi is not None:
-            self.addHasPart(data, self.tool_doi)
+            self.addRelatedIdentifiers(data, self.tool_doi, 'hasPart')
         if self.descriptor_url is not None:
-            self.addHasPart(data, self.descriptor_url)
+            self.addRelatedIdentifiers(data, self.descriptor_url, 'hasPart')
         return data
 
-    # Check if value is a string
-    # try/except is needed for Python2/3 compatibility
-    def is_str(self, value):
-        try:
-            basestring
-        except NameError:
-            return isinstance(value, str)
-        return isinstance(value, basestring)
-
-    def addHasPart(self, data, identifier):
+    def addRelatedIdentifiers(self, data, identifier, relation):
         if data['metadata'].get('related_identifiers') is None:
             data['metadata']['related_identifiers'] = []
         data['metadata']['related_identifiers'].append({
             'identifier': identifier,
-            'relation': 'hasPart'
+            'relation': relation
         })
