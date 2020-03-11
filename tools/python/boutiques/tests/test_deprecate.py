@@ -6,8 +6,8 @@ import json
 from boutiques import __file__ as bfile
 from boutiques.util.utils import loadJson
 from boutiques.deprecate import DeprecateError, deprecate
-from boutiques_mocks import MockZenodoRecord,\
-    example_boutiques_tool, MockHttpResponse, mock_zenodo_search
+from boutiques_mocks import MockZenodoRecord, mock_zenodo_search,\
+    example_boutiques_tool, MockHttpResponse, get_zenodo_record
 
 
 def mock_get(*args, **kwargs):
@@ -28,8 +28,10 @@ def mock_get(*args, **kwargs):
         mock_record1.id = int(record_id)
         if record_id == "22222":
             mock_record1.is_last_version = False
-        mock_hits = mock_zenodo_search([mock_record1]).json()
-        return MockHttpResponse(200, mock_hits['hits']['hits'][0])
+        mock_get = get_zenodo_record(mock_record1)
+        if "?q=keywords:" in args[0]:
+            return mock_zenodo_search([mock_record1])
+        return MockHttpResponse(200, mock_get)
 
     # Deposit command
     if command == "deposit":
