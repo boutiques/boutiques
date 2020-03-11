@@ -151,6 +151,9 @@ class Publisher():
         self.descriptor['doi'] = self.doi
         with open(self.descriptor_file_name, "w") as f:
             f.write(json.dumps(self.descriptor, indent=4))
+        if os.path.isfile(self.descriptor_file_name):
+            return True
+        return False
 
     def create_metadata(self):
         data = {

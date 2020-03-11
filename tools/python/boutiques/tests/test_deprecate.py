@@ -126,7 +126,7 @@ class TestDeprecate(TestCase):
                             zenodo_token="hAaW2wSBZMskxpfigTYHcuDrC"
                             "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                             download_function=mock_download_deprecated)
-        self.assertFalse(new_doi)
+        self.assertTrue(new_doi)
 
     @mock.patch('requests.get', side_effect=mock_get)
     @mock.patch('requests.post', side_effect=mock_post)

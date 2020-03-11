@@ -18,7 +18,8 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
     # Get the descriptor and Zenodo id
     puller = Puller([zenodo_id], verbose=verbose, sandbox=sandbox)
     descriptor_fname = puller.pull()[0]
-    descriptor_json = loadJson(descriptor_fname, sandbox=sandbox)
+    descriptor_json = loadJson(descriptor_fname, sandbox=sandbox,
+                               verbose=verbose)
 
     # Return if tool is already deprecated
     deprecated = descriptor_json.get('deprecated-by-doi')
@@ -45,8 +46,8 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
     record = zhelper.zenodo_get_record(record_id)
     if not record['hits']['hits'][0]['metadata'][
        'relations']['version'][0]['is_last']:
-        new_version = (record['metadata']['relations']['version'][0]
-                             ['last_child']['pid_value'])
+        new_version = (record['hits']['hits'][0]['metadata']['relations']
+                       ['version'][0]['last_child']['pid_value'])
         raise_error(DeprecateError, 'Tool {0} has a newer version '
                                     '(zenodo.{1}), it cannot be deprecated.'
                                     .format(zenodo_id, new_version))
@@ -81,5 +82,6 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
                           replace=True,
                           sandbox=sandbox,
                           no_int=True,
-                          id="zenodo."+zid)
+                          id="zenodo."+zid,
+                          verbose=verbose)
     return publisher.publish()
