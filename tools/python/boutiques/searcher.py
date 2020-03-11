@@ -127,7 +127,7 @@ class Searcher():
             result_dict = OrderedDict([("ID", id),
                                       ("TITLE", title),
                                       ("DESCRIPTION", description),
-                                      ("Deprecated", 'deprecated' in
+                                      ("DEPRECATED", 'deprecated' in
                                        keyword_data['other']),
                                       ("DOWNLOADS", downloads),
                                       ("AUTHOR", author),
