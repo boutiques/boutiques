@@ -1240,8 +1240,11 @@ class LocalExecutor(object):
             # Most recent DOI in file if user is publisher
             # Include check to ensure descriptor is unmodified
             if self.desc_dict.get('doi') is not None:
-                doi = self.desc_dict.get('doi')
+                # Popping the DOI allows it to match published version.
+                # In a match, we'll re-add the DOI
+                doi = self.desc_dict.pop('doi')
                 if loadJson(doi) == self.desc_dict:
+                    self.desc_dict['doi'] = doi
                     return doi
             # DOI in filename if descriptor pulled from Zenodo
             # Include check to ensure descriptor is as published
