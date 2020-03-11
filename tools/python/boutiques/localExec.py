@@ -14,6 +14,7 @@ import datetime
 import hashlib
 import boutiques
 import os.path as op
+from glob import glob
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info, print_warning
@@ -387,9 +388,11 @@ class LocalExecutor(object):
         for f in all_files.keys():
             file_name = all_files[f]
             fd = FileDescription(f, file_name, False)
-            if op.exists(file_name):
+            f_glob = glob(file_name)
+            if f_glob:
+                fd.file_name = f_glob[0]
                 output_files.append(fd)
-                output_files_dict[f] = file_name
+                output_files_dict[f] = f_glob[0]
             else:  # file does not exist
                 if f in required_files.keys():
                     missing_files.append(fd)
@@ -1228,7 +1231,9 @@ class LocalExecutor(object):
     def _findDOI(self, userIn):
         doi_prefix = "10.5281/"
         # DOI in Zenodo reference case
-        if userIn.split(".")[0].lower() == "zenodo":
+        if userIn.startswith(doi_prefix):
+            return userIn
+        elif userIn.split(".")[0].lower() == "zenodo":
             return doi_prefix+userIn
         # File cases
         if os.path.isfile(userIn):
