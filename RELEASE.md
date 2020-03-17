@@ -29,5 +29,5 @@
    ```
    cd ./tools/sphinx/
    pip install sphinx-rtd-theme
-   python argparse_docs
+   python argparse_docs.py
    ```
