@@ -70,7 +70,7 @@ class TestSearch(TestCase):
         results = bosh(["search", "-v"])
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
-                         ["ID", "TITLE", "DESCRIPTION",
+                         ["ID", "TITLE", "DESCRIPTION", "DEPRECATED",
                           "DOWNLOADS", "AUTHOR", "VERSION",
                           "DOI", "SCHEMA VERSION",
                           "CONTAINER", "TAGS"])

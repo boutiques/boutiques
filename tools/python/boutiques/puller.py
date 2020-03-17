@@ -62,7 +62,6 @@ class Puller():
             searcher = Searcher(entry["zid"], self.verbose, self.sandbox,
                                 exact_match=True)
             r = searcher.zenodo_search()
-
             if not len(r.json()["hits"]["hits"]):
                 raise_error(ZenodoError, "Descriptor \"{0}\" "
                             "not found".format(entry["zid"]))

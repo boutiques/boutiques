@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 import simplejson as json
 import requests
 from boutiques.logger import raise_error, print_info
@@ -56,6 +57,51 @@ class ZenodoHelper(object):
             print_info("Using Zenodo endpoint {0}"
                        .format(endpoint))
         return endpoint
+
+    def record_exists(self, record_id):
+        r = requests.get(self.zenodo_endpoint +
+                         '/api/records/{}'.format(record_id))
+        if r.status_code == 200:
+            return True
+        if r.status_code == 404:
+            return False
+        raise_error(ZenodoError,
+                    "Cannot test existence of record {}".format(record_id), r)
+
+    def zenodo_get_record(self, zenodo_id):
+        r = requests.get(self.zenodo_endpoint +
+                         '/api/records/{}'.format(zenodo_id))
+        if r.status_code != 200:
+            raise_error(ZenodoError,
+                        "Descriptor \"{}\" not found".format(zenodo_id), r)
+        return r.json()
+
+    def get_record_id_from_zid(self, zenodo_id):
+        '''
+        zenodo_id is in the form zenodo.1234567
+        record id is 1234567
+        '''
+        if not re.match(r'zenodo\.[0-9]', zenodo_id):
+            raise_error(ZenodoError,
+                        'This does not look like a valid Zenodo ID: {}.'
+                        'Zenodo ids must be in the form zenodo.1234567'
+                        .format(zenodo_id))
+        parts = zenodo_id.split('.')
+        return parts[1]
+
+    def get_zid_from_filename(self, filename):
+        # Filename must be in the form /a/b/c/zenodo-1234.json
+        # where zenodo.1234 is the record id.
+        basename = os.path.basename(filename)
+        if not re.match(r'zenodo-[0-9]*\.json', basename):
+            raise_error(ZenodoError,
+                        'This does not look like a valid file name: {}'
+                        .format(filename))
+        return basename.replace('.json', '').replace('-', '.')
+
+    def get_doi_from_zid(self, zenodo_id):
+        prefix = "10.5072" if self.sandbox else "10.5281"
+        return '{}/{}'.format(prefix, zenodo_id)
 
     def config_token_property_name(self):
         if self.sandbox:

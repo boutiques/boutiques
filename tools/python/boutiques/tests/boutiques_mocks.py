@@ -8,12 +8,15 @@ class MockHttpResponse:
 
 
 class MockZenodoRecord:
-    def __init__(self, id, title, description="", filename="", downloads=1):
+    def __init__(self, id, title, description="", filename="", downloads=1,
+                 keywords=[], is_last_version=True):
         self.id = id
         self.title = title
         self.filename = filename
         self.downloads = downloads
         self.description = description
+        self.keywords = keywords
+        self.is_last_version = is_last_version
 
 
 # Mock object representing the current version of Example Boutiques Tool
@@ -71,39 +74,52 @@ def mock_zenodo_delete_files():
     return MockHttpResponse(204)
 
 
+def get_zenodo_record(record):
+    return {
+        "doi": "10.5281/zenodo.%s" % record.id,
+        "files": [
+            {
+                "links": {
+                    "self": record.filename
+                }
+            }
+        ],
+        "id": record.id,
+        "metadata": {
+            "creators": [
+                {
+                    "name": "Test author"
+                }
+            ],
+            "description": record.description,
+            "relations": {
+                'version': [
+                    {
+                        'count': 4,
+                        'index': 3,
+                        'is_last': record.is_last_version,
+                        'last_child': {'pid_value': '33333'}
+                    }
+                ]
+            },
+            "doi": "10.5281/zenodo.%s" % record.id,
+            "keywords": [
+                "schema-version:0.5",
+                "docker"
+            ],
+            "title": record.title,
+            "version": "0.0.1"
+        },
+        "stats": {
+            "version_downloads": record.downloads
+        }
+    }
+
+
 def mock_zenodo_search(mock_records):
     mock_results = []
     for record in mock_records:
-        mock_result = {
-                        "doi": "10.5281/zenodo.%s" % record.id,
-                        "files": [
-                          {
-                            "links": {
-                              "self": record.filename
-                            }
-                          }
-                        ],
-                        "id": record.id,
-                        "metadata": {
-                          "creators": [
-                            {
-                              "name": "Test author"
-                            }
-                          ],
-                          "description": record.description,
-                          "doi": "10.5281/zenodo.%s" % record.id,
-                          "keywords": [
-                            "schema-version:0.5",
-                            "docker"
-                          ],
-                          "title": record.title,
-                          "version": "0.0.1"
-                        },
-                        "stats": {
-                          "version_downloads": record.downloads
-                        }
-                      }
-        mock_results.append(mock_result)
+        mock_results.append(get_zenodo_record(record))
     mock_json = {"hits": {"hits": mock_results, "total": len(mock_results)}}
     return MockHttpResponse(200, mock_json)
 
