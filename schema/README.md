@@ -17,6 +17,7 @@
 | [command-line](#command-line) | `string` | **Required** | Tool (this schema) |
 | [container-image](#container-image) | `object` | Optional | Tool (this schema) |
 | [custom](#custom) | `object` | Optional | Tool (this schema) |
+| [deprecated-by-doi](#deprecated-by-doi) | complex | Optional | Tool (this schema) |
 | [description](#description) | `string` | **Required** | Tool (this schema) |
 | [descriptor-url](#descriptor-url) | `string` | Optional | Tool (this schema) |
 | [doi](#doi) | `string` | Optional | Tool (this schema) |
@@ -114,6 +115,36 @@ A string that describes the tool command line, where input and output values are
 | Property | Type | Required |
 |----------|------|----------|
 
+
+
+
+
+
+## deprecated-by-doi
+
+doi of the tool that deprecates the current one. May be set to 'true' if the current tool is deprecated but no specific tool deprecates it.
+
+`deprecated-by-doi`
+* is optional
+* type: complex
+* defined in this schema
+
+### deprecated-by-doi Type
+
+Unknown type `string,boolean`.
+
+```json
+{
+  "id": "http://github.com/boutiques/boutiques-schema/deprecated-by-doi",
+  "minLength": 1,
+  "description": "doi of the tool that deprecates the current one. May be set to 'true' if the current tool is deprecated but no specific tool deprecates it.",
+  "type": [
+    "string",
+    "boolean"
+  ],
+  "simpletype": "complex"
+}
+```
 
 
 
@@ -1483,7 +1514,7 @@ True if output may not be produced by the tool.
 
 #### path-template
 
-Describes the output file path relatively to the execution directory. May contain input value keys. Example: "results/[INPUT1]_brain.mnc".
+Describes the output file path relatively to the execution directory. May contain input value keys and wildcards. Example: "results/[INPUT1]_brain*.mnc".
 
 `path-template`
 * is optional
