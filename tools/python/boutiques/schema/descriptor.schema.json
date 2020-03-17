@@ -563,7 +563,7 @@
                     },
                     "path-template": {
                         "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
-                        "description": "Describes the output file path relatively to the execution directory. May contain input value keys. Example: \"results/[INPUT1]_brain.mnc\".",
+                        "description": "Describes the output file path relatively to the execution directory. May contain input value keys and wildcards. Example: \"results/[INPUT1]_brain*.mnc\".",
                         "minLength": 1,
                         "type": "string"
                     },

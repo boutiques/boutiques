@@ -35,7 +35,7 @@ If you want the latest changes that aren't officially released yet, you can also
 # Tutorial
 
 Our
-[tutorial](https://github.com/boutiques/boutiques-tutorial/blob/master/notebooks/tutorial.ipynb)
+[tutorial](https://nbviewer.jupyter.org/github/boutiques/tutorial/blob/master/notebooks/boutiques-tutorial.ipynb)
 will introduce you to the main Boutiques features through its command line
 and Python APIs. Give it a try!
 
