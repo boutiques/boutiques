@@ -18,11 +18,9 @@ DEPS = [
          "jsonschema",
          "tabulate",
          "mock",
-         "docopt"
+         "docopt",
+         "nexus-sdk"
        ]
-
-if sys.version_info >= (3, 5):
-    DEPS.append("nexus-sdk")
 
 setup(name="boutiques",
       version=VERSION,
@@ -33,14 +31,11 @@ setup(name="boutiques",
       author_email="tristan.glatard@concordia.ca, gkiar07@gmail.com",
       classifiers=[
                 "Programming Language :: Python",
-                "Programming Language :: Python :: 2",
                 "Programming Language :: Python :: 3",
-                "Programming Language :: Python :: 2.7",
-                "Programming Language :: Python :: 3.4",
                 "Programming Language :: Python :: 3.5",
                 "Programming Language :: Python :: 3.6",
                 "Programming Language :: Python :: 3.7",
-                "Programming Language :: Python :: Implementation :: PyPy",
+                "Programming Language :: Python :: 3.8",
                 "License :: OSI Approved :: MIT License",
                 "Topic :: Software Development :: Libraries :: Python Modules",
                 "Operating System :: OS Independent",

@@ -28,15 +28,8 @@ class BaseTest(TestCase):
         self.assertIn("This is stderr", ret.stderr)
 
     def assert_reflected_output_nonutf8(self, ret):
-        if sys.version_info[0] < 3:
-            self.assertIn("a c'est stdout", ret.stdout)
-            self.assertIn("This is stdrr", ret.stderr)
-        elif sys.version_info[0] == 3 and sys.version_info[1] == 4:
-            self.assertIn("�a c'est stdout", ret.stdout)
-            self.assertIn("This is std�rr", ret.stderr)
-        else:
-            self.assertIn("\\xc7a c'est stdout", ret.stdout)
-            self.assertIn("This is std\\xe9rr", ret.stderr)
+        self.assertIn("\\xc7a c'est stdout", ret.stdout)
+        self.assertIn("This is std\\xe9rr", ret.stderr)
 
     def assert_no_output(self, ret):
         self.assertEqual(ret.stdout, "")

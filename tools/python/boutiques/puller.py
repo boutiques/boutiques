@@ -20,8 +20,9 @@ class Puller():
     def __init__(self, zids, verbose=False, sandbox=False):
         # remove zenodo prefix
         self.zenodo_entries = []
-        self.cache_dir = os.path.join(os.path.expanduser('~'), ".cache",
-                                      "boutiques")
+        self.cache_dir = os.path.join(
+            os.path.expanduser('~'), ".cache", "boutiques",
+            "sandbox" if sandbox else "production")
         discarded_zids = zids
         # This removes duplicates, should maintain order
         zids = list(dict.fromkeys(zids))
@@ -61,7 +62,6 @@ class Puller():
             searcher = Searcher(entry["zid"], self.verbose, self.sandbox,
                                 exact_match=True)
             r = searcher.zenodo_search()
-
             if not len(r.json()["hits"]["hits"]):
                 raise_error(ZenodoError, "Descriptor \"{0}\" "
                             "not found".format(entry["zid"]))

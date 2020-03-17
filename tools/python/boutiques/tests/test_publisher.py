@@ -10,10 +10,7 @@ import os.path as op
 import sys
 import mock
 from boutiques_mocks import *
-if sys.version_info < (2, 7):
-    from unittest2 import TestCase
-else:
-    from unittest import TestCase
+from unittest import TestCase
 
 
 def mock_get_publish_then_update():
@@ -215,6 +212,20 @@ class TestPublisher(TestCase):
                                                 "PWr2VeQZgBLErKbfF5RdrKhzzJ"
                                                 "i8i2hnN8r"])
         self.assertTrue("Tool must have an author to be published."
+                        in str(e.exception))
+
+        # Publish a descriptor that doesn't have a container image
+        good_desc = op.join(self.get_examples_dir(), "no_container.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(good_desc, temp_descriptor.name)
+        with self.assertRaises(ZenodoError) as e:
+            no_container = bosh(["publish",
+                                 temp_descriptor.name,
+                                 "--sandbox", "-y", "-v",
+                                 "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                                   "PWr2VeQZgBLErKbfF5RdrKhzzJ"
+                                                   "i8i2hnN8r"])
+        self.assertTrue("Tool must have a container image to be published."
                         in str(e.exception))
 
         # Update a descriptor that doesn't have a DOI

@@ -9,10 +9,7 @@ from boutiques.localExec import ExecutorError
 import mock
 import sys
 from boutiques_mocks import *
-if sys.version_info < (2, 7):
-    from unittest2 import TestCase
-else:
-    from unittest import TestCase
+from unittest import TestCase
 
 
 def mock_mkdir():
@@ -105,7 +102,8 @@ class TestPrepare(TestCase):
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-latest.simg"))
-        self.assertIn("Could not pull Singularity image", str(e))
+        self.assertIn("Could not pull Singularity image",
+                      str(e.getrepr(style='long')))
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir())
     @mock.patch('boutiques.localExec.LocalExecutor._singConExists',
@@ -144,7 +142,8 @@ class TestPrepare(TestCase):
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-test.simg"))
-        self.assertIn("Unable to retrieve Singularity image", str(e))
+        self.assertIn("Unable to retrieve Singularity image",
+                      str(e.getrepr(style='long')))
 
     @mock.patch('os.mkdir', side_effect=mock_mkdir_timeout())
     @mock.patch('time.sleep', side_effect=mock_sleep())

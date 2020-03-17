@@ -3,7 +3,8 @@
 from argparse import ArgumentParser
 from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
-from boutiques.util.utils import loadJson
+from boutiques.util.utils import loadJson, customSortDescriptorByKey
+from boutiques.util.utils import customSortInvocationByInput
 from boutiques.logger import raise_error
 import boutiques
 import yaml
@@ -91,7 +92,8 @@ class Importer():
             del descriptor["walltime-estimate"]
 
         with open(self.output_descriptor, 'w') as fhandle:
-            fhandle.write(json.dumps(descriptor, indent=4, sort_keys=True))
+            fhandle.write(json.dumps(
+                customSortDescriptorByKey(descriptor), indent=4))
         validate_descriptor(self.output_descriptor)
 
     def get_entry_point(self, input_descriptor):
@@ -128,17 +130,17 @@ class Importer():
         docstring = imp.load_source(
             'docopt_pyscript', self.input_descriptor).__doc__
 
-        dcptImptr = Docopt_Importer(docstring, template_file)
+        docoptImporter = Docopt_Importer(docstring, template_file)
         # The order matters
-        dcptImptr.loadDocoptDescription()
-        dcptImptr.loadDescriptionAndType()
-        dcptImptr.generateInputsAndCommandLine(dcptImptr.pattern)
-        dcptImptr.addInputsRecursive(dcptImptr.dependencies)
-        dcptImptr.determineOptionality()
-        dcptImptr.createRootOneIsRequiredGroup()
+        docoptImporter.loadDocoptDescription()
+        docoptImporter.loadDescriptionAndType()
+        docoptImporter.generateInputsAndCommandLine(docoptImporter.pattern)
+        docoptImporter.addInputsRecursive(docoptImporter.dependencies)
+        docoptImporter.determineOptionality()
+        docoptImporter.createRootOneIsRequiredGroup()
 
         with open(self.output_descriptor, "w") as output:
-            output.write(json.dumps(dcptImptr.descriptor, indent=4))
+            output.write(json.dumps(docoptImporter.descriptor, indent=4))
 
     def import_bids(self):
         path, fil = os.path.split(__file__)
@@ -419,7 +421,8 @@ class Importer():
 
         # Write descriptor
         with open(self.output_descriptor, 'w') as f:
-            f.write(json.dumps(bout_desc, indent=4, sort_keys=True))
+            f.write(json.dumps(
+                customSortDescriptorByKey(bout_desc), indent=4))
         validate_descriptor(self.output_descriptor)
 
         if self.input_invocation is None:
@@ -441,7 +444,8 @@ class Importer():
                 input_value = cwl_inputs[input_name]['path']
             boutiques_invocation[input_name] = input_value
         with open(self.output_invocation, 'w') as f:
-            f.write(json.dumps(boutiques_invocation, indent=4, sort_keys=True))
+            f.write(json.dumps(customSortInvocationByInput(
+                    boutiques_invocation, json.dumps(bout_desc)), indent=4))
         boutiques.invocation(self.output_descriptor,
                              "-i", self.output_invocation)
 

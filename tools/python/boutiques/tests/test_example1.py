@@ -171,7 +171,7 @@ class TestExample1(BaseTest):
                          "-u",
                          invocationStr,
                          "--skip-data-collection")
-        self.assertIn("Cannot parse input", str(e))
+        self.assertIn("Cannot parse input", str(e.getrepr(style='long')))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
@@ -307,7 +307,8 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2")))
-        self.assertIn("Could not pull Singularity image", str(e))
+        self.assertIn("Could not pull Singularity image",
+                      str(e.getrepr(style='long')))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
@@ -485,6 +486,25 @@ class TestExample1(BaseTest):
         self.assertIn("TEST_string1.txt (out2, Required)",
                       outFileList)
         self.assertEqual([], ex.missing_files)
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_environment_variables_from_invoc(self):
+        ex = bosh.execute(
+            "launch",
+            self.get_file_path("example1_envVars_from_inputs.json"),
+            self.get_file_path("../test_input_env_var_invoc.json"),
+            "--skip-data-collection")
+
+        outFileList = [str(out) for out in ex.output_files]
+        try:
+            self.assertIn('file.txt (output_file, Required)', outFileList)
+            with open(outFileList[0].split()[0]) as file:
+                text = file.read()
+                self.assertIn('doesnt/matter/what/this/is/test_path.d', text)
+        finally:
+            if os.path.isfile(outFileList[0].split()[0]):
+                os.remove(outFileList[0].split()[0])
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()

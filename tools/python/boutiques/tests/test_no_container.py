@@ -22,3 +22,14 @@ class TestNoContainer(TestCase):
                                                    "no_container_invocation."
                                                    + "json"),
                                       "--skip-data-collection").exit_code)
+
+    def test_bare_metal_execution(self):
+        e = bosh.execute("launch", "--no-container",
+                         os.path.join(self.get_examples_dir(),
+                                      "baremetal", "test_baremetal.json"),
+                         os.path.join(self.get_examples_dir(),
+                                      "baremetal", "test_baremetal_invoc.json"))
+        stdout = e.stdout
+        if os.path.exists("test_baremetal_exec.txt"):
+            os.remove("test_baremetal_exec.txt")
+        self.assertEqual(stdout, "Bare metal execution\n")

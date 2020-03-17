@@ -7,13 +7,7 @@ import numbers
 from operator import itemgetter
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
-
-try:
-    # Python 3
-    from urllib.parse import quote
-except ImportError:
-    # Python 2
-    from urllib import quote
+from urllib.parse import quote
 
 
 class Searcher():
@@ -66,14 +60,25 @@ class Searcher():
 
     def search(self):
         results = self.zenodo_search()
-        num_results = len(results.json()["hits"]["hits"])
         total_results = results.json()["hits"]["total"]
-        print_info("Showing %d of %d results."
+        total_deprecated = len([h['metadata']['keywords'] for h in
+                                results.json()['hits']['hits'] if
+                                'metadata' in h and
+                                'keywords' in h['metadata'] and
+                                'deprecated' in h['metadata']['keywords']])
+        results_list = self.create_results_list_verbose(results.json()) if\
+            self.verbose else\
+            self.create_results_list(results.json())
+        num_results = len(results_list)
+        print_info("Showing %d of %d result(s)%s"
                    % (num_results if num_results < self.max_results
-                      else self.max_results, total_results))
-        if self.verbose:
-            return self.create_results_list_verbose(results.json())
-        return self.create_results_list(results.json())
+                      else self.max_results,
+                      total_results if self.verbose
+                      else total_results - total_deprecated,
+                      "." if self.verbose
+                      else ", exluding %d deprecated result(s)."
+                      % total_deprecated))
+        return results_list
 
     def zenodo_search(self):
         # Get all results
@@ -93,6 +98,10 @@ class Searcher():
         results_list = []
         for hit in results["hits"]["hits"]:
             (id, title, description, downloads) = self.parse_basic_info(hit)
+            # skip hit if result is deprecated
+            keyword_data = self.get_keyword_data(hit["metadata"]["keywords"])
+            if 'deprecated' in keyword_data['other']:
+                continue
             result_dict = OrderedDict([("ID", id), ("TITLE", title),
                                       ("DESCRIPTION", description),
                                       ("DOWNLOADS", downloads)])
@@ -118,6 +127,8 @@ class Searcher():
             result_dict = OrderedDict([("ID", id),
                                       ("TITLE", title),
                                       ("DESCRIPTION", description),
+                                      ("DEPRECATED", 'deprecated' in
+                                       keyword_data['other']),
                                       ("DOWNLOADS", downloads),
                                       ("AUTHOR", author),
                                       ("VERSION", version),
@@ -127,11 +138,7 @@ class Searcher():
                                       ("TAGS", other_tags)])
             if sys.stdout.encoding.lower != "UTF-8":
                 for k, v in list(result_dict.items()):
-                    if sys.version_info[0] < 3:
-                        if isinstance(v, unicode):
-                            result_dict[k] = v.encode('ascii',
-                                                      'xmlcharrefreplace')
-                    elif isinstance(v, str):
+                    if isinstance(v, str):
                         result_dict[k] = \
                             v.encode('ascii', 'xmlcharrefreplace').decode()
             if not self.no_trunc:

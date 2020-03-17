@@ -18,7 +18,7 @@ from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import addDefaultValues
-from boutiques.util.utils import loadJson
+from boutiques.util.utils import loadJson, customSortInvocationByInput
 from boutiques.logger import raise_error
 from tabulate import tabulate
 
@@ -27,6 +27,9 @@ def parser_pprint():
     parser = ArgumentParser("Boutiques pretty-print for generating help text")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -35,7 +38,7 @@ def pprint(*params):
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import PrettyPrinter
-    desc = loadJson(results.descriptor)
+    desc = loadJson(results.descriptor, sandbox=results.sandbox)
     prettyclass = PrettyPrinter(desc)
     return prettyclass.docstring
 
@@ -80,6 +83,9 @@ def parser_validate():
     parser.add_argument("--format", "-f", action="store_true",
                         help="If descriptor is valid, rewrite it with sorted"
                         " keys.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -89,7 +95,8 @@ def validate(*params):
 
     from boutiques.validator import validate_descriptor
     descriptor = validate_descriptor(results.descriptor,
-                                     format_output=results.format)
+                                     format_output=results.format,
+                                     sandbox=results.sandbox)
     if results.bids:
         from boutiques.bids import validate_bids
         validate_bids(descriptor, valid=True)
@@ -144,6 +151,13 @@ def parser_executeLaunch():
                         "to cache.")
     parser.add_argument("--provenance", action="store", type=json.loads,
                         help="Append JSON object to the generated record.")
+    parser.add_argument("--no-container", action="store_true",
+                        help="Launch invocation on the host computer, with "
+                        "no container. If 'container-image' appears in the "
+                        "descriptor, it is ignored.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     force_group = parser.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "
@@ -166,6 +180,9 @@ def parser_executeSimulate():
                         help="Flag to generate invocation in JSON format.")
     parser.add_argument("-c", "--complete", action="store_true",
                         help="Include optional parameters.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -185,6 +202,9 @@ def parser_executePrepare():
     parser.add_argument("--imagepath", action="store",
                         help="Path to Singularity image. "
                         "If not specified, will use current directory.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -206,7 +226,10 @@ def execute(*params):
         inp = results.invocation
 
         # Validate invocation and descriptor
-        valid = invocation(descriptor, '-i', inp)
+        arguments = [descriptor, '-i', inp]
+        if results.sandbox:
+            arguments.append('--sandbox')
+        valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -221,7 +244,9 @@ def execute(*params):
                                   "forceDocker": results.force_docker,
                                   "forceSingularity":
                                       results.force_singularity,
-                                  "provenance": results.provenance})
+                                  "provenance": results.provenance,
+                                  "noContainer": results.no_container,
+                                  "sandbox": results.sandbox})
         # Execute it
         return executor.execute(results.volumes)
 
@@ -238,6 +263,8 @@ def execute(*params):
         if inp:
             arguments.append('-i')
             arguments.append(inp)
+        if results.sandbox:
+            arguments.append('--sandbox')
         valid = invocation(*arguments)
 
         # Generate object that will perform the commands
@@ -247,12 +274,15 @@ def execute(*params):
                                   "destroyTempScripts": True,
                                   "changeUser": True,
                                   "skipDataCollect": True,
-                                  "requireComplete": results.complete})
+                                  "requireComplete": results.complete,
+                                  "sandbox": results.sandbox})
         if not inp:
             executor.generateRandomParams(1)
 
         if results.json:
-            sout = [json.dumps(executor.in_dict, indent=4, sort_keys=True)]
+            sout = [json.dumps(
+                customSortInvocationByInput(executor.in_dict, descriptor),
+                indent=4)]
             print(sout[0])
         else:
             executor.printCmdLine()
@@ -270,7 +300,10 @@ def execute(*params):
         descriptor = results.descriptor
 
         # Validate descriptor
-        valid = invocation(descriptor)
+        arguments = [descriptor]
+        if results.sandbox:
+            arguments.append('--sandbox')
+        valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
@@ -279,7 +312,8 @@ def execute(*params):
                                   "debug": results.debug,
                                   "stream": results.stream,
                                   "imagePath": results.imagepath,
-                                  "skipDataCollect": True})
+                                  "skipDataCollect": True,
+                                  "sandbox": results.sandbox})
         container_location = executor.prepare()[1]
         print("Container location: " + container_location)
 
@@ -297,14 +331,17 @@ execute.__doc__ += parser_executePrepare().format_help()
 
 def parser_importer():
     parser = ArgumentParser("Imports old descriptor or BIDS app or CWL"
-                            " descriptor to spec.")
-    parser.add_argument("type", help="Type of import we are performing",
-                        choices=["bids", "0.4", "cwl", "dcpt"])
+                            " descriptor or docopt script to spec.")
+    parser.add_argument("type", help="Type of import we are performing."
+                        " Allowed values: {" +
+                        ", ".join(["bids", "0.4", "cwl", "docopt"]) + "}",
+                        choices=["bids", "0.4", "cwl", "docopt"],
+                        metavar='type')
     parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
     parser.add_argument("input_descriptor", help="Input descriptor to be"
                         " converted. For '0.4', is JSON descriptor,"
-                        " for 'dcpt' is JSON descriptor,"
+                        " for 'docopt' is JSON descriptor,"
                         " for 'bids' is base directory of BIDS app,"
                         " for 'cwl' is YAML descriptor.")
     parser.add_argument("-o", "--output-invocation", help="Where to write "
@@ -329,7 +366,7 @@ def importer(*params):
         importer.import_bids()
     elif results.type == "cwl":
         importer.import_cwl()
-    elif results.type == "dcpt":
+    elif results.type == "docopt":
         create(params[1])
         importer.import_docopt(params[1])
 
@@ -344,6 +381,9 @@ def parser_exporter():
     parser.add_argument("descriptor", help="Boutiques descriptor to export.")
     parser.add_argument("--identifier", help="Identifier to use in"
                                              "CARMIN export.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     parser.add_argument("output", help="Output file where to write the"
                         " converted descriptor.")
     return parser
@@ -356,10 +396,13 @@ def exporter(*params):
     descriptor = results.descriptor
     output = results.output
 
-    bosh(["validate", results.descriptor])
+    args = [results.descriptor]
+    if results.sandbox:
+        args.append("--sandbox")
+    validate(*args)
 
     from boutiques.exporter import Exporter
-    exporter = Exporter(descriptor, results.identifier)
+    exporter = Exporter(descriptor, results.identifier, sandbox=results.sandbox)
     if results.type == "carmin":
         exporter.carmin(output)
 
@@ -434,26 +477,32 @@ def parser_invocation():
                         help="If descriptor doesn't have an invocation "
                         "schema, creates one and writes it to the descriptor"
                         " file ")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
 def invocation(*params):
     parser = parser_invocation()
-    result = parser.parse_args(params)
-    validate(result.descriptor)
-    descriptor = loadJson(result.descriptor)
+    results = parser.parse_args(params)
+    arguments = [results.descriptor]
+    if results.sandbox:
+        arguments.append('--sandbox')
+    validate(*arguments)
+    descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:
         from boutiques.invocationSchemaHandler import generateInvocationSchema
         invSchema = generateInvocationSchema(descriptor)
-        if result.write_schema:
+        if results.write_schema:
             descriptor["invocation-schema"] = invSchema
-            with open(result.descriptor, "w") as f:
-                f.write(json.dumps(descriptor, indent=4, sort_keys=True))
-    if result.invocation:
+            with open(results.descriptor, "w") as f:
+                f.write(json.dumps(descriptor, indent=4))
+    if results.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
-        data = addDefaultValues(descriptor, loadJson(result.invocation))
+        data = addDefaultValues(descriptor, loadJson(results.invocation))
         validateSchema(invSchema, data)
 
 
@@ -476,24 +525,28 @@ def parser_evaluate():
                         "(i.e. output-files/optional=false,id=myfile). "
                         "Perform multiple queries by separating them with a "
                         "space.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
 def evaluate(*params):
     parser = parser_evaluate()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
 
     # Generate object that will parse the invocation and descriptor
     from boutiques.localExec import LocalExecutor
-    executor = LocalExecutor(result.descriptor, result.invocation,
+    executor = LocalExecutor(results.descriptor, results.invocation,
                              {"forcePathType": True,
                               "destroyTempScripts": True,
                               "changeUser": True,
-                              "skipDataCollect": True})
+                              "skipDataCollect": True,
+                              "sandbox": results.sandbox})
 
     from boutiques.evaluate import evaluateEngine
     query_results = []
-    for query in result.query:
+    for query in results.query:
         query_results += [evaluateEngine(executor, query)]
     return query_results[0] if len(query_results) == 1 else query_results
 
@@ -507,18 +560,25 @@ def parser_test():
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
 def test(*params):
     parser = parser_test()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
+
+    args = [results.descriptor]
+    if results.sandbox:
+        args.append("--sandbox")
 
     # Generation of the invocation schema (and descriptor validation).
-    invocation(result.descriptor)
+    invocation(*args)
 
     # Extraction of all the invocations defined for the test-cases.
-    descriptor = loadJson(result.descriptor)
+    descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
 
     if (not descriptor.get("tests")):
         # If no tests have been specified, we consider testing successful.
@@ -527,13 +587,16 @@ def test(*params):
     for test in descriptor["tests"]:
         invocation_JSON = test["invocation"]
 
+        testArgs = [results.descriptor, "--invocation",
+                    json.dumps(invocation_JSON)]
+        if results.sandbox:
+            testArgs.append("--sandbox")
         # Check if the invocation is valid.
-        invocation(result.descriptor, "--invocation",
-                   json.dumps(invocation_JSON))
+        invocation(*testArgs)
 
     # Invocations have been properly validated. We can launch the actual tests.
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
-    return pytest.main([test_path, "--descriptor", result.descriptor])
+    return pytest.main([test_path, "--descriptor", results.descriptor])
 
 
 test.__doc__ = parser_test().format_help()
@@ -562,11 +625,11 @@ def parser_search():
 
 def search(*params):
     parser = parser_search()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
-    searcher = Searcher(result.query, result.verbose, result.sandbox,
-                        result.max, result.no_trunc, result.exact)
+    searcher = Searcher(results.query, results.verbose, results.sandbox,
+                        results.max, results.no_trunc, results.exact)
 
     return searcher.search()
 
@@ -582,6 +645,9 @@ def parser_example():
                         "JSON string or Zenodo ID (prefixed by 'zenodo.').")
     parser.add_argument("-c", "--complete", action="store_true",
                         help="Include optional parameters.")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="Get descriptor from Zenodo's sandbox instead of "
+                        "production server.")
     return parser
 
 
@@ -590,7 +656,10 @@ def example(*params):
     results = parser.parse_args(params)
 
     descriptor = results.descriptor
-    valid = invocation(descriptor)
+    arguments = [descriptor]
+    if results.sandbox:
+        arguments.append('--sandbox')
+    valid = invocation(*arguments)
 
     # Generate object that will perform the commands
     from boutiques.localExec import LocalExecutor
@@ -599,9 +668,11 @@ def example(*params):
                               "destroyTempScripts": True,
                               "changeUser": True,
                               "skipDataCollect": True,
-                              "requireComplete": results.complete})
+                              "requireComplete": results.complete,
+                              "sandbox": results.sandbox})
     executor.generateRandomParams(1)
-    return json.dumps(executor.in_dict, indent=4, sort_keys=True)
+    return json.dumps(
+        customSortInvocationByInput(executor.in_dict, descriptor), indent=4)
 
 
 example.__doc__ = parser_example().format_help()
@@ -625,10 +696,10 @@ def parser_pull():
 
 def pull(*params):
     parser = parser_pull()
-    result = parser.parse_args(params)
+    results = parser.parse_args(params)
 
     from boutiques.puller import Puller
-    puller = Puller(result.zids, result.verbose, result.sandbox)
+    puller = Puller(results.zids, results.verbose, results.sandbox)
     return puller.pull()
 
 
@@ -750,6 +821,44 @@ data.__doc__ += parser_dataPublish().format_help() + "\n\n"
 data.__doc__ += parser_dataDelete().format_help()
 
 
+def parser_deprecate():
+    parser = ArgumentParser("Deprecates a published descriptor by creating a"
+                            " new version with the 'deprecated' tag on Zenodo."
+                            " The descriptor remains available from its Zenodo"
+                            "id, but it won't show in search results. This "
+                            "works by creating a new version of the tool in "
+                            "Zenodo, marked with keyword 'deprecated'.")
+    parser.add_argument("zid", action="store", help="Zenodo id "
+                        "of the descriptor to deprecate, "
+                        "prefixed by 'zenodo.', e.g. zenodo.123456")
+    parser.add_argument("--by", action="store", help="Zenodo id (e.g., "
+                        "zenodo-1234) of a  descriptor that will supersede "
+                        "the deprecated one.")
+    parser.add_argument("--zenodo-token", action="store",
+                        help="Zenodo API token to use for authentication. "
+                        "If not used, token will be read from configuration "
+                        "file or requested interactively.")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print information messages")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="use Zenodo's sandbox instead of "
+                        "production server. Recommended for tests.")
+    return parser
+
+
+def deprecate(*params):
+    parser = parser_deprecate()
+    result = parser.parse_args(params)
+
+    from boutiques.deprecate import deprecate
+    return deprecate(result.zid, by_zenodo_id=result.by,
+                     sandbox=result.sandbox, verbose=result.verbose,
+                     zenodo_token=result.zenodo_token)
+
+
+deprecate.__doc__ = parser_deprecate().format_help()
+
+
 def parser_bosh():
     parser = ArgumentParser(add_help=False,
                             formatter_class=RawTextHelpFormatter)
@@ -760,7 +869,7 @@ TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
 * export: export a descriptor to other formats.
 * import: create a descriptor for a BIDS app or update a descriptor from \
-an older version of the schema.
+an older version of the schema. Options: "bids", "0.4", "cwl", "docopt"
 * validate: validate an existing boutiques descriptor.
 
 TOOL USAGE & EXECUTION
@@ -770,6 +879,8 @@ TOOL USAGE & EXECUTION
 * test: run pytest on a descriptor detailing tests.
 
 TOOL SEARCH & PUBLICATION
+* deprecate: deprecate a published tool. The tool will still be published and
+usable, but it won't show in search results.
 * publish: create an entry in Zenodo for the descriptor and adds the DOI \
 created by Zenodo to the descriptor.
 * pull: download a descriptor from Zenodo.
@@ -791,7 +902,7 @@ OTHER
                                     "import", "export", "publish",
                                     "invocation", "evaluate", "test",
                                     "example", "search", "pull",
-                                    "data", "pprint", "version"]))
+                                    "data", "pprint", "version", "deprecate"]))
 
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
@@ -875,6 +986,9 @@ def bosh(args=None):
         elif func == "version":
             from boutiques.__version__ import VERSION
             return bosh_return(VERSION)
+        elif func == "deprecate":
+            out = deprecate(*params)
+            return bosh_return(out)
         else:
             parser.print_help()
             raise SystemExit

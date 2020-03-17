@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 import simplejson as json
 import random as rnd
 import string
@@ -13,6 +14,7 @@ import datetime
 import hashlib
 import boutiques
 import os.path as op
+from glob import glob
 from termcolor import colored
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import raise_error, print_info, print_warning
@@ -27,11 +29,11 @@ class ExecutorOutput():
                  container_command,
                  container_location):
         try:
-            self.stdout = decodeByteStr(stdout)
+            self.stdout = stdout.decode("utf=8", "backslashreplace")
         except AttributeError as e:
             self.stdout = stdout
         try:
-            self.stderr = decodeByteStr(stderr)
+            self.stderr = stderr.decode("utf=8", "backslashreplace")
         except AttributeError as e:
             self.stderr = stderr
         self.exit_code = exit_code
@@ -146,7 +148,7 @@ class LocalExecutor(object):
             setattr(self, option, options.get(option))
 
         # Parse JSON descriptor
-        self.desc_dict = loadJson(desc, self.debug)
+        self.desc_dict = loadJson(desc, self.debug, sandbox=self.sandbox)
 
         # Set the shell
         self.shell = self.desc_dict.get("shell")
@@ -220,16 +222,22 @@ class LocalExecutor(object):
         '''
         command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
-        conType, conImage = con.get('type'), con.get('image'),
+        conType, conImage = con.get('type'),\
+            con.get('image') if not self.noContainer else None
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
-        # Export environment variables, if they are specified in the descriptor
+        # Export environment variables,
+        #  if they are specified in the descriptor
         envVars = {}
         if 'environment-variables' in list(self.desc_dict.keys()):
             variables = [(p['name'], p['value']) for p in
                          self.desc_dict['environment-variables']]
+            inputsByValKey = {inp['value-key']: inp for inp in self.inputs}
             for (envVarName, envVarValue) in variables:
+                if envVarValue in inputsByValKey:
+                    envVarValue =\
+                        self.in_dict[inputsByValKey[envVarValue]['id']]
                 os.environ[envVarName] = envVarValue
                 envVars[envVarName] = envVarValue
         # Container script constant name
@@ -245,9 +253,10 @@ class LocalExecutor(object):
         container_command = ""
         if conIsPresent:
             # Figure out which container type to use
-            conTypeToUse = self._chooseContainerTypeToUse(conType,
-                                                          self.forceSingularity,
-                                                          self.forceDocker)
+            conTypeToUse = \
+                self._chooseContainerTypeToUse(conType,
+                                               self.forceSingularity,
+                                               self.forceDocker)
             # Pull the container
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
@@ -278,10 +287,50 @@ class LocalExecutor(object):
                     for opt in conOpts:
                         conOptsString += opt + ' '
             # Run it in docker
+            # Note: on Windows, users must give path following
+            #       this format (compatible with docker): /c/a/windows/path
             mount_strings = [] if not mount_strings else mount_strings
-            mount_strings = [op.realpath(m.split(":")[0])+":"+m.split(":")[1]
-                             for m in mount_strings]
-            mount_strings.append(op.realpath('./') + ':' + launchDir)
+
+            # Normalize the path so that it follows
+            #  this docker compatible format: /c/a/windows/or/linux/path
+            # Do nothing on linux paths
+            # If the path begins with C: or any other capital letter:
+            #  - replace '\\' with '/'
+            #  - prefix the path with '/'
+            #  - lowercase the drive letter
+            #  - remove the ':'
+            def normalizePath(path):
+                regexResult = re.match(r"^([A-Z]):", path)
+                if regexResult:
+                    path = path.replace("\\", "/")
+                    path = "/" + path[0].lower() + path[2:]
+                return path
+
+            # Make path absolute and normalized
+            # The resulting path must follow
+            # this docker compatible format: /c/a/windows/or/linux/path
+            def makePathAbsolute(path):
+                # If path is already absolute: do nothing
+                # (Note that on Windows, op.realpath(/c/path/to/file)
+                #  returns C:\\c\\path\\to\\file, so we should
+                #  avoid applying op.realpath() if already absolute)
+                # (On both Windows and Linux,
+                #  paths beginning with '/' are considered absolute)
+                if op.isabs(path):
+                    # If path is absolute, it must be normalized
+                    return normalizePath(path)
+                # Make path absolute
+                path = op.realpath(path)
+                # Normalize it
+                return normalizePath(path)
+
+            launchDir = normalizePath(launchDir)
+            dsname = normalizePath(dsname)
+
+            mount_strings = [makePathAbsolute(m.split(":")[0]) + ":"
+                             + m.split(":")[1] for m in mount_strings]
+            mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
+
             if conTypeToUse == 'docker':
                 envString = " "
                 if envVars:
@@ -339,9 +388,11 @@ class LocalExecutor(object):
         for f in all_files.keys():
             file_name = all_files[f]
             fd = FileDescription(f, file_name, False)
-            if op.exists(file_name):
+            f_glob = glob(file_name)
+            if f_glob:
+                fd.file_name = f_glob[0]
                 output_files.append(fd)
-                output_files_dict[f] = file_name
+                output_files_dict[f] = f_glob[0]
             else:  # file does not exist
                 if f in required_files.keys():
                     missing_files.append(fd)
@@ -506,7 +557,7 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isCommandInstalled(self, command):
-        return not subprocess.Popen("type {} &>/dev/null".format(command),
+        return not subprocess.Popen("{} --version".format(command),
                                     shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
@@ -878,8 +929,10 @@ class LocalExecutor(object):
                 print_info("Input: " + str(self.in_dict))
             # Check results (as much as possible)
             try:
-                boutiques.invocation(
-                    self.desc_path, "-i", json.dumps(self.in_dict))
+                args = [self.desc_path, "-i", json.dumps(self.in_dict)]
+                if self.sandbox:
+                    args.append("--sandbox")
+                boutiques.invocation(*args)
             # If an error occurs, print out the problems already
             # encountered before blowing up
             except Exception as e:  # Avoid BaseExceptions like SystemExit
@@ -922,7 +975,10 @@ class LocalExecutor(object):
         addDefaultValues(self.desc_dict, self.in_dict)
         # Check results (as much as possible)
         try:
-            boutiques.invocation(self.desc_path, "-i", json.dumps(self.in_dict))
+            args = [self.desc_path, "-i", json.dumps(self.in_dict)]
+            if self.sandbox:
+                args.append("--sandbox")
+            boutiques.invocation(*args)
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write("An error occurred in validation\n"
                              "Previously saved issues\n")
@@ -1175,15 +1231,20 @@ class LocalExecutor(object):
     def _findDOI(self, userIn):
         doi_prefix = "10.5281/"
         # DOI in Zenodo reference case
-        if userIn.split(".")[0].lower() == "zenodo":
+        if userIn.startswith(doi_prefix):
+            return userIn
+        elif userIn.split(".")[0].lower() == "zenodo":
             return doi_prefix+userIn
         # File cases
         if os.path.isfile(userIn):
             # Most recent DOI in file if user is publisher
             # Include check to ensure descriptor is unmodified
             if self.desc_dict.get('doi') is not None:
-                doi = self.desc_dict.get('doi')
+                # Popping the DOI allows it to match published version.
+                # In a match, we'll re-add the DOI
+                doi = self.desc_dict.pop('doi')
                 if loadJson(doi) == self.desc_dict:
+                    self.desc_dict['doi'] = doi
                     return doi
             # DOI in filename if descriptor pulled from Zenodo
             # Include check to ensure descriptor is as published
@@ -1258,7 +1319,7 @@ class LocalExecutor(object):
     # summary, publicInput an publicOutput are combined and
     # written to a file in .cache
     def _saveDataCaptureToCache(self):
-        date_time = datetime.datetime.now().isoformat()
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         tool_name = self.summary['name'].replace(' ', '-')
         self.summary['date-time'] = date_time
         # Combine three modules plus provenance in master dictionary
@@ -1305,7 +1366,7 @@ class LocalExecutor(object):
             return match
         # Write descriptor to data cache and save return filename
         content = json.dumps(self.desc_dict, indent=4)
-        date_time = datetime.datetime.now().isoformat()
+        date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
         path = os.path.join(data_cache_dir, filename)
         file = open(path, 'w+')
@@ -1347,17 +1408,3 @@ def computeMD5(filepath):
         for chunk in iter(lambda: fhandle.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
-
-
-# Decodes a byte string, handling non utf-8 characters according to
-# Python version.
-def decodeByteStr(byteStr):
-    if sys.version_info[0] < 3:
-        # ignore non-decodable chars
-        return byteStr.decode("utf=8", "ignore")
-    elif sys.version_info[0] == 3 and sys.version_info[1] == 4:
-        # replace non-decodable chars with a replacement character
-        return byteStr.decode("utf=8", "replace")
-    else:
-        # replace non-decodable chars with escape sequence
-        return byteStr.decode("utf=8", "backslashreplace")
