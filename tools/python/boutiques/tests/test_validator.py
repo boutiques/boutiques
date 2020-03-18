@@ -59,3 +59,16 @@ class TestValidator(TestCase):
     def test_invalid_groups(self):
         fil = op.join(op.split(bfile)[0], 'schema/examples/invalid_groups.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
+
+    def test_invalid_container_index(self):
+        fil = op.join(op.split(bfile)[0],
+                      'schema/examples/bad_conIndexImage.json')
+        command = ("bosh validate " + fil)
+        process = subprocess.Popen(command, shell=True,
+                                   stdout=subprocess.PIPE)
+        stdout = process.stdout.read().decode("utf-8").strip()
+        self.assertEqual(stdout,
+                         ('ContainerError: container image'
+                          ' \"docker://index.docker.io\" is prepended by index'
+                          ' that doesn\'t match container index value'
+                          ' \"shub://\"'))
