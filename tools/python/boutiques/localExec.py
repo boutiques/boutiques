@@ -1033,10 +1033,8 @@ class LocalExecutor(object):
                         list_sep = ' '
                     escaped_val = []
                     for x in val:
-                        if escape:
-                            escaped_val.append(escape_string(str(x)))
-                        else:
-                            escaped_val.append(str(x))
+                        escaped_val.append(escape_string(str(x)) if
+                                           escape else str(x))
                     val = list_sep.join(escaped_val)
                 elif escape:
                     val = escape_string(val)
