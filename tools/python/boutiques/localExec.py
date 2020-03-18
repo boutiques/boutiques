@@ -1028,19 +1028,16 @@ class LocalExecutor(object):
             if param_id in list(in_out_dict.keys()):  # param has a value
                 val = in_out_dict[param_id]
                 if type(val) is list:
-                    s_val = ""
                     list_sep = self.safeGet(param_id, 'list-separator')
                     if list_sep is None:
                         list_sep = ' '
+                    escaped_val = []
                     for x in val:
-                        s = str(x)
                         if escape:
-                            s = escape_string(str(x))
-                        if val.index(x) == len(val)-1:
-                            s_val += s
+                            escaped_val.append(escape_string(str(x)))
                         else:
-                            s_val += s + list_sep
-                    val = s_val
+                            escaped_val.append(str(x))
+                    val = list_sep.join(escaped_val)
                 elif escape:
                     val = escape_string(val)
                 # Add flags and separator if necessary

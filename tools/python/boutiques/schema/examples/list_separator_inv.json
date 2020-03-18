@@ -1,4 +1,5 @@
 {
   "input_list_number": [1, 2, 3],
-  "input_list_file":["foo.txt", "bar.m"]
+  "input_list_file":["foo.txt", "bar.m"],
+  "input_list_string": ["string1", "string2", "string2", "string1"]
 }

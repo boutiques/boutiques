@@ -1,5 +1,5 @@
 {
-    "command-line": "[INPUT_LIST_NUMBER] [INPUT_LIST_FILE]",
+    "command-line": "[INPUT_LIST_NUMBER] [INPUT_LIST_FILE] [INPUT_LIST_STRING]",
     "description": "A command with custom list separators",
     "inputs": [
         {
@@ -19,6 +19,16 @@
             "list-separator": ",",
             "min-list-entries": 2,
             "value-key": "[INPUT_LIST_FILE]"
+        },
+        {
+            "id": "input_list_string",
+            "name": "Input string list",
+            "type": "String",
+            "list": true,
+            "min-list-entries": 4,
+            "list-separator": "', !",
+            "value-choices": ["string1", "string2"],
+            "value-key": "[INPUT_LIST_STRING]"
         }
     ],
     "name": "list separator",
