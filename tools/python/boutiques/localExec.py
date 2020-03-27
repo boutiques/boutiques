@@ -534,7 +534,8 @@ class LocalExecutor(object):
                               "in current working "
                               "directory or specified "
                               "image path)").format(conName,
-                                                    conIndex,
+                                                    conIndex if not
+                                                    conImgHasIndex else "",
                                                     conImage)
         # Pull the singularity image
         sing_command = "singularity pull --name " + pull_loc
