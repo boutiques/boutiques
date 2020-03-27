@@ -24,7 +24,8 @@ from tabulate import tabulate
 
 
 def parser_pprint():
-    parser = ArgumentParser("Boutiques pretty-print for generating help text")
+    parser = ArgumentParser(description="Boutiques pretty-print for"
+                            "generating help text")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor.")
     parser.add_argument("--sandbox", action="store_true",
@@ -47,7 +48,7 @@ pprint.__doc__ = parser_pprint().format_usage()
 
 
 def parser_create():
-    parser = ArgumentParser("Boutiques descriptor creator")
+    parser = ArgumentParser(description="Boutiques descriptor creator")
     parser.add_argument("descriptor", action="store",
                         help="Output file to store descriptor in.")
     parser.add_argument("--docker-image", '-d', action="store",
@@ -74,7 +75,7 @@ create.__doc__ = parser_create().format_help()
 
 
 def parser_validate():
-    parser = ArgumentParser("Boutiques descriptor validator")
+    parser = ArgumentParser(description="Boutiques descriptor validator")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
@@ -106,7 +107,8 @@ validate.__doc__ = parser_validate().format_help()
 
 
 def parser_execute():
-    parser = ArgumentParser("Boutiques local executor", add_help=False)
+    parser = ArgumentParser(description="Boutiques local executor",
+                            add_help=False)
     parser.add_argument("mode", action="store",
                         help="Mode of operation to use. Launch: takes a "
                         "set of inputs compliant with invocation schema "
@@ -122,7 +124,7 @@ def parser_execute():
 
 
 def parser_executeLaunch():
-    parser = ArgumentParser("Launches an invocation.")
+    parser = ArgumentParser(description="Launches an invocation.")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, "
                         "JSON string or Zenodo ID (prefixed by 'zenodo.').")
@@ -170,7 +172,7 @@ def parser_executeLaunch():
 
 
 def parser_executeSimulate():
-    parser = ArgumentParser("Simulates an invocation.")
+    parser = ArgumentParser(description="Simulates an invocation.")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, "
                         "JSON string or Zenodo ID (prefixed by 'zenodo.').")
@@ -187,7 +189,7 @@ def parser_executeSimulate():
 
 
 def parser_executePrepare():
-    parser = ArgumentParser("Pulls the container image for a given "
+    parser = ArgumentParser(description="Pulls the container image for a given "
                             "descriptor")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, "
@@ -330,8 +332,8 @@ execute.__doc__ += parser_executePrepare().format_help()
 
 
 def parser_importer():
-    parser = ArgumentParser("Imports old descriptor or BIDS app or CWL"
-                            " descriptor or docopt script to spec.")
+    parser = ArgumentParser(description="Imports old descriptor or BIDS app or"
+                            " CWL descriptor or docopt script to spec.")
     parser.add_argument("type", help="Type of import we are performing."
                         " Allowed values: {" +
                         ", ".join(["bids", "0.4", "cwl", "docopt"]) + "}",
@@ -375,7 +377,8 @@ importer.__doc__ = parser_importer().format_help()
 
 
 def parser_exporter():
-    parser = ArgumentParser("Export Boutiques descriptor to other formats.")
+    parser = ArgumentParser(description="Export Boutiques descriptor to"
+                            " other formats.")
     parser.add_argument("type", help="Type of export we are performing.",
                         choices=["carmin"])
     parser.add_argument("descriptor", help="Boutiques descriptor to export.")
@@ -463,9 +466,10 @@ publish.__doc__ = parser_publish().format_help()
 
 
 def parser_invocation():
-    parser = ArgumentParser("Creates invocation schema and validates"
-                            " invocations. Uses descriptor's invocation"
-                            " schema if it exists, otherwise creates one.")
+    parser = ArgumentParser(description="Creates invocation schema and"
+                            " validates invocations. Uses descriptor's"
+                            " invocation schema if it exists, otherwise"
+                            " creates one.")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
@@ -510,8 +514,8 @@ invocation.__doc__ = parser_invocation().format_help()
 
 
 def parser_evaluate():
-    parser = ArgumentParser("Evaluates parameter values for a descriptor "
-                            "and invocation")
+    parser = ArgumentParser(description="Evaluates parameter values for a"
+                            " descriptor and invocation")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
@@ -555,8 +559,8 @@ evaluate.__doc__ = parser_evaluate().format_help()
 
 
 def parser_test():
-    parser = ArgumentParser("Perform all the tests defined within the"
-                            " given descriptor")
+    parser = ArgumentParser(description="Perform all the tests defined within"
+                            " the given descriptor")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, JSON "
                              "string or Zenodo ID (prefixed by 'zenodo.').")
@@ -603,9 +607,9 @@ test.__doc__ = parser_test().format_help()
 
 
 def parser_search():
-    parser = ArgumentParser("Search Zenodo for Boutiques descriptors. "
-                            "When no term is supplied, will search for "
-                            "all descriptors.")
+    parser = ArgumentParser(description="Search Zenodo for Boutiques"
+                            " descriptors. When no term is supplied, will"
+                            " search for all descriptors.")
     parser.add_argument("query", nargs="?", default="boutiques",
                         action="store", help="Search query")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -638,8 +642,8 @@ search.__doc__ = parser_search().format_help()
 
 
 def parser_example():
-    parser = ArgumentParser("Generates example invocation from a valid "
-                            "descriptor")
+    parser = ArgumentParser(description="Generates example invocation from a"
+                            " valid descriptor")
     parser.add_argument("descriptor", action="store",
                         help="The Boutiques descriptor as a JSON file, "
                         "JSON string or Zenodo ID (prefixed by 'zenodo.').")
@@ -679,8 +683,8 @@ example.__doc__ = parser_example().format_help()
 
 
 def parser_pull():
-    parser = ArgumentParser("Ensures that Zenodo descriptors are locally "
-                            "cached, downloading them if needed.")
+    parser = ArgumentParser(description="Ensures that Zenodo descriptors are"
+                            " locally cached, downloading them if needed.")
 
     parser.add_argument("zids", nargs="+", action="store", help="One or "
                         "more Zenodo IDs for the descriptor(s) to pull, "
@@ -707,7 +711,8 @@ pull.__doc__ = parser_pull().format_help()
 
 
 def parser_data():
-    parser = ArgumentParser("Manage execution data collection.", add_help=False)
+    parser = ArgumentParser(description="Manage execution data collection.",
+                            add_help=False)
 
     parser.add_argument("action", action="store",
                         help="Manage execution data records. Inspect: displays "
@@ -723,14 +728,14 @@ def parser_data():
 
 
 def parser_dataInspect():
-    parser = ArgumentParser("Displays contents of cache")
+    parser = ArgumentParser(description="Displays contents of cache")
     parser.add_argument("-e", "--example", action="store_true",
                         help="Display example data file contents.")
     return parser
 
 
 def parser_dataPublish():
-    parser = ArgumentParser("Publishes record(s) to a data set.")
+    parser = ArgumentParser(description="Publishes record(s) to a data set.")
     parser.add_argument("-a", "--author", action="store",
                         help="Set the author name for the data set "
                         "publication. Defaults to anonymous.")
@@ -766,7 +771,7 @@ def parser_dataPublish():
 
 
 def parser_dataDelete():
-    parser = ArgumentParser("Delete data record(s) in cache.")
+    parser = ArgumentParser(description="Delete data record(s) in cache.")
     parser.add_argument("-f", "--file", action="store",
                         help="Filename of record to delete.")
     parser.add_argument("--no-int", '-y', action="store_true",
@@ -822,12 +827,13 @@ data.__doc__ += parser_dataDelete().format_help()
 
 
 def parser_deprecate():
-    parser = ArgumentParser("Deprecates a published descriptor by creating a"
-                            " new version with the 'deprecated' tag on Zenodo."
-                            " The descriptor remains available from its Zenodo"
-                            "id, but it won't show in search results. This "
-                            "works by creating a new version of the tool in "
-                            "Zenodo, marked with keyword 'deprecated'.")
+    parser = ArgumentParser(description="Deprecates a published descriptor by"
+                            " creating a new version with the 'deprecated' tag"
+                            " on Zenodo. The descriptor remains available from"
+                            " its Zenodo id, but it won't show in search"
+                            " results. This works by creating a new version of"
+                            " the tool in Zenodo, marked with keyword"
+                            " 'deprecated'.")
     parser.add_argument("zid", action="store", help="Zenodo id "
                         "of the descriptor to deprecate, "
                         "prefixed by 'zenodo.', e.g. zenodo.123456")
