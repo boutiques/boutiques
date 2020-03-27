@@ -514,7 +514,7 @@ class TestExample1(BaseTest):
                            self.get_file_path("input_invoc.json"),
                            "--skip-data-collection")
 
-        self.assertIn("Pulled from docker://boutiques/example1",
+        self.assertIn("Local (boutiques-example1-test.simg)",
                       ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
         self.clean_up()
