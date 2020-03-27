@@ -1,0 +1,27 @@
+{
+    "command-line": "echo [INPUT] > file.txt", 
+    "description": "a tool with no container image",
+    "container-image": {
+        "type": "singularity",
+        "image": "docker://boutiques/example1:test"
+    },
+    "inputs": [
+        {
+            "id": "input", 
+            "name": "input", 
+            "type": "String", 
+            "value-key": "[INPUT]"
+        }
+    ],
+    "name": "test_container_index", 
+    "output-files": [
+        {
+            "id": "output_file", 
+            "name": "output file", 
+            "path-template": "file.txt"
+        }
+    ], 
+    "schema-version": "0.5", 
+    "tool-version": "0.1",
+    "author": "tester"
+}
