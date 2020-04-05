@@ -123,3 +123,23 @@ def customSortInvocationByInput(invocation, descriptor):
                       " original invocation.")
         return invocation
     return sortedInvoc
+
+
+def snakeCaseToCamelCase(id):
+    words = id.split("_")
+    for idx, word in enumerate(words[1:]):
+        if word[0].islower():
+            words[idx+1] = word[0].upper() + word[1:]
+    return "".join(words)
+
+
+def camelCaseInputIds(descriptor):
+    if 'inputs' in descriptor:
+        for inp in descriptor['inputs']:
+            inp['id'] = snakeCaseToCamelCase(inp['id'])
+    if 'groups' in descriptor:
+        for members in [g['members'] for g in descriptor['groups']
+                        if 'members' in g]:
+            for idx, member in enumerate(members):
+                members[idx] = snakeCaseToCamelCase(member)
+    return descriptor

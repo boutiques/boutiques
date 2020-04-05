@@ -56,6 +56,8 @@ def parser_create():
     parser.add_argument("--use-singularity", '-u', action="store_true",
                         help="When --docker-image is used. Specify to "
                              "use singularity to run it.")
+    parser.add_argument("--camel-case", action="store_true",
+                        help="All input IDs will be written in camelCase.")
     return parser
 
 
@@ -66,7 +68,8 @@ def create(*params):
     from boutiques.creator import CreateDescriptor
     new = CreateDescriptor(parser=None,
                            docker_image=results.docker_image,
-                           use_singularity=results.use_singularity)
+                           use_singularity=results.use_singularity,
+                           camel_case=results.camel_case)
     new.save(results.descriptor)
     return None
 
