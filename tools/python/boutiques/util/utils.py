@@ -134,12 +134,21 @@ def snakeCaseToCamelCase(id):
 
 
 def camelCaseInputIds(descriptor):
+    conversion_dict = {}
     if 'inputs' in descriptor:
         for inp in descriptor['inputs']:
-            inp['id'] = snakeCaseToCamelCase(inp['id'])
-    if 'groups' in descriptor:
-        for members in [g['members'] for g in descriptor['groups']
-                        if 'members' in g]:
-            for idx, member in enumerate(members):
-                members[idx] = snakeCaseToCamelCase(member)
+            camelCaseId = snakeCaseToCamelCase(inp['id'])
+            conversion_dict[inp['id']] = camelCaseId
+
+    # Find all instances of old input ids
+    # and replace them with camelCase ids
+    plainTextDesc = json.dumps(descriptor, indent=2)
+    for k, v in conversion_dict.items():
+        # Only replace ids surrounded by single/double quotes,
+        # in case the the old input ids are used in other strings
+        plainTextDesc = plainTextDesc.replace("\"{0}\"".format(k),
+                                              "\"{0}\"".format(v))
+        plainTextDesc = plainTextDesc.replace("\'{0}\'".format(k),
+                                              "\'{0}\'".format(v))
+    descriptor = json.loads(plainTextDesc)
     return descriptor
