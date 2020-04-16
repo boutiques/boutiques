@@ -183,3 +183,12 @@ class TestSimulate(TestCase):
         command = re.search(r"(test[ \da-z]+)", output).group(0)
 
         self.assertNotIn("  ", command)
+
+    def test_consistency_withANDwithout_invoc(self):
+        descriptor = os.path.join(os.path.split(bfile)[0],
+                                  'schema/examples/'
+                                  'test_simulate_consistency.json')
+        noInvoc = bosh.execute("simulate", descriptor).stdout
+        wInvoc = bosh.execute("simulate", descriptor, "-i",
+                              bosh.example(descriptor)).stdout
+        self.assertEqual(noInvoc, wInvoc)
