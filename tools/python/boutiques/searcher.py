@@ -119,6 +119,7 @@ class Searcher():
             (id, title, description, downloads) = self.parse_basic_info(hit)
             author = hit["metadata"]["creators"][0]["name"]
             version = hit["metadata"]["version"]
+            publication_date = hit["metadata"]['publication_date']
             doi = hit["doi"]
             keyword_data = self.get_keyword_data(hit["metadata"]["keywords"])
             schema_version = keyword_data["schema-version"]
@@ -127,6 +128,7 @@ class Searcher():
             result_dict = OrderedDict([("ID", id),
                                       ("TITLE", title),
                                       ("DESCRIPTION", description),
+                                      ("PUBLICATION DATE", publication_date),
                                       ("DEPRECATED", 'deprecated' in
                                        keyword_data['other']),
                                       ("DOWNLOADS", downloads),
