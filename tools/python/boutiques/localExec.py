@@ -938,7 +938,7 @@ class LocalExecutor(object):
         # encountered before blowing up
         except Exception as e:  # Avoid BaseExceptions like SystemExit
             sys.stderr.write("An error occurred in validation\n"
-                                "Previously saved issues\n")
+                             "Previously saved issues\n")
             for err in self.errs:
                 sys.stderr.write("\t" + str(err) + "\n")
             raise e  # Pass on (throw) the caught exception
