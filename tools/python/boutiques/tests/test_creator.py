@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from unittest import TestCase
 from boutiques.bosh import bosh
 from boutiques import __file__ as bfile
+from boutiques.util.utils import loadJson
 import boutiques.creator as bc
 import subprocess
 import os.path as op
@@ -86,3 +87,23 @@ class TestCreator(TestCase):
 
         self.assertIsNone(bosh(['validate', fil]))
         self.assertIsNone(bosh(['invocation', fil, '-i', invof]))
+
+    def test_success_template_camel_case(self):
+        template = './boutiques/templates/basic.json'
+        fil = 'creator_output.json'
+        bosh(['create', fil, '--camel-case'])
+        self.assertIsNone(bosh(['validate', fil]))
+
+        desc = loadJson(fil)
+        template = loadJson(template)
+
+        # Check "_" in all instances of input indices (inputs + groups)
+        for inp, camelInp in zip(template['inputs'], desc['inputs']):
+            self.assertTrue("_" in inp['id'])
+            self.assertFalse("_" in camelInp['id'])
+
+        for mbrs, camelMbrs in [(grp['members'], camelGrp['members']) for
+                                grp, camelGrp in
+                                zip(template['groups'], desc['groups'])]:
+            self.assertTrue(all([("_" in mbr) for mbr in mbrs]))
+            self.assertFalse(all([("_" in camelMbr) for camelMbr in camelMbrs]))

@@ -10,7 +10,7 @@ from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
 from boutiques.logger import raise_error, print_info, print_warning
-from boutiques.util.utils import customSortDescriptorByKey
+from boutiques.util.utils import customSortDescriptorByKey, camelCaseInputIds
 import subprocess
 
 
@@ -42,6 +42,10 @@ class CreateDescriptor(object):
             if type(parser) is not argparse.ArgumentParser:
                 raise_error(CreatorError, "Invalid argument parser")
             self.parseParser(**kwargs)
+
+        self.camelCase = kwargs.get('camel_case')
+        if self.camelCase:
+            self.descriptor = camelCaseInputIds(self.descriptor)
 
     def save(self, filename):
         with open(filename, "w") as f:
