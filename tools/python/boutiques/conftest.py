@@ -6,9 +6,10 @@ from boutiques.util.utils import loadJson
 
 def pytest_addoption(parser):
     parser.addoption("--descriptor", action="append", default=[])
+    parser.addoption("--imagepath", action="append", default=['./'])
 
 
-def fetch_tests(descriptor_input):
+def fetch_tests(descriptor_input, imagepath):
 
     descriptor = loadJson(descriptor_input)
 
@@ -25,7 +26,7 @@ def fetch_tests(descriptor_input):
         temp_invocation_JSON.seek(0)
 
         # Now we setup the necessary elements for the testing function.
-        tests.append([descriptor_input, test, temp_invocation_JSON])
+        tests.append([descriptor_input, test, temp_invocation_JSON, imagepath])
 
     return (descriptor["name"], tests)
 
@@ -33,6 +34,7 @@ def fetch_tests(descriptor_input):
 # This function will be executed by pytest before the actual testing
 def pytest_generate_tests(metafunc):
     descriptor_filename = metafunc.config.getoption('descriptor')[0]
+    imagepath = metafunc.config.getoption('imagepath')[0]
 
     # Each element in 'tests' will hold the necessary informations
     # for a single test
@@ -42,7 +44,7 @@ def pytest_generate_tests(metafunc):
     #                         (more convenient, no need to extract
     #                          again from descriptor)
     #                         .The invocation file needed for the test
-    descriptor_name, tests = fetch_tests(descriptor_filename)
+    descriptor_name, tests = fetch_tests(descriptor_filename, imagepath)
 
     # Generate the test ids for each of the test cases.
     # An id is created by concatenaning the name of the descriptor
@@ -50,4 +52,5 @@ def pytest_generate_tests(metafunc):
     names = ["{0}_{1}".format(op.basename(descriptor_filename),
              params[1]["name"].replace(' ', '-')) for params in tests]
 
-    metafunc.parametrize("descriptor, test, invocation", tests, ids=names)
+    metafunc.parametrize("descriptor, test, invocation, imagepath",
+                         tests, ids=names)

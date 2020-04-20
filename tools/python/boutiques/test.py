@@ -10,12 +10,11 @@ def compute_md5(filename):
         return hashlib.md5(open(filename, 'rb').read()).hexdigest()
 
 
-def test(descriptor, test, invocation):
+def test(descriptor, test, invocation, imagepath):
     # Run pipeline.
-    ret = bosh.execute("launch",
-                       descriptor,
-                       invocation.name,
-                       "--skip-data-collection")
+    arguments = ["launch", descriptor, invocation.name,
+                 "--skip-data-collection", "--imagepath", imagepath]
+    ret = bosh.execute(*arguments)
     print(ret)
 
     # Choose appropriate assertion scenario
