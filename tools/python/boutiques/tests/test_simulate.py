@@ -184,7 +184,7 @@ class TestSimulate(TestCase):
 
         self.assertNotIn("  ", command)
 
-    def test_consistency_withANDwithout_invoc(self):
+    def test_consistency_withAndWithout_invoc(self):
         descriptor = os.path.join(os.path.split(bfile)[0],
                                   'schema/examples/'
                                   'test_simulate_consistency.json')
@@ -192,3 +192,27 @@ class TestSimulate(TestCase):
         wInvoc = bosh.execute("simulate", descriptor, "-i",
                               bosh.example(descriptor)).stdout
         self.assertEqual(noInvoc, wInvoc)
+
+    def test_consistency_withAndWithout_invoc_withConfigFile(self):
+        descriptor = os.path.join(os.path.split(bfile)[0],
+                                  'schema/examples/'
+                                  'test_simulate_consistency_configFile.json')
+        invoc = "tmpInvoc.json"
+        config = "tmpConfig.toml"
+        wInvocCommand = (f"bosh example {descriptor}" +
+                         f" > {invoc} " +
+                         f" && bosh exec simulate {descriptor} -i {invoc}")
+        noInvocCommand = (f"bosh exec simulate {descriptor}")
+
+        subprocess.call(wInvocCommand, shell=True)
+        with open(config, "r+") as configFile:
+            wInvoc = configFile.readlines()
+            os.remove(config)
+            os.remove(invoc)
+
+        subprocess.call(noInvocCommand, shell=True)
+        with open(config, "r+") as configFile:
+            noInvoc = configFile.readlines()
+            os.remove(config)
+
+        self.assertEqual(wInvoc, noInvoc)
