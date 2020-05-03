@@ -282,7 +282,7 @@ def execute(*params):
             # Add optional inputs with default-value to inputs_dict,
             # which is then populated with random params
             executor.in_dict = addDefaultValues(executor.desc_dict, {})
-            executor.generateRandomParams()
+            executor.generateRandomParams(generateCmdLineFromInDict=True)
 
         if results.json:
             sout = [json.dumps(

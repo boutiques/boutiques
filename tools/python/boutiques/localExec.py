@@ -914,7 +914,7 @@ class LocalExecutor(object):
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
     # and generates the appropriate command line
-    def generateRandomParams(self):
+    def generateRandomParams(self, generateCmdLineFromInDict=False):
 
         '''
         The generateRandomParams method fills the in_dict field
@@ -942,8 +942,9 @@ class LocalExecutor(object):
             for err in self.errs:
                 sys.stderr.write("\t" + str(err) + "\n")
             raise e  # Pass on (throw) the caught exception
-        # Add new command line
-        self.cmd_line.append(self._generateCmdLineFromInDict())
+        if generateCmdLineFromInDict:
+            # Add new command line
+            self.cmd_line.append(self._generateCmdLineFromInDict())
 
     # Read in parameter input file or string
     def readInput(self, infile):
