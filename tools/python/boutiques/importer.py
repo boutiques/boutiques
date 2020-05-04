@@ -972,17 +972,3 @@ class Docopt_Importer():
             '^([^\n]*' + name + '[^\n]*\n?(?:[ \t].*?(?:\n|$))*)',
             re.IGNORECASE | re.MULTILINE)
         return [s.strip() for s in pattern.findall(source)]
-
-
-class Config_Importer():
-    def __init__(self, configFilePath, outputDesc):
-        self.configFilePath = op.join(configFilePath)
-        self.descriptor = outputDesc
-
-        if self.configFileFormat == "json":
-            print("JSON CONFIG IMPORT")
-        elif self.configFileFormat == "toml":
-            print("TOML CONFIG IMPORT")
-        elif self.configFileFormat == "yml":
-            print("YML CONFIG IMPORT")
-
