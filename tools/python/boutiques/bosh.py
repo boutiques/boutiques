@@ -282,7 +282,10 @@ def execute(*params):
                                   "requireComplete": results.complete,
                                   "sandbox": results.sandbox})
         if not inp:
-            executor.generateRandomParams(1)
+            # Add optional inputs with default-value to inputs_dict,
+            # which is then populated with random params
+            executor.in_dict = addDefaultValues(executor.desc_dict, {})
+            executor.generateRandomParams(generateCmdLineFromInDict=True)
 
         if results.json:
             sout = [json.dumps(
@@ -677,7 +680,7 @@ def example(*params):
                               "skipDataCollect": True,
                               "requireComplete": results.complete,
                               "sandbox": results.sandbox})
-    executor.generateRandomParams(1)
+    executor.generateRandomParams()
     return json.dumps(
         customSortInvocationByInput(executor.in_dict, descriptor), indent=4)
 
