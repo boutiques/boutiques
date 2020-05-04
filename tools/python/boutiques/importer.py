@@ -8,6 +8,7 @@ from boutiques.util.utils import customSortInvocationByInput
 from boutiques.logger import raise_error
 import boutiques
 import yaml
+import toml
 import simplejson as json
 import os
 import os.path as op
@@ -125,8 +126,8 @@ class Importer():
 
         return entrypoint
 
-    def import_docopt(self, desc_path):
-        template_file = op.join(desc_path)
+    def import_docopt(self):
+        template_file = op.join(self.output_descriptor)
         docstring = imp.load_source(
             'docopt_pyscript', self.input_descriptor).__doc__
 
@@ -448,6 +449,52 @@ class Importer():
                     boutiques_invocation, json.dumps(bout_desc)), indent=4))
         boutiques.invocation(self.output_descriptor,
                              "-i", self.output_invocation)
+
+    def import_config(self):
+        def _getConfigFileString():
+            with open(self.input_descriptor, "r") as configFile:
+                return configFile.read()
+
+        def _getPropertiesFromValue(value):
+            if isinstance(value, str):
+                if re.match(r"\/.*\.[\w:]+", value) is not None:
+                    return {'type': "File"}
+                return {'type': "String"}
+            elif isinstance(value, float):
+                return {'type': "Number", 'integer': False}
+            elif isinstance(value, int):
+                return {'type': "Number", 'integer': True}
+            elif isinstance(value, list):
+                elementProperties = _getPropertiesFromValue(value[0])
+                elementProperties['list'] = True
+                return elementProperties
+
+        def import_toml(descriptor):
+            # load toml config into toml object (dict)
+            tomlString = _getConfigFileString()
+            tomlDict = toml.loads(tomlString)
+
+            # Generate inputs based on toml object
+            for id, value in tomlDict.items():
+                newInput = _getPropertiesFromValue(value)
+                newInput['id'] = id
+                descriptor['inputs'].append(newInput)
+            return descriptor
+
+        descriptor = loadJson(self.output_descriptor)
+        # Remove inputs and output-files from descriptor
+        descriptor['inputs'], descriptor['output-files'] = [], []
+        configFileFormat = self.input_descriptor.split(".")[-1].lower()
+
+        if configFileFormat == "json":
+            pass
+        elif configFileFormat == "toml":
+            outputDescriptor = import_toml(descriptor)
+        elif configFileFormat == "yml":
+            pass
+
+        with open(self.output_descriptor, "w") as output:
+            output.write(json.dumps(outputDescriptor, indent=4))
 
 
 class Docopt_Importer():
@@ -925,3 +972,17 @@ class Docopt_Importer():
             '^([^\n]*' + name + '[^\n]*\n?(?:[ \t].*?(?:\n|$))*)',
             re.IGNORECASE | re.MULTILINE)
         return [s.strip() for s in pattern.findall(source)]
+
+
+class Config_Importer():
+    def __init__(self, configFilePath, outputDesc):
+        self.configFilePath = op.join(configFilePath)
+        self.descriptor = outputDesc
+
+        if self.configFileFormat == "json":
+            print("JSON CONFIG IMPORT")
+        elif self.configFileFormat == "toml":
+            print("TOML CONFIG IMPORT")
+        elif self.configFileFormat == "yml":
+            print("YML CONFIG IMPORT")
+

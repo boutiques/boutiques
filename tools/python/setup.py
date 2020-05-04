@@ -19,7 +19,8 @@ DEPS = [
          "tabulate",
          "mock",
          "docopt",
-         "nexus-sdk"
+         "nexus-sdk",
+         "toml"
        ]
 
 setup(name="boutiques",

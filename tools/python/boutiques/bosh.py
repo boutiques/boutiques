@@ -342,16 +342,18 @@ def parser_importer():
                             " CWL descriptor or docopt script to spec.")
     parser.add_argument("type", help="Type of import we are performing."
                         " Allowed values: {" +
-                        ", ".join(["bids", "0.4", "cwl", "docopt"]) + "}",
-                        choices=["bids", "0.4", "cwl", "docopt"],
+                        ", ".join(["bids", "0.4", "cwl", "docopt", "config"]) +
+                        "}",
+                        choices=["bids", "0.4", "cwl", "docopt", "config"],
                         metavar='type')
     parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
     parser.add_argument("input_descriptor", help="Input descriptor to be"
                         " converted. For '0.4', is JSON descriptor,"
-                        " for 'docopt' is JSON descriptor,"
+                        " for 'docopt' is Docopt script,"
                         " for 'bids' is base directory of BIDS app,"
-                        " for 'cwl' is YAML descriptor.")
+                        " for 'cwl' is YAML descriptor,"
+                        " for 'config' is configuration file {.json, .toml, .yml}.")
     parser.add_argument("-o", "--output-invocation", help="Where to write "
                         "the invocation if any.")
     parser.add_argument("-i", "--input-invocation", help="Input invocation "
@@ -376,7 +378,12 @@ def importer(*params):
         importer.import_cwl()
     elif results.type == "docopt":
         create(params[1])
-        importer.import_docopt(params[1])
+        importer.import_docopt()
+    elif results.type == "config":
+        outputPath = params[1]
+        if not os.path.isfile(outputPath):
+            create(outputPath)
+        importer.import_config()
 
 
 importer.__doc__ = parser_importer().format_help()
