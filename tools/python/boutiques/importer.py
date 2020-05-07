@@ -488,13 +488,15 @@ class Importer():
                 "name": "Configuration file",
                 "type": "Configuration File",
                 "value-key": "[CONFIG_FILE]",
-                "path-template": "config.{0}".format(configFileFormat)
+                "path-template": "config.{0}".format(configFileFormat),
+                "file-template": []
             }
 
         def import_toml(descriptor):
             # load toml config into toml object (dict)
             tomlString = _getConfigFileString()
             tomlDict = toml.loads(tomlString)
+            config_file = _getConfigFileTemplate("toml")
 
             # Generate inputs based on toml object
             for id, value in tomlDict.items():
@@ -503,11 +505,9 @@ class Importer():
                 newInput['value-key'] = _createValueKeyFromName(
                     newInput['name'])
                 descriptor['inputs'].append(newInput)
-
-            config_file = _getConfigFileTemplate("toml")
-            config_file['file-template'] = [
-                "\'{0}\'={1}".format(inp['id'], inp['value-key'])
-                for inp in descriptor['inputs']]
+                # Append id=value-key pair to config_file's file-template
+                config_file['file-template'].append(
+                    "\'{0}\'={1}".format(newInput['id'], newInput['value-key']))
             descriptor['output-files'].append(config_file)
             return descriptor
 
