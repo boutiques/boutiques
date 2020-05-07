@@ -469,6 +469,28 @@ class Importer():
                 elementProperties['list'] = True
                 return elementProperties
 
+        def _createNameFromID(id):
+            name = [c for c in id]
+            for idx, c in enumerate(name):
+                if not c.isalnum():
+                    name[idx] = ' '
+                if c.isupper():
+                    name[idx] = ' ' + c.lower()
+            # Join char list into string and concatenate white spaces
+            return " ".join(''.join(name).split())
+
+        def _createValueKeyFromName(name):
+            return "[{0}]".format(name.replace(' ', '_').upper())
+
+        def _getConfigFileTemplate(configFileFormat):
+            return {
+                "id": "config_file",
+                "name": "Configuration file",
+                "type": "Configuration File",
+                "value-key": "[CONFIG_FILE]",
+                "path-template": "config.{0}".format(configFileFormat)
+            }
+
         def import_toml(descriptor):
             # load toml config into toml object (dict)
             tomlString = _getConfigFileString()
@@ -476,9 +498,17 @@ class Importer():
 
             # Generate inputs based on toml object
             for id, value in tomlDict.items():
-                newInput = _getPropertiesFromValue(value)
-                newInput['id'] = id
+                newInput = {'id': id, 'name': _createNameFromID(id)}
+                newInput.update(_getPropertiesFromValue(value))
+                newInput['value-key'] = _createValueKeyFromName(
+                    newInput['name'])
                 descriptor['inputs'].append(newInput)
+
+            config_file = _getConfigFileTemplate("toml")
+            config_file['file-template'] = [
+                "\'{0}\'={1}".format(inp['id'], inp['value-key'])
+                for inp in descriptor['inputs']]
+            descriptor['output-files'].append(config_file)
             return descriptor
 
         descriptor = loadJson(self.output_descriptor)
@@ -493,8 +523,9 @@ class Importer():
         elif configFileFormat == "yml":
             pass
 
-        with open(self.output_descriptor, "w") as output:
-            output.write(json.dumps(outputDescriptor, indent=4))
+        with open(self.output_descriptor, "w+") as output:
+            output.write(json.dumps(
+                customSortDescriptorByKey(outputDescriptor), indent=4))
 
 
 class Docopt_Importer():

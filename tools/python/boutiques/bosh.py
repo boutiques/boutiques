@@ -377,12 +377,10 @@ def importer(*params):
     elif results.type == "cwl":
         importer.import_cwl()
     elif results.type == "docopt":
-        create(params[1])
+        create(importer.output_descriptor)
         importer.import_docopt()
     elif results.type == "config":
-        outputPath = params[1]
-        if not os.path.isfile(outputPath):
-            create(outputPath)
+        create(importer.output_descriptor)
         importer.import_config()
 
 
