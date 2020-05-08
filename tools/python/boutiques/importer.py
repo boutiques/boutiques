@@ -456,6 +456,7 @@ class Importer():
                 return configFile.read()
 
         def _getPropertiesFromValue(value):
+            # Generate input properties from the input's value
             if isinstance(value, str):
                 if re.match(r"\/.*\.[\w:]+", value) is not None:
                     return {'type': "File"}
@@ -479,10 +480,7 @@ class Importer():
             # Join char list into string and concatenate white spaces
             return " ".join(''.join(name).split())
 
-        def _createValueKeyFromName(name):
-            return "[{0}]".format(name.replace(' ', '_').upper())
-
-        def _getConfigFileTemplate(configFileFormat):
+        def _getOutputConfigFileTemplate(configFileFormat):
             return {
                 "id": "config_file",
                 "name": "Configuration file",
@@ -492,40 +490,49 @@ class Importer():
                 "file-template": []
             }
 
-        def import_toml(descriptor):
-            # load toml config into toml object (dict)
-            tomlString = _getConfigFileString()
-            tomlDict = toml.loads(tomlString)
-            config_file = _getConfigFileTemplate("toml")
+        def _populateConfigFileTemplate(output_config_file):
+            # Populate output_config_file's file-template
+            # using inputs from the output descriptor
+            for inp in descriptor['inputs']:
+                output_config_file['file-template'].append(
+                    "\'{0}\'={1}".format(inp['id'], inp['value-key']))
+            return output_config_file
 
-            # Generate inputs based on toml object
-            for id, value in tomlDict.items():
+        def _getInputsFromConfigDict(input_config):
+            # Generate inputs based on input config file (as dict)
+            desc_inputs = []
+            for id, value in input_config.items():
                 newInput = {'id': id, 'name': _createNameFromID(id)}
                 newInput.update(_getPropertiesFromValue(value))
-                newInput['value-key'] = _createValueKeyFromName(
-                    newInput['name'])
-                descriptor['inputs'].append(newInput)
-                # Append id=value-key pair to config_file's file-template
-                config_file['file-template'].append(
-                    "\'{0}\'={1}".format(newInput['id'], newInput['value-key']))
-            descriptor['output-files'].append(config_file)
-            return descriptor
+                newInput['value-key'] =\
+                    "[{0}]".format(newInput['name'].replace(' ', '_').upper())
+                desc_inputs.append(newInput)
+            return desc_inputs
 
         descriptor = loadJson(self.output_descriptor)
         # Remove inputs and output-files from descriptor
         descriptor['inputs'], descriptor['output-files'] = [], []
         configFileFormat = self.input_descriptor.split(".")[-1].lower()
 
+        # Config K:V pair loading changes depending on config file type
         if configFileFormat == "json":
-            pass
+            input_config = loadJson(self.input_descriptor)
         elif configFileFormat == "toml":
-            outputDescriptor = import_toml(descriptor)
+            tomlString = _getConfigFileString()
+            input_config = toml.loads(tomlString)
         elif configFileFormat == "yml":
-            pass
+            yamlString = _getConfigFileString()
+            input_config = yaml.load(yamlString, Loader=yaml.FullLoader)
+
+        # Populating descriptor with inputs and configuration file
+        descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
+        output_config_file = _getOutputConfigFileTemplate(configFileFormat)
+        descriptor['output-files'].append(
+            _populateConfigFileTemplate(output_config_file))
 
         with open(self.output_descriptor, "w+") as output:
             output.write(json.dumps(
-                customSortDescriptorByKey(outputDescriptor), indent=4))
+                customSortDescriptorByKey(descriptor), indent=4))
 
 
 class Docopt_Importer():

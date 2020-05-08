@@ -1,0 +1,107 @@
+{
+    "name": "tool name",
+    "description": "tool description",
+    "tool-version": "v0.1.0",
+    "schema-version": "0.5",
+    "command-line": "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]",
+    "container-image": {
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
+    },
+    "inputs": [
+        {
+            "id": "numInput",
+            "name": "num input",
+            "type": "Number",
+            "integer": true,
+            "value-key": "[NUM_INPUT]"
+        },
+        {
+            "id": "listNumInput",
+            "name": "list num input",
+            "type": "Number",
+            "integer": true,
+            "list": true,
+            "value-key": "[LIST_NUM_INPUT]"
+        },
+        {
+            "id": "stringInput",
+            "name": "string input",
+            "type": "String",
+            "value-key": "[STRING_INPUT]"
+        },
+        {
+            "id": "fileInput",
+            "name": "file input",
+            "type": "File",
+            "value-key": "[FILE_INPUT]"
+        },
+        {
+            "id": "optStringInput",
+            "name": "opt string input",
+            "type": "String",
+            "value-key": "[OPT_STRING_INPUT]"
+        },
+        {
+            "id": "fileOutput",
+            "name": "file output",
+            "type": "File",
+            "value-key": "[FILE_OUTPUT]"
+        },
+        {
+            "id": "doubleInput",
+            "name": "double input",
+            "type": "Number",
+            "integer": false,
+            "value-key": "[DOUBLE_INPUT]"
+        }
+    ],
+    "output-files": [
+        {
+            "id": "config_file",
+            "name": "Configuration file",
+            "type": "Configuration File",
+            "value-key": "[CONFIG_FILE]",
+            "path-template": "config.yml",
+            "file-template": [
+                "'numInput'=[NUM_INPUT]",
+                "'listNumInput'=[LIST_NUM_INPUT]",
+                "'stringInput'=[STRING_INPUT]",
+                "'fileInput'=[FILE_INPUT]",
+                "'optStringInput'=[OPT_STRING_INPUT]",
+                "'fileOutput'=[FILE_OUTPUT]",
+                "'doubleInput'=[DOUBLE_INPUT]"
+            ]
+        }
+    ],
+    "groups": [
+        {
+            "all-or-none": true,
+            "id": "group1",
+            "members": [
+                "basic_param1",
+                "basic_flag1"
+            ],
+            "mutually-exclusive": false,
+            "name": "the param group",
+            "one-is-required": false
+        }
+    ],
+    "tags": {
+        "foo": "bar",
+        "purpose": "testing",
+        "status": "example"
+    },
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "Crashed"
+        }
+    ]
+}
