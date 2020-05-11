@@ -1,5 +1,6 @@
 # This is a demo configuration file
 numInput: 5050
+flagInput: true
 # This is a comment
 listNumInput: [1,2,3,4,5]
 # This input is hard-coded

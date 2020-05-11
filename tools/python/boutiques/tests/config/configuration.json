@@ -1,5 +1,6 @@
 {
     "numInput": 5050,
+    "flagInput": true,
     "listNumInput": [1,2,3,4,5],
     "stringInput": "foo",
     "fileInput": "/somewhere/something.txt",

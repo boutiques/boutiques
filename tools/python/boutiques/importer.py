@@ -457,16 +457,31 @@ class Importer():
 
         def _getPropertiesFromValue(value):
             # Generate input properties from the input's value
-            if isinstance(value, str):
-                if re.match(r"\/.*\.[\w:]+", value) is not None:
-                    return {'type': "File"}
-                return {'type': "String"}
-            elif isinstance(value, float):
+            if isinstance(value, bool):
+                return {'type': "Flag"}
+            if isinstance(value, float):
                 return {'type': "Number", 'integer': False}
             elif isinstance(value, int):
                 return {'type': "Number", 'integer': True}
+            elif isinstance(value, str):
+                if re.match(r"\/.*\.[\w:]+", value) is not None:
+                    return {'type': "File"}
+                return {'type': "String"}
             elif isinstance(value, list):
-                elementProperties = _getPropertiesFromValue(value[0])
+                # Check all elements of list to extract list properties
+                elementProperties, props = {}, []
+                for element in value:
+                    props.append(_getPropertiesFromValue(element))
+                if all([p['type'] == "Flag" for p in props]):
+                    elementProperties['type'] = "Flag"
+                elif all([p['type'] == "Number" for p in props]):
+                    elementProperties['type'] = "Number"
+                    elementProperties['integer'] =\
+                        all([p['integer'] for p in props])
+                elif all([p['type'] == "File" for p in props]):
+                    elementProperties['type'] = "File"
+                else:
+                    elementProperties['type'] = "String"
                 elementProperties['list'] = True
                 return elementProperties
 
@@ -490,14 +505,6 @@ class Importer():
                 "file-template": []
             }
 
-        def _populateConfigFileTemplate(output_config_file):
-            # Populate output_config_file's file-template
-            # using inputs from the output descriptor
-            for inp in descriptor['inputs']:
-                output_config_file['file-template'].append(
-                    "\'{0}\'={1}".format(inp['id'], inp['value-key']))
-            return output_config_file
-
         def _getInputsFromConfigDict(input_config):
             # Generate inputs based on input config file (as dict)
             desc_inputs = []
@@ -509,26 +516,68 @@ class Importer():
                 desc_inputs.append(newInput)
             return desc_inputs
 
+        def import_json(descriptor):
+            input_config = loadJson(self.input_descriptor)
+
+            descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
+
+            # file-template formatting depends on the config file's format
+            output_config_file = _getOutputConfigFileTemplate(configFileFormat)
+            output_config_file['file-template'].append('{')
+            for inp in descriptor['inputs']:
+                input_entry = "\"{0}\": {1}".format(inp['id'], inp['value-key'])
+                if inp != descriptor['inputs'][-1]:
+                    input_entry += ","
+                output_config_file['file-template'].append(input_entry)
+            output_config_file['file-template'].append('}')
+
+            descriptor['output-files'].append(output_config_file)
+            return descriptor
+
+        def import_toml(descriptor):
+            tomlString = _getConfigFileString()
+            input_config = toml.loads(tomlString)
+
+            descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
+
+            # file-template formatting depends on the config file's format
+            output_config_file = _getOutputConfigFileTemplate(configFileFormat)
+            for inp in descriptor['inputs']:
+                output_config_file['file-template'].append(
+                    "\"{0}\"={1}".format(inp['id'], inp['value-key']))
+
+            descriptor['output-files'].append(output_config_file)
+            return descriptor
+
+        def import_yaml(descriptor):
+            yamlString = _getConfigFileString()
+            input_config = yaml.load(yamlString, Loader=yaml.FullLoader)
+
+            descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
+
+            # file-template formatting depends on the config file's format
+            output_config_file = _getOutputConfigFileTemplate(configFileFormat)
+            for inp in descriptor['inputs']:
+                output_config_file['file-template'].append(
+                    "\"{0}\":{1}".format(inp['id'], inp['value-key']))
+
+            descriptor['output-files'].append(output_config_file)
+            return descriptor
+
         descriptor = loadJson(self.output_descriptor)
         # Remove inputs and output-files from descriptor
+        # Not emptying inputs also works, can be removed if needed
         descriptor['inputs'], descriptor['output-files'] = [], []
         configFileFormat = self.input_descriptor.split(".")[-1].lower()
 
         # Config K:V pair loading changes depending on config file type
-        if configFileFormat == "json":
-            input_config = loadJson(self.input_descriptor)
-        elif configFileFormat == "toml":
-            tomlString = _getConfigFileString()
-            input_config = toml.loads(tomlString)
-        elif configFileFormat == "yml":
-            yamlString = _getConfigFileString()
-            input_config = yaml.load(yamlString, Loader=yaml.FullLoader)
-
         # Populating descriptor with inputs and configuration file
-        descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
-        output_config_file = _getOutputConfigFileTemplate(configFileFormat)
-        descriptor['output-files'].append(
-            _populateConfigFileTemplate(output_config_file))
+        if configFileFormat == "json":
+            descriptor = import_json(descriptor)
+        elif configFileFormat == "toml":
+            descriptor = import_toml(descriptor)
+        elif configFileFormat == "yml":
+            descriptor = import_yaml(descriptor)
 
         with open(self.output_descriptor, "w+") as output:
             output.write(json.dumps(

@@ -16,6 +16,7 @@ import simplejson as json
 from docopt import docopt
 import imp
 import subprocess
+from boutiques.util.utils import loadJson
 
 
 class TestImport(TestCase):
@@ -212,3 +213,48 @@ class TestImport(TestCase):
         bosh(launch_args)
 
         os.remove(descriptor_output)
+
+    def test_import_json_config(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        expected = loadJson(op.join(base_path, "expected_json_output.json"))
+        config = op.join(base_path, "configuration.json")
+        descriptor_output = op.join(base_path, "output.json")
+
+        import_args = ["import", "config", descriptor_output, config]
+        bosh(import_args)
+        results = loadJson(op.join(base_path, "output.json"))
+
+        if op.exists(descriptor_output):
+            os.remove(descriptor_output)
+
+        self.assertEqual(expected, results)
+
+    def test_import_toml_config(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        expected = loadJson(op.join(base_path, "expected_toml_output.json"))
+        config = op.join(base_path, "configuration.toml")
+        descriptor_output = op.join(base_path, "output.json")
+
+        import_args = ["import", "config", descriptor_output, config]
+        bosh(import_args)
+        results = loadJson(op.join(base_path, "output.json"))
+
+        if op.exists(descriptor_output):
+            os.remove(descriptor_output)
+
+        self.assertEqual(expected, results)
+
+    def test_import_yaml_config(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        expected = loadJson(op.join(base_path, "expected_yaml_output.json"))
+        config = op.join(base_path, "configuration.yml")
+        descriptor_output = op.join(base_path, "output.json")
+
+        import_args = ["import", "config", descriptor_output, config]
+        bosh(import_args)
+        results = loadJson(op.join(base_path, "output.json"))
+
+        if op.exists(descriptor_output):
+            os.remove(descriptor_output)
+
+        self.assertEqual(expected, results)

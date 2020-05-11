@@ -4,12 +4,15 @@ import tempfile
 import argparse
 import sys
 import os
+import yaml
+import toml
 import simplejson as json
 import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
 from boutiques.logger import raise_error, print_info, print_warning
+from boutiques.util.utils import loadJson
 from boutiques.util.utils import customSortDescriptorByKey, camelCaseInputIds
 import subprocess
 
@@ -46,6 +49,9 @@ class CreateDescriptor(object):
         self.camelCase = kwargs.get('camel_case')
         if self.camelCase:
             self.descriptor = camelCaseInputIds(self.descriptor)
+
+        if kwargs.get('cl_template'):
+            self.generateInputsFromTemplate(kwargs.get('cl_template'))
 
     def save(self, filename):
         with open(filename, "w") as f:
@@ -270,3 +276,58 @@ class CreateDescriptor(object):
             raise e
         else:
             return process.communicate(), process.returncode
+
+    def generateInputsFromTemplate(self, cl_template_path):
+        def _createNameFromID(id):
+            name = [c for c in id]
+            for idx, c in enumerate(name):
+                if not c.isalnum():
+                    name[idx] = ' '
+                if c.isupper():
+                    name[idx] = ' ' + c.lower()
+            # Join char list into string and concatenate white spaces
+            return " ".join(''.join(name).split())
+
+        def _generateTemplateDict(config_file):
+            # Check if cl_template's format is supported
+            cl_template_type = config_file['path-template'].split(".")[-1]
+            if cl_template_type not in ["json", "toml", "yml"]:
+                raise_error(CreatorError, "Invalid \'file-template\' format:"
+                            " \".{0}\" not supported.".format(cl_template_type))
+
+            # Parse file-template to get id:value-key dict
+            if cl_template_type == "json":
+                # Slight modification to file-template to import as json
+                cl_template_string = "".join(config_file['file-template'])\
+                    .replace("[", "\"[")\
+                    .replace("]", "]\"")
+                template_dict = json.loads(cl_template_string)
+            elif cl_template_type == "toml":
+                # Each line of the file-template is an input
+                template_dict = {}
+                for line in config_file['file-template']:
+                    line = line.split("=")
+                    template_dict[line[0].replace("\"", "")] = line[1]
+            elif cl_template_type == "yml":
+                # Each line of the file-template is an input
+                template_dict = {}
+                for line in config_file['file-template']:
+                    line = line.split(":")
+                    template_dict[line[0].replace("\"", "")] = line[1]
+            return template_dict
+
+        template_descriptor = loadJson(cl_template_path)
+        # Get file-template from first output file with 'file-template'
+        config_file = next(out for out in template_descriptor['output-files'] 
+                           if 'file-template' in out)
+        template_dict = _generateTemplateDict(config_file)
+
+        # Populate descriptor's inputs with template's inputs
+        self.descriptor['inputs'] = []
+        for inp, value_key in template_dict.items():
+            self.descriptor['inputs'].append({
+                'id': inp,
+                'name': _createNameFromID(inp),
+                'type': "String",
+                'value-key': value_key
+            })

@@ -18,6 +18,12 @@
             "value-key": "[NUM_INPUT]"
         },
         {
+            "id": "flagInput",
+            "name": "flag input",
+            "type": "Flag",
+            "value-key": "[FLAG_INPUT]"
+        },
+        {
             "id": "listNumInput",
             "name": "list num input",
             "type": "Number",
@@ -65,13 +71,14 @@
             "value-key": "[CONFIG_FILE]",
             "path-template": "config.yml",
             "file-template": [
-                "'numInput'=[NUM_INPUT]",
-                "'listNumInput'=[LIST_NUM_INPUT]",
-                "'stringInput'=[STRING_INPUT]",
-                "'fileInput'=[FILE_INPUT]",
-                "'optStringInput'=[OPT_STRING_INPUT]",
-                "'fileOutput'=[FILE_OUTPUT]",
-                "'doubleInput'=[DOUBLE_INPUT]"
+                "\"numInput\":[NUM_INPUT]",
+                "\"flagInput\":[FLAG_INPUT]",
+                "\"listNumInput\":[LIST_NUM_INPUT]",
+                "\"stringInput\":[STRING_INPUT]",
+                "\"fileInput\":[FILE_INPUT]",
+                "\"optStringInput\":[OPT_STRING_INPUT]",
+                "\"fileOutput\":[FILE_OUTPUT]",
+                "\"doubleInput\":[DOUBLE_INPUT]"
             ]
         }
     ],
