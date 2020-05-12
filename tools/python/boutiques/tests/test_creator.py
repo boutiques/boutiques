@@ -2,7 +2,7 @@
 
 from argparse import ArgumentParser
 from unittest import TestCase
-from boutiques.bosh import bosh
+from boutiques import bosh
 from boutiques import __file__ as bfile
 from boutiques.util.utils import loadJson
 import boutiques.creator as bc
@@ -107,3 +107,51 @@ class TestCreator(TestCase):
                                 zip(template['groups'], desc['groups'])]:
             self.assertTrue(all([("_" in mbr) for mbr in mbrs]))
             self.assertFalse(all([("_" in camelMbr) for camelMbr in camelMbrs]))
+
+    def test_create_cl_template_json(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        cl_template = op.join(base_path, "expected_json_output.json")
+        output = op.join(base_path, "out_desc.json")
+        expected = op.join(base_path, "expected_inputs_from_cl_template.json")
+        expected = loadJson(expected)['inputs']
+
+        create_args = ["create", output, "--cl-template", cl_template]
+        bosh(create_args)
+        results = loadJson(output)['inputs']
+
+        if op.exists(output):
+            os.remove(output)
+
+        self.assertEqual(expected, results)
+
+    def test_create_cl_template_toml(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        cl_template = op.join(base_path, "expected_toml_output.json")
+        output = op.join(base_path, "out_desc.json")
+        expected = op.join(base_path, "expected_inputs_from_cl_template.json")
+        expected = loadJson(expected)['inputs']
+
+        create_args = ["create", output, "--cl-template", cl_template]
+        bosh(create_args)
+        results = loadJson(output)['inputs']
+
+        if op.exists(output):
+            os.remove(output)
+
+        self.assertEqual(expected, results)
+
+    def test_create_cl_template_yaml(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        cl_template = op.join(base_path, "expected_yaml_output.json")
+        output = op.join(base_path, "out_desc.json")
+        expected = op.join(base_path, "expected_inputs_from_cl_template.json")
+        expected = loadJson(expected)['inputs']
+
+        create_args = ["create", output, "--cl-template", cl_template]
+        bosh(create_args)
+        results = loadJson(output)['inputs']
+
+        if op.exists(output):
+            os.remove(output)
+
+        self.assertEqual(expected, results)
