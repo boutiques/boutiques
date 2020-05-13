@@ -2,7 +2,6 @@ import os.path as op
 from boutiques import __file__ as bfile
 import boutiques as bosh
 import hashlib
-import pytest
 
 
 def compute_md5(filename):
@@ -10,12 +9,18 @@ def compute_md5(filename):
         return hashlib.md5(open(filename, 'rb').read()).hexdigest()
 
 
-def test(descriptor, test, invocation):
+def test(descriptor, test, invocation, paramsDict):
+    arguments = ["launch", descriptor, invocation.name]
+
+    # Add any additional params to arguments
+    for flag, value in paramsDict.items():
+        arguments.append(flag)
+        if value is not None:
+            arguments.append(value)
+
+    print(arguments)
     # Run pipeline.
-    ret = bosh.execute("launch",
-                       descriptor,
-                       invocation.name,
-                       "--skip-data-collection")
+    ret = bosh.execute(*arguments)
     print(ret)
 
     # Choose appropriate assertion scenario

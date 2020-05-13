@@ -573,6 +573,9 @@ def parser_test():
     parser.add_argument("--sandbox", action="store_true",
                         help="Get descriptor from Zenodo's sandbox instead of "
                         "production server.")
+    parser.add_argument("--imagepath", action="store",
+                        help="Path to Singularity image. "
+                        "If not specified, will use current directory.")
     return parser
 
 
@@ -606,7 +609,10 @@ def test(*params):
 
     # Invocations have been properly validated. We can launch the actual tests.
     test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
-    return pytest.main([test_path, "--descriptor", results.descriptor])
+    test_args = [test_path, "--descriptor", results.descriptor]
+    if results.imagepath:
+        test_args.extend(["--imagepath", results.imagepath])
+    return pytest.main(args=test_args)
 
 
 test.__doc__ = parser_test().format_help()
