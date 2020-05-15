@@ -528,7 +528,8 @@ class Importer():
             output_config_file = _getOutputConfigFileTemplate(configFileFormat)
             output_config_file['file-template'].append('{')
             for inp in descriptor['inputs']:
-                input_entry = "\"{0}\": \"{1}\"".format(inp['id'], inp['value-key'])
+                input_entry = "\"{0}\": \"{1}\"".format(inp['id'],
+                                                        inp['value-key'])
                 if inp != descriptor['inputs'][-1]:
                     input_entry += ","
                 output_config_file['file-template'].append(input_entry)

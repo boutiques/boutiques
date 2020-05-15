@@ -357,7 +357,8 @@ def parser_importer():
                         " for 'docopt' is Docopt script,"
                         " for 'bids' is base directory of BIDS app,"
                         " for 'cwl' is YAML descriptor,"
-                        " for 'config' is configuration file {.json, .toml, .yml}.")
+                        " for 'config' is configuration file"
+                        " {.json, .toml, .yml}.")
     parser.add_argument("-o", "--output-invocation", help="Where to write "
                         "the invocation if any.")
     parser.add_argument("-i", "--input-invocation", help="Input invocation "
