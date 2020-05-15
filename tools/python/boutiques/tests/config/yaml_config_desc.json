@@ -15,6 +15,7 @@
             "name": "Num Input",
             "type": "Number",
             "integer": true,
+            "default-value": 5050,
             "value-key": "[NUM_INPUT]"
         },
         {
@@ -23,6 +24,7 @@
             "type": "Flag",
             "command-line-flag": "--TEMP",
             "optional": true,
+            "default-value": true,
             "value-key": "[FLAG_INPUT]"
         },
         {
@@ -31,30 +33,41 @@
             "type": "Number",
             "integer": true,
             "list": true,
+            "default-value": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
             "value-key": "[LIST_NUM_INPUT]"
         },
         {
             "id": "stringInput",
             "name": "String Input",
             "type": "String",
+            "default-value": "foo",
             "value-key": "[STRING_INPUT]"
         },
         {
             "id": "fileInput",
             "name": "File Input",
             "type": "File",
+            "default-value": "/somewhere/something.txt",
             "value-key": "[FILE_INPUT]"
         },
         {
             "id": "optStringInput",
             "name": "Opt String Input",
             "type": "String",
+            "default-value": "Hello, world!",
             "value-key": "[OPT_STRING_INPUT]"
         },
         {
             "id": "fileOutput",
             "name": "File Output",
             "type": "File",
+            "default-value": "/somewhere/somethingelse.txt",
             "value-key": "[FILE_OUTPUT]"
         },
         {
@@ -62,6 +75,7 @@
             "name": "Double Input",
             "type": "Number",
             "integer": false,
+            "default-value": 50.5,
             "value-key": "[DOUBLE_INPUT]"
         }
     ],
@@ -81,6 +95,19 @@
                 "\"fileOutput\": [FILE_OUTPUT]",
                 "\"doubleInput\": [DOUBLE_INPUT]"
             ]
+        }
+    ],
+    "groups": [
+        {
+            "all-or-none": true,
+            "id": "group1",
+            "members": [
+                "basic_param1",
+                "basic_flag1"
+            ],
+            "mutually-exclusive": false,
+            "name": "the param group",
+            "one-is-required": false
         }
     ],
     "tags": {

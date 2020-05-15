@@ -223,13 +223,13 @@ class TestImport(TestCase):
         import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
         result_desc = loadJson(op.join(base_path, "output.json"))
-        # Groups are needed in template but causes tests to fail
-        del result_desc['groups']
 
         if op.exists(output_descriptor):
             os.remove(output_descriptor)
         self.assertEqual(expected_desc, result_desc)
 
+        # Groups are needed in template but causes tests to fail
+        del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
         # Validate by comparing generated command-line output
         test_invoc = op.join(base_path, "test_config_import_invoc.json")
@@ -254,13 +254,13 @@ class TestImport(TestCase):
         import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
         result_desc = loadJson(op.join(base_path, "output.json"))
-        # Groups are needed in template but causes tests to fail
-        del result_desc['groups']
 
         if op.exists(output_descriptor):
             os.remove(output_descriptor)
         self.assertEqual(expected_desc, result_desc)
 
+        # Groups are needed in template but causes tests to fail
+        del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
         # Validate by comparing generated command-line output
         test_invoc = op.join(base_path, "test_config_import_invoc.json")
@@ -285,13 +285,13 @@ class TestImport(TestCase):
         import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
         result_desc = loadJson(op.join(base_path, "output.json"))
-        # Groups are needed in template but causes tests to fail
-        del result_desc['groups']
 
         if op.exists(output_descriptor):
             os.remove(output_descriptor)
         self.assertEqual(expected_desc, result_desc)
 
+        # Groups are needed in template but causes tests to fail
+        del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
         # Validate by comparing generated command-line output
         test_invoc = op.join(base_path, "test_config_import_invoc.json")

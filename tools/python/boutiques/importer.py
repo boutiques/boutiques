@@ -459,16 +459,19 @@ class Importer():
             # Generate input properties from the input's value
             if isinstance(value, bool):
                 return {'type': "Flag",
-                        "command-line-flag": "--TEMP",
-                        "optional": True}
+                        'command-line-flag': "--TEMP",
+                        'optional': True,
+                        'default-value': value}
             if isinstance(value, float):
-                return {'type': "Number", 'integer': False}
+                return {'type': "Number", 'integer': False,
+                        'default-value': value}
             elif isinstance(value, int):
-                return {'type': "Number", 'integer': True}
+                return {'type': "Number", 'integer': True,
+                        'default-value': value}
             elif isinstance(value, str):
                 if re.match(r"\/.*\.[\w:]+", value) is not None:
-                    return {'type': "File"}
-                return {'type': "String"}
+                    return {'type': "File", 'default-value': value}
+                return {'type': "String", 'default-value': value}
             elif isinstance(value, list):
                 # Check all elements of list to extract list properties
                 elementProperties, props = {}, []
@@ -487,6 +490,7 @@ class Importer():
                 else:
                     elementProperties['type'] = "String"
                 elementProperties['list'] = True
+                elementProperties['default-value'] = value
                 return elementProperties
 
         def _createNameFromID(id):
