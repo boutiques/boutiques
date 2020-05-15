@@ -3,7 +3,7 @@
     "description": "tool description",
     "tool-version": "v0.1.0",
     "schema-version": "0.5",
-    "command-line": "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]",
+    "command-line": "tool [NUM_INPUT] [FLAG_INPUT] [LIST_NUM_INPUT] [STRING_INPUT] [FILE_INPUT] [OPT_STRING_INPUT] [FILE_OUTPUT] [DOUBLE_INPUT] [CONFIG_FILE]",
     "container-image": {
         "image": "user/image",
         "index": "docker://",
@@ -12,20 +12,22 @@
     "inputs": [
         {
             "id": "numInput",
-            "name": "num input",
+            "name": "Num Input",
             "type": "Number",
             "integer": true,
             "value-key": "[NUM_INPUT]"
         },
         {
             "id": "flagInput",
-            "name": "flag input",
+            "name": "Flag Input",
             "type": "Flag",
+            "command-line-flag": "--TEMP",
+            "optional": true,
             "value-key": "[FLAG_INPUT]"
         },
         {
             "id": "listNumInput",
-            "name": "list num input",
+            "name": "List Num Input",
             "type": "Number",
             "integer": true,
             "list": true,
@@ -33,31 +35,31 @@
         },
         {
             "id": "stringInput",
-            "name": "string input",
+            "name": "String Input",
             "type": "String",
             "value-key": "[STRING_INPUT]"
         },
         {
             "id": "fileInput",
-            "name": "file input",
+            "name": "File Input",
             "type": "File",
             "value-key": "[FILE_INPUT]"
         },
         {
             "id": "optStringInput",
-            "name": "opt string input",
+            "name": "Opt String Input",
             "type": "String",
             "value-key": "[OPT_STRING_INPUT]"
         },
         {
             "id": "fileOutput",
-            "name": "file output",
+            "name": "File Output",
             "type": "File",
             "value-key": "[FILE_OUTPUT]"
         },
         {
             "id": "doubleInput",
-            "name": "double input",
+            "name": "Double Input",
             "type": "Number",
             "integer": false,
             "value-key": "[DOUBLE_INPUT]"
@@ -67,32 +69,18 @@
         {
             "id": "config_file",
             "name": "Configuration file",
-            "type": "Configuration File",
             "value-key": "[CONFIG_FILE]",
             "path-template": "config.toml",
             "file-template": [
-                "\"numInput\"=[NUM_INPUT]",
-                "\"flagInput\"=[FLAG_INPUT]",
-                "\"listNumInput\"=[LIST_NUM_INPUT]",
-                "\"stringInput\"=[STRING_INPUT]",
-                "\"fileInput\"=[FILE_INPUT]",
-                "\"optStringInput\"=[OPT_STRING_INPUT]",
-                "\"fileOutput\"=[FILE_OUTPUT]",
-                "\"doubleInput\"=[DOUBLE_INPUT]"
+                "\"numInput\"=\"[NUM_INPUT]\"",
+                "\"flagInput\"=\"[FLAG_INPUT]\"",
+                "\"listNumInput\"=\"[LIST_NUM_INPUT]\"",
+                "\"stringInput\"=\"[STRING_INPUT]\"",
+                "\"fileInput\"=\"[FILE_INPUT]\"",
+                "\"optStringInput\"=\"[OPT_STRING_INPUT]\"",
+                "\"fileOutput\"=\"[FILE_OUTPUT]\"",
+                "\"doubleInput\"=\"[DOUBLE_INPUT]\""
             ]
-        }
-    ],
-    "groups": [
-        {
-            "all-or-none": true,
-            "id": "group1",
-            "members": [
-                "basic_param1",
-                "basic_flag1"
-            ],
-            "mutually-exclusive": false,
-            "name": "the param group",
-            "one-is-required": false
         }
     ],
     "tags": {

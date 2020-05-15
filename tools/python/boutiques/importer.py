@@ -458,7 +458,9 @@ class Importer():
         def _getPropertiesFromValue(value):
             # Generate input properties from the input's value
             if isinstance(value, bool):
-                return {'type': "Flag"}
+                return {'type': "Flag",
+                        "command-line-flag": "--TEMP",
+                        "optional": True}
             if isinstance(value, float):
                 return {'type': "Number", 'integer': False}
             elif isinstance(value, int):
@@ -474,6 +476,8 @@ class Importer():
                     props.append(_getPropertiesFromValue(element))
                 if all([p['type'] == "Flag" for p in props]):
                     elementProperties['type'] = "Flag"
+                    elementProperties['command-line-flag'] = "--TEMP"
+                    elementProperties['optional'] = True
                 elif all([p['type'] == "Number" for p in props]):
                     elementProperties['type'] = "Number"
                     elementProperties['integer'] =\
@@ -493,13 +497,12 @@ class Importer():
                 if c.isupper():
                     name[idx] = ' ' + c.lower()
             # Join char list into string and concatenate white spaces
-            return " ".join(''.join(name).split())
+            return " ".join(''.join(name).split()).title()
 
         def _getOutputConfigFileTemplate(configFileFormat):
             return {
                 "id": "config_file",
                 "name": "Configuration file",
-                "type": "Configuration File",
                 "value-key": "[CONFIG_FILE]",
                 "path-template": "config.{0}".format(configFileFormat),
                 "file-template": []
@@ -518,14 +521,14 @@ class Importer():
 
         def import_json(descriptor):
             input_config = loadJson(self.input_descriptor)
-
-            descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
+            imported_inputs = _getInputsFromConfigDict(input_config)
+            descriptor['inputs'].extend(imported_inputs)
 
             # file-template formatting depends on the config file's format
             output_config_file = _getOutputConfigFileTemplate(configFileFormat)
             output_config_file['file-template'].append('{')
             for inp in descriptor['inputs']:
-                input_entry = "\"{0}\": {1}".format(inp['id'], inp['value-key'])
+                input_entry = "\"{0}\": \"{1}\"".format(inp['id'], inp['value-key'])
                 if inp != descriptor['inputs'][-1]:
                     input_entry += ","
                 output_config_file['file-template'].append(input_entry)
@@ -537,14 +540,14 @@ class Importer():
         def import_toml(descriptor):
             tomlString = _getConfigFileString()
             input_config = toml.loads(tomlString)
-
-            descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
+            imported_inputs = _getInputsFromConfigDict(input_config)
+            descriptor['inputs'].extend(imported_inputs)
 
             # file-template formatting depends on the config file's format
             output_config_file = _getOutputConfigFileTemplate(configFileFormat)
             for inp in descriptor['inputs']:
                 output_config_file['file-template'].append(
-                    "\"{0}\"={1}".format(inp['id'], inp['value-key']))
+                    "\"{0}\"=\"{1}\"".format(inp['id'], inp['value-key']))
 
             descriptor['output-files'].append(output_config_file)
             return descriptor
@@ -552,14 +555,14 @@ class Importer():
         def import_yaml(descriptor):
             yamlString = _getConfigFileString()
             input_config = yaml.load(yamlString, Loader=yaml.FullLoader)
-
-            descriptor['inputs'].extend(_getInputsFromConfigDict(input_config))
+            imported_inputs = _getInputsFromConfigDict(input_config)
+            descriptor['inputs'].extend(imported_inputs)
 
             # file-template formatting depends on the config file's format
             output_config_file = _getOutputConfigFileTemplate(configFileFormat)
             for inp in descriptor['inputs']:
                 output_config_file['file-template'].append(
-                    "\"{0}\":{1}".format(inp['id'], inp['value-key']))
+                    "\"{0}\": {1}".format(inp['id'], inp['value-key']))
 
             descriptor['output-files'].append(output_config_file)
             return descriptor
@@ -578,6 +581,11 @@ class Importer():
             descriptor = import_toml(descriptor)
         elif configFileFormat == "yml":
             descriptor = import_yaml(descriptor)
+
+        descriptor['command-line'] = "tool "
+        descriptor['command-line'] += " ".join(
+            ["{0}".format(inp['value-key']) for inp in descriptor['inputs']])
+        descriptor['command-line'] += " [CONFIG_FILE]"
 
         with open(self.output_descriptor, "w+") as output:
             output.write(json.dumps(

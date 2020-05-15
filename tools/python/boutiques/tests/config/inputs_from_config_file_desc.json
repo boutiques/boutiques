@@ -12,74 +12,63 @@
     "inputs": [
         {
             "id": "numInput",
-            "name": "num input",
-            "type": "Number",
-            "integer": true,
+            "name": "Num Input",
+            "type": "String",
             "value-key": "[NUM_INPUT]"
         },
         {
             "id": "flagInput",
-            "name": "flag input",
-            "type": "Flag",
+            "name": "Flag Input",
+            "type": "String",
             "value-key": "[FLAG_INPUT]"
         },
         {
             "id": "listNumInput",
-            "name": "list num input",
-            "type": "Number",
-            "integer": true,
-            "list": true,
+            "name": "List Num Input",
+            "type": "String",
             "value-key": "[LIST_NUM_INPUT]"
         },
         {
             "id": "stringInput",
-            "name": "string input",
+            "name": "String Input",
             "type": "String",
             "value-key": "[STRING_INPUT]"
         },
         {
             "id": "fileInput",
-            "name": "file input",
-            "type": "File",
+            "name": "File Input",
+            "type": "String",
             "value-key": "[FILE_INPUT]"
         },
         {
             "id": "optStringInput",
-            "name": "opt string input",
+            "name": "Opt String Input",
             "type": "String",
             "value-key": "[OPT_STRING_INPUT]"
         },
         {
             "id": "fileOutput",
-            "name": "file output",
-            "type": "File",
+            "name": "File Output",
+            "type": "String",
             "value-key": "[FILE_OUTPUT]"
         },
         {
             "id": "doubleInput",
-            "name": "double input",
-            "type": "Number",
-            "integer": false,
+            "name": "Double Input",
+            "type": "String",
             "value-key": "[DOUBLE_INPUT]"
         }
     ],
     "output-files": [
         {
-            "id": "config_file",
-            "name": "Configuration file",
-            "type": "Configuration File",
-            "value-key": "[CONFIG_FILE]",
-            "path-template": "config.yml",
-            "file-template": [
-                "\"numInput\":[NUM_INPUT]",
-                "\"flagInput\":[FLAG_INPUT]",
-                "\"listNumInput\":[LIST_NUM_INPUT]",
-                "\"stringInput\":[STRING_INPUT]",
-                "\"fileInput\":[FILE_INPUT]",
-                "\"optStringInput\":[OPT_STRING_INPUT]",
-                "\"fileOutput\":[FILE_OUTPUT]",
-                "\"doubleInput\":[DOUBLE_INPUT]"
-            ]
+            "id": "basic_output1",
+            "name": "The first output",
+            "optional": false,
+            "path-template": "[PARAM2].txt",
+            "path-template-stripped-extensions": [
+                ".log"
+            ],
+            "value-key": "[OUTPUT1]"
         }
     ],
     "groups": [

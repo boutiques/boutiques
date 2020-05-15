@@ -4,6 +4,7 @@ import tempfile
 import argparse
 import sys
 import os
+import re
 import yaml
 import toml
 import simplejson as json
@@ -278,7 +279,12 @@ class CreateDescriptor(object):
             return process.communicate(), process.returncode
 
     def generateInputsFromTemplate(self, cl_template_path):
-        def _createNameFromID(id):
+        def _createIdFromValueKey(vk):
+            vk = re.sub(r"\[(\w+)\]", r"\1", vk).lower()
+            vk_words = vk.split("_")
+            return vk_words[0] + ''.join(x.title() for x in vk_words[1:])
+
+        def _createNameFromId(id):
             name = [c for c in id]
             for idx, c in enumerate(name):
                 if not c.isalnum():
@@ -286,48 +292,25 @@ class CreateDescriptor(object):
                 if c.isupper():
                     name[idx] = ' ' + c.lower()
             # Join char list into string and concatenate white spaces
-            return " ".join(''.join(name).split())
+            return " ".join(''.join(name).split()).title()
 
-        def _generateTemplateDict(config_file):
-            # Check if cl_template's format is supported
-            cl_template_type = config_file['path-template'].split(".")[-1]
-            if cl_template_type not in ["json", "toml", "yml"]:
-                raise_error(CreatorError, "Invalid \'file-template\' format:"
-                            " \".{0}\" not supported.".format(cl_template_type))
-
-            # Parse file-template to get id:value-key dict
-            if cl_template_type == "json":
-                # Slight modification to file-template to import as json
-                cl_template_string = "".join(config_file['file-template'])\
-                    .replace("[", "\"[")\
-                    .replace("]", "]\"")
-                template_dict = json.loads(cl_template_string)
-            elif cl_template_type == "toml":
-                # Each line of the file-template is an input
-                template_dict = {}
-                for line in config_file['file-template']:
-                    line = line.split("=")
-                    template_dict[line[0].replace("\"", "")] = line[1]
-            elif cl_template_type == "yml":
-                # Each line of the file-template is an input
-                template_dict = {}
-                for line in config_file['file-template']:
-                    line = line.split(":")
-                    template_dict[line[0].replace("\"", "")] = line[1]
-            return template_dict
+        def _getValueKeys(config_file):
+            # Return all value-key occurences, determined by brackets
+            template = "".join(config_file['file-template'])
+            return re.findall(r"\[\w+\]", template)
 
         template_descriptor = loadJson(cl_template_path)
         # Get file-template from first output file with 'file-template'
-        config_file = next(out for out in template_descriptor['output-files'] 
+        config_file = next(out for out in template_descriptor['output-files']
                            if 'file-template' in out)
-        template_dict = _generateTemplateDict(config_file)
 
-        # Populate descriptor's inputs with template's inputs
+        # Clear descriptor inputs and repopulate
         self.descriptor['inputs'] = []
-        for inp, value_key in template_dict.items():
+        for vk in _getValueKeys(config_file):
+            generated_id = _createIdFromValueKey(vk)
             self.descriptor['inputs'].append({
-                'id': inp,
-                'name': _createNameFromID(inp),
+                'id': generated_id,
+                'name': _createNameFromId(generated_id),
                 'type': "String",
-                'value-key': value_key
+                'value-key': vk
             })

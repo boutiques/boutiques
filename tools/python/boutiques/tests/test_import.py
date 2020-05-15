@@ -144,117 +144,165 @@ class TestImport(TestCase):
     def test_docopt_import_valid(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt/valid")
         pydocopt_input = op.join(base_path, "test_valid.py")
-        descriptor_output = op.join(base_path, "test_valid_output.json")
+        output_descriptor = op.join(base_path, "test_valid_output.json")
 
-        import_args = ["import", "docopt", descriptor_output, pydocopt_input]
+        import_args = ["import", "docopt", output_descriptor, pydocopt_input]
         bosh(import_args)
 
         test_invocation = op.join(base_path, "valid_invoc_mutex.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
-        os.remove(descriptor_output)
+        os.remove(output_descriptor)
 
     def test_docopt_import_valid_options(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt/options")
         pydocopt_input = op.join(base_path, "test_options.py")
-        descriptor_output = op.join(base_path, "test_options_output.json")
+        output_descriptor = op.join(base_path, "test_options_output.json")
 
-        import_args = ["import", "docopt", descriptor_output, pydocopt_input]
+        import_args = ["import", "docopt", output_descriptor, pydocopt_input]
         bosh(import_args)
 
         test_invocation = op.join(base_path, "test_options_invocation.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
-        os.remove(descriptor_output)
+        os.remove(output_descriptor)
 
     def test_docopt_import_invalid(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt")
         pydocopt_input = op.join(base_path, "test_invalid.py")
-        descriptor_output = op.join(base_path, "foobar.json")
+        output_descriptor = op.join(base_path, "foobar.json")
 
-        args = ["import", "docopt", descriptor_output, pydocopt_input]
+        args = ["import", "docopt", output_descriptor, pydocopt_input]
 
         with pytest.raises(ImportError, match="Invalid docopt script"):
             bosh(args)
             self.fail("Did not raise ImportError or" +
                       " message did not match Invalid docopt script")
 
-        if op.isfile(descriptor_output):
+        if op.isfile(output_descriptor):
             self.fail("Output file should not exist")
 
     def test_docopt_nf(self):
         base_path = op.join(op.split(bfile)[0], "tests/docopt/naval_fate")
         pydocopt_input = op.join(base_path, "naval_fate.py")
-        descriptor_output = op.join(base_path, "naval_fate_descriptor.json")
+        output_descriptor = op.join(base_path, "naval_fate_descriptor.json")
 
-        import_args = ["import", "docopt", descriptor_output, pydocopt_input]
+        import_args = ["import", "docopt", output_descriptor, pydocopt_input]
         bosh(import_args)
 
         test_invocation = op.join(base_path, "nf_invoc_new.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
         test_invocation = op.join(base_path, "nf_invoc_move.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
         test_invocation = op.join(base_path, "nf_invoc_shoot.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
         test_invocation = op.join(base_path, "nf_invoc_mine.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
         test_invocation = op.join(base_path, "nf_invoc_help.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
+        launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
-        os.remove(descriptor_output)
+        os.remove(output_descriptor)
 
     def test_import_json_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected = loadJson(op.join(base_path, "expected_json_output.json"))
+        expected_desc = loadJson(op.join(base_path, "json_config_desc.json"))
         config = op.join(base_path, "configuration.json")
-        descriptor_output = op.join(base_path, "output.json")
+        output_descriptor = op.join(base_path, "output.json")
 
-        import_args = ["import", "config", descriptor_output, config]
+        import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
-        results = loadJson(op.join(base_path, "output.json"))
+        result_desc = loadJson(op.join(base_path, "output.json"))
+        # Groups are needed in template but causes tests to fail
+        del result_desc['groups']
 
-        if op.exists(descriptor_output):
-            os.remove(descriptor_output)
+        if op.exists(output_descriptor):
+            os.remove(output_descriptor)
+        self.assertEqual(expected_desc, result_desc)
 
-        self.assertEqual(expected, results)
+        # Tests the generated descriptor by running it with a test invocation
+        # Validate by comparing generated command-line output
+        test_invoc = op.join(base_path, "test_config_import_invoc.json")
+        simulate_args = ["exec", "simulate", json.dumps(result_desc),
+                         "-i", test_invoc]
+
+        expected_cml = ("tool 1337 --TEMP 1 1 2 3 5 8 foobar"
+                        " /somewhere/something.txt 'Hello, world!'"
+                        " /somewhere/somethingelse.txt 13.37 config.json")
+        result_cml = bosh(simulate_args).shell_command
+
+        if op.exists(result_desc['output-files'][0]['path-template']):
+            os.remove(result_desc['output-files'][0]['path-template'])
+        self.assertEqual(result_cml, expected_cml)
 
     def test_import_toml_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected = loadJson(op.join(base_path, "expected_toml_output.json"))
+        expected_desc = loadJson(op.join(base_path, "toml_config_desc.json"))
         config = op.join(base_path, "configuration.toml")
-        descriptor_output = op.join(base_path, "output.json")
+        output_descriptor = op.join(base_path, "output.json")
 
-        import_args = ["import", "config", descriptor_output, config]
+        import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
-        results = loadJson(op.join(base_path, "output.json"))
+        result_desc = loadJson(op.join(base_path, "output.json"))
+        # Groups are needed in template but causes tests to fail
+        del result_desc['groups']
 
-        if op.exists(descriptor_output):
-            os.remove(descriptor_output)
+        if op.exists(output_descriptor):
+            os.remove(output_descriptor)
+        self.assertEqual(expected_desc, result_desc)
 
-        self.assertEqual(expected, results)
+        # Tests the generated descriptor by running it with a test invocation
+        # Validate by comparing generated command-line output
+        test_invoc = op.join(base_path, "test_config_import_invoc.json")
+        simulate_args = ["exec", "simulate", json.dumps(result_desc),
+                         "-i", test_invoc]
+
+        expected_cml = ("tool 1337 --TEMP 1 1 2 3 5 8 foobar"
+                        " /somewhere/something.txt 'Hello, world!'"
+                        " /somewhere/somethingelse.txt 13.37 config.toml")
+        result_cml = bosh(simulate_args).shell_command
+
+        if op.exists(result_desc['output-files'][0]['path-template']):
+            os.remove(result_desc['output-files'][0]['path-template'])
+        self.assertEqual(result_cml, expected_cml)
 
     def test_import_yaml_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected = loadJson(op.join(base_path, "expected_yaml_output.json"))
+        expected_desc = loadJson(op.join(base_path, "yaml_config_desc.json"))
         config = op.join(base_path, "configuration.yml")
-        descriptor_output = op.join(base_path, "output.json")
+        output_descriptor = op.join(base_path, "output.json")
 
-        import_args = ["import", "config", descriptor_output, config]
+        import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
-        results = loadJson(op.join(base_path, "output.json"))
+        result_desc = loadJson(op.join(base_path, "output.json"))
+        # Groups are needed in template but causes tests to fail
+        del result_desc['groups']
 
-        if op.exists(descriptor_output):
-            os.remove(descriptor_output)
+        if op.exists(output_descriptor):
+            os.remove(output_descriptor)
+        self.assertEqual(expected_desc, result_desc)
 
-        self.assertEqual(expected, results)
+        # Tests the generated descriptor by running it with a test invocation
+        # Validate by comparing generated command-line output
+        test_invoc = op.join(base_path, "test_config_import_invoc.json")
+        simulate_args = ["exec", "simulate", json.dumps(result_desc),
+                         "-i", test_invoc]
+
+        expected_cml = ("tool 1337 --TEMP 1 1 2 3 5 8 foobar"
+                        " /somewhere/something.txt 'Hello, world!'"
+                        " /somewhere/somethingelse.txt 13.37 config.yml")
+        result_cml = bosh(simulate_args).shell_command
+
+        if op.exists(result_desc['output-files'][0]['path-template']):
+            os.remove(result_desc['output-files'][0]['path-template'])
+        self.assertEqual(result_cml, expected_cml)

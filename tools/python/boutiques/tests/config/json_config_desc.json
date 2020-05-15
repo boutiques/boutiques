@@ -1,0 +1,104 @@
+{
+    "name": "tool name",
+    "description": "tool description",
+    "tool-version": "v0.1.0",
+    "schema-version": "0.5",
+    "command-line": "tool [NUM_INPUT] [FLAG_INPUT] [LIST_NUM_INPUT] [STRING_INPUT] [FILE_INPUT] [OPT_STRING_INPUT] [FILE_OUTPUT] [DOUBLE_INPUT] [CONFIG_FILE]",
+    "container-image": {
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
+    },
+    "inputs": [
+        {
+            "id": "numInput",
+            "name": "Num Input",
+            "type": "Number",
+            "integer": true,
+            "value-key": "[NUM_INPUT]"
+        },
+        {
+            "id": "flagInput",
+            "name": "Flag Input",
+            "type": "Flag",
+            "command-line-flag": "--TEMP",
+            "optional": true,
+            "value-key": "[FLAG_INPUT]"
+        },
+        {
+            "id": "listNumInput",
+            "name": "List Num Input",
+            "type": "Number",
+            "integer": true,
+            "list": true,
+            "value-key": "[LIST_NUM_INPUT]"
+        },
+        {
+            "id": "stringInput",
+            "name": "String Input",
+            "type": "String",
+            "value-key": "[STRING_INPUT]"
+        },
+        {
+            "id": "fileInput",
+            "name": "File Input",
+            "type": "File",
+            "value-key": "[FILE_INPUT]"
+        },
+        {
+            "id": "optStringInput",
+            "name": "Opt String Input",
+            "type": "String",
+            "value-key": "[OPT_STRING_INPUT]"
+        },
+        {
+            "id": "fileOutput",
+            "name": "File Output",
+            "type": "File",
+            "value-key": "[FILE_OUTPUT]"
+        },
+        {
+            "id": "doubleInput",
+            "name": "Double Input",
+            "type": "Number",
+            "integer": false,
+            "value-key": "[DOUBLE_INPUT]"
+        }
+    ],
+    "output-files": [
+        {
+            "id": "config_file",
+            "name": "Configuration file",
+            "value-key": "[CONFIG_FILE]",
+            "path-template": "config.json",
+            "file-template": [
+                "{",
+                "\"numInput\": \"[NUM_INPUT]\",",
+                "\"flagInput\": \"[FLAG_INPUT]\",",
+                "\"listNumInput\": \"[LIST_NUM_INPUT]\",",
+                "\"stringInput\": \"[STRING_INPUT]\",",
+                "\"fileInput\": \"[FILE_INPUT]\",",
+                "\"optStringInput\": \"[OPT_STRING_INPUT]\",",
+                "\"fileOutput\": \"[FILE_OUTPUT]\",",
+                "\"doubleInput\": \"[DOUBLE_INPUT]\"",
+                "}"
+            ]
+        }
+    ],
+    "tags": {
+        "foo": "bar",
+        "purpose": "testing",
+        "status": "example"
+    },
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "Crashed"
+        }
+    ]
+}
