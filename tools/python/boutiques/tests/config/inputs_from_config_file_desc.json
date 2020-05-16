@@ -11,58 +11,58 @@
     },
     "inputs": [
         {
-            "id": "numInput",
             "name": "Num Input",
+            "id": "numInput",
             "type": "String",
             "value-key": "[NUM_INPUT]"
         },
         {
-            "id": "flagInput",
             "name": "Flag Input",
+            "id": "flagInput",
             "type": "String",
             "value-key": "[FLAG_INPUT]"
         },
         {
-            "id": "listNumInput",
             "name": "List Num Input",
+            "id": "listNumInput",
             "type": "String",
             "value-key": "[LIST_NUM_INPUT]"
         },
         {
-            "id": "stringInput",
             "name": "String Input",
+            "id": "stringInput",
             "type": "String",
             "value-key": "[STRING_INPUT]"
         },
         {
-            "id": "fileInput",
             "name": "File Input",
+            "id": "fileInput",
             "type": "String",
             "value-key": "[FILE_INPUT]"
         },
         {
-            "id": "optStringInput",
             "name": "Opt String Input",
+            "id": "optStringInput",
             "type": "String",
             "value-key": "[OPT_STRING_INPUT]"
         },
         {
-            "id": "fileOutput",
             "name": "File Output",
+            "id": "fileOutput",
             "type": "String",
             "value-key": "[FILE_OUTPUT]"
         },
         {
-            "id": "doubleInput",
             "name": "Double Input",
+            "id": "doubleInput",
             "type": "String",
             "value-key": "[DOUBLE_INPUT]"
         }
     ],
     "output-files": [
         {
-            "id": "basic_output1",
             "name": "The first output",
+            "id": "basic_output1",
             "optional": false,
             "path-template": "[PARAM2].txt",
             "path-template-stripped-extensions": [
@@ -74,20 +74,20 @@
     "groups": [
         {
             "all-or-none": true,
+            "mutually-exclusive": false,
+            "one-is-required": false,
+            "name": "the param group",
             "id": "group1",
             "members": [
                 "basic_param1",
                 "basic_flag1"
-            ],
-            "mutually-exclusive": false,
-            "name": "the param group",
-            "one-is-required": false
+            ]
         }
     ],
     "tags": {
-        "foo": "bar",
+        "status": "example",
         "purpose": "testing",
-        "status": "example"
+        "foo": "bar"
     },
     "suggested-resources": {
         "cpu-cores": 1,

@@ -5,8 +5,6 @@ import argparse
 import sys
 import os
 import re
-import yaml
-import toml
 import simplejson as json
 import os.path as op
 from jsonschema import validate, ValidationError
@@ -309,8 +307,8 @@ class CreateDescriptor(object):
         for vk in _getValueKeys(config_file):
             generated_id = _createIdFromValueKey(vk)
             self.descriptor['inputs'].append({
-                'id': generated_id,
                 'name': _createNameFromId(generated_id),
+                'id': generated_id,
                 'type': "String",
                 'value-key': vk
             })

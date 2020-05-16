@@ -14,7 +14,7 @@ DEPS = [
          "requests",
          "pytest",
          "termcolor",
-         "pyyaml",
+         "oyaml",
          "jsonschema",
          "tabulate",
          "mock",

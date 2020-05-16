@@ -11,28 +11,28 @@
     },
     "inputs": [
         {
-            "id": "numInput",
             "name": "Num Input",
+            "id": "numInput",
             "type": "Number",
             "integer": true,
             "default-value": 5050,
             "value-key": "[NUM_INPUT]"
         },
         {
-            "id": "flagInput",
             "name": "Flag Input",
+            "id": "flagInput",
             "type": "Flag",
-            "command-line-flag": "--TEMP",
             "optional": true,
             "default-value": true,
+            "command-line-flag": "--TEMP",
             "value-key": "[FLAG_INPUT]"
         },
         {
-            "id": "listNumInput",
             "name": "List Num Input",
+            "id": "listNumInput",
             "type": "Number",
-            "integer": true,
             "list": true,
+            "integer": true,
             "default-value": [
                 1,
                 2,
@@ -43,36 +43,36 @@
             "value-key": "[LIST_NUM_INPUT]"
         },
         {
-            "id": "stringInput",
             "name": "String Input",
+            "id": "stringInput",
             "type": "String",
             "default-value": "foo",
             "value-key": "[STRING_INPUT]"
         },
         {
-            "id": "fileInput",
             "name": "File Input",
+            "id": "fileInput",
             "type": "File",
             "default-value": "/somewhere/something.txt",
             "value-key": "[FILE_INPUT]"
         },
         {
-            "id": "optStringInput",
             "name": "Opt String Input",
+            "id": "optStringInput",
             "type": "String",
             "default-value": "Hello, world!",
             "value-key": "[OPT_STRING_INPUT]"
         },
         {
-            "id": "fileOutput",
             "name": "File Output",
+            "id": "fileOutput",
             "type": "File",
             "default-value": "/somewhere/somethingelse.txt",
             "value-key": "[FILE_OUTPUT]"
         },
         {
-            "id": "doubleInput",
             "name": "Double Input",
+            "id": "doubleInput",
             "type": "Number",
             "integer": false,
             "default-value": 50.5,
@@ -81,10 +81,10 @@
     ],
     "output-files": [
         {
-            "id": "config_file",
             "name": "Configuration file",
-            "value-key": "[CONFIG_FILE]",
+            "id": "config_file",
             "path-template": "config.yml",
+            "value-key": "[CONFIG_FILE]",
             "file-template": [
                 "\"numInput\": [NUM_INPUT]",
                 "\"flagInput\": [FLAG_INPUT]",
@@ -100,20 +100,20 @@
     "groups": [
         {
             "all-or-none": true,
+            "mutually-exclusive": false,
+            "one-is-required": false,
+            "name": "the param group",
             "id": "group1",
             "members": [
                 "basic_param1",
                 "basic_flag1"
-            ],
-            "mutually-exclusive": false,
-            "name": "the param group",
-            "one-is-required": false
+            ]
         }
     ],
     "tags": {
-        "foo": "bar",
+        "status": "example",
         "purpose": "testing",
-        "status": "example"
+        "foo": "bar"
     },
     "suggested-resources": {
         "cpu-cores": 1,

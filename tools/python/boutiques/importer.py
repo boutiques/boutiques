@@ -7,7 +7,7 @@ from boutiques.util.utils import loadJson, customSortDescriptorByKey
 from boutiques.util.utils import customSortInvocationByInput
 from boutiques.logger import raise_error
 import boutiques
-import yaml
+import oyaml as yaml
 import toml
 import simplejson as json
 import os
@@ -186,7 +186,7 @@ class Importer():
 
         # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
-            cwl_desc = yaml.load(f)
+            cwl_desc = json.loads(json.dumps(yaml.load(f)))
 
         # validate yaml descriptor?
 
@@ -437,7 +437,7 @@ class Importer():
             return False
         boutiques_invocation = {}
         with open(self.input_invocation, 'r') as f:
-            cwl_inputs = yaml.load(f)
+            cwl_inputs = json.loads(json.dumps(yaml.load(f)))
         for input_name in cwl_inputs:
             if get_input(bout_desc['inputs'], input_name)['type'] != "File":
                 input_value = cwl_inputs[input_name]
@@ -544,7 +544,7 @@ class Importer():
 
         def import_toml(descriptor):
             tomlString = _getConfigFileString()
-            input_config = toml.loads(tomlString)
+            input_config = toml.loads(tomlString, _dict=collections.OrderedDict)
             imported_inputs = _getInputsFromConfigDict(input_config)
             descriptor['inputs'].extend(imported_inputs)
 
