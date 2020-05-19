@@ -163,6 +163,9 @@ def parser_executeLaunch():
     parser.add_argument("--sandbox", action="store_true",
                         help="Get descriptor from Zenodo's sandbox instead of "
                         "production server.")
+    parser.add_argument("--no-automounts", action="store_true",
+                        help="Disable automatic mount of all input files "
+                        "present in the invocation")
     force_group = parser.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "
@@ -251,7 +254,8 @@ def execute(*params):
                                       results.force_singularity,
                                   "provenance": results.provenance,
                                   "noContainer": results.no_container,
-                                  "sandbox": results.sandbox})
+                                  "sandbox": results.sandbox,
+                                  "noAutomounts": results.no_automounts})
         # Execute it
         return executor.execute(results.volumes)
 
