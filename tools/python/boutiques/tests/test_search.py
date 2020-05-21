@@ -70,10 +70,9 @@ class TestSearch(TestCase):
         results = bosh(["search", "-v"])
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
-                         ["ID", "TITLE", "DESCRIPTION", "DEPRECATED",
-                          "DOWNLOADS", "AUTHOR", "VERSION",
-                          "DOI", "SCHEMA VERSION",
-                          "CONTAINER", "TAGS"])
+                         ["ID", "TITLE", "DESCRIPTION", "PUBLICATION DATE",
+                          "DEPRECATED", "DOWNLOADS", "AUTHOR", "VERSION",
+                          "DOI", "SCHEMA VERSION", "CONTAINER", "TAGS"])
 
     @mock.patch('requests.get')
     def test_search_specify_max_results(self, mymockget):

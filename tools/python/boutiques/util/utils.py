@@ -123,3 +123,32 @@ def customSortInvocationByInput(invocation, descriptor):
                       " original invocation.")
         return invocation
     return sortedInvoc
+
+
+def snakeCaseToCamelCase(id):
+    words = id.split("_")
+    for idx, word in enumerate(words[1:]):
+        if word[0].islower():
+            words[idx+1] = word[0].upper() + word[1:]
+    return "".join(words)
+
+
+def camelCaseInputIds(descriptor):
+    conversion_dict = {}
+    if 'inputs' in descriptor:
+        for inp in descriptor['inputs']:
+            camelCaseId = snakeCaseToCamelCase(inp['id'])
+            conversion_dict[inp['id']] = camelCaseId
+
+    # Find all instances of old input ids
+    # and replace them with camelCase ids
+    plainTextDesc = json.dumps(descriptor, indent=2)
+    for k, v in conversion_dict.items():
+        # Only replace ids surrounded by single/double quotes,
+        # in case the the old input ids are used in other strings
+        plainTextDesc = plainTextDesc.replace("\"{0}\"".format(k),
+                                              "\"{0}\"".format(v))
+        plainTextDesc = plainTextDesc.replace("\'{0}\'".format(k),
+                                              "\'{0}\'".format(v))
+    descriptor = json.loads(plainTextDesc)
+    return descriptor

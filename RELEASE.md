@@ -25,9 +25,10 @@
    python setup.py bdist_wheel --universal
    twine upload dist/*
    ```
-7. Generate Bosh API docs
+7. Install [Sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html) for python 3
+8. Generate Bosh API docs
    ```
    cd ./tools/sphinx/
-   pip install sphinx-rtd-theme
-   python argparse_docs
+   pip install sphinx-rtd-theme sphinx-argparse
+   python argparse_docs.py
    ```

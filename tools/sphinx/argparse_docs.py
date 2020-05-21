@@ -53,11 +53,10 @@ def CreateBoshDocs():
     boshFileText = readFile("../python/boutiques/bosh.py")
     indexTemplate = readFile("./_templates/index.rst")
     # Split readme into two, slicing at command line api section
-    readmeText = readFile("../python/README.rst").split(
-        "Let’s consider a few common use-cases…")
+    readmeText = readFile("../python/README.rst")
     apiNames = GenerateApiTree(boshFileText)
 
-    indexDocString = readmeText[0] + "\n" + indexTemplate + "\n"
+    indexDocString = readmeText + "\n" + indexTemplate + "\n"
     for api in sorted(apiNames):
         # Add api reference to index doc string
         indexDocString += '    _{0}\n'.format(api)
@@ -88,7 +87,6 @@ def CreateBoshDocs():
         # Create a RST page per api
         createDocsPage("_{0}.rst".format(api), docString)
     # Create index RST page
-    indexDocString += readmeText[1]
     createDocsPage("index.rst", indexDocString)
 
 

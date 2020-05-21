@@ -17,8 +17,8 @@
             "all-or-none": true,
             "id": "group1",
             "members": [
-                "param1",
-                "flag1"
+                "basic_param1",
+                "basic_flag1"
             ],
             "mutually-exclusive": false,
             "name": "the param group",
@@ -27,14 +27,14 @@
     ],
     "inputs": [
         {
-            "id": "param1",
+            "id": "basic_param1",
             "name": "The first parameter",
             "optional": true,
             "type": "File",
             "value-key": "[PARAM1]"
         },
         {
-            "id": "param2",
+            "id": "basic_param2",
             "name": "The second parameter",
             "optional": false,
             "type": "String",
@@ -46,7 +46,7 @@
         },
         {
             "command-line-flag": "-f",
-            "id": "flag1",
+            "id": "basic_flag1",
             "name": "The first flag",
             "optional": true,
             "type": "Flag",
@@ -56,7 +56,7 @@
     "name": "tool name",
     "output-files": [
         {
-            "id": "output1",
+            "id": "basic_output1",
             "name": "The first output",
             "optional": false,
             "path-template": "[PARAM2].txt",

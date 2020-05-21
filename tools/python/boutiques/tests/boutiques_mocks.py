@@ -92,6 +92,7 @@ def get_zenodo_record(record):
                 }
             ],
             "description": record.description,
+            "publication_date": "2020-04-15",
             "relations": {
                 'version': [
                     {

@@ -55,5 +55,7 @@ class TestExample(TestCase):
         # Bosh example is inherently random,
         # Couldn't even inject prederemined input to executor.in_dict
         # because _randomFillInDict clears it
-        executor.generateRandomParams(100)
-        self.assertGreater(len(executor.in_dict), 0)
+        for _ in range(0, 100):
+            executor.generateRandomParams()
+            self.assertGreater(len(executor.in_dict), 0)
+            executor.in_dict = None

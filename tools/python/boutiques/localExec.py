@@ -459,6 +459,10 @@ class LocalExecutor(object):
                                            conIndex != "" and
                                            conIndex != "docker://") else "")
 
+            # If present, assign index in conImage to conIndex
+            if re.search(r"^[a-zA-Z0-9]+://", conImage) is not None:
+                conIndex = re.match(r"^[a-zA-Z0-9]+://", conImage).group()
+                conImage = conImage.replace(conIndex, "")
             if not conIndex:
                 conIndex = "shub://"
             if not conIndex.endswith("/"):
@@ -526,9 +530,7 @@ class LocalExecutor(object):
         # Set the pull directory to the specified imagePath
         if self.imagePath:
             os.environ["SINGULARITY_PULLFOLDER"] = imageDir
-        pull_loc = "\"{0}\" {1}{2}".format(conNameTmp,
-                                           conIndex,
-                                           conImage)
+        pull_loc = "\"{0}\" {1}{2}".format(conNameTmp, conIndex, conImage)
         container_location = ("Pulled from {1}{2} ({0} not found "
                               "in current working "
                               "directory or specified "
@@ -846,7 +848,8 @@ class LocalExecutor(object):
 
         # Start actual dictionary filling part
         # Clear the dictionary
-        self.in_dict = {}
+        self.in_dict = self.in_dict if hasattr(self, 'in_dict') and\
+            self.in_dict is not None else {}
         for params in [r for r in self.inputs if not r.get('optional')]:
             self.in_dict[params['id']] = makeParam(params)
 
@@ -911,36 +914,35 @@ class LocalExecutor(object):
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
     # and generates the appropriate command line
-    def generateRandomParams(self, n):
+    def generateRandomParams(self, generateCmdLineFromInDict=False):
 
         '''
         The generateRandomParams method fills the in_dict field
         with randomly generated values following the schema.
-        It then generates command line strings based on these
-        values (more than 1 if -n was given).
+        It then generates command line strings based on these values
         '''
 
         self.cmd_line = []
-        for i in range(0, n):
-            # Set in_dict with random values
-            self._randomFillInDict()
-            # Look at generated input, if debugging
-            if self.debug:
-                print_info("Input: " + str(self.in_dict))
-            # Check results (as much as possible)
-            try:
-                args = [self.desc_path, "-i", json.dumps(self.in_dict)]
-                if self.sandbox:
-                    args.append("--sandbox")
-                boutiques.invocation(*args)
-            # If an error occurs, print out the problems already
-            # encountered before blowing up
-            except Exception as e:  # Avoid BaseExceptions like SystemExit
-                sys.stderr.write("An error occurred in validation\n"
-                                 "Previously saved issues\n")
-                for err in self.errs:
-                    sys.stderr.write("\t" + str(err) + "\n")
-                raise e  # Pass on (throw) the caught exception
+        # Set in_dict with random values
+        self._randomFillInDict()
+        # Look at generated input, if debugging
+        if self.debug:
+            print_info("Input: " + str(self.in_dict))
+        # Check results (as much as possible)
+        try:
+            args = [self.desc_path, "-i", json.dumps(self.in_dict)]
+            if self.sandbox:
+                args.append("--sandbox")
+            boutiques.invocation(*args)
+        # If an error occurs, print out the problems already
+        # encountered before blowing up
+        except Exception as e:  # Avoid BaseExceptions like SystemExit
+            sys.stderr.write("An error occurred in validation\n"
+                             "Previously saved issues\n")
+            for err in self.errs:
+                sys.stderr.write("\t" + str(err) + "\n")
+            raise e  # Pass on (throw) the caught exception
+        if generateCmdLineFromInDict:
             # Add new command line
             self.cmd_line.append(self._generateCmdLineFromInDict())
 
@@ -1028,19 +1030,14 @@ class LocalExecutor(object):
             if param_id in list(in_out_dict.keys()):  # param has a value
                 val = in_out_dict[param_id]
                 if type(val) is list:
-                    s_val = ""
                     list_sep = self.safeGet(param_id, 'list-separator')
                     if list_sep is None:
                         list_sep = ' '
+                    escaped_val = []
                     for x in val:
-                        s = str(x)
-                        if escape:
-                            s = escape_string(str(x))
-                        if val.index(x) == len(val)-1:
-                            s_val += s
-                        else:
-                            s_val += s + list_sep
-                    val = s_val
+                        escaped_val.append(escape_string(str(x)) if
+                                           escape else str(x))
+                    val = list_sep.join(escaped_val)
                 elif escape:
                     val = escape_string(val)
                 # Add flags and separator if necessary

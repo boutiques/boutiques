@@ -504,6 +504,21 @@ def validate_descriptor(json_file, **kwargs):
                    for test_name in set(tests_names)
                    if (tests_names.count(test_name) > 1)]
 
+    # Verify container image
+    if "container-image" in descriptor.keys():
+        conImage = descriptor['container-image']['image']
+        conIndex = descriptor['container-image']['index'] if\
+            'index' in descriptor['container-image'] else None
+        conImageIndex = re.match(r"^[a-zA-Z0-9]+://", conImage)
+
+        # Verify index in container image is equal to container index value
+        if conIndex is not None and conImageIndex is not None and\
+           conIndex != conImageIndex.group():
+            msg_template = ("ContainerError: container image \"{0}\""
+                            " is prepended by index that doesn't match"
+                            " container index value \"{1}\"")
+            errors += [msg_template.format(conImage, conIndex)]
+
     errors = None if errors == [] else errors
     if errors is None:
         if kwargs.get('format_output'):

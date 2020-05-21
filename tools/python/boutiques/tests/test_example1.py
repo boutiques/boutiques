@@ -506,6 +506,19 @@ class TestExample1(BaseTest):
             if os.path.isfile(outFileList[0].split()[0]):
                 os.remove(outFileList[0].split()[0])
 
+    @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
+                        reason="Singularity not installed")
+    def test_example1_exec_container_image_contains_index(self):
+        ret = bosh.execute("launch",
+                           self.get_file_path("conImage_with_index.json"),
+                           self.get_file_path("input_invoc.json"),
+                           "--skip-data-collection")
+
+        self.assertIn("Local (boutiques-example1-test.simg)",
+                      ret.container_location)
+        self.assertIn("singularity exec", ret.container_command)
+        self.clean_up()
+
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
     @pytest.fixture(autouse=True)
