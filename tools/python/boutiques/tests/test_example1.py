@@ -6,7 +6,7 @@ import pytest
 from boutiques.util.BaseTest import BaseTest
 import boutiques as bosh
 from boutiques.localExec import ExecutorError
-from boutiques.util.utils import LoadError, loadJson
+from boutiques.util.utils import LoadError
 import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
     example_boutiques_tool
