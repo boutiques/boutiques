@@ -332,15 +332,19 @@ class LocalExecutor(object):
             mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
 
             # Extend list of mounts with all files in invocation
-            # Also re-normalize paths, without hardcoded ':' split
+            mount_inputs = []
             for file_input in [i for i in self.inputs if
                                i['type'].lower() == 'file']:
                 if file_input['id'] in self.in_dict:
-                    if 'list' in file_input and file_input['list']:                      
-                        mount_strings.extend(self.in_dict[file_input['id']])
+                    if 'list' in file_input and file_input['list']:
+                        mount_inputs.extend(self.in_dict[file_input['id']])
                     else:
-                        mount_strings.append(self.in_dict[file_input['id']])
-            mount_strings = [makePathAbsolute(m) for m in mount_strings]
+                        mount_inputs.append(self.in_dict[file_input['id']])
+            # Normalize paths and add file under docker launch dir
+            mount_inputs = [makePathAbsolute(m) + ':'
+                            + "{0}/{1}".format(launchDir, m.split("/")[-1])
+                            for m in mount_inputs]
+            mount_strings.extend(mount_inputs)
 
             if conTypeToUse == 'docker':
                 envString = " "

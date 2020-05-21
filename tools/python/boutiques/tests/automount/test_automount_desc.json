@@ -3,7 +3,7 @@
     "container-image": {
         "image": "user/image",
         "index": "docker://",
-        "type": "singularity"
+        "type": "docker"
     },
     "description": "Auto mount test",
     "error-codes": [
