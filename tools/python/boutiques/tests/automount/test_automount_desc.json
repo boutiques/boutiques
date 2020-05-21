@@ -1,7 +1,7 @@
 {
     "command-line": "cat [MOUNTED_FILE] [MOUNTED_FILE_LIST]",
     "container-image": {
-        "image": "user/image",
+        "image": "boutiques/example1:test",
         "index": "docker://",
         "type": "docker"
     },

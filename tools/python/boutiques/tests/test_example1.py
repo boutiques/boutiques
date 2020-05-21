@@ -322,6 +322,7 @@ class TestExample1(BaseTest):
                          self.get_file_path(
                              "invocation_missing_script.json"),
                          "--skip-data-collection",
+                         "--no-automounts",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
@@ -334,6 +335,7 @@ class TestExample1(BaseTest):
                    self.get_file_path("example1_docker.json") + " " +
                    self.get_file_path("invocation_missing_script.json") +
                    " --skip-data-collection",
+                   "--no-automounts",
                    "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
@@ -532,9 +534,8 @@ class TestExample1(BaseTest):
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file": os.path.join(test_dir, "file1.txt"),
-                      "file_list": [os.path.join(test_dir, "file2.txt"),
-                                    os.path.join(test_dir, "file3.txt")]}
+        invoc_dict = {"file": "/home/darrin/Documents/Github/boutiques/tools/file1.txt",
+                      "file_list": ["../file2.txt", "../file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
             invoc.write(json.dumps(invoc_dict))
@@ -565,9 +566,8 @@ class TestExample1(BaseTest):
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file": os.path.join(test_dir, "file1.txt"),
-                      "file_list": [os.path.join(test_dir, "file2.txt"),
-                                    os.path.join(test_dir, "file3.txt")]}
+        invoc_dict = {"file": "/home/darrin/Documents/Github/boutiques/tools/file1.txt",
+                      "file_list": ["../file2.txt", "../file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
             invoc.write(json.dumps(invoc_dict))

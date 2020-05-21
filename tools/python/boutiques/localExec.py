@@ -324,7 +324,7 @@ class LocalExecutor(object):
                 # Normalize it
                 return normalizePath(path)
 
-            def addAutomounts(mount_strings):
+            def addAutomounts(mount_strings, launchDir):
                 # Extend list of mounts with all files in invocation
                 mount_inputs = []
                 existing_mounts = [m.split(":")[1] for m in mount_strings]
@@ -337,7 +337,8 @@ class LocalExecutor(object):
                             mount_inputs.append(self.in_dict[file_input['id']])
                 # Prevent duplicate mounts, normalize paths
                 # and add file under same absolute path
-                mount_inputs = [makePathAbsolute(m) + ':' + makePathAbsolute(m)
+                mount_inputs = [makePathAbsolute(m) + ':'
+                                + os.path.join(launchDir, m)
                                 for m in mount_inputs
                                 if m not in existing_mounts]
                 mount_strings.extend(mount_inputs)
@@ -351,7 +352,8 @@ class LocalExecutor(object):
             mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
 
             if not self.noAutomounts:
-                mount_strings = addAutomounts(mount_strings)
+                mount_strings = addAutomounts(mount_strings, launchDir)
+            print(mount_strings)
 
             if conTypeToUse == 'docker':
                 envString = " "
