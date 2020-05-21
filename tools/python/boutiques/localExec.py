@@ -327,6 +327,7 @@ class LocalExecutor(object):
             def addAutomounts(mount_strings):
                 # Extend list of mounts with all files in invocation
                 mount_inputs = []
+                existing_mounts = [m.split(":")[1] for m in mount_strings]
                 for file_input in [i for i in self.inputs if
                                    i['type'].lower() == 'file']:
                     if file_input['id'] in self.in_dict:
@@ -334,9 +335,11 @@ class LocalExecutor(object):
                             mount_inputs.extend(self.in_dict[file_input['id']])
                         else:
                             mount_inputs.append(self.in_dict[file_input['id']])
-                # Normalize paths and add file under docker launch dir
+                # Prevent duplicate mounts, normalize paths
+                # and add file under same absolute path
                 mount_inputs = [makePathAbsolute(m) + ':' + makePathAbsolute(m)
-                                for m in mount_inputs]
+                                for m in mount_inputs
+                                if m not in existing_mounts]
                 mount_strings.extend(mount_inputs)
                 return mount_strings
 
