@@ -1,4 +1,0 @@
-{
-    "file": "./boutiques/tests/automount/file1.txt",
-    "file_list": ["./boutiques/tests/automount/file2.txt", "./boutiques/tests/automount/file3.txt"]
-}

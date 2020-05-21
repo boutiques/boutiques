@@ -324,6 +324,22 @@ class LocalExecutor(object):
                 # Normalize it
                 return normalizePath(path)
 
+            def addAutomounts(mount_strings):
+                # Extend list of mounts with all files in invocation
+                mount_inputs = []
+                for file_input in [i for i in self.inputs if
+                                   i['type'].lower() == 'file']:
+                    if file_input['id'] in self.in_dict:
+                        if 'list' in file_input and file_input['list']:
+                            mount_inputs.extend(self.in_dict[file_input['id']])
+                        else:
+                            mount_inputs.append(self.in_dict[file_input['id']])
+                # Normalize paths and add file under docker launch dir
+                mount_inputs = [makePathAbsolute(m) + ':' + makePathAbsolute(m)
+                                for m in mount_inputs]
+                mount_strings.extend(mount_inputs)
+                return mount_strings
+
             launchDir = normalizePath(launchDir)
             dsname = normalizePath(dsname)
 
@@ -331,20 +347,8 @@ class LocalExecutor(object):
                              + m.split(":")[1] for m in mount_strings]
             mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
 
-            # Extend list of mounts with all files in invocation
-            mount_inputs = []
-            for file_input in [i for i in self.inputs if
-                               i['type'].lower() == 'file']:
-                if file_input['id'] in self.in_dict:
-                    if 'list' in file_input and file_input['list']:
-                        mount_inputs.extend(self.in_dict[file_input['id']])
-                    else:
-                        mount_inputs.append(self.in_dict[file_input['id']])
-            # Normalize paths and add file under docker launch dir
-            mount_inputs = [makePathAbsolute(m) + ':'
-                            + "{0}/{1}".format(launchDir, m.split("/")[-1])
-                            for m in mount_inputs]
-            mount_strings.extend(mount_inputs)
+            if not self.noAutomounts:
+                mount_strings = addAutomounts(mount_strings)
 
             if conTypeToUse == 'docker':
                 envString = " "
