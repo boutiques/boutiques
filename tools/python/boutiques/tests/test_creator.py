@@ -108,11 +108,11 @@ class TestCreator(TestCase):
             self.assertTrue(all([("_" in mbr) for mbr in mbrs]))
             self.assertFalse(all([("_" in camelMbr) for camelMbr in camelMbrs]))
 
-    def test_create_cl_template_json(self):
+    def test_create_cl_template_from_descriptor(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        cl_template = op.join(base_path, "json_config_desc.json")
+        cl_template = op.join(base_path, "expected_cl_template_create.json")
         output = op.join(base_path, "out_desc.json")
-        expected = op.join(base_path, "inputs_from_config_file_desc.json")
+        expected = op.join(base_path, "expected_cl_template_create.json")
         expected = loadJson(expected)['inputs']
 
         create_args = ["create", output, "--cl-template", cl_template]
@@ -124,30 +124,14 @@ class TestCreator(TestCase):
 
         self.assertEqual(expected, results)
 
-    def test_create_cl_template_toml(self):
+    def test_create_cl_template_from_string(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        cl_template = op.join(base_path, "toml_config_desc.json")
         output = op.join(base_path, "out_desc.json")
-        expected = op.join(base_path, "inputs_from_config_file_desc.json")
+        expected = op.join(base_path, "expected_cl_template_create.json")
         expected = loadJson(expected)['inputs']
 
-        create_args = ["create", output, "--cl-template", cl_template]
-        bosh(create_args)
-        results = loadJson(output)['inputs']
-
-        if op.exists(output):
-            os.remove(output)
-
-        self.assertEqual(expected, results)
-
-    def test_create_cl_template_yaml(self):
-        base_path = op.join(op.split(bfile)[0], "tests/config")
-        cl_template = op.join(base_path, "yaml_config_desc.json")
-        output = op.join(base_path, "out_desc.json")
-        expected = op.join(base_path, "inputs_from_config_file_desc.json")
-        expected = loadJson(expected)['inputs']
-
-        create_args = ["create", output, "--cl-template", cl_template]
+        create_args = ["create", output, "--cl-template",
+                       "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]"]
         bosh(create_args)
         results = loadJson(output)['inputs']
 

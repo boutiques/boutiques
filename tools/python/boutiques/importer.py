@@ -587,10 +587,7 @@ class Importer():
         elif configFileFormat == "yml":
             descriptor = import_yaml(descriptor)
 
-        descriptor['command-line'] = "tool "
-        descriptor['command-line'] += " ".join(
-            ["{0}".format(inp['value-key']) for inp in descriptor['inputs']])
-        descriptor['command-line'] += " [CONFIG_FILE]"
+        descriptor['command-line'] = "tool [CONFIG_FILE]"
 
         with open(self.output_descriptor, "w+") as output:
             output.write(json.dumps(

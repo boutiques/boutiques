@@ -11,52 +11,28 @@
     },
     "inputs": [
         {
-            "name": "Num Input",
-            "id": "numInput",
+            "name": "Param1",
+            "id": "param1",
             "type": "String",
-            "value-key": "[NUM_INPUT]"
+            "value-key": "[PARAM1]"
         },
         {
-            "name": "Flag Input",
-            "id": "flagInput",
+            "name": "Param2",
+            "id": "param2",
             "type": "String",
-            "value-key": "[FLAG_INPUT]"
+            "value-key": "[PARAM2]"
         },
         {
-            "name": "List Num Input",
-            "id": "listNumInput",
+            "name": "Flag1",
+            "id": "flag1",
             "type": "String",
-            "value-key": "[LIST_NUM_INPUT]"
+            "value-key": "[FLAG1]"
         },
         {
-            "name": "String Input",
-            "id": "stringInput",
+            "name": "Output1",
+            "id": "output1",
             "type": "String",
-            "value-key": "[STRING_INPUT]"
-        },
-        {
-            "name": "File Input",
-            "id": "fileInput",
-            "type": "String",
-            "value-key": "[FILE_INPUT]"
-        },
-        {
-            "name": "Opt String Input",
-            "id": "optStringInput",
-            "type": "String",
-            "value-key": "[OPT_STRING_INPUT]"
-        },
-        {
-            "name": "File Output",
-            "id": "fileOutput",
-            "type": "String",
-            "value-key": "[FILE_OUTPUT]"
-        },
-        {
-            "name": "Double Input",
-            "id": "doubleInput",
-            "type": "String",
-            "value-key": "[DOUBLE_INPUT]"
+            "value-key": "[OUTPUT1]"
         }
     ],
     "output-files": [

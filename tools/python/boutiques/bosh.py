@@ -57,8 +57,8 @@ def parser_create():
                         help="When --docker-image is used. Specify to "
                              "use singularity to run it.")
     parser.add_argument("--cl-template", action="store",
-                        help="Path to descriptor from which its command-line"
-                        " template is used to generate descriptor inputs.")
+                        help="Command-line template used to generate"
+                        " descriptor inputs. (Path to descriptor or String)")
     parser.add_argument("--camel-case", action="store_true",
                         help="All input IDs will be written in camelCase.")
     return parser

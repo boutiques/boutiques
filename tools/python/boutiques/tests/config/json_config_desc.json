@@ -3,7 +3,7 @@
     "description": "tool description",
     "tool-version": "v0.1.0",
     "schema-version": "0.5",
-    "command-line": "tool [NUM_INPUT] [FLAG_INPUT] [LIST_NUM_INPUT] [STRING_INPUT] [FILE_INPUT] [OPT_STRING_INPUT] [FILE_OUTPUT] [DOUBLE_INPUT] [CONFIG_FILE]",
+    "command-line": "tool [CONFIG_FILE]",
     "container-image": {
         "image": "user/image",
         "index": "docker://",

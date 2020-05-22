@@ -276,7 +276,7 @@ class CreateDescriptor(object):
         else:
             return process.communicate(), process.returncode
 
-    def generateInputsFromTemplate(self, cl_template_path):
+    def generateInputsFromTemplate(self, cl_template):
         def _createIdFromValueKey(vk):
             vk = re.sub(r"\[(\w+)\]", r"\1", vk).lower()
             vk_words = vk.split("_")
@@ -292,19 +292,13 @@ class CreateDescriptor(object):
             # Join char list into string and concatenate white spaces
             return " ".join(''.join(name).split()).title()
 
-        def _getValueKeys(config_file):
-            # Return all value-key occurences, determined by brackets
-            template = "".join(config_file['file-template'])
-            return re.findall(r"\[\w+\]", template)
-
-        template_descriptor = loadJson(cl_template_path)
-        # Get file-template from first output file with 'file-template'
-        config_file = next(out for out in template_descriptor['output-files']
-                           if 'file-template' in out)
+        if os.path.isfile(cl_template):
+            template_descriptor = loadJson(cl_template)
+            cl_template = template_descriptor['command-line']
 
         # Clear descriptor inputs and repopulate
         self.descriptor['inputs'] = []
-        for vk in _getValueKeys(config_file):
+        for vk in re.findall(r"\[\w+\]", cl_template):
             generated_id = _createIdFromValueKey(vk)
             self.descriptor['inputs'].append({
                 'name': _createNameFromId(generated_id),

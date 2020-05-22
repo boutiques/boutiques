@@ -231,19 +231,25 @@ class TestImport(TestCase):
         # Groups are needed in template but causes tests to fail
         del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
-        # Validate by comparing generated command-line output
         test_invoc = op.join(base_path, "test_config_import_invoc.json")
         simulate_args = ["exec", "simulate", json.dumps(result_desc),
                          "-i", test_invoc]
 
-        expected_cml = ("tool 1337 --TEMP 1 1 2 3 5 8 foobar"
-                        " /somewhere/something.txt 'Hello, world!'"
-                        " /somewhere/somethingelse.txt 13.37 config.json")
+        expected_cml = ("tool config.json")
         result_cml = bosh(simulate_args).shell_command
 
+        with open(op.join(base_path, "expected_config.json"), "r") as c:
+            expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
+            with open(result_desc['output-files']
+                      [0]['path-template'], "r") as r:
+                result_sim_out = r.readlines()
             os.remove(result_desc['output-files'][0]['path-template'])
+
+        # Validate by comparing generated command-line output
+        # Validate by comparing generated simulated config file
         self.assertEqual(result_cml, expected_cml)
+        self.assertEqual(result_sim_out, expect_sim_out)
 
     def test_import_toml_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
@@ -262,19 +268,25 @@ class TestImport(TestCase):
         # Groups are needed in template but causes tests to fail
         del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
-        # Validate by comparing generated command-line output
         test_invoc = op.join(base_path, "test_config_import_invoc.json")
         simulate_args = ["exec", "simulate", json.dumps(result_desc),
                          "-i", test_invoc]
 
-        expected_cml = ("tool 1337 --TEMP 1 1 2 3 5 8 foobar"
-                        " /somewhere/something.txt 'Hello, world!'"
-                        " /somewhere/somethingelse.txt 13.37 config.toml")
+        expected_cml = ("tool config.toml")
         result_cml = bosh(simulate_args).shell_command
 
+        with open(op.join(base_path, "expected_config.toml"), "r") as c:
+            expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
+            with open(result_desc['output-files']
+                      [0]['path-template'], "r") as r:
+                result_sim_out = r.readlines()
             os.remove(result_desc['output-files'][0]['path-template'])
+
+        # Validate by comparing generated command-line output
+        # Validate by comparing generated simulated config file
         self.assertEqual(result_cml, expected_cml)
+        self.assertEqual(result_sim_out, expect_sim_out)
 
     def test_import_yaml_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
@@ -293,16 +305,22 @@ class TestImport(TestCase):
         # Groups are needed in template but causes tests to fail
         del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
-        # Validate by comparing generated command-line output
         test_invoc = op.join(base_path, "test_config_import_invoc.json")
         simulate_args = ["exec", "simulate", json.dumps(result_desc),
                          "-i", test_invoc]
 
-        expected_cml = ("tool 1337 --TEMP 1 1 2 3 5 8 foobar"
-                        " /somewhere/something.txt 'Hello, world!'"
-                        " /somewhere/somethingelse.txt 13.37 config.yml")
+        expected_cml = ("tool config.yml")
         result_cml = bosh(simulate_args).shell_command
 
+        with open(op.join(base_path, "expected_config.yml"), "r") as c:
+            expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
+            with open(result_desc['output-files']
+                      [0]['path-template'], "r") as r:
+                result_sim_out = r.readlines()
             os.remove(result_desc['output-files'][0]['path-template'])
+
+        # Validate by comparing generated command-line output
+        # Validate by comparing generated simulated config file
         self.assertEqual(result_cml, expected_cml)
+        self.assertEqual(result_sim_out, expect_sim_out)
