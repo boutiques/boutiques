@@ -303,7 +303,7 @@ def getDataCacheDir():
     cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
     data_cache_dir = os.path.join(cache_dir, "data")
     if not os.path.exists(cache_dir):
-        os.makedirs(cache_dir)
+        os.makedirs(cache_dir, exist_ok=True)
     if not os.path.exists(data_cache_dir):
-        os.makedirs(data_cache_dir)
+        os.makedirs(data_cache_dir, exist_ok=True)
     return data_cache_dir
