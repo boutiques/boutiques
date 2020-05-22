@@ -36,10 +36,6 @@ def main(args=None):
 
     results=parser.parse_args() if args is None else parser.parse_args(args)
 
-    if results.file:
-        if not os.path.exists(results.file[0]):
-            parser.error("File not found: %s" % results.file[0])
-
     if results.number and results.enum_input:
         sys.stderr.write("error: number and enum_input are mutually exclusive.\n")
         sys.exit(1)

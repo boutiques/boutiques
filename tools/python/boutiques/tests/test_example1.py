@@ -316,30 +316,32 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     def test_example1_exec_missing_script(self):
         self.clean_up()
+        be = bosh.execute(
+            "launch",
+            self.get_file_path("example1_docker.json"),
+            self.get_file_path("invocation_missing_script.json"),
+            "--skip-data-collection",
+            "--no-automounts",
+            "-v", "{}:/test_mount1".format(
+                self.get_file_path("example1_mount1")),
+            "-v", "{}:/test_mount2".format(
+                self.get_file_path("example1_mount2")))
         self.assert_failed_return(
-            bosh.execute("launch",
-                         self.get_file_path("example1_docker.json"),
-                         self.get_file_path(
-                             "invocation_missing_script.json"),
-                         "--skip-data-collection",
-                         "--no-automounts",
-                         "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_mount1")),
-                         "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_mount2"))),
-            2, "File does not exist!", ["log-4-pwet.txt"], 1)
+            be, 2, "File does not exist!", ["log-4-pwet.txt"], 1)
 
     def test_example1_exec_fail_cli(self):
         self.clean_up()
-        command = ("bosh exec launch " +
-                   self.get_file_path("example1_docker.json") + " " +
-                   self.get_file_path("invocation_missing_script.json") +
-                   " --skip-data-collection",
-                   "--no-automounts",
-                   "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_mount1")),
-                         "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_mount2")))
+        command = (
+            "bosh", "exec", "launch",
+            self.get_file_path("example1_docker.json"),
+            self.get_file_path("invocation_missing_script.json"),
+            "--skip-data-collection",
+            "--no-automounts",
+            "-v", "{}:/test_mount1".format(
+                self.get_file_path("example1_mount1")),
+            "-v", "{}:/test_mount2".format(
+                self.get_file_path("example1_mount2")))
+        command = " ".join(command)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -505,7 +507,7 @@ class TestExample1(BaseTest):
             self.assertIn('file.txt (output_file, Required)', outFileList)
             with open(outFileList[0].split()[0]) as file:
                 text = file.read()
-                self.assertIn('doesnt/matter/what/this/is/test_path.d', text)
+                self.assertIn('subdir1/test_path.d', text)
         finally:
             if os.path.isfile(outFileList[0].split()[0]):
                 os.remove(outFileList[0].split()[0])
