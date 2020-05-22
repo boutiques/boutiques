@@ -353,7 +353,6 @@ class LocalExecutor(object):
 
             if not self.noAutomounts:
                 mount_strings = addAutomounts(mount_strings, launchDir)
-            print(mount_strings)
 
             if conTypeToUse == 'docker':
                 envString = " "
