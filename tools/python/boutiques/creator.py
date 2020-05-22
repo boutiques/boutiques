@@ -296,6 +296,7 @@ class CreateDescriptor(object):
             template_descriptor = loadJson(cl_template)
             cl_template = template_descriptor['command-line']
 
+        self.descriptor['command-line'] = cl_template
         # Clear descriptor inputs and repopulate
         self.descriptor['inputs'] = []
         for vk in re.findall(r"\[\w+\]", cl_template):
