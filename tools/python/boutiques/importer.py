@@ -16,7 +16,7 @@ import sys
 from docopt import parse_defaults, parse_pattern, parse_argv
 from docopt import formal_usage, DocoptLanguageError
 from docopt import AnyOptions, TokenStream, Option, Argument, Command
-import imp
+from importlib.machinery import SourceFileLoader
 import collections
 
 
@@ -127,9 +127,9 @@ class Importer():
 
     def import_docopt(self, desc_path):
         template_file = op.join(desc_path)
-        docstring = imp.load_source(
-            'docopt_pyscript', self.input_descriptor).__doc__
-
+        # input_descriptor is the .py containing docopt script
+        docstring = SourceFileLoader('docopt_script', self.input_descriptor)\
+            .load_module().__doc__
         docoptImporter = Docopt_Importer(docstring, template_file)
         # The order matters
         docoptImporter.loadDocoptDescription()
@@ -185,7 +185,7 @@ class Importer():
 
         # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
-            cwl_desc = yaml.load(f)
+            cwl_desc = yaml.load(f, Loader=yaml.FullLoader)
 
         # validate yaml descriptor?
 
@@ -436,7 +436,7 @@ class Importer():
             return False
         boutiques_invocation = {}
         with open(self.input_invocation, 'r') as f:
-            cwl_inputs = yaml.load(f)
+            cwl_inputs = yaml.load(f, Loader=yaml.FullLoader)
         for input_name in cwl_inputs:
             if get_input(bout_desc['inputs'], input_name)['type'] != "File":
                 input_value = cwl_inputs[input_name]

@@ -14,8 +14,8 @@ import tarfile
 from contextlib import closing
 import simplejson as json
 from docopt import docopt
-import imp
 import subprocess
+from boutiques.util.utils import loadJson
 
 
 class TestImport(TestCase):
@@ -34,9 +34,8 @@ class TestImport(TestCase):
         if op.isfile(outfile):
             os.remove(outfile)
         self.assertFalse(bosh(["import", "bids", outfile, bids_app]))
-        self.assertEqual(open(outfile, "U").read().strip(),
-                         open(opj(bids_app, ref_name),
-                              "U").read().strip())
+        self.assertEqual(open(outfile).read().strip(),
+                         open(opj(bids_app, ref_name)).read().strip())
 
     def test_import_bids_bad(self):
         bids_app = opj(op.split(bfile)[0],
@@ -60,10 +59,10 @@ class TestImport(TestCase):
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = json.loads(open(fout, "U").read().strip())
+        result = json.loads(open(fout).read().strip())
         self.assertIn(result,
-                      [json.loads(open(ref_file, "U").read().strip()),
-                       json.loads(open(ref_file_p2, "U").read().strip())])
+                      [json.loads(open(ref_file).read().strip()),
+                       json.loads(open(ref_file_p2).read().strip())])
         os.remove(fout)
 
     def test_upgrade_04_json_obj(self):
@@ -78,10 +77,10 @@ class TestImport(TestCase):
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = json.loads(open(fout, "U").read().strip())
+        result = json.loads(open(fout).read().strip())
         self.assertIn(result,
-                      [json.loads(open(ref_file, "U").read().strip()),
-                       json.loads(open(ref_file_p2, "U").read().strip())])
+                      [json.loads(open(ref_file).read().strip()),
+                       json.loads(open(ref_file_p2).read().strip())])
         os.remove(fout)
 
     def test_import_cwl_valid(self):
@@ -191,24 +190,9 @@ class TestImport(TestCase):
         import_args = ["import", "docopt", descriptor_output, pydocopt_input]
         bosh(import_args)
 
-        test_invocation = op.join(base_path, "nf_invoc_new.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
-
-        test_invocation = op.join(base_path, "nf_invoc_move.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
-
-        test_invocation = op.join(base_path, "nf_invoc_shoot.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
-
-        test_invocation = op.join(base_path, "nf_invoc_mine.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
-
-        test_invocation = op.join(base_path, "nf_invoc_help.json")
-        launch_args = ["exec", "launch", descriptor_output, test_invocation]
-        bosh(launch_args)
+        expected = loadJson(op.join(base_path, "naval_fate.json"))
+        result = loadJson(descriptor_output)
 
         os.remove(descriptor_output)
+
+        self.assertEqual(expected, result)
