@@ -7,6 +7,7 @@ import numbers
 from operator import itemgetter
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
+from boutiques.zenodoHelper import ZenodoHelper
 from urllib.parse import quote
 
 
@@ -42,6 +43,8 @@ class Searcher():
         self.sandbox = sandbox
         self.no_trunc = no_trunc
         self.max_results = max_results
+        self.zenodo_helper = ZenodoHelper(sandbox=self.sandbox,
+                                          verbose=self.verbose)
 
         # Display top 10 results by default
         if max_results is None:
@@ -59,7 +62,7 @@ class Searcher():
                        format(self.zenodo_endpoint))
 
     def search(self):
-        results = self.zenodo_search()
+        results = self.zenodo_helper.zenodo_search(self.query, self.query_line)
         total_results = results.json()["hits"]["total"]
         total_deprecated = len([h['metadata']['keywords'] for h in
                                 results.json()['hits']['hits'] if
@@ -79,20 +82,6 @@ class Searcher():
                       else ", exluding %d deprecated result(s)."
                       % total_deprecated))
         return results_list
-
-    def zenodo_search(self):
-        # Get all results
-        r = requests.get(self.zenodo_endpoint + '/api/records/?q='
-                         'keywords:(/Boutiques/) AND '
-                         'keywords:(/schema-version.*/)'
-                         '%s'
-                         '&file_type=json&type=software&'
-                         'page=1&size=%s' % (self.query_line, 9999))
-        if(r.status_code != 200):
-            raise_error(ZenodoError, "Error searching Zenodo", r)
-        if(self.verbose):
-            print_info("Search successful for query \"%s\"" % self.query, r)
-        return r
 
     def create_results_list(self, results):
         results_list = []
