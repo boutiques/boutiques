@@ -46,17 +46,11 @@ class ExecutorOutput():
 
     def __str__(self):
 
-        formatted_output_files = ""
-        for f in self.output_files:
-            if formatted_output_files != "":
-                formatted_output_files += os.linesep
-            formatted_output_files += ("\t- "+str(f))
+        formatted_output_files = os.linesep.join(
+            [("\t- " + str(f)) for f in self.output_files]) or ""
 
-        formatted_missing_files = ""
-        for f in self.missing_files:
-            if formatted_missing_files != "":
-                formatted_missing_files += os.linesep
-            formatted_missing_files += ("\t- "+str(f))
+        formatted_missing_files = os.linesep.join(
+            [("\t- " + str(f)) for f in self.missing_files]) or ""
 
         def title(s):
             return colored(s + os.linesep, 'green')
@@ -157,7 +151,9 @@ class LocalExecutor(object):
 
         # Generate Summary for data collection
         if not self.skipDataCollect:
-            self.summary = self._generateSummary(desc)
+            self.summary = {}
+            self.summary['name'] = self.desc_dict['name']
+            self.summary['descriptor-doi'] = self._findDOI(desc)
 
         # Helpers Functions
         # The set of input parameters from the json descriptor
@@ -169,9 +165,8 @@ class LocalExecutor(object):
 
         # Container-image Options
         self.con = self.desc_dict.get('container-image')
-        self.launchDir = None
-        if self.con is not None:
-            self.con.get('working-directory')
+        self.launchDir = self.con.get('working-directory') if\
+            self.con is not None else None
 
         # Generate the command line
         if self.invocation:
@@ -179,7 +174,7 @@ class LocalExecutor(object):
 
     # Retrieves the parameter corresponding to the given id
     def byId(self, n):
-        return [v for v in self.inputs+self.outputs if v['id'] == n][0]
+        return [v for v in self.inputs + self.outputs if v['id'] == n][0]
 
     # Retrieves the group corresponding to the given id
     def byGid(self, g):
@@ -222,8 +217,8 @@ class LocalExecutor(object):
         '''
         command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
-        conType, conImage = con.get('type'),\
-            con.get('image') if not self.noContainer else None
+        conType = con.get('type')
+        conImage = con.get('image') if not self.noContainer else None
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = (conImage is not None)
@@ -1213,14 +1208,6 @@ class LocalExecutor(object):
               ('s' if len(self.cmd_line) > 1 else '') + ':')
         for cmd in self.cmd_line:
             print(cmd)
-
-    # Private method to generate summary object of data
-    # collection file containing the tool name and descriptor DOI
-    def _generateSummary(self, desc):
-        summary = {}
-        summary['name'] = self.desc_dict['name']
-        summary['descriptor-doi'] = self._findDOI(desc)
-        return summary
 
     # Private method to attempt to find descriptor DOI
     # through various cases

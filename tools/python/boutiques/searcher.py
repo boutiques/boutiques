@@ -15,26 +15,22 @@ class Searcher():
 
     def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
-
         if query is not None:
             self.query = query
-            if not exact_match:
-                terms = self.query.split(" ")
-                self.query_line = ''
-                for t in terms:
-                    uncased_term = ''
-                    for ch in t:
-                        uncased_term = uncased_term + "[" + ch.upper() +\
-                            ch.lower() + "]"
-                    uncased_term = quote(uncased_term)
-                    self.query_line = self.query_line + \
-                        ' AND (/.*%s.*/)' % uncased_term
-            else:
-                self.query_line =\
-                        ' AND (/%s/)' % self.query
-        else:
             self.query_line = ''
+            if not exact_match:
+                terms = self.query.replace('/', '.').split(" ")
+                for t in terms:
+                    uncased_term = ["[{0}]".format(ch.upper() + ch.lower()
+                                                   if ch.isalpha() else ch)
+                                    for ch in t]
+                    uncased_term = quote("".join(uncased_term))
+                    self.query_line += ' AND (/.*%s.*/)' % uncased_term
+            else:
+                self.query_line = ' AND (/%s/)' % self.query.replace('/', '.')
+        else:
             self.query = ''
+            self.query_line = ''
 
         if(verbose):
             print_info("Using Query Line: " + self.query_line)
