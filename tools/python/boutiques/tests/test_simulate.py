@@ -199,11 +199,10 @@ class TestSimulate(TestCase):
                                   'test_simulate_consistency_configFile.json')
         invoc = "tmpInvoc.json"
         config = "tmpConfig.toml"
-        wInvocCommand = ("bosh example {0}" +
-                         " > {1} " +
+        wInvocCommand = ("bosh example {0} > {1}"
                          " && bosh exec simulate {0} -i {1}").format(descriptor,
                                                                      invoc)
-        noInvocCommand = "bosh exec simulate {0}".format(descriptor, invoc)
+        noInvocCommand = "bosh exec simulate {0}".format(descriptor)
 
         subprocess.call(wInvocCommand, shell=True)
         with open(config, "r+") as configFile:
