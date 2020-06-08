@@ -56,6 +56,9 @@ def parser_create():
     parser.add_argument("--use-singularity", '-u', action="store_true",
                         help="When --docker-image is used. Specify to "
                              "use singularity to run it.")
+    parser.add_argument("--cl-template", action="store",
+                        help="Command-line template used to generate"
+                        " descriptor inputs. (Path to descriptor or String)")
     parser.add_argument("--camel-case", action="store_true",
                         help="All input IDs will be written in camelCase.")
     return parser
@@ -69,7 +72,8 @@ def create(*params):
     new = CreateDescriptor(parser=None,
                            docker_image=results.docker_image,
                            use_singularity=results.use_singularity,
-                           camel_case=results.camel_case)
+                           camel_case=results.camel_case,
+                           cl_template=results.cl_template)
     new.save(results.descriptor)
     return None
 
@@ -346,16 +350,19 @@ def parser_importer():
                             " CWL descriptor or docopt script to spec.")
     parser.add_argument("type", help="Type of import we are performing."
                         " Allowed values: {" +
-                        ", ".join(["bids", "0.4", "cwl", "docopt"]) + "}",
-                        choices=["bids", "0.4", "cwl", "docopt"],
+                        ", ".join(["bids", "0.4", "cwl", "docopt", "config"]) +
+                        "}",
+                        choices=["bids", "0.4", "cwl", "docopt", "config"],
                         metavar='type')
     parser.add_argument("output_descriptor", help="Where the Boutiques"
                         " descriptor will be written.")
     parser.add_argument("input_descriptor", help="Input descriptor to be"
                         " converted. For '0.4', is JSON descriptor,"
-                        " for 'docopt' is JSON descriptor,"
+                        " for 'docopt' is Docopt script,"
                         " for 'bids' is base directory of BIDS app,"
-                        " for 'cwl' is YAML descriptor.")
+                        " for 'cwl' is YAML descriptor,"
+                        " for 'config' is configuration file"
+                        " {.json, .toml, .yml}.")
     parser.add_argument("-o", "--output-invocation", help="Where to write "
                         "the invocation if any.")
     parser.add_argument("-i", "--input-invocation", help="Input invocation "
@@ -379,8 +386,11 @@ def importer(*params):
     elif results.type == "cwl":
         importer.import_cwl()
     elif results.type == "docopt":
-        create(params[1])
-        importer.import_docopt(params[1])
+        create(importer.output_descriptor)
+        importer.import_docopt()
+    elif results.type == "config":
+        create(importer.output_descriptor)
+        importer.import_config()
 
 
 importer.__doc__ = parser_importer().format_help()

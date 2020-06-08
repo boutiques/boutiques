@@ -4,12 +4,14 @@ import tempfile
 import argparse
 import sys
 import os
+import re
 import simplejson as json
 import os.path as op
 from jsonschema import validate, ValidationError
 from argparse import ArgumentParser
 from boutiques import __file__ as bfile
 from boutiques.logger import raise_error, print_info, print_warning
+from boutiques.util.utils import loadJson
 from boutiques.util.utils import customSortDescriptorByKey, camelCaseInputIds
 import subprocess
 
@@ -46,6 +48,9 @@ class CreateDescriptor(object):
         self.camelCase = kwargs.get('camel_case')
         if self.camelCase:
             self.descriptor = camelCaseInputIds(self.descriptor)
+
+        if kwargs.get('cl_template'):
+            self.generateInputsFromTemplate(kwargs.get('cl_template'))
 
     def save(self, filename):
         with open(filename, "w") as f:
@@ -270,3 +275,35 @@ class CreateDescriptor(object):
             raise e
         else:
             return process.communicate(), process.returncode
+
+    def generateInputsFromTemplate(self, cl_template):
+        def _createIdFromValueKey(vk):
+            vk = re.sub(r"\[(\w+)\]", r"\1", vk).lower()
+            vk_words = vk.split("_")
+            return vk_words[0] + ''.join(x.title() for x in vk_words[1:])
+
+        def _createNameFromId(id):
+            name = [c for c in id]
+            for idx, c in enumerate(name):
+                if not c.isalnum():
+                    name[idx] = ' '
+                if c.isupper():
+                    name[idx] = ' ' + c.lower()
+            # Join char list into string and concatenate white spaces
+            return " ".join(''.join(name).split()).title()
+
+        if os.path.isfile(cl_template):
+            template_descriptor = loadJson(cl_template)
+            cl_template = template_descriptor['command-line']
+
+        self.descriptor['command-line'] = cl_template
+        # Clear descriptor inputs and repopulate
+        self.descriptor['inputs'] = []
+        for vk in re.findall(r"\[\w+\]", cl_template):
+            generated_id = _createIdFromValueKey(vk)
+            self.descriptor['inputs'].append({
+                'name': _createNameFromId(generated_id),
+                'id': generated_id,
+                'type': "String",
+                'value-key': vk
+            })

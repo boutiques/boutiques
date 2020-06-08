@@ -2,7 +2,7 @@
 
 from argparse import ArgumentParser
 from unittest import TestCase
-from boutiques.bosh import bosh
+from boutiques import bosh
 from boutiques import __file__ as bfile
 from boutiques.util.utils import loadJson
 import boutiques.creator as bc
@@ -107,3 +107,40 @@ class TestCreator(TestCase):
                                 zip(template['groups'], desc['groups'])]:
             self.assertTrue(all([("_" in mbr) for mbr in mbrs]))
             self.assertFalse(all([("_" in camelMbr) for camelMbr in camelMbrs]))
+
+    def test_create_cl_template_from_descriptor(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        cl_template = op.join(base_path, "expected_cl_template_create.json")
+        output = op.join(base_path, "out_desc.json")
+        expected = op.join(base_path, "expected_cl_template_create.json")
+        expected_cml = loadJson(expected)['command-line']
+        expected_inputs = loadJson(expected)['inputs']
+
+        create_args = ["create", output, "--cl-template", cl_template]
+        bosh(create_args)
+        result_cml = loadJson(output)['command-line']
+        result_inputs = loadJson(output)['inputs']
+
+        if op.exists(output):
+            os.remove(output)
+
+        self.assertEqual(expected_cml, result_cml)
+        self.assertEqual(expected_inputs, result_inputs)
+
+    def test_create_cl_template_from_string(self):
+        base_path = op.join(op.split(bfile)[0], "tests/config")
+        output = op.join(base_path, "out_desc.json")
+        expected = op.join(base_path, "expected_cl_template_create.json")
+        expected_cml = "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]"
+        expected_inputs = loadJson(expected)['inputs']
+
+        create_args = ["create", output, "--cl-template", expected_cml]
+        bosh(create_args)
+        result_cml = loadJson(output)['command-line']
+        result_inputs = loadJson(output)['inputs']
+
+        if op.exists(output):
+            os.remove(output)
+
+        self.assertEqual(expected_cml, result_cml)
+        self.assertEqual(expected_inputs, result_inputs)

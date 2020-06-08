@@ -1,0 +1,8 @@
+"numInput": 1337
+"flagInput": True
+"listNumInput": 1 1 2 3 5 8
+"stringInput": foobar
+"fileInput": /somewhere/something.txt
+"optStringInput": 'Hello, world!'
+"fileOutput": /somewhere/somethingelse.txt
+"doubleInput": 13.37

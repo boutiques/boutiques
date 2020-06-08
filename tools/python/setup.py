@@ -14,12 +14,13 @@ DEPS = [
          "requests",
          "pytest",
          "termcolor",
-         "pyyaml",
+         "oyaml",
          "jsonschema",
          "tabulate",
          "mock",
          "docopt",
-         "nexus-sdk"
+         "nexus-sdk",
+         "toml"
        ]
 
 setup(name="boutiques",
