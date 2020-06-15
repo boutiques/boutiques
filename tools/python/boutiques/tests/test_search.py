@@ -28,9 +28,6 @@ def mock_get(query, exact, *args, **kwargs):
             mock_records.append(MockZenodoRecord(1234568, "foo-" + query))
             mock_records.append(MockZenodoRecord(1234569, query + "-bar"))
 
-    if 'mock_records' in kwargs:
-        mock_records.extend(kwargs['mock_records'])
-
     return mock_zenodo_search(mock_records)
 
 
@@ -118,17 +115,3 @@ class TestSearch(TestCase):
                 continue
             break
         self.assertTrue(has_no_trunc)
-
-    @mock.patch('requests.get')
-    def test_search_forward_slash(self, mymockget):
-        mock_record = MockZenodoRecord(
-            9999, "Before_slash/After_Slash 9999",
-            description="Lorem ipsum dolor sit amet, consectetur ...",
-            downloads=9999)
-
-        mymockget.side_effect = lambda *args, **kwargs:\
-            mock_get("slash", False, *args, **kwargs,
-                     mock_records=[mock_record])
-        results = bosh(["search", "Before_slash/After_Slash"])
-        self.assertEqual(mock_record.__dict__['title'],
-                         dict(results[0])['TITLE'])
