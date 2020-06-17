@@ -3,7 +3,7 @@ import urllib
 import os
 from boutiques.logger import raise_error, print_info
 from boutiques.searcher import Searcher
-from boutiques.zenodoHelper import ZenodoError
+from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 
 try:
     # Python 3
@@ -47,6 +47,8 @@ class Puller():
         if(self.verbose):
             for zid in discarded_zids:
                 print_info("Discarded duplicate id {0}".format(zid))
+        self.zenodo_helper = ZenodoHelper(sandbox=self.sandbox,
+                                          verbose=self.verbose)
 
     def pull(self):
         # return cached file if it exists
@@ -61,7 +63,8 @@ class Puller():
 
             searcher = Searcher(entry["zid"], self.verbose, self.sandbox,
                                 exact_match=True)
-            r = searcher.zenodo_search()
+            r = self.zenodo_helper.zenodo_search(searcher.query,
+                                                 searcher.query_line)
             if not len(r.json()["hits"]["hits"]):
                 raise_error(ZenodoError, "Descriptor \"{0}\" "
                             "not found".format(entry["zid"]))
