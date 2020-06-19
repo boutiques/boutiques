@@ -3,10 +3,27 @@ import os
 import requests
 import time
 import hashlib
+import sys
+import pathlib
 from boutiques.logger import raise_error, print_info
 from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
 from boutiques.nexusHelper import NexusHelper
+from pip._vendor.distlib.compat import raw_input
+from collections import OrderedDict
+import numbers
+from operator import itemgetter
+
+
+
+try:
+    # Python 3
+    from urllib.request import urlopen
+    from urllib.request import urlretrieve
+except ImportError:
+    # Python 2
+    from urllib2 import urlopen
+    from urllib import urlretrieve
 
 
 class DataHandler(object):
@@ -35,7 +52,7 @@ class DataHandler(object):
                 self._display_file(file_path)
             else:
                 print("No records in the cache at the moment.")
-        # Print information about files in cache
+        # Print information about files in cache and the directory of caching data
         else:
             print("There are {} unpublished records in the cache"
                   .format(len(self.record_files)))
@@ -43,6 +60,7 @@ class DataHandler(object):
                   .format(len(self.descriptor_files)))
             for i in range(len(self.cache_files)):
                 print(self.cache_files[i])
+            print(os.path.join(os.path.expanduser('~'), ".cache", "boutiques", "data"))
 
     # Private function to print a file to console
     def _display_file(self, file_path):
@@ -168,7 +186,7 @@ class DataHandler(object):
             print("Some descriptors have not been published, they can be "
                   "published with following commands:")
             for prompt in desc_to_publish:
-                print("\t"+prompt)
+                print("\t" + prompt)
         return publishable_dict
 
     def _create_metadata(self, records_dict):
@@ -194,6 +212,7 @@ class DataHandler(object):
         # Add tool name(s) to keywords
         data['metadata']['keywords'] = [v for v in unique_names]
         data['metadata']['keywords'].insert(0, 'Boutiques')
+        data['metadata']['keywords'].insert(1, 'Boutiques-execution-record')
         # Add descriptor link(s) to related identifiers
         data['metadata']['related_identifiers'] = \
             [{'identifier': url.format(v.split('.')[2]),
@@ -211,9 +230,9 @@ class DataHandler(object):
                           data=data,
                           files=files)
 
-        if(r.status_code != 201):
+        if (r.status_code != 201):
             raise_error(ZenodoError, "Cannot upload record", r)
-        if(self.verbose):
+        if (self.verbose):
             print_info("Record uploaded to Zenodo", r)
 
     def _get_publishing_prompt(self):
@@ -227,7 +246,7 @@ class DataHandler(object):
         if self.individual:
             return ("The records will be published to {} each as "
                     "separate data-sets. This cannot be undone. Are you "
-                    "sure? (Y/n ". format(_destination))
+                    "sure? (Y/n ".format(_destination))
         return ("The records will be published to {} as a data-set. This "
                 "cannot be undone. Are you sure? (Y/n) ".format(_destination))
 
@@ -240,7 +259,7 @@ class DataHandler(object):
         self.record_files = [fl for fl in os.listdir(self.cache_dir)
                              if fl not in self.descriptor_files]
         doi_list = [loadJson(os.path.join(self.cache_dir, fl))
-                    .get('summary').get('descriptor-doi')
+                        .get('summary').get('descriptor-doi')
                     for fl in self.record_files]
 
         # Check each descriptor in remaining records
@@ -282,6 +301,148 @@ class DataHandler(object):
             [os.remove(os.path.join(self.cache_dir, f))
              for f in self.cache_files]
             print_info("All files have been removed from the data cache")
+
+   
+
+    def parse_basic_info(self, hit):
+        id = "zenodo." + str(hit["id"])
+        title = hit["metadata"]["title"]
+        description = hit["metadata"]["description"]
+        downloads = 0
+        if "version_downloads" in hit["stats"]:
+            downloads = hit["stats"]["version_downloads"]
+        return (id, title, description, downloads)
+
+    def get_keyword_data(self, keywords):
+        keyword_data = {"container-type": "None", "other": []}
+        for keyword in keywords:
+            keyword_data["other"].append(keyword)
+        return keyword_data
+
+    def create_results_list(self, results):
+        results_list = []
+        for hit in results["hits"]["hits"]:
+            (id, title, description, downloads) = self.parse_basic_info(hit)
+            # skip hit if result is deprecated
+            keyword_data = self.get_keyword_data(hit["metadata"]["keywords"])
+            if 'deprecated' in keyword_data['other']:
+                continue
+            result_dict = OrderedDict([("ID", id), ("TITLE", title),
+                                      ("DESCRIPTION", description),
+                                      ("DOWNLOADS", downloads)])
+            results_list.append(result_dict)
+        results_list = sorted(results_list, key=itemgetter('DOWNLOADS'),
+                              reverse=True)
+        return results_list
+
+    def search(self, query):
+        results = self.zenodo_search(query, False)
+
+        total_results = results.json()["hits"]["total"]
+        total_deprecated = len([h['metadata']['keywords'] for h in
+                                results.json()['hits']['hits'] if
+                                'metadata' in h and
+                                'keywords' in h['metadata'] and
+                                'deprecated' in h['metadata']['keywords']])
+        results_list = self.create_results_list(results.json())
+        num_results = len(results_list)
+        print_info("Showing %d of %d result(s)%s"
+                   % (num_results,
+                      total_results - total_deprecated,
+                      ", exluding %d deprecated result(s)."
+                      % total_deprecated))
+        return results_list
+
+    def zenodo_search(self, query, exact):
+        # Get all results
+        zenodo_endpoint = "https://zenodo.org"
+
+        if exact:
+            q = "\"{0}\""
+        else:
+            q = "{0} keywords:(/Boutiques/) AND keywords:(/boutiques-execution-record/)"
+
+        if query==None:
+            query=""
+        r = requests.get(zenodo_endpoint + ('/api/records/?q=' + q +
+                         "&file_type=json&type=dataset&"
+                         "page=1&size={1}").format(query, 9999))
+
+        if (r.status_code != 200):
+            raise_error(ZenodoError, "Error searching Zenodo", r)
+
+        return r
+
+    def pull(self, zids, verbose=False, sandbox=False):
+        # remove zenodo prefix
+        zenodo_entries = []
+        cache_dir = os.path.join(
+            os.path.expanduser('~'), ".cache", "boutiques",
+            "sandbox" if sandbox else "production")
+        discarded_zids = zids
+        # This removes duplicates, should maintain order
+        zids = list(dict.fromkeys(zids))
+        for zid in zids:
+            discarded_zids.remove(zid)
+            try:
+                # Zenodo returns the full DOI, but for the purposes of
+                # Boutiques we just use the Zenodo-specific portion (as its the
+                # unique part). If the API updates on Zenodo to no longer
+                # provide the full DOI, this still works because it just grabs
+                # the last thing after the split.
+                zid = zid.split('/')[-1]
+                newzid = zid.split(".", 1)[1]
+                newfname = os.path.join(cache_dir,
+                                        "zenodo-{0}.json".format(newzid))
+                zenodo_entries.append({"zid": newzid, "fname": newfname})
+            except IndexError:
+                raise_error(ZenodoError, "Zenodo ID must be prefixed by "
+                                         "'zenodo', e.g. zenodo.123456")
+        if (verbose):
+            for zid in discarded_zids:
+                print_info("Discarded duplicate id {0}".format(zid))
+        json_files = []
+        for entry in zenodo_entries:
+            if os.path.isfile(entry["fname"]):
+                if (verbose):
+                    print_info("Found cached file at %s"
+                               % entry["fname"])
+                json_files.append(entry["fname"])
+                continue
+
+            r = self.zenodo_search(entry["zid"], True)
+            if not len(r.json()["hits"]["hits"]):
+                raise_error(ZenodoError, "Execution record \"{0}\" "
+                                         "not found".format(entry["zid"]))
+            for hit in r.json()["hits"]["hits"]:
+                new_dir = os.path.join(cache_dir, "zenodo." + entry["zid"])
+                if not os.path.isdir(new_dir):
+                     os.mkdir(new_dir)
+
+                for i in range(len(hit["files"])):
+                    file_path = hit["files"][i]["links"]["self"]
+                    file_name = file_path.split(os.sep)[-1]
+                    
+                    new_filename = hit["files"][i]["key"]
+                    
+                    if hit["id"] == int(entry["zid"]):
+                        if not os.path.exists(cache_dir):
+                            os.makedirs(cache_dir)
+                        if (verbose):
+                            print_info("Downloading execution record %s"
+                                       % file_name)
+
+                        downloaded = urlretrieve(file_path, os.path.join(cache_dir, "zenodo." + entry["zid"], new_filename))
+
+                        if (verbose):
+                            print_info("Downloaded execution record to "
+                                       + downloaded[0])
+                        json_files.append(downloaded[0])
+                    else:
+                        raise_error(ZenodoError, "Searched-for execution record \"{0}\" "
+                                                 "does not match execution record \"{1}\" returned "
+                                                 "from Zenodo".format(entry["zid"], hit["id"]))
+        return json_files
 
     def _file_exists_in_cache(self, filename):
         file_path = os.path.join(self.cache_dir, filename)
