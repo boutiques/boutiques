@@ -1,4 +1,6 @@
 
 .. toctree::
-    :caption: Bosh tool documentation
+    :caption: Boutiques documentation
     :maxdepth: 1
+
+    bosh
