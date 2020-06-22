@@ -95,7 +95,7 @@ class Importer():
         with open(self.output_descriptor, 'w') as fhandle:
             fhandle.write(json.dumps(
                 customSortDescriptorByKey(descriptor), indent=4))
-        validate_descriptor(self.output_descriptor)
+        validate_descriptor(loadJson(self.output_descriptor))
 
     def get_entry_point(self, input_descriptor):
         entrypoint = None
@@ -179,7 +179,8 @@ class Importer():
 
         # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
-            cwl_desc = yaml.load(f, Loader=yaml.FullLoader)
+            cwl_desc = json.loads(
+                json.dumps(yaml.load(f, Loader=yaml.FullLoader)))
 
         # validate yaml descriptor?
 
@@ -417,7 +418,7 @@ class Importer():
         with open(self.output_descriptor, 'w') as f:
             f.write(json.dumps(
                 customSortDescriptorByKey(bout_desc), indent=4))
-        validate_descriptor(self.output_descriptor)
+        validate_descriptor(loadJson(self.output_descriptor))
 
         if self.input_invocation is None:
             return

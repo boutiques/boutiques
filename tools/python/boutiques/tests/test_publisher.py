@@ -189,9 +189,13 @@ class TestPublisher(TestCase):
 
     def test_publication_errors(self):
         # Update an already published descriptor (wrong id)
+        example1_dir = op.join(self.get_examples_dir(), "example1")
+        example1_desc = op.join(example1_dir, "example1_docker.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(example1_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
             wrong_id = bosh(["publish",
-                             "whatever.json",
+                             temp_descriptor.name,
                              "--sandbox", "-y", "-v",
                              "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                                                "PWr2VeQZgBLErKbfF5RdrKhzzJ"

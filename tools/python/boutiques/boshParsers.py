@@ -591,7 +591,6 @@ def add_subparser_version(subparsers):
 def parser_bosh():
     parser = ArgumentParser(add_help=False,
                             formatter_class=RawTextHelpFormatter)
-    import boutiques.templates.boutiques_helptext as helptext
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
     subparsers = parser.add_subparsers(help=__doc__)

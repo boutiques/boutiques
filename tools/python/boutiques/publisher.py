@@ -3,7 +3,7 @@
 from boutiques.validator import validate_descriptor, ValidationError
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
-from boutiques.util.utils import customSortDescriptorByKey
+from boutiques.util.utils import customSortDescriptorByKey, loadJson
 import simplejson as json
 import requests
 import os
@@ -21,6 +21,7 @@ class Publisher():
         self.no_int = no_int
         self.zenodo_access_token = auth_token
         self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
+        self.descriptor = loadJson(self.descriptor_file_name)
 
         # remove zenodo prefix of ID to update
         try:
@@ -30,8 +31,7 @@ class Publisher():
                                      "'zenodo', e.g. zenodo.123456")
 
         # Validate and load descriptor
-        validate_descriptor(descriptor_file_name)
-        self.descriptor = json.loads(open(self.descriptor_file_name).read())
+        validate_descriptor(self.descriptor)
 
         # Get relevant descriptor properties
         self.url = self.descriptor.get('url')

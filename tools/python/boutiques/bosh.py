@@ -53,7 +53,9 @@ def validate(*params):
     results = parser.parse_args(params)
 
     from boutiques.validator import validate_descriptor
-    descriptor = validate_descriptor(results.descriptor,
+    descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
+    descriptor = validate_descriptor(descriptor,
+                                     descriptor_path=results.descriptor,
                                      format_output=results.format,
                                      sandbox=results.sandbox)
     if results.bids:
