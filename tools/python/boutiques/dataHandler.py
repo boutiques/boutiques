@@ -307,3 +307,7 @@ def getDataCacheDir():
     if not os.path.exists(data_cache_dir):
         os.makedirs(data_cache_dir, exist_ok=True)
     return data_cache_dir
+
+
+class DataHandlerError(Exception):
+    pass

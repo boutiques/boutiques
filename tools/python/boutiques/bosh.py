@@ -7,6 +7,7 @@ import os.path as op
 import pytest
 from jsonschema import ValidationError
 from boutiques.boshParsers import *
+from boutiques.dataHandler import DataHandlerError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
 from boutiques.nexusHelper import NexusError
@@ -18,7 +19,7 @@ from boutiques.importer import ImportError
 from boutiques.localExec import addDefaultValues
 from boutiques.util.utils import loadJson, customSortInvocationByInput
 from boutiques.util.utils import formatSphinxUsage
-from boutiques.logger import raise_error, print_error
+from boutiques.logger import raise_error, print_error, print_info
 from tabulate import tabulate
 import argparse
 
@@ -71,9 +72,9 @@ def execute(*params):
     try:
         # Try to parse input with argparse
         results, _ = parser.parse_known_args(params)
-    except TypeError as e:
-        parser.parse_known_args(('data', '--help'))
-        raise_error(TypeError, e.message)
+    except SystemExit as e:
+        print_info(execute.__doc__)
+        raise_error(ExecutorError, "Incorrect usage of 'bosh exec'")
 
     # Validate mode is in params
     if not hasattr(results, 'mode'):
@@ -379,14 +380,14 @@ def data(*params):
     try:
         # Try to parse input with argparse
         results, _ = parser.parse_known_args(params)
-    except TypeError as e:
-        parser.parse_known_args(('data', '--help'))
-        raise_error(TypeError, e.message)
+    except SystemExit as e:
+        print_info(data.__doc__)
+        raise_error(DataHandlerError, "Incorrect usage of 'bosh data'")
 
     # Validate mode is in params
     if not hasattr(results, 'mode'):
         parser.parse_known_args(params + ('--help',))
-        raise_error(ExecutorError,
+        raise_error(DataHandlerError,
                     "Missing data mode {delete, inspect, publish}.")
     elif results.mode == "inspect":
         from boutiques.dataHandler import DataHandler
@@ -494,7 +495,7 @@ def bosh(args=None):
             out = deprecate(*params)
             return bosh_return(out)
         else:
-            parser_bosh().print_help()
+            print(parser_bosh().format_help())
             raise_error(ExecutorError,
                         "Incorrect bosh mode \'{}\'".format(func))
 
@@ -512,6 +513,16 @@ def bosh(args=None):
             print(e)
             return 99  # Note: this conflicts with tool error codes.
         raise e
+    except SystemExit as e:
+        if runs_as_cli():
+            print(e)
+            return 99  # Note: this conflicts with tool error codes.
+        raise_error(BoutiquesError,
+                    "Unable to parse arguments resulting in SystemExit.")
+
+
+class BoutiquesError(Exception):
+    pass
 
 
 # This section is for documentation generation purposes
