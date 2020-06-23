@@ -82,7 +82,7 @@ class TestSimulate(TestCase):
 
         # Test exclusive lower bound
         target_input["exclusive-minimum"] = True
-        self.assertRaises(ExecutorError, bosh.execute, 
+        self.assertRaises(ExecutorError, bosh.execute,
                           ("simulate", json.dumps(test_json), "-j"))
         mock_random.return_value = 0.001
         ret = bosh.bosh(args=["example", json.dumps(test_json)])
@@ -99,7 +99,7 @@ class TestSimulate(TestCase):
 
         # Test exclusive upper bound
         target_input["exclusive-maximum"] = True
-        self.assertRaises(ExecutorError, bosh.execute, 
+        self.assertRaises(ExecutorError, bosh.execute,
                           ("simulate", json.dumps(test_json), "-j"))
         mock_random.return_value = 0.999
         ret = bosh.bosh(args=["example", json.dumps(test_json)])
