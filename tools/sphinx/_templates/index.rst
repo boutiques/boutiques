@@ -1,6 +1,7 @@
 
 .. toctree::
     :caption: Boutiques documentation
-    :maxdepth: 1
+    :maxdepth: 2
 
-    bosh
+    cli
+    pythonApi

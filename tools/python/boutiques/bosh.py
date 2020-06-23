@@ -17,8 +17,10 @@ from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import addDefaultValues
 from boutiques.util.utils import loadJson, customSortInvocationByInput
-from boutiques.logger import print_error
+from boutiques.util.utils import formatSphinxUsage
+from boutiques.logger import raise_error, print_error
 from tabulate import tabulate
+import argparse
 
 
 def pprint(*params):
@@ -70,14 +72,14 @@ def execute(*params):
         # Try to parse input with argparse
         results, _ = parser.parse_known_args(params)
     except TypeError as e:
-        print_error(e)
-        parser.parse_known_args(('exec', '--help'))
-        raise SystemExit
+        parser.parse_known_args(('data', '--help'))
+        raise_error(TypeError, e.message)
 
     # Validate mode is in params
     if not hasattr(results, 'mode'):
         parser.parse_known_args(params + ('--help',))
-        raise SystemExit
+        raise_error(ExecutorError,
+                    "Missing exec mode {launch, prepare, simulate}.")
 
     elif results.mode == "launch":
         descriptor = results.descriptor
@@ -378,14 +380,14 @@ def data(*params):
         # Try to parse input with argparse
         results, _ = parser.parse_known_args(params)
     except TypeError as e:
-        print_error(e)
         parser.parse_known_args(('data', '--help'))
-        raise SystemExit
+        raise_error(TypeError, e.message)
 
     # Validate mode is in params
     if not hasattr(results, 'mode'):
         parser.parse_known_args(params + ('--help',))
-        raise SystemExit
+        raise_error(ExecutorError,
+                    "Missing data mode {delete, inspect, publish}.")
     elif results.mode == "inspect":
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
@@ -493,7 +495,8 @@ def bosh(args=None):
             return bosh_return(out)
         else:
             parser_bosh().print_help()
-            raise SystemExit
+            raise_error(ExecutorError,
+                        "Incorrect bosh mode \'{}\'".format(func))
 
     except (ZenodoError,
             NexusError,
@@ -511,4 +514,42 @@ def bosh(args=None):
         raise e
 
 
-bosh.__doc__ = parser_bosh().format_help()
+# This section is for documentation generation purposes
+bosh.__doc__ = parser_bosh().format_usage().replace("sphinx-build", "bosh")
+# retrieve subparsers from parser
+subparsers_actions = [a for a in parser_bosh()._actions
+                      if isinstance(a, argparse._SubParsersAction)]
+for action in subparsers_actions:
+    # get all subparsers and assign __doc__ to functions
+    for func, subparser in action.choices.items():
+        usage_string = formatSphinxUsage(func, subparser.format_usage())
+        if func == "create":
+            create.__doc__ = usage_string
+        elif func == "data":
+            data.__doc__ = usage_string
+        elif func == "deprecate":
+            deprecate.__doc__ = usage_string
+        elif func == "evaluate":
+            evaluate.__doc__ = usage_string
+        elif func == "example":
+            example.__doc__ = usage_string
+        elif func == "exec":
+            execute.__doc__ = usage_string
+        elif func == "export":
+            exporter.__doc__ = usage_string
+        elif func == "import":
+            importer.__doc__ = usage_string
+        elif func == "invocation":
+            invocation.__doc__ = usage_string
+        elif func == "pprint":
+            pprint.__doc__ = usage_string
+        elif func == "publish":
+            publish.__doc__ = usage_string
+        elif func == "pull":
+            pull.__doc__ = usage_string
+        elif func == "search":
+            search.__doc__ = usage_string
+        elif func == "test":
+            test.__doc__ = usage_string
+        elif func == "validate":
+            validate.__doc__ = usage_string

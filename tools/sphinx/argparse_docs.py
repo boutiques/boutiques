@@ -16,14 +16,16 @@ def CreateBoshDocs():
 
     # Start CLI docs .rst files creation
     indexTemplate = readFile("./_templates/index.rst")
-    boshTemplate = readFile("./_templates/bosh.rst")
+    cliTemplate = readFile("./_templates/cli.rst")
+    pythonAPITemplate = readFile("./_templates/pythonApi.rst")
     # Split readme into two, slicing at command line api section
     readmeText = readFile("../python/README.rst")
 
     indexDocString = readmeText + "\n" + indexTemplate + "\n"
 
     # Create a RST page per api
-    createDocsPage("bosh.rst", boshTemplate)
+    createDocsPage("cli.rst", cliTemplate)
+    createDocsPage("pythonApi.rst", pythonAPITemplate)
     createDocsPage("index.rst", indexDocString)
 
 
