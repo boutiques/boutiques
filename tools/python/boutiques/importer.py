@@ -17,7 +17,7 @@ import sys
 from docopt import parse_defaults, parse_pattern, parse_argv
 from docopt import formal_usage, DocoptLanguageError
 from docopt import AnyOptions, TokenStream, Option, Argument, Command
-import imp
+from importlib.machinery import SourceFileLoader
 import collections
 
 
@@ -95,7 +95,7 @@ class Importer():
         with open(self.output_descriptor, 'w') as fhandle:
             fhandle.write(json.dumps(
                 customSortDescriptorByKey(descriptor), indent=4))
-        validate_descriptor(self.output_descriptor)
+        validate_descriptor(loadJson(self.output_descriptor))
 
     def get_entry_point(self, input_descriptor):
         entrypoint = None
@@ -127,18 +127,11 @@ class Importer():
         return entrypoint
 
     def import_docopt(self):
-        template_file = op.join(self.output_descriptor)
-        docstring = imp.load_source(
-            'docopt_pyscript', self.input_descriptor).__doc__
-
-        docoptImporter = Docopt_Importer(docstring, template_file)
-        # The order matters
-        docoptImporter.loadDocoptDescription()
-        docoptImporter.loadDescriptionAndType()
-        docoptImporter.generateInputsAndCommandLine(docoptImporter.pattern)
-        docoptImporter.addInputsRecursive(docoptImporter.dependencies)
-        docoptImporter.determineOptionality()
-        docoptImporter.createRootOneIsRequiredGroup()
+        # input_descriptor is the .py containing docopt script
+        docstring = SourceFileLoader(
+            'docopt_script', self.input_descriptor).load_module().__doc__
+        # Init docopt importer and start import
+        docoptImporter = Docopt_Importer(docstring, self.output_descriptor)
 
         with open(self.output_descriptor, "w") as output:
             output.write(json.dumps(docoptImporter.descriptor, indent=4))
@@ -186,7 +179,8 @@ class Importer():
 
         # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
-            cwl_desc = json.loads(json.dumps(yaml.load(f)))
+            cwl_desc = json.loads(
+                json.dumps(yaml.load(f, Loader=yaml.FullLoader)))
 
         # validate yaml descriptor?
 
@@ -424,7 +418,7 @@ class Importer():
         with open(self.output_descriptor, 'w') as f:
             f.write(json.dumps(
                 customSortDescriptorByKey(bout_desc), indent=4))
-        validate_descriptor(self.output_descriptor)
+        validate_descriptor(loadJson(self.output_descriptor))
 
         if self.input_invocation is None:
             return
@@ -437,7 +431,7 @@ class Importer():
             return False
         boutiques_invocation = {}
         with open(self.input_invocation, 'r') as f:
-            cwl_inputs = json.loads(json.dumps(yaml.load(f)))
+            cwl_inputs = yaml.load(f, Loader=yaml.FullLoader)
         for input_name in cwl_inputs:
             if get_input(bout_desc['inputs'], input_name)['type'] != "File":
                 input_value = cwl_inputs[input_name]
@@ -629,6 +623,13 @@ class Docopt_Importer():
         except Exception:
             os.remove(base_descriptor)
             raise_error(ImportError, "Invalid docopt script")
+
+        self.loadDocoptDescription()
+        self.loadDescriptionAndType()
+        self.generateInputsAndCommandLine(self.pattern)
+        self.addInputsRecursive(self.dependencies)
+        self.determineOptionality()
+        self.createRootOneIsRequiredGroup()
 
     def loadDocoptDescription(self):
         # Get description of the script itself
