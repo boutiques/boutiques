@@ -77,29 +77,6 @@ class Publisher():
         # Set Zenodo endpoint
         self.zenodo_endpoint = self.zenodo_helper.get_zenodo_endpoint()
 
-    def zenodo_upload_descriptor(self, deposition_id):
-        # If in replace mode, remove the old DOI
-        if self.descriptor.get('doi'):
-            del self.descriptor['doi']
-
-        with open(self.descriptor_file_name, 'w') as fhandle:
-            fhandle.write(json.dumps(self.descriptor, indent=4))
-
-        data = {'filename': os.path.basename(self.descriptor_file_name)}
-        files = {'file': open(self.descriptor_file_name, 'rb')}
-        r = requests.post(self.zenodo_endpoint +
-                          '/api/deposit/depositions/%s/files'
-                          % deposition_id,
-                          params={'access_token': self.zenodo_access_token},
-                          data=data,
-                          files=files)
-        # Status code is inconsistent with Zenodo documentation
-
-        if(r.status_code != 201):
-            raise_error(ZenodoError, "Cannot upload descriptor", r)
-        if(self.verbose):
-            print_info("Descriptor uploaded to Zenodo", r)
-
     def publish(self):
         if(not self.no_int):
             prompt = ("The descriptor will be published to Zenodo, "
@@ -116,7 +93,8 @@ class Publisher():
             from boutiques.searcher import Searcher
             searcher = Searcher(self.descriptor.get("name"), self.verbose,
                                 self.sandbox, exact_match=True)
-            r = searcher.zenodo_search()
+            r = self.zenodo_helper.zenodo_search(searcher.query,
+                                                 searcher.query_line)
 
             publish_update = False
             for hit in r.json()["hits"]["hits"]:
@@ -145,12 +123,25 @@ class Publisher():
             deposition_id = self.zenodo_helper.zenodo_deposit(
                 self.create_metadata(), self.zenodo_access_token)
 
-        self.zenodo_upload_descriptor(deposition_id)
+        # If in replace mode, remove the old DOI
+        if self.descriptor.get('doi'):
+            del self.descriptor['doi']
+        with open(self.descriptor_file_name, 'w') as fhandle:
+            fhandle.write(json.dumps(self.descriptor, indent=4))
+
+        self.zenodo_helper.zenodo_upload_file(
+            deposition_id, self.descriptor_file_name,
+            zenodo_access_token=self.zenodo_access_token,
+            error_msg="Cannot upload descriptor to Zenodo",
+            verbose_msg="Descriptor uploaded to Zenodo")
         self.doi = self.zenodo_helper.zenodo_publish(
             self.zenodo_access_token, deposition_id, "Descriptor")
+
+        # Assign new doi to published descriptor
         self.descriptor['doi'] = self.doi
-        with open(self.descriptor_file_name, "w") as f:
-            f.write(json.dumps(self.descriptor, indent=4))
+        with open(self.descriptor_file_name, "w") as fhandle:
+            fhandle.write(json.dumps(self.descriptor, indent=4))
+
         if os.path.isfile(self.descriptor_file_name):
             return "OK"
         return False
