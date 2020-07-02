@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-
-import os
-import subprocess
 from unittest import TestCase
-from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
 
 

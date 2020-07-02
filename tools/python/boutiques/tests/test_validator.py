@@ -62,7 +62,7 @@ class TestValidator(TestCase):
 
     def test_invalid_container_index(self):
         fil = op.join(op.split(bfile)[0],
-                      'schema/examples/bad_conIndexImage.json')
+                      'tests/test_descriptors/test_conIndexImage.json')
         command = ("bosh validate " + fil)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)

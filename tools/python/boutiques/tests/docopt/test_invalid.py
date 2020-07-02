@@ -7,8 +7,3 @@ Usage!!!:
 Options:
   -x          X desc
 '''
-
-
-# Dummy code
-def foo(bar):
-    pass

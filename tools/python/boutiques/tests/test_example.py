@@ -8,14 +8,15 @@ import subprocess
 import os.path as op
 import os
 import simplejson as json
+from boutiques.util.BaseTest import BaseTest
 
 
-class TestExample(TestCase):
+class TestExample(BaseTest):
 
     def test_example_complete(self):
-        descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
-                                                 'example-invocation/'
-                                                 'example_descriptor.json')
+        descriptor = op.join(self.schema_examples_dir,
+                             'example',
+                             'test_example_descriptor.json')
         command = ("bosh example " + descriptor + " -c")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
@@ -29,9 +30,9 @@ class TestExample(TestCase):
         self.assertIn("d2", output)
 
     def test_example_required_only(self):
-        descriptor = op.join(op.split(bfile)[0], 'schema/examples/'
-                                                 'example-invocation/'
-                                                 'example_descriptor.json')
+        descriptor = op.join(self.schema_examples_dir,
+                             'example',
+                             'test_example_descriptor.json')
         command = ("bosh example " + descriptor)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
@@ -40,8 +41,9 @@ class TestExample(TestCase):
         self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
 
     def test_example_requires_group_complete_x10(self):
-        descriptor = op.join(op.split(bfile)[0],
-                             'tests/docopt/valid/test_valid.json')
+        descriptor = op.join(self.schema_examples_dir,
+                             'example',
+                             'test_docopt_valid.json')
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor, None,
                                  {"forcePathType": True,
@@ -55,7 +57,7 @@ class TestExample(TestCase):
         # Bosh example is inherently random,
         # Couldn't even inject prederemined input to executor.in_dict
         # because _randomFillInDict clears it
-        for _ in range(0, 100):
+        for _ in range(0, 10):
             executor.generateRandomParams()
             self.assertGreater(len(executor.in_dict), 0)
             executor.in_dict = None
