@@ -2,6 +2,7 @@
 
 # Boutiques
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/52fc5590446c4d1eb6626302b491ac3d)](https://app.codacy.com/gh/boutiques/boutiques?utm_source=github.com&utm_medium=referral&utm_content=boutiques/boutiques&utm_campaign=Badge_Grade_Settings)
 [![DOI](https://zenodo.org/badge/32616811.svg)](https://zenodo.org/badge/latestdoi/32616811)
 [![PyPI](https://img.shields.io/pypi/v/boutiques.svg)](https://pypi.python.org/pypi/boutiques)
 [![PyPI](https://img.shields.io/pypi/pyversions/boutiques.svg)](https://pypi.python.org/pypi/boutiques)
