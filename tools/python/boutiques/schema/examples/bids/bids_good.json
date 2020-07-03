@@ -1,0 +1,90 @@
+{
+    "name" : "ndmg (BIDS app)",
+    "tool-version" : "v0.0.48-1",
+    "description" : "See http://m2g.io",
+    "command-line" : "mkdir -p [OUTPUT_DIR]; ndmg_bids [BIDS_DIR] [OUTPUT_DIR] [ANALYSIS_LEVEL] [PARTICIPANT_LABEL] [SESSION_LABEL] [ATLAS]",
+    "container-image": {
+        "type": "docker",
+        "image": "bids/ndmg:v0.0.48-1"
+    },
+    "schema-version" : "0.5",
+    "inputs" : [
+		{
+        "id" : "bids_dir",
+        "name" : "BIDS directory",
+        "type" : "File",
+        "description" : "The directory with the input dataset formatted according to the BIDS standard.",
+				"value-key" : "[BIDS_DIR]",
+        "optional" : false
+        
+    },{
+        "id" : "output_dir_name",
+        "name" : "Output directory name",
+        "type" : "String",
+				"description": "The directory where the output files should be stored. If you are running a group level analysis, this folder should be prepopulated with the results of the participant level analysis.",
+        "value-key" : "[OUTPUT_DIR]",
+        "optional" : true
+    },{
+				"id" : "participant_level_analysis_dir",
+				"name" : "Participants dir",
+				"type" : "File",
+				"description": "Directory containing the output of the participants analysis.",
+				"value-key" : "[OUTPUT_DIR]",
+				"optional" : true
+    },{
+				"id" : "analysis_level",
+				"name" : "Analysis level",
+				"type" : "String",
+				"optional" : false,
+				"value-key" : "[ANALYSIS_LEVEL]",
+				"value-choices" : ["session", "participant","group"],
+				"description": "Level of the analysis that will be performed. Multiple participant level analyses can be run independently (in parallel)."
+    },{
+				"id" : "participant_label",
+				"name" : "Participant label",
+				"type" : "String",
+				"value-key": "[PARTICIPANT_LABEL]",
+				"command-line-flag": "--participant_label",
+				"list" : true,
+				"optional": true,
+				"description": "The label(s) of the participant(s) that should be analyzed. The label corresponds to sub-<participant_label> from the BIDS spec (so it does not include \"sub-\"). If this parameter is not provided all subjects will be analyzed. Multiple participants can be specified with a space separated list."
+    },{
+				"id" : "session_label",
+				"name" : "Session label",
+				"type" : "String",
+				"value-key": "[SESSION_LABEL]",
+				"command-line-flag": "--session_label",
+				"list" : true,
+				"optional": true,
+				"description": "The label(s) of the session(s) that should be analyzed. The label corresponds to ses-<session_label>, an extension of the BIDS spec (so it does not include \"ses-\"). If this parameter is not provided all sessions will be analyzed. Multiple sessions can be specified with a space separated list."
+    },{
+				"id" : "atlas",
+				"name" : "Atlas to use",
+				"type" : "String",
+				"value-key": "[ATLAS]",
+				"command-line-flag": "--atlas",
+				"list" : true,
+				"optional": true,
+				"description": "Specify the atlases to be used for analysis"
+    }
+	],
+    "output-files" : [
+		{
+        "id" : "output_dir",
+        "name" : "Output directory",
+				"description": "The directory where the output files should be stored. If you are running a group level analysis, this folder should be prepopulated with the results of the participant level analysis.",
+				"path-template" : "[OUTPUT_DIR]",
+        "optional" : false
+    }
+	],
+    "groups" : [
+		{
+	      "id": "output_directory",
+	    	"name": "Output Directory",
+	    	"members" : [ "output_dir_name", "participant_level_analysis_dir" ],
+	    	"description" : "For a participants analysis, an output directory name must be specified. For a group analysis, a directory containing the output of participant-level analyses must be selected. ",
+	    "mutually-exclusive":true,
+	    "one-is-required": true
+		}
+  ]
+}

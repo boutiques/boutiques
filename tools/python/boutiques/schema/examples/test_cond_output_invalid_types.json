@@ -1,0 +1,74 @@
+{
+    "command-line": "test_file_names [OPT1] [OPT2] [PARAM1] [PARAM2]",
+    "container-image": {
+        "image": "user/image",
+        "index": "index.docker.io",
+        "type": "docker"
+    },
+    "name": "Test conditional file naming",
+    "description": "Test descriptor for conditionally named output files",
+    "schema-version": "0.5",
+    "tool-version": "v0.1.0",
+    "inputs": [
+        {
+            "command-line-flag": "-opt1",
+            "description": "option 1",
+            "id": "opt1",
+            "name": "option 1",
+            "optional": true,
+            "type": "Flag",
+            "value-key": "[OPT1]"
+        },
+        {
+            "command-line-flag": "-opt2",
+            "description": "option 2",
+            "id": "opt2",
+            "name": "option 2",
+            "optional": true,
+            "type": "Number",
+            "value-key": "[OPT2]"
+        },
+        {
+            "description": "Parameter 1",
+            "id": "param1",
+            "name": "Param 1",
+            "optional": false,
+            "type": "String",
+            "value-key": "[PARAM1]"
+        },
+        {
+            "description": "Parameter 2",
+            "id": "param2",
+            "name": "Param 2",
+            "optional": false,
+            "type": "String",
+            "value-key": "[PARAM2]"
+        }
+    ],
+    "output-files": [
+        {
+          "id": "out1",
+          "name": "output 1",
+          "optional": false,
+          "path-template": "[PARAM1]/out1.txt",
+          "path-template-stripped-extensions": [
+            ".npz"
+          ]
+        },
+        {
+            "id": "out2",
+            "name": "output 2",
+            "optional": false,
+            "conditional-path-template": [
+                {"opt1 and (opt2 > \"10.00\")": "[PARAM1]_large.txt"},
+                {"opt1": "[PARAM1].txt"},
+                {"opt1 and opt2 and (opt1 == \"False\")": "[PARAM2]_large.txt"},
+                {"param1 < 10.0": "[PARAM1]_num.txt"},
+                {"default": "[PARAM2]_default.txt"}
+            ],
+            "path-template-stripped-extensions": [
+              ".one", ".two", ".three", ".four", ".five"
+            ]
+        }
+    ]
+}
