@@ -1,37 +1,41 @@
 #!/usr/bin/env python
 
-import os.path as op
+import os
 import subprocess
 import pytest
-from boutiques.util.BaseTest import BaseTest
+from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 
 
-class TestExampleFlag(BaseTest):
+class TestExampleFlag(TestCase):
 
     def test_example_flag_1(self):
-        ex_dir = op.join(self.schema_examples_dir, "example-flag")
+        ex_dir = os.path.join(os.path.dirname(bfile),
+                              "schema", "examples", "example-flag")
         ret = bosh.execute("simulate",
-                           op.join(ex_dir, "example-flag.json"),
+                           os.path.join(ex_dir, "example-flag.json"),
                            "-i",
-                           op.join(ex_dir, "i1.json"))
+                           os.path.join(ex_dir, "i1.json"))
         self.assertEqual(ret.shell_command.strip(), "/bin/true -a -b")
 
     def test_example_flag_2(self):
-        ex_dir = op.join(self.schema_examples_dir, "example-flag")
+        ex_dir = os.path.join(os.path.dirname(bfile),
+                              "schema", "examples", "example-flag")
         ret = bosh.execute("simulate",
-                           op.join(ex_dir, "example-flag.json"),
+                           os.path.join(ex_dir, "example-flag.json"),
                            "-i",
-                           op.join(ex_dir, "i2.json"))
+                           os.path.join(ex_dir, "i2.json"))
         self.assertEqual(ret.shell_command.strip(), "/bin/true")
 
     def test_example_flag_3(self):
-        ex_dir = op.join(self.schema_examples_dir, "example-flag")
+        self.maxDiff = None
+        ex_dir = os.path.join(os.path.dirname(bfile),
+                              "schema", "examples", "example-flag")
         ret = bosh.execute("simulate",
-                           op.join(ex_dir, "example-flag.json"),
+                           os.path.join(ex_dir, "example-flag.json"),
                            "-i",
-                           op.join(ex_dir, "i3.json"))
+                           os.path.join(ex_dir, "i3.json"))
 
         self.assertEqual(ret.shell_command.replace("  ", " ").strip(),
                          "/bin/true -b")

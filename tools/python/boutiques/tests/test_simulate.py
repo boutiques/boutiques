@@ -161,7 +161,8 @@ class TestSimulate(TestCase):
     def test_collapsing_whitespace_optionals(self):
         descriptor = os.path.join(os.path.split(bfile)[0],
                                   'schema/examples/'
-                                  'test_example_descriptor.json')
+                                  'example-invocation/'
+                                  'example_descriptor.json')
         command = ("bosh exec simulate " + descriptor + " -c")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
@@ -173,7 +174,8 @@ class TestSimulate(TestCase):
     def test_collapsing_whitespace_requireds(self):
         descriptor = os.path.join(os.path.split(bfile)[0],
                                   'schema/examples/'
-                                  'test_example_descriptor.json')
+                                  'example-invocation/'
+                                  'example_descriptor.json')
         command = ("bosh exec simulate " + descriptor)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)

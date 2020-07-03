@@ -12,7 +12,7 @@ class TestExample(TestCase):
 
     def test_reqInpGroup_nf_wGroup_OK(self):
         nf_desc = op.join(op.split(bfile)[0],
-                          'schema/examples/naval_fate.json')
+                          'tests/docopt/naval_fate/naval_fate.json')
         invocation = op.join(op.split(bfile)[0],
                              'tests/docopt/naval_fate/nf_invoc_shoot.json')
         command = ("bosh invocation " + nf_desc + " -i " + invocation)
@@ -22,7 +22,7 @@ class TestExample(TestCase):
 
     def test_reqInpGroup_nf_wOptionalFlag_OK(self):
         nf_desc = op.join(op.split(bfile)[0],
-                          'schema/examples/naval_fate.json')
+                          'tests/docopt/naval_fate/naval_fate.json')
         invocation = op.join(op.split(bfile)[0],
                              'tests/docopt/naval_fate/nf_invoc_move.json')
         command = ("bosh invocation " + nf_desc + " -i " + invocation)
@@ -32,7 +32,7 @@ class TestExample(TestCase):
 
     def test_reqInpGroup_nf_wChildren_woGroup_FAIL(self):
         nf_desc = op.join(op.split(bfile)[0],
-                          'schema/examples/naval_fate.json')
+                          'tests/docopt/naval_fate/naval_fate.json')
         invocation = op.join(
             op.split(bfile)[0],
             'tests/docopt/naval_fate/nf_invoc_missing_group.json')
@@ -44,7 +44,7 @@ class TestExample(TestCase):
 
     def test_reqInpGroup_nf_woChildren_woGroup_FAIL(self):
         nf_desc = op.join(op.split(bfile)[0],
-                          'schema/examples/naval_fate.json')
+                          'tests/docopt/naval_fate/naval_fate.json')
         invocation = op.join(
             op.split(bfile)[0],
             'tests/docopt/naval_fate/nf_invoc_missing_all.json')
@@ -56,7 +56,7 @@ class TestExample(TestCase):
 
     def test_reqInpGroup_valid_Complex_OK(self):
         valid_desc = op.join(op.split(bfile)[0],
-                             'schema/examples/test_valid.json')
+                             'tests/docopt/valid/test_valid.json')
         invocation = op.join(
             op.split(bfile)[0],
             'tests/docopt/valid/valid_invoc_mutex.json')

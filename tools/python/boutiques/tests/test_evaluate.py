@@ -5,33 +5,37 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 import mock
-from boutiques_mocks import mock_zenodo_search, example_boutiques_tool
-from boutiques.util.BaseTest import BaseTest
-import pytest
+from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
+    example_boutiques_tool
 
 
-def get_examples(schema_examples_dir):
-    example1_dir = os.path.join(schema_examples_dir, "example1")
-    yield os.path.join(example1_dir, "example1_docker.json")
-    yield os.path.join(example1_dir, "invocation.json")
+def mock_get():
+    return mock_zenodo_search([example_boutiques_tool])
 
 
-def get_examples_json_obj(schema_examples_dir):
-    example1_dir = os.path.join(schema_examples_dir, "example1")
-    yield open(os.path.join(example1_dir, "example1_docker.json")).read()
-    yield open(os.path.join(example1_dir, "invocation.json")).read()
+class TestEvaluate(TestCase):
 
+    def set_examples(self):
+        example1_dir = os.path.join(os.path.dirname(bfile), "schema",
+                                    "examples", "example1")
+        self.desc = os.path.join(example1_dir, "example1_docker.json")
+        self.invo = os.path.join(example1_dir, "invocation.json")
 
-def get_examples_from_zenodo(schema_examples_dir):
-    example1_dir = os.path.join(schema_examples_dir, "example1")
-    yield "zenodo." + str(example_boutiques_tool.id)
-    yield os.path.join(example1_dir, "invocation.json")
+    def set_examples_json_obj(self):
+        example1_dir = os.path.join(os.path.dirname(bfile), "schema",
+                                    "examples", "example1")
+        self.desc = open(os.path.join(example1_dir,
+                         "example1_docker.json")).read()
+        self.invo = open(os.path.join(example1_dir, "invocation.json")).read()
 
-
-class TestEvaluate(BaseTest):
+    def set_examples_from_zenodo(self):
+        example1_dir = os.path.join(os.path.dirname(bfile), "schema",
+                                    "examples", "example1")
+        self.desc = "zenodo." + str(example_boutiques_tool.id)
+        self.invo = os.path.join(example1_dir, "invocation.json")
 
     def test_evaloutput(self):
-        self.desc, self.invo = get_examples(self.schema_examples_dir)
+        self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
@@ -47,7 +51,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evaloutput_json_obj(self):
-        self.desc, self.invo = get_examples_json_obj(self.schema_examples_dir)
+        self.set_examples_json_obj()
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
@@ -62,11 +66,9 @@ class TestEvaluate(BaseTest):
         expect = {}
         self.assertEqual(query, expect)
 
-    @mock.patch('requests.get',
-                return_value=mock_zenodo_search([example_boutiques_tool]))
-    def test_evaloutput_from_zenodo(self, _):
-        self.desc, self.invo =\
-            get_examples_from_zenodo(self.schema_examples_dir)
+    @mock.patch('requests.get', return_value=mock_get())
+    def test_evaloutput_from_zenodo(self, mock_get):
+        self.set_examples_from_zenodo()
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
@@ -82,7 +84,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evalinput(self):
-        self.desc, self.invo = get_examples(self.schema_examples_dir)
+        self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "inputs/")
         expect = {'str_input_list': ["fo '; echo FAIL", 'bar'],
                   'str_input': 'coin;plop',
@@ -114,7 +116,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evalgroups(self):
-        self.desc, self.invo = get_examples(self.schema_examples_dir)
+        self.set_examples()
         query = bosh.evaluate(self.desc, self.invo, "groups/")
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}

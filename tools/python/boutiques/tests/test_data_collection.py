@@ -32,6 +32,10 @@ def retrieve_data_record():
 
 class TestDataCollection(BaseTest):
 
+    def get_examples_dir(self):
+        return os.path.join(os.path.dirname(bfile),
+                            "schema", "examples")
+
     def clean_up(self):
         # Clean up data collection files
         cache_dir = os.path.join(os.path.expanduser('~'),
@@ -48,7 +52,7 @@ class TestDataCollection(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_data_collection(self):
-        example1_dir = os.path.join(self.schema_examples_dir, "example1")
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         bosh.execute("launch",
                      os.path.join(example1_dir,
                                   "example1_docker.json"),
@@ -97,7 +101,7 @@ class TestDataCollection(BaseTest):
             cache_fls = os.listdir(cache_dir)
             original_size = len(cache_fls)
 
-        example1_dir = os.path.join(self.schema_examples_dir, "example1")
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         bosh.execute("launch",
                      os.path.join(example1_dir,
                                   "example1_docker.json"),
@@ -121,7 +125,7 @@ class TestDataCollection(BaseTest):
                         reason="Docker not installed")
     @mock.patch('requests.get', return_value=mock_get())
     def test_read_doi_zenodo(self, mock_get):
-        example1_dir = os.path.join(self.schema_examples_dir, "example1")
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
                      os.path.join(example1_dir,
                                   "invocation.json"))
@@ -134,7 +138,7 @@ class TestDataCollection(BaseTest):
         self.clean_up()
 
     def test_directory_input_output(self):
-        example1_dir = os.path.join(self.schema_examples_dir, "example1")
+        example1_dir = self.get_examples_dir()
         bosh.execute("launch",
                      os.path.join(example1_dir,
                                   "dir_input.json"),
@@ -169,7 +173,7 @@ class TestDataCollection(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_add_provenance(self):
-        example1_dir = os.path.join(self.schema_examples_dir, "example1")
+        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         provenance = """{
             \"engine\": \"http://cbrain.ca\",
             \"dataset id\": \"1234\",

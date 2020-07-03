@@ -7,9 +7,6 @@ from boutiques import __file__ as bfile
 
 class BaseTest(TestCase):
     dir = "."
-    schema_examples_dir = os.path.join(os.path.dirname(bfile),
-                                       "schema",
-                                       "examples")
 
     def setup(self, dir):
         self.dir = dir

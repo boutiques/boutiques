@@ -29,7 +29,7 @@ class TestImport(TestCase):
 
     def test_import_bids_good(self):
         bids_app = opj(op.split(bfile)[0],
-                       "schema/examples/bids/example_good")
+                       "schema/examples/bids-apps/example_good")
         outfile = "test-import.json"
         ref_name = "test-import-ref.json"
         if op.isfile(outfile):
@@ -41,7 +41,7 @@ class TestImport(TestCase):
 
     def test_import_bids_bad(self):
         bids_app = opj(op.split(bfile)[0],
-                       "schema/examples/bids/example_bad")
+                       "schema/examples/bids-apps/example_bad")
         self.assertRaises(ValidationError, bosh, ["import", "bids",
                                                   "test-import.json",
                                                   bids_app])
@@ -142,7 +142,7 @@ class TestImport(TestCase):
                                      cwl_descriptor)
 
     def test_docopt_import_valid(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/valid")
         pydocopt_input = op.join(base_path, "test_valid.py")
         output_descriptor = op.join(base_path, "test_valid_output.json")
 
@@ -156,7 +156,7 @@ class TestImport(TestCase):
         os.remove(output_descriptor)
 
     def test_docopt_import_valid_options(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/options")
         pydocopt_input = op.join(base_path, "test_options.py")
         output_descriptor = op.join(base_path, "test_options_output.json")
 
@@ -185,9 +185,9 @@ class TestImport(TestCase):
             self.fail("Output file should not exist")
 
     def test_docopt_nf(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
+        base_path = op.join(op.split(bfile)[0], "tests/docopt/naval_fate")
         pydocopt_input = op.join(base_path, "naval_fate.py")
-        output_descriptor = "schema/examples/naval_fate_descriptor.json"
+        output_descriptor = op.join(base_path, "naval_fate_descriptor.json")
 
         import_args = ["import", "docopt", output_descriptor, pydocopt_input]
         bosh(import_args)
@@ -216,7 +216,7 @@ class TestImport(TestCase):
 
     def test_import_json_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected_desc = loadJson("schema/examples/json_config_desc.json")
+        expected_desc = loadJson(op.join(base_path, "json_config_desc.json"))
         config = op.join(base_path, "configuration.json")
         output_descriptor = op.join(base_path, "output.json")
 
@@ -253,7 +253,7 @@ class TestImport(TestCase):
 
     def test_import_toml_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected_desc = loadJson("schema/examples/toml_config_desc.json")
+        expected_desc = loadJson(op.join(base_path, "toml_config_desc.json"))
         config = op.join(base_path, "configuration.toml")
         output_descriptor = op.join(base_path, "output.json")
 
@@ -290,7 +290,7 @@ class TestImport(TestCase):
 
     def test_import_yaml_config(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected_desc = loadJson("schema/examples/yaml_config_desc.json")
+        expected_desc = loadJson(op.join(base_path, "yaml_config_desc.json"))
         config = op.join(base_path, "configuration.yml")
         output_descriptor = op.join(base_path, "output.json")
 

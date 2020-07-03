@@ -476,7 +476,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_conditional_outputFiles_created(self):
-        base_path = os.path.join(self.schema_examples_dir, "example1")
+        base_path = os.path.join(os.path.split(bfile)[0], "tests/output_files/")
         ex = bosh.execute("launch",
                           os.path.join(
                               base_path,
@@ -529,7 +529,7 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     def test_example1_autoMount_input_files(self):
         base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
-        test_invoc = self.get_invocations_path("test_automount_invoc.json")
+        test_invoc = os.path.join(base_path, "test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
         test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])

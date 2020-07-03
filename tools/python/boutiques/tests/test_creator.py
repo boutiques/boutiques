@@ -11,11 +11,11 @@ import os.path as op
 import simplejson as json
 import os
 import pytest
-from boutiques.util.BaseTest import BaseTest
+
 from boutiques.creator import CreatorError
 
 
-class TestCreator(BaseTest):
+class TestCreator(TestCase):
 
     def test_success_template(self):
         fil = 'creator_output.json'
@@ -110,12 +110,11 @@ class TestCreator(BaseTest):
 
     def test_create_cl_template_from_descriptor(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        cl_template = op.join(self.schema_examples_dir,
-                              "creator",
-                              "expected_cl_template_create.json")
+        cl_template = op.join(base_path, "expected_cl_template_create.json")
         output = op.join(base_path, "out_desc.json")
-        expected_cml = loadJson(cl_template)['command-line']
-        expected_inputs = loadJson(cl_template)['inputs']
+        expected = op.join(base_path, "expected_cl_template_create.json")
+        expected_cml = loadJson(expected)['command-line']
+        expected_inputs = loadJson(expected)['inputs']
 
         create_args = ["create", output, "--cl-template", cl_template]
         bosh(create_args)
@@ -131,11 +130,9 @@ class TestCreator(BaseTest):
     def test_create_cl_template_from_string(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
         output = op.join(base_path, "out_desc.json")
-        cl_template = op.join(self.schema_examples_dir,
-                              "creator",
-                              "expected_cl_template_create.json")
+        expected = op.join(base_path, "expected_cl_template_create.json")
         expected_cml = "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]"
-        expected_inputs = loadJson(cl_template)['inputs']
+        expected_inputs = loadJson(expected)['inputs']
 
         create_args = ["create", output, "--cl-template", expected_cml]
         bosh(create_args)
