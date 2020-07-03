@@ -732,8 +732,10 @@ def parser_data():
                         "Publish: publishes contents of cache to Zenodo as "
                         "a public data set. Requires a Zenodo access token, "
                         "see http://developers.zenodo.org/#authentication. "
-                        "Delete: remove one or more records from the cache.",
-                        choices=["inspect", "publish", "delete"])
+                        "Delete: remove one or more records from the cache."
+                        "Search: search for published execution data records on Zenodo."
+                        "Pull: pull one or more execution data records from Zenodo.",
+                        choices=["inspect", "publish", "delete", "search", "pull"])
     parser.add_argument("--help", "-h", action="store_true",
                         help="show this help message and exit")
     return parser
@@ -790,6 +792,30 @@ def parser_dataDelete():
                         help="disable interactive input.")
     return parser
 
+def parser_dataSearch():
+    parser = ArgumentParser(description="Search on Zenodo for"
+                            " execution data records. When no term is supplied, will"
+                            " search for all execution data records.")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print information messages")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="search Zenodo's sandbox instead of "
+                             "production server. Recommended for tests.")
+    return parser
+
+def parser_dataPull():
+    parser = ArgumentParser(description="Ensures that execution data records from Zenodo are"
+                            " locally cached, downloading them if needed.")
+    parser.add_argument("zids", nargs="+", action="store", help="One or "
+                        "more Zenodo IDs for the excution record(s) to pull, "
+                        "prefixed by 'zenodo.', e.g. zenodo.123456 "
+                        "zenodo.123457")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print information messages")
+    parser.add_argument("--sandbox", action="store_true",
+                        help="pull from Zenodo's sandbox instead of "
+                        "production server. Recommended for tests.")
+    return parser
 
 def data(*params):
     parser = parser_data()
@@ -830,6 +856,24 @@ def data(*params):
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
         return dataHandler.delete(results.file, results.no_int)
+
+    if action == "search":
+        parser = parser_dataSearch()
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.search(results.verbose, results.sandbox)
+
+    if action == "pull":
+        parser = parser_dataPull()
+        results = parser.parse_args(params)
+
+        from boutiques.dataHandler import DataHandler
+        dataHandler = DataHandler()
+        return dataHandler.pull(results.zids, results.verbose, results.sandbox)
+
+
 
 
 data.__doc__ = parser_data().format_help() + "\n\n"
@@ -1000,6 +1044,9 @@ def bosh(args=None):
             return bosh_return(out, hide=True)
         elif func == "data":
             out = data(*params)
+            if params.__contains__("search"):
+                return bosh_return(out, formatted=tabulate(out, headers='keys',
+                                                           tablefmt='plain'))
             return bosh_return(out)
         elif func == "version":
             from boutiques.__version__ import VERSION

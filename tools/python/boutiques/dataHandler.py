@@ -7,6 +7,17 @@ from boutiques.logger import raise_error, print_info
 from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
 from boutiques.nexusHelper import NexusHelper
+from pip._vendor.distlib.compat import raw_input
+
+
+try:
+    # Python 3
+    from urllib.request import urlopen
+    from urllib.request import urlretrieve
+except ImportError:
+    # Python 2
+    from urllib2 import urlopen
+    from urllib import urlretrieve
 
 
 class DataHandler(object):
@@ -35,7 +46,7 @@ class DataHandler(object):
                 self._display_file(file_path)
             else:
                 print("No records in the cache at the moment.")
-        # Print information about files in cache
+        # Print information about files in cache and the directory of caching data
         else:
             print("There are {} unpublished records in the cache"
                   .format(len(self.record_files)))
@@ -43,6 +54,7 @@ class DataHandler(object):
                   .format(len(self.descriptor_files)))
             for i in range(len(self.cache_files)):
                 print(self.cache_files[i])
+            print("Execution records are stored in: " + os.path.join(os.path.expanduser('~'), ".cache", "boutiques", "data"))
 
     # Private function to print a file to console
     def _display_file(self, file_path):
@@ -194,6 +206,7 @@ class DataHandler(object):
         # Add tool name(s) to keywords
         data['metadata']['keywords'] = [v for v in unique_names]
         data['metadata']['keywords'].insert(0, 'Boutiques')
+        data['metadata']['keywords'].insert(1, 'Boutiques-execution-record')
         # Add descriptor link(s) to related identifiers
         data['metadata']['related_identifiers'] = \
             [{'identifier': url.format(v.split('.')[2]),
@@ -282,6 +295,33 @@ class DataHandler(object):
             [os.remove(os.path.join(self.cache_dir, f))
              for f in self.cache_files]
             print_info("All files have been removed from the data cache")
+
+
+
+    def search(self, verbose=False, sandbox=False):
+        firstKeyWord = "Boutiques"
+        secondKeyWord = "boutiques-execution-record"
+        searchType = "dataset"
+        query = ''
+        from boutiques.zenodoHelper import ZenodoHelper
+        zenodoHelper = ZenodoHelper(verbose=verbose, sandbox=sandbox)
+
+        return zenodoHelper.search(query, firstKeyWord,
+                                    secondKeyWord, searchType)
+
+
+    def pull(self, zids, verbose=False, sandbox=False):
+        dataPull = True
+        firstKeyWord = "Boutiques"
+        secondKeyWord = "boutiques-execution-record"
+        searchType = "dataset"
+
+        from boutiques.zenodoHelper import ZenodoHelper
+        zenodoHelper = ZenodoHelper(verbose=verbose, sandbox=sandbox)
+
+        return zenodoHelper.zenodo_pull(zids, firstKeyWord,
+                                    secondKeyWord, searchType, dataPull)
+
 
     def _file_exists_in_cache(self, filename):
         file_path = os.path.join(self.cache_dir, filename)
