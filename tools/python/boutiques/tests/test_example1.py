@@ -15,21 +15,18 @@ from shutil import copy2
 import simplejson as json
 
 
-def mock_get():
-    return mock_zenodo_search([example_boutiques_tool])
+def clean_up():
+    fls = os.listdir('./')
+    for fl in fls:
+        if (fl.startswith('log') or fl.startswith('config')) and \
+           fl.endswith('.txt'):
+            os.remove(fl)
 
 
 class TestExample1(BaseTest):
-
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
         self.setup("example1")
-
-    def clean_up(self):
-        fls = os.listdir('./')
-        for fl in fls:
-            if (fl.startswith('log') or fl.startswith('config')) and \
-               fl.endswith('.txt'):
-                os.remove(fl)
 
     def test_example1_no_exec(self):
         self.assert_successful_return(
@@ -42,7 +39,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker(self):
-        self.clean_up()
+        clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation.json"),
@@ -62,7 +59,7 @@ class TestExample1(BaseTest):
             ret, ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
-        self.clean_up()
+        clean_up()
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
@@ -79,7 +76,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_stream_output(self):
-        self.clean_up()
+        clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
                            "-s",
@@ -102,7 +99,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_inv_as_json_obj(self):
-        self.clean_up()
+        clean_up()
         invocationStr = open(self.get_file_path("invocation.json")).read()
         self.assert_successful_return(
             bosh.execute("launch",
@@ -116,7 +113,7 @@ class TestExample1(BaseTest):
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
-        self.clean_up()
+        clean_up()
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
@@ -133,7 +130,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_desc_as_json_obj(self):
-        self.clean_up()
+        clean_up()
         descStr = open(self.get_file_path("example1_docker.json")).read()
         self.assert_successful_return(
             bosh.execute("launch",
@@ -147,7 +144,7 @@ class TestExample1(BaseTest):
             ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
-        self.clean_up()
+        clean_up()
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_docker.json"),
@@ -164,7 +161,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_json_string_invalid(self):
-        self.clean_up()
+        clean_up()
         invocationStr = open(
             self.get_file_path("invocation_invalid.json")).read()
         with pytest.raises(LoadError) as e:
@@ -177,9 +174,9 @@ class TestExample1(BaseTest):
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
-    @mock.patch('requests.get', return_value=mock_get())
-    def test_example1_exec_docker_from_zenodo(self, mock_get):
-        self.clean_up()
+    @mock.patch('requests.get', return_value=mock_zenodo_search([example_boutiques_tool]))
+    def test_example1_exec_docker_from_zenodo(self, _):
+        clean_up()
         ret = bosh.execute("launch",
                            "zenodo." + str(example_boutiques_tool.id),
                            self.get_file_path("invocation.json"),
@@ -198,7 +195,7 @@ class TestExample1(BaseTest):
                                       ["log-4-coin;plop.txt"], 2,
                                       self.assert_reflected_output)
 
-        self.clean_up()
+        clean_up()
         self.assert_successful_return(
             bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
                          "-x",
@@ -213,10 +210,10 @@ class TestExample1(BaseTest):
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
-    @mock.patch('requests.get', return_value=mock_get())
-    def test_example1_exec_docker_from_zenodo_desc2func(self, mock_get):
+    @mock.patch('requests.get', return_value=mock_zenodo_search([example_boutiques_tool]))
+    def test_example1_exec_docker_from_zenodo_desc2func(self, _):
         # No mode provided, defaults to 'launch'
-        self.clean_up()
+        clean_up()
         from boutiques.descriptor2func import function
         example_tool = function("zenodo." + str(example_boutiques_tool.id))
         ret = example_tool(str_input_list=['a', 'b', 'c'],
@@ -232,7 +229,7 @@ class TestExample1(BaseTest):
                                       self.assert_reflected_output)
 
         # Launch mode
-        self.clean_up()
+        clean_up()
         ret = example_tool('launch',
                            str_input_list=['a', 'b', 'c'],
                            str_input="coin;plop",
@@ -246,7 +243,7 @@ class TestExample1(BaseTest):
                                       self.assert_reflected_output)
 
         # Simulate with invocation
-        self.clean_up()
+        clean_up()
         ret = example_tool('simulate',
                            str_input_list=['a', 'b', 'c'],
                            str_input="coin;plop",
@@ -260,7 +257,7 @@ class TestExample1(BaseTest):
                             aditional_assertions=self.assert_only_stdout)
 
         # Simulate without invocation
-        self.clean_up()
+        clean_up()
         ret = example_tool('simulate')
         self.assertIn('exampleTool1.py -c', ret.stdout)
 
@@ -268,7 +265,7 @@ class TestExample1(BaseTest):
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed")
     def test_example1_exec_singularity(self):
-        self.clean_up()
+        clean_up()
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_sing.json"),
@@ -281,7 +278,7 @@ class TestExample1(BaseTest):
             ["log-4.txt"], 2,
             self.assert_reflected_output)
 
-        self.clean_up()
+        clean_up()
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_sing.json"),
@@ -297,7 +294,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_example1_crash_pull_singularity(self):
-        self.clean_up()
+        clean_up()
         with pytest.raises(ExecutorError) as e:
             bosh.execute("launch",
                          self.get_file_path(
@@ -315,7 +312,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_missing_script(self):
-        self.clean_up()
+        clean_up()
         be = bosh.execute(
             "launch",
             self.get_file_path("example1_docker.json"),
@@ -330,7 +327,7 @@ class TestExample1(BaseTest):
             be, 2, "File does not exist!", ["log-4-pwet.txt"], 1)
 
     def test_example1_exec_fail_cli(self):
-        self.clean_up()
+        clean_up()
         command = (
             "bosh", "exec", "launch",
             self.get_file_path("example1_docker.json"),
@@ -357,7 +354,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_non_utf8(self):
-        self.clean_up()
+        clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker_nonutf8.json"),
                            self.get_file_path("invocation.json"),
@@ -370,7 +367,7 @@ class TestExample1(BaseTest):
             ret, ["log-4-coin;plop.txt"], 2,
             self.assert_reflected_output_nonutf8)
 
-        self.clean_up()
+        clean_up()
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_docker_nonutf8.json"),
@@ -386,7 +383,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_example1_exec_docker_force_singularity(self):
-        self.clean_up()
+        clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation_no_opts.json"),
@@ -407,7 +404,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_example1_exec_docker_Index_force_singularity(self):
-        self.clean_up()
+        clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker_w_index.json"),
                            self.get_file_path("invocation_no_opts.json"),
@@ -428,7 +425,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_singularity_force_docker(self):
-        self.clean_up()
+        clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_sing.json"),
                            self.get_file_path("invocation_sing_no_opts.json"),
@@ -457,7 +454,7 @@ class TestExample1(BaseTest):
                 side_effect=docker_not_installed)
     def test_example1_exec_docker_not_installed(self,
                                                 mock_docker_not_installed):
-        self.clean_up()
+        clean_up()
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker.json"),
                            self.get_file_path("invocation_no_opts.json"),
@@ -478,11 +475,9 @@ class TestExample1(BaseTest):
     def test_example1_conditional_outputFiles_created(self):
         base_path = os.path.join(self.schema_examples_dir, "example1")
         ex = bosh.execute("launch",
-                          os.path.join(
-                              base_path,
+                          self.get_file_path(
                               "example1_docker_conditional_outputFiles.json"),
-                          os.path.join(
-                              base_path,
+                          self.get_file_path(
                               "example1_conditional_invoc.json"),
                           "--skip-data-collection")
 
@@ -499,7 +494,7 @@ class TestExample1(BaseTest):
         ex = bosh.execute(
             "launch",
             self.get_file_path("example1_envVars_from_inputs.json"),
-            self.get_file_path("../test_input_env_var_invoc.json"),
+            self.get_file_path("test_input_env_var_invoc.json"),
             "--skip-data-collection")
 
         outFileList = [str(out) for out in ex.output_files]
@@ -523,13 +518,13 @@ class TestExample1(BaseTest):
         self.assertIn("Local (boutiques-example1-test.simg)",
                       ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
-        self.clean_up()
+        clean_up()
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_autoMount_input_files(self):
         base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
-        test_invoc = self.get_invocations_path("test_automount_invoc.json")
+        test_invoc = self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
         test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])
@@ -543,9 +538,7 @@ class TestExample1(BaseTest):
             invoc.write(json.dumps(invoc_dict))
 
         ex = bosh.execute("launch",
-                          os.path.join(
-                              base_path,
-                              "test_automount_desc.json"),
+                          self.get_file_path("test_automount_desc.json"),
                           test_invoc,
                           "--skip-data-collection")
 
@@ -561,24 +554,21 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     def test_example1_autoMount_none(self):
         base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
-        test_invoc = os.path.join(base_path, "test_automount_invoc.json")
+        self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
         test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file":
-                      "/home/darrin/Documents/Github/boutiques/tools/file1.txt",
+        invoc_dict = {"file": test_dir + "/file1.txt",
                       "file_list": ["../file2.txt", "../file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
             invoc.write(json.dumps(invoc_dict))
 
         ex = bosh.execute("launch",
-                          os.path.join(
-                              base_path,
-                              "test_automount_desc.json"),
+                          self.get_file_path("test_automount_desc.json"),
                           test_invoc,
                           "--no-automounts",
                           "--skip-data-collection")
