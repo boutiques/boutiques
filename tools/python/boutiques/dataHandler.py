@@ -108,7 +108,7 @@ class DataHandler(object):
     # data-set on Zenodo or Nexus
     def _publish(self, files_list):
         # Filter files_list by records with Zenodo ids
-        records_dict = self._checkPulblishable(files_list)
+        records_dict = self._checkPublishable(files_list)
         # Publishable list is empty, end execution
         if len(records_dict) == 0:
             return
@@ -126,8 +126,13 @@ class DataHandler(object):
                 self._create_metadata(records_dict), self.zenodo_access_token)
 
             # Upload all files in files_list to deposition
-            for file in records_dict.keys():
-                self._zenodo_upload_dataset(deposition_id, file)
+            for fil in records_dict.keys():
+                file_path = os.path.join(self.cache_dir, fil)
+                self.zenodo_helper.zenodo_upload_file(
+                    deposition_id, file_path,
+                    zenodo_access_token=self.zenodo_access_token,
+                    error_msg="Cannot upload record to Zenodo",
+                    verbose_msg="Record uploaded to Zenodo")
 
             # Publish deposition
             msg_obj = "Records" if self.bulk_publish else "Record"
@@ -139,7 +144,7 @@ class DataHandler(object):
 
     # Private function to filter out records that can not be published
     # because they lack a descriptor doi
-    def _checkPulblishable(self, files_list):
+    def _checkPublishable(self, files_list):
         # dict {filename: content_dict}
         desc_to_publish = set()
         publishable_dict = {}
@@ -199,22 +204,6 @@ class DataHandler(object):
             [{'identifier': url.format(v.split('.')[2]),
               'relation': 'hasPart'} for v in unique_descriptors]
         return data
-
-    def _zenodo_upload_dataset(self, deposition_id, file):
-        file_path = os.path.join(self.cache_dir, file)
-        data = {'filename': file}
-        files = {'file': open(file_path, 'rb')}
-        r = requests.post(self.zenodo_endpoint +
-                          '/api/deposit/depositions/%s/files'
-                          % deposition_id,
-                          params={'access_token': self.zenodo_access_token},
-                          data=data,
-                          files=files)
-
-        if(r.status_code != 201):
-            raise_error(ZenodoError, "Cannot upload record", r)
-        if(self.verbose):
-            print_info("Record uploaded to Zenodo", r)
 
     def _get_publishing_prompt(self):
         _destination = "Nexus in organization '{}' and project '{}'" \
@@ -307,3 +296,7 @@ def getDataCacheDir():
     if not os.path.exists(data_cache_dir):
         os.makedirs(data_cache_dir, exist_ok=True)
     return data_cache_dir
+
+
+class DataHandlerError(Exception):
+    pass

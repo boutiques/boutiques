@@ -169,3 +169,16 @@ def camelCaseInputIds(descriptor):
                                               "\'{0}\'".format(v))
     descriptor = json.loads(plainTextDesc)
     return descriptor
+
+
+def formatSphinxUsage(func, usage_str):
+    args = usage_str.replace("[", " ")\
+        .replace("]", " ")\
+        .replace("\n", "")\
+        .split(func)[1:]
+    args = "".join(args)
+    args = args.split("  ")[0:]
+    args = list(filter(lambda x: x != "", args))
+    args = ["\"{}\"".format(arg.strip()) for arg in args]
+    args = ", ".join(args)
+    return "[{}]".format(args)

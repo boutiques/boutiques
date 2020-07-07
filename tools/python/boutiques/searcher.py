@@ -7,6 +7,7 @@ import numbers
 from operator import itemgetter
 from boutiques.logger import raise_error, print_info
 from boutiques.publisher import ZenodoError
+from boutiques.zenodoHelper import ZenodoHelper
 from urllib.parse import quote
 
 
@@ -14,26 +15,22 @@ class Searcher():
 
     def __init__(self, query, verbose=False, sandbox=False, max_results=None,
                  no_trunc=False, exact_match=False):
-
         if query is not None:
             self.query = query
-            if not exact_match:
-                terms = self.query.split(" ")
-                self.query_line = ''
-                for t in terms:
-                    uncased_term = ''
-                    for ch in t:
-                        uncased_term = uncased_term + "[" + ch.upper() +\
-                            ch.lower() + "]"
-                    uncased_term = quote(uncased_term)
-                    self.query_line = self.query_line + \
-                        ' AND (/.*%s.*/)' % uncased_term
-            else:
-                self.query_line =\
-                        ' AND (/%s/)' % self.query
-        else:
             self.query_line = ''
+            if not exact_match:
+                terms = self.query.replace('/', '.').split(" ")
+                for t in terms:
+                    uncased_term = ["[{0}]".format(ch.upper() + ch.lower()
+                                                   if ch.isalpha() else ch)
+                                    for ch in t]
+                    uncased_term = quote("".join(uncased_term))
+                    self.query_line += ' AND (/.*%s.*/)' % uncased_term
+            else:
+                self.query_line = ' AND (/%s/)' % self.query.replace('/', '.')
+        else:
             self.query = ''
+            self.query_line = ''
 
         if(verbose):
             print_info("Using Query Line: " + self.query_line)
@@ -42,6 +39,8 @@ class Searcher():
         self.sandbox = sandbox
         self.no_trunc = no_trunc
         self.max_results = max_results
+        self.zenodo_helper = ZenodoHelper(sandbox=self.sandbox,
+                                          verbose=self.verbose)
 
         # Display top 10 results by default
         if max_results is None:
@@ -59,7 +58,7 @@ class Searcher():
                        format(self.zenodo_endpoint))
 
     def search(self):
-        results = self.zenodo_search()
+        results = self.zenodo_helper.zenodo_search(self.query, self.query_line)
         total_results = results.json()["hits"]["total"]
         total_deprecated = len([h['metadata']['keywords'] for h in
                                 results.json()['hits']['hits'] if
@@ -79,20 +78,6 @@ class Searcher():
                       else ", exluding %d deprecated result(s)."
                       % total_deprecated))
         return results_list
-
-    def zenodo_search(self):
-        # Get all results
-        r = requests.get(self.zenodo_endpoint + '/api/records/?q='
-                         'keywords:(/Boutiques/) AND '
-                         'keywords:(/schema-version.*/)'
-                         '%s'
-                         '&file_type=json&type=software&'
-                         'page=1&size=%s' % (self.query_line, 9999))
-        if(r.status_code != 200):
-            raise_error(ZenodoError, "Error searching Zenodo", r)
-        if(self.verbose):
-            print_info("Search successful for query \"%s\"" % self.query, r)
-        return r
 
     def create_results_list(self, results):
         results_list = []

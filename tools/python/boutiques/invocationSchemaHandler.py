@@ -10,7 +10,6 @@ import sys
 import argparse
 from functools import reduce
 from jsonschema import ValidationError
-from boutiques.validator import validate_descriptor
 from boutiques.logger import raise_error, print_info
 
 

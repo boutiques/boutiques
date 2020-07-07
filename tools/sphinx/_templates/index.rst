@@ -1,4 +1,7 @@
 
 .. toctree::
-    :caption: Bosh tool documentation
-    :maxdepth: 1
+    :caption: Boutiques documentation
+    :maxdepth: 2
+
+    cli
+    pythonApi
