@@ -14,10 +14,10 @@ class TestCrashPython3(BaseTest):
 
     def test_no_container(self):
         command = ("bosh exec launch --skip-data-collection "
-                   "{0} {1}".format(opj(self.schema_examples_dir,
+                   "{0} {1}".format(opj(self.tests_dir,
                                         "crash_python3",
                                         "crash3.json"),
-                                    opj(self.schema_examples_dir,
+                                    opj(self.tests_dir,
                                         "crash_python3",
                                         "crash3_invocation.json")))
         print(command)

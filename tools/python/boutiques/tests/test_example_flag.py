@@ -11,7 +11,7 @@ import boutiques as bosh
 class TestExampleFlag(BaseTest):
 
     def test_example_flag_1(self):
-        ex_dir = op.join(self.schema_examples_dir, "example-flag")
+        ex_dir = op.join(self.tests_dir, "example-flag")
         ret = bosh.execute("simulate",
                            op.join(ex_dir, "example-flag.json"),
                            "-i",
@@ -19,7 +19,7 @@ class TestExampleFlag(BaseTest):
         self.assertEqual(ret.shell_command.strip(), "/bin/true -a -b")
 
     def test_example_flag_2(self):
-        ex_dir = op.join(self.schema_examples_dir, "example-flag")
+        ex_dir = op.join(self.tests_dir, "example-flag")
         ret = bosh.execute("simulate",
                            op.join(ex_dir, "example-flag.json"),
                            "-i",
@@ -27,7 +27,7 @@ class TestExampleFlag(BaseTest):
         self.assertEqual(ret.shell_command.strip(), "/bin/true")
 
     def test_example_flag_3(self):
-        ex_dir = op.join(self.schema_examples_dir, "example-flag")
+        ex_dir = op.join(self.tests_dir, "example-flag")
         ret = bosh.execute("simulate",
                            op.join(ex_dir, "example-flag.json"),
                            "-i",

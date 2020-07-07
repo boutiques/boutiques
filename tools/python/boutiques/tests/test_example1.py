@@ -11,7 +11,7 @@ import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
     example_boutiques_tool
 from boutiques import __file__ as bfile
-from shutil import copy2
+from shutil import copy2, rmtree
 import simplejson as json
 
 
@@ -473,7 +473,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_conditional_outputFiles_created(self):
-        base_path = os.path.join(self.schema_examples_dir, "example1")
+        base_path = os.path.join(self.tests_dir, "example1")
         ex = bosh.execute("launch",
                           self.get_file_path(
                               "example1_docker_conditional_outputFiles.json"),
@@ -554,7 +554,7 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     def test_example1_autoMount_none(self):
         base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
-        self.get_file_path("test_automount_invoc.json")
+        test_invoc = self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
         test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])

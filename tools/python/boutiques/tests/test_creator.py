@@ -110,7 +110,7 @@ class TestCreator(BaseTest):
 
     def test_create_cl_template_from_descriptor(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
-        cl_template = op.join(self.schema_examples_dir,
+        cl_template = op.join(self.tests_dir,
                               "creator",
                               "expected_cl_template_create.json")
         output = op.join(base_path, "out_desc.json")
@@ -131,7 +131,7 @@ class TestCreator(BaseTest):
     def test_create_cl_template_from_string(self):
         base_path = op.join(op.split(bfile)[0], "tests/config")
         output = op.join(base_path, "out_desc.json")
-        cl_template = op.join(self.schema_examples_dir,
+        cl_template = op.join(self.tests_dir,
                               "creator",
                               "expected_cl_template_create.json")
         expected_cml = "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]"

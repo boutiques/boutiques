@@ -31,7 +31,7 @@ def get_examples_from_zenodo(schema_examples_dir):
 class TestEvaluate(BaseTest):
 
     def test_evaloutput(self):
-        self.desc, self.invo = get_examples(self.schema_examples_dir)
+        self.desc, self.invo = get_examples(self.tests_dir)
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
@@ -47,7 +47,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evaloutput_json_obj(self):
-        self.desc, self.invo = get_examples_json_obj(self.schema_examples_dir)
+        self.desc, self.invo = get_examples_json_obj(self.tests_dir)
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
@@ -66,7 +66,7 @@ class TestEvaluate(BaseTest):
                 return_value=mock_zenodo_search([example_boutiques_tool]))
     def test_evaloutput_from_zenodo(self, _):
         self.desc, self.invo =\
-            get_examples_from_zenodo(self.schema_examples_dir)
+            get_examples_from_zenodo(self.tests_dir)
         query = bosh.evaluate(self.desc, self.invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
@@ -82,7 +82,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evalinput(self):
-        self.desc, self.invo = get_examples(self.schema_examples_dir)
+        self.desc, self.invo = get_examples(self.tests_dir)
         query = bosh.evaluate(self.desc, self.invo, "inputs/")
         expect = {'str_input_list': ["fo '; echo FAIL", 'bar'],
                   'str_input': 'coin;plop',
@@ -114,7 +114,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evalgroups(self):
-        self.desc, self.invo = get_examples(self.schema_examples_dir)
+        self.desc, self.invo = get_examples(self.tests_dir)
         query = bosh.evaluate(self.desc, self.invo, "groups/")
         expect = {'an_example_group': {'num_input': None,
                                        'enum_input': 'val1'}}

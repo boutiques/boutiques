@@ -7,9 +7,8 @@ from boutiques import __file__ as bfile
 
 class BaseTest(TestCase):
     dir = "."
-    schema_examples_dir = os.path.join(os.path.dirname(bfile),
-                                       "schema",
-                                       "examples")
+    tests_dir = os.path.join(os.path.dirname(bfile),
+                                       "tests")
 
     def setup(self, dir):
         self.dir = dir
@@ -18,8 +17,7 @@ class BaseTest(TestCase):
         return os.path.join(
             os.path.join(
                 os.path.dirname(bfile),
-                "schema",
-                "examples",
+                "tests",
                 self.dir),
             file)
 
