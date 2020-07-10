@@ -5,18 +5,11 @@ import os
 import mock
 import tempfile
 import json
-
+from urllib.request import urlopen
+from urllib.request import urlretrieve
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
     example_boutiques_tool
-
-try:
-    # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-    from urllib import urlretrieve
+from boutiques.util.BaseTest import BaseTest
 
 
 def mock_urlretrieve(*args, **kwargs):
@@ -37,8 +30,7 @@ def mock_urlretrieve(*args, **kwargs):
     return urlretrieve(args[0], args[1])
 
 
-class TestPull(TestCase):
-
+class TestPull(BaseTest):
     @mock.patch('boutiques.puller.urlretrieve', side_effect=mock_urlretrieve)
     def test_pull(self, mock_urlretrieve):
         bosh(["pull", "zenodo." + str(example_boutiques_tool.id)])

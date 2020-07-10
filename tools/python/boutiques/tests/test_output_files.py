@@ -9,23 +9,22 @@ import subprocess
 import os
 import os.path as op
 import simplejson as json
+from boutiques.util.BaseTest import BaseTest
 
 
-class TestOutputFiles(TestCase):
+class TestOutputFiles(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("output_files")
 
-    @pytest.fixture(scope='session', autouse=True)
+    @pytest.fixture(autouse=True)
     def clean_up(self):
         yield
-        test_desc_path = op.join(
-            op.split(bfile)[0],
-            "tests/output_files/test_desc.json")
-        if os.path.exists(test_desc_path):
+        if os.path.exists(self.get_file_path("get_test_desc.json")):
             os.remove(test_desc_path)
 
     def test_output_conditional_path_template_validity(self):
-        base_path = op.join(op.split(bfile)[0], "tests/output_files/")
-        test_desc_path = op.join(base_path,
-                                 "test_fixANDcond_output_desc.json")
+        test_desc_path = self.get_file_path("test_fixANDcond_output_desc.json")
 
         # Validate descriptor with output-files containing both conditional
         # and fixed path-templates objects
@@ -36,9 +35,8 @@ class TestOutputFiles(TestCase):
         self.assertEqual(b'OK\n', output)
 
     def test_conditional_path_template_mutual_exclusivity(self):
-        base_path = op.join(op.split(bfile)[0], "tests/output_files/")
-        base_desc_path = op.join(base_path, "test_fixANDcond_output_desc.json")
-        test_desc_path = op.join(base_path, "test_desc.json")
+        base_desc_path = self.get_file_path("test_fixANDcond_output_desc.json")
+        test_desc_path = self.get_file_path("test_desc.json")
 
         template_desc_json = {}
         with open(base_desc_path, 'r') as base_desc:
@@ -81,9 +79,8 @@ class TestOutputFiles(TestCase):
         self.assertIn("schema", process_output.decode())
 
     def test_conditional_path_template_optionality(self):
-        base_path = op.join(op.split(bfile)[0], "tests/output_files/")
-        base_desc_path = op.join(base_path, "test_fixANDcond_output_desc.json")
-        test_desc_path = op.join(base_path, "test_desc.json")
+        base_desc_path = self.get_file_path("test_fixANDcond_output_desc.json")
+        test_desc_path = self.get_file_path("test_desc.json")
 
         template_desc_json = {}
         with open(base_desc_path, 'r') as base_desc:
@@ -123,9 +120,8 @@ class TestOutputFiles(TestCase):
                       process_output.decode())
 
     def test_conditional_path_template_expressions(self):
-        base_path = op.join(op.split(bfile)[0], "tests/output_files/")
-        base_desc_path = op.join(base_path, "test_fixANDcond_output_desc.json")
-        test_desc_path = op.join(base_path, "test_desc.json")
+        base_desc_path = self.get_file_path("test_fixANDcond_output_desc.json")
+        test_desc_path = self.get_file_path("test_desc.json")
 
         template_desc_json = {}
         with open(base_desc_path, 'r') as base_desc:
@@ -151,9 +147,8 @@ class TestOutputFiles(TestCase):
                       process_output.decode())
 
     def test_conditional_path_template_comparison_types(self):
-        base_path = op.join(op.split(bfile)[0], "tests/output_files/")
-        test_desc_path = op.join(
-            base_path, "test_cond_output_invalid_types.json")
+        test_desc_path = self.get_file_path(
+            "test_cond_output_invalid_types.json")
 
         command = ("bosh validate " + test_desc_path)
         validate_wrong_ID = subprocess.Popen(command, shell=True,

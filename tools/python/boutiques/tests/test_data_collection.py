@@ -31,8 +31,13 @@ def retrieve_data_record():
 
 
 class TestDataCollection(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("example1")
 
+    @pytest.fixture(autouse=True)
     def clean_up(self):
+        yield
         # Clean up data collection files
         cache_dir = os.path.join(os.path.expanduser('~'),
                                  ".cache", "boutiques", "data")
@@ -48,12 +53,9 @@ class TestDataCollection(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_data_collection(self):
-        example1_dir = os.path.join(self.tests_dir, "example1")
         bosh.execute("launch",
-                     os.path.join(example1_dir,
-                                  "example1_docker.json"),
-                     os.path.join(example1_dir,
-                                  "invocation.json"),
+                     self.get_file_path("example1_docker.json"),
+                     self.get_file_path("invocation.json"),
                      "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                      "-v", "{}:/test_mount2".format(
@@ -84,8 +86,6 @@ class TestDataCollection(BaseTest):
         logfile = output_files.get("logfile")
         self.assertEqual(logfile.get("file-name"), "log-4-coin;plop.txt")
 
-        self.clean_up()
-
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_skip_collection(self):
@@ -97,12 +97,9 @@ class TestDataCollection(BaseTest):
             cache_fls = os.listdir(cache_dir)
             original_size = len(cache_fls)
 
-        example1_dir = os.path.join(self.tests_dir, "example1")
         bosh.execute("launch",
-                     os.path.join(example1_dir,
-                                  "example1_docker.json"),
-                     os.path.join(example1_dir,
-                                  "invocation.json"),
+                     self.get_file_path("example1_docker.json"),
+                     self.get_file_path("invocation.json"),
                      "--skip-data-collection",
                      "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -115,31 +112,23 @@ class TestDataCollection(BaseTest):
             new_size = len(cache_fls)
         self.assertEqual(new_size, original_size)
 
-        self.clean_up()
-
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     @mock.patch('requests.get', return_value=mock_get())
     def test_read_doi_zenodo(self, mock_get):
-        example1_dir = os.path.join(self.tests_dir, "example1")
         bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
-                     os.path.join(example1_dir,
-                                  "invocation.json"))
+                     self.get_file_path("invocation.json"))
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")
         self.assertIsNotNone(summary)
         self.assertEqual(summary.get("descriptor-doi"),
                          "10.5281/zenodo." + str(example_boutiques_tool.id))
-        self.clean_up()
 
     def test_directory_input_output(self):
-        example1_dir = os.path.join(self.tests_dir, "example1")
         bosh.execute("launch",
-                     os.path.join(example1_dir,
-                                  "dir_input.json"),
-                     os.path.join(example1_dir,
-                                  "dir_invocation.json"),
+                     self.get_file_path("dir_input.json"),
+                     self.get_file_path("dir_invocation.json"),
                      "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                      "-v", "{}:/test_mount2".format(
@@ -164,22 +153,17 @@ class TestDataCollection(BaseTest):
         self.assertIsNotNone(files)
         self.assertEqual(len(files), 2)
 
-        self.clean_up()
-
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_add_provenance(self):
-        example1_dir = os.path.join(self.tests_dir, "example1")
         provenance = """{
             \"engine\": \"http://cbrain.ca\",
             \"dataset id\": \"1234\",
             \"cluster\": \"beluga\"
         }"""
         bosh.execute("launch",
-                     os.path.join(example1_dir,
-                                  "example1_docker.json"),
-                     os.path.join(example1_dir,
-                                  "invocation.json"),
+                     self.get_file_path("example1_docker.json"),
+                     self.get_file_path("invocation.json"),
                      "-v", "{}:/test_mount1".format(
                         self.get_file_path("example1_mount1")),
                      "-v", "{}:/test_mount2".format(
@@ -214,5 +198,3 @@ class TestDataCollection(BaseTest):
         self.assertEqual(provenance.get("engine"), "http://cbrain.ca")
         self.assertEqual(provenance.get("dataset id"), "1234")
         self.assertEqual(provenance.get("cluster"), "beluga")
-
-        self.clean_up()

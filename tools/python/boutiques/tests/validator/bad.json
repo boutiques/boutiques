@@ -1,0 +1,186 @@
+{
+  "name": "demo-tool",
+  "tool-version": "v1",
+  "description": "a tool that does things",
+  "command-line": "mytool.py [key1] [key2] [key3] [key4] [key5] [key6] [key7] [flag1] [extra1] [extra2]",
+  "container-image": {
+    "type": "docker",
+    "image": "user/image:v1",
+    "index": "http://index.docker.io"
+    },
+  "schema-version": "0.5",
+  "groups": [
+		{
+			"id": "all_or_noner",
+			"name": "fail all or none",
+			"members": [
+				"extra1",
+				"extra2"
+			],
+			"mutually-exclusive": true,
+			"one-is-required": true,
+			"all-or-none": true
+		},
+    {
+      "id": "group1",
+      "name": "group 1",
+      "members": [
+        "key5",
+        "key6",
+        "key6",
+        "key7"
+      ],
+      "mutually-exclusive": true,
+      "one-is-required": true
+    },
+    {
+      "id": "group2",
+      "name": "group 2",
+      "members": [
+        "key7",
+        "key8"
+      ],
+      "one-is-required": true
+    },
+		{
+			"id": "group3",
+			"name": "group 3",
+			"members": [
+				"key1",
+				"key1_mod"
+			],
+			"one-is-required": true
+		}
+  ],
+  "inputs": [
+    {
+      "id": "key1",
+      "name": "file 1",
+      "type": "File",
+      "value-key": "[key1]",
+      "optional": true
+    },
+    {
+      "id": "extra1",
+      "name": "extra 1",
+      "type": "File",
+      "value-key": "[extra1]",
+      "optional": true
+    },
+    {
+      "id": "extra2",
+      "name": "file 2",
+      "type": "File",
+      "value-key": "[extra2]",
+      "optional": false
+    },
+    {
+      "id": "key1_mod",
+      "name": "file 1",
+      "type": "File",
+      "value-key": "[key1]",
+      "optional": true
+    },
+    {
+      "id": "key2",
+      "name": "file 2",
+      "type": "File",
+      "value-key": "[key2]"
+    },
+    {
+      "id": "key2",
+      "name": "ile 2",
+      "type": "File",
+      "value-key": "[ey2]",
+      "optional": false,
+      "list": true
+    },
+    {
+      "id": "key3",
+      "name": "file 3",
+      "type": "File",
+      "value-key": "[key3]",
+      "optional": false
+    },
+    {
+      "id": "key4",
+      "name": "file 4",
+      "type": "String",
+      "value-key": "[key4]",
+      "optional": false,
+      "requires-inputs": ["key8"],
+      "value-choices": [
+        "value1", "value2"
+      ],
+      "value-requires": {
+        "value0": [],
+        "value1": ["key1_mod"],
+        "value2": ["key3"]
+      },
+      "value-disables": {
+        "value1": ["key1_mod"],
+        "value2": []
+      }
+    },
+    {
+      "id": "key5",
+      "name": "file 5",
+      "type": "String",
+      "value-key": "[key5]",
+      "optional": false,
+      "requires-inputs": ["key6"],
+      "value-choices": [
+      ],
+      "default-value": "value2"
+    },
+    {
+      "id": "key6",
+      "name": "file 6",
+      "type": "String",
+      "value-key": "[key6]",
+      "optional": true,
+      "value-choices": [
+        "/ndmg_atlases/labels/JHU.nii.gz"
+      ]
+    },
+    {
+      "id": "key7",
+      "name": "key 7",
+      "type": "Number",
+      "value-key": "[key7]",
+      "optional": true,
+      "minimum": 1,
+      "maximum": -1,
+      "requires-inputs": ["nonkey1"],
+      "disables-inputs": ["nonkey1"],
+      "value-choices": []
+    },
+    {
+      "id": "flag1",
+      "name": "flag 1",
+      "type": "Flag",
+      "value-key": "[flag1]",
+      "optional": false
+    }
+  ],
+  "output-files": [
+    {
+      "id": "out1",
+      "name": "output 1",
+      "path-template": "[key1]/myoutput1",
+      "path-template-stripped-extensions": [
+        ".npz"
+      ],
+      "optional": true
+    },
+    {
+      "id": "out2",
+      "name": "output 2",
+      "path-template": "[key1]/myoutput1",
+      "path-template-stripped-extensions": [
+        ".npz"
+      ],
+      "optional": true
+    }
+  ]
+}

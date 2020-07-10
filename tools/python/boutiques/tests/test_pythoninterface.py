@@ -6,10 +6,12 @@ import subprocess
 from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques
+from boutiques.util.BaseTest import BaseTest
 
 
-class TestBoutiquesTools(TestCase):
+class TestBoutiquesTools(BaseTest):
 
-    def test_pythoninterface_validate(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
+    def test_python_interface_validate(self):
+        self.setup("invocation")
+        fil = self.get_file_path('good.json')
         self.assertIsNone(boutiques.validate(fil))

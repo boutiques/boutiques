@@ -10,6 +10,7 @@ import mock
 import sys
 from boutiques_mocks import *
 from unittest import TestCase
+from boutiques.util.BaseTest import BaseTest
 
 
 def mock_mkdir():
@@ -40,37 +41,30 @@ def mock_os_rename():
     return None
 
 
-class TestPrepare(TestCase):
-
-    def get_examples_dir(self):
-        return os.path.join(os.path.dirname(bfile),
-                            "schema", "examples")
+class TestPrepare(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("example1")
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_prepare_docker(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_docker.json"))
+                           self.get_file_path("example1_docker.json"))
         self.assertIn("Local copy", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"))
+                           self.get_file_path("example1_sing.json"))
         self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing_specify_imagepath(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"),
+                           self.get_file_path("example1_sing.json"),
                            "--imagepath",
                            os.path.join(os.getcwd(),
                                         "boutiques-example1-test.simg"))
@@ -80,10 +74,8 @@ class TestPrepare(TestCase):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing_specify_imagepath_basename_only(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"),
+                           self.get_file_path("example1_sing.json"),
                            "--imagepath",
                            "boutiques-example1-test.simg")
         self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
@@ -92,13 +84,11 @@ class TestPrepare(TestCase):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing_image_does_not_exist(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify the wrong path for the image
         # Will try to pull it and pull will fail
         with pytest.raises(ExecutorError) as e:
             bosh.execute("prepare",
-                         os.path.join(example1_dir,
-                                      "example1_sing_crash_pull.json"),
+                         self.get_file_path("example1_sing_crash_pull.json"),
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-latest.simg"))
@@ -114,13 +104,11 @@ class TestPrepare(TestCase):
                         reason="Singularity not installed")
     def test_prepare_sing_multiple_processes(self, mock_mkdir, mock_exists,
                                              mock_clean_up):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify path for image that does not exist.
         # Mock that another process created the image at that path
         # while this process was waiting.
         ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"),
+                           self.get_file_path("example1_sing.json"),
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
@@ -131,14 +119,12 @@ class TestPrepare(TestCase):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing_timeout(self, mock_mkdir, mock_sleep):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify path for image that does not exist.
         # Mock that another process has the lockdir and this one
         # times out while waiting.
         with pytest.raises(ExecutorError) as e:
             bosh.execute("prepare",
-                         os.path.join(example1_dir,
-                                      "example1_sing.json"),
+                         self.get_file_path("example1_sing.json"),
                          "--imagepath",
                          os.path.join(os.path.expanduser('~'),
                                       "boutiques-example1-test.simg"))
@@ -153,14 +139,12 @@ class TestPrepare(TestCase):
                         reason="Singularity not installed")
     def test_prepare_sing_timeout_success(self, mock_mkdir, mock_sleep,
                                           mock_exists):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify path for image that does not exist.
         # Mock that another process has the lockdir and this one
         # times out while waiting, but image was created by the
         # other process.
         ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_sing.json"),
+                           self.get_file_path("example1_sing.json"),
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
@@ -172,12 +156,10 @@ class TestPrepare(TestCase):
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")
     def test_prepare_sing_pull_success(self, mock_sing_pull, mock_os_rename):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
         # Specify path for image that does not exist.
         # Try to pull it and mock that the pull was successful.
         ret = bosh.execute("prepare",
-                           os.path.join(example1_dir,
-                                        "example1_sing_crash_pull.json"),
+                           self.get_file_path("example1_sing_crash_pull.json"),
                            "--imagepath",
                            os.path.join(os.path.expanduser('~'),
                                         "boutiques-example1-test.simg"))
@@ -186,8 +168,7 @@ class TestPrepare(TestCase):
                       ret.stdout)
 
     def test_prepare_no_container(self):
-        ret = bosh.execute("prepare",
-                           os.path.join(self.get_examples_dir(),
-                                        "no_container.json"))
+        self.setup("exec")
+        ret = bosh.execute("prepare", self.get_file_path("no_container.json"))
         self.assertIn("Descriptor does not specify a container image.",
                       ret.stdout)

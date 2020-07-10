@@ -7,16 +7,23 @@ from boutiques.validator import DescriptorValidationError
 import subprocess
 import os.path as op
 import os
+from boutiques.util.BaseTest import BaseTest
+import pytest
 
 
-class TestValidator(TestCase):
+class TestValidator(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("validator")
 
     def test_success(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
+        self.setup("invocation")
+        fil = self.get_file_path('good.json')
         self.assertIsNone(bosh(['validate', '--format', fil]))
 
     def test_success_cli(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/good.json')
+        self.setup("invocation")
+        fil = self.get_file_path('good.json')
         command = ("bosh validate " + fil)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
@@ -26,15 +33,15 @@ class TestValidator(TestCase):
         self.assertFalse(process.returncode)
 
     def test_fail(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/bad.json')
+        fil = self.get_file_path('bad.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
 
     def test_invalid_boutiques(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/invalid.json')
+        fil = self.get_file_path('invalid.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
 
     def test_invalid_json_debug(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/invalid_json.json')
+        fil = self.get_file_path('invalid_json.json')
         command = ("bosh validate " + fil)
         process = subprocess.Popen(command, shell=True,
                                    stderr=subprocess.PIPE)
@@ -43,12 +50,11 @@ class TestValidator(TestCase):
                          ' column 2 (char 243)')
 
     def test_invalid_json(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/test_exclusive_'
-                                          'minimum.json')
+        fil = self.get_file_path('test_exclusive_minimum.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
 
     def test_invalid_cli(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/invalid.json')
+        fil = self.get_file_path('invalid.json')
         command = ("bosh validate " + fil)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
@@ -57,12 +63,11 @@ class TestValidator(TestCase):
         self.assertTrue(process.returncode)
 
     def test_invalid_groups(self):
-        fil = op.join(op.split(bfile)[0], 'schema/examples/invalid_groups.json')
+        fil = self.get_file_path('invalid_groups.json')
         self.assertRaises(DescriptorValidationError, bosh, ['validate', fil])
 
     def test_invalid_container_index(self):
-        fil = op.join(op.split(bfile)[0],
-                      'tests/test_descriptors/test_conIndexImage.json')
+        fil = self.get_file_path('test_conIndexImage.json')
         command = ("bosh validate " + fil)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)

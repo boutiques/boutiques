@@ -1,0 +1,123 @@
+{
+    "command-line": "3dresample BOUNDTYPE DEBUG DXYZ HELP HIST INPUT INSET MASTER ORIENT PREFIX RMODE VERSION",
+    "description": "tool description",
+    "inputs": [
+        {
+            "command-line-flag": "-boundtype",
+            "description": "NA",
+            "id": "boundtype",
+            "name": "boundtype",
+            "optional": true,
+            "type": "String",
+            "value-key": "BOUNDTYPE"
+        },
+        {
+            "command-line-flag": "-debug",
+            "description": "NA",
+            "id": "debug",
+            "name": "debug",
+            "optional": true,
+            "type": "String",
+            "value-key": "DEBUG"
+        },
+        {
+            "command-line-flag": "-dxyz",
+            "description": "NA",
+            "id": "dxyz",
+            "name": "dxyz",
+            "optional": true,
+            "type": "String",
+            "value-key": "DXYZ"
+        },
+        {
+            "command-line-flag": "-help",
+            "description": "NA",
+            "id": "help",
+            "name": "help",
+            "optional": true,
+            "type": "String",
+            "value-key": "HELP"
+        },
+        {
+            "command-line-flag": "-hist",
+            "description": "NA",
+            "id": "hist",
+            "name": "hist",
+            "optional": true,
+            "type": "String",
+            "value-key": "HIST"
+        },
+        {
+            "command-line-flag": "-input",
+            "description": "NA",
+            "id": "input",
+            "name": "input",
+            "optional": true,
+            "type": "String",
+            "value-key": "INPUT"
+        },
+        {
+            "command-line-flag": "-inset",
+            "description": "NA",
+            "id": "inset",
+            "name": "inset",
+            "optional": true,
+            "type": "String",
+            "value-key": "INSET"
+        },
+        {
+            "command-line-flag": "-master",
+            "description": "NA",
+            "id": "master",
+            "name": "master",
+            "optional": true,
+            "type": "String",
+            "value-key": "MASTER"
+        },
+        {
+            "command-line-flag": "-orient",
+            "description": "NA",
+            "id": "orient",
+            "name": "orient",
+            "optional": true,
+            "type": "String",
+            "value-key": "ORIENT"
+        },
+        {
+            "command-line-flag": "-prefix",
+            "description": "NA",
+            "id": "prefix",
+            "name": "prefix",
+            "optional": true,
+            "type": "String",
+            "value-key": "PREFIX"
+        },
+        {
+            "command-line-flag": "-rmode",
+            "description": "NA",
+            "id": "rmode",
+            "name": "rmode",
+            "optional": true,
+            "type": "String",
+            "value-key": "RMODE"
+        },
+        {
+            "command-line-flag": "-version",
+            "description": "NA",
+            "id": "version",
+            "name": "version",
+            "optional": true,
+            "type": "String",
+            "value-key": "VERSION"
+        }
+    ],
+    "name": "tool name",
+    "schema-version": "0.5",
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "tags": {},
+    "tool-version": "v0.1.0"
+}

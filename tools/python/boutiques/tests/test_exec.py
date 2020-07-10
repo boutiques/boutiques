@@ -5,27 +5,46 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 from boutiques.localExec import ExecutorError
+from boutiques.util.BaseTest import BaseTest
+import pytest
 
 
-class TestExec(TestCase):
-
-    def get_examples_dir(self):
-        return os.path.join(os.path.dirname(bfile),
-                            "schema", "examples")
+class TestExec(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("exec")
 
     def test_failing_launch(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
+        self.setup("example1")
         self.assertRaises(ExecutorError, bosh.execute,
-                          ("launch", os.path.join(example1_dir, "fake.json"),
-                           os.path.join(example1_dir, "invocation.json"),
+                          ("launch",
+                           self.get_file_path("fake.json"),
+                           self.get_file_path("invocation.json"),
                            "--skip-data-collection"))
         self.assertRaises(ExecutorError, bosh.execute,
-                          ("launch", os.path.join(example1_dir,
-                                                  "example1_docker.json"),
-                           os.path.join(example1_dir, "fake.json"),
+                          ("launch",
+                           self.get_file_path("example1_docker.json"),
+                           self.get_file_path("fake.json"),
                            "--skip-data-collection"))
         self.assertRaises(ExecutorError, bosh.execute,
-                          ("launch", os.path.join(example1_dir,
-                                                  "example1_docker.json"),
-                           os.path.join(example1_dir, "exampleTool1.py"),
+                          ("launch",
+                           self.get_file_path("example1_docker.json"),
+                           self.get_file_path("exampleTool1.py"),
                            "--skip-data-collection"))
+
+    def test_no_container(self):
+        self.assertFalse(bosh.execute("launch",
+                                      self.get_file_path("no_container.json"),
+                                      self.get_file_path(
+                                          "no_container_invocation.json"),
+                                      "--skip-data-collection").exit_code)
+
+    def test_bare_metal_execution(self):
+        e = bosh.execute("launch",
+                         "--no-container",
+                         self.get_file_path("test_baremetal.json"),
+                         self.get_file_path("test_baremetal_invoc.json"))
+        stdout = e.stdout
+        if os.path.exists("test_baremetal_exec.txt"):
+            os.remove("test_baremetal_exec.txt")
+        self.assertEqual(stdout, "Bare metal execution\n")

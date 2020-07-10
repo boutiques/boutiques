@@ -9,14 +9,16 @@ import os.path as op
 import os
 import simplejson as json
 from boutiques.util.BaseTest import BaseTest
+import pytest
 
 
 class TestExample(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("example")
 
     def test_example_complete(self):
-        descriptor = op.join(self.tests_dir,
-                             'example',
-                             'test_example_descriptor.json')
+        descriptor = self.get_file_path('test_example_descriptor.json')
         command = ("bosh example " + descriptor + " -c")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
@@ -30,9 +32,7 @@ class TestExample(BaseTest):
         self.assertIn("d2", output)
 
     def test_example_required_only(self):
-        descriptor = op.join(self.tests_dir,
-                             'example',
-                             'test_example_descriptor.json')
+        descriptor = self.get_file_path('test_example_descriptor.json')
         command = ("bosh example " + descriptor)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
@@ -41,9 +41,7 @@ class TestExample(BaseTest):
         self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
 
     def test_example_requires_group_complete_x10(self):
-        descriptor = op.join(self.tests_dir,
-                             'example',
-                             'test_docopt_valid.json')
+        descriptor = self.get_file_path('test_docopt_valid.json')
         from boutiques.localExec import LocalExecutor
         executor = LocalExecutor(descriptor, None,
                                  {"forcePathType": True,

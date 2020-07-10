@@ -7,8 +7,10 @@ from boutiques import __file__ as bfile
 
 class BaseTest(TestCase):
     dir = "."
-    tests_dir = os.path.join(os.path.dirname(bfile),
-                                       "tests")
+    tests_dir = os.path.join(os.path.dirname(bfile), "tests")
+    example1_descriptor = os.path.join(tests_dir,
+                                       "example1",
+                                       "example1_docker.json")
 
     def setup(self, dir):
         self.dir = dir
@@ -16,8 +18,7 @@ class BaseTest(TestCase):
     def get_file_path(self, file):
         return os.path.join(
             os.path.join(
-                os.path.dirname(bfile),
-                "tests",
+                self.tests_dir,
                 self.dir),
             file)
 

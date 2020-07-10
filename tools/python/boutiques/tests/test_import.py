@@ -14,12 +14,12 @@ import tarfile
 from contextlib import closing
 import simplejson as json
 from docopt import docopt
-import imp
 import subprocess
 from boutiques.util.utils import loadJson
+from boutiques.util.BaseTest import BaseTest
 
 
-class TestImport(TestCase):
+class TestImport(BaseTest):
 
     @pytest.fixture(scope='session', autouse=True)
     def clean_up(self):
@@ -28,20 +28,19 @@ class TestImport(TestCase):
             os.remove("user-image.simg")
 
     def test_import_bids_good(self):
-        bids_app = opj(op.split(bfile)[0],
-                       "schema/examples/bids/example_good")
+        self.setup("bids")
+        bids_app = self.get_file_path("example_good")
         outfile = "test-import.json"
         ref_name = "test-import-ref.json"
         if op.isfile(outfile):
             os.remove(outfile)
         self.assertFalse(bosh(["import", "bids", outfile, bids_app]))
-        self.assertEqual(open(outfile, "U").read().strip(),
-                         open(opj(bids_app, ref_name),
-                              "U").read().strip())
+        self.assertEqual(open(outfile).read().strip(),
+                         open(opj(bids_app, ref_name)).read().strip())
 
     def test_import_bids_bad(self):
-        bids_app = opj(op.split(bfile)[0],
-                       "schema/examples/bids/example_bad")
+        self.setup("bids")
+        bids_app = self.get_file_path("example_bad")
         self.assertRaises(ValidationError, bosh, ["import", "bids",
                                                   "test-import.json",
                                                   bids_app])
@@ -51,42 +50,38 @@ class TestImport(TestCase):
         os.remove("test-import.json")
 
     def test_upgrade_04(self):
-        fin = opj(op.split(bfile)[0], "schema/examples/upgrade04.json")
-        fout = opj(op.split(bfile)[0], "schema/examples/upgraded05.json")
-        ref_name = "test-import-04-ref.json"
-        ref_file = opj(op.split(bfile)[0], "schema/examples", ref_name)
-        ref_name_p2 = "test-import-04-ref-python2.json"
-        ref_file_p2 = opj(op.split(bfile)[0], "schema/examples",
-                          ref_name_p2)
+        self.setup("import")
+        fin = self.get_file_path("upgrade04.json")
+        fout = self.get_file_path("upgrade05.json")
+        ref_file = self.get_file_path("test-import-04-ref.json")
+        ref_file_p2 = self.get_file_path("test-import-04-ref-python2.json")
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = json.loads(open(fout, "U").read().strip())
+        result = json.loads(open(fout).read().strip())
         self.assertIn(result,
-                      [json.loads(open(ref_file, "U").read().strip()),
-                       json.loads(open(ref_file_p2, "U").read().strip())])
+                      [json.loads(open(ref_file).read().strip()),
+                       json.loads(open(ref_file_p2).read().strip())])
         os.remove(fout)
 
     def test_upgrade_04_json_obj(self):
-        fin = open(opj(op.split(bfile)[0],
-                   "schema/examples/upgrade04.json")).read()
-        fout = opj(op.split(bfile)[0], "schema/examples/upgraded05.json")
-        ref_name = "test-import-04-ref.json"
-        ref_file = opj(op.split(bfile)[0], "schema/examples", ref_name)
-        ref_name_p2 = "test-import-04-ref-python2.json"
-        ref_file_p2 = opj(op.split(bfile)[0], "schema/examples",
-                          ref_name_p2)
+        self.setup("import")
+        fin = open(self.get_file_path("upgrade04.json")).read()
+        fout = self.get_file_path("upgrade05.json")
+        ref_file = self.get_file_path("test-import-04-ref.json")
+        ref_file_p2 = self.get_file_path("test-import-04-ref-python2.json")
         if op.isfile(fout):
             os.remove(fout)
         self.assertFalse(bosh(["import", "0.4",  fout, fin]))
-        result = json.loads(open(fout, "U").read().strip())
+        result = json.loads(open(fout).read().strip())
         self.assertIn(result,
-                      [json.loads(open(ref_file, "U").read().strip()),
-                       json.loads(open(ref_file_p2, "U").read().strip())])
+                      [json.loads(open(ref_file).read().strip()),
+                       json.loads(open(ref_file_p2).read().strip())])
         os.remove(fout)
 
     def test_import_cwl_valid(self):
-        ex_dir = opj(op.split(bfile)[0], "tests/cwl")
+        self.setup("cwl")
+        ex_dir = self.get_file_path("")
         # These ones are supposed to crash
         bad_dirs = ["1st-workflow",  # workflow
                     "record",  # complex type
@@ -142,37 +137,37 @@ class TestImport(TestCase):
                                      cwl_descriptor)
 
     def test_docopt_import_valid(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
-        pydocopt_input = op.join(base_path, "test_valid.py")
-        output_descriptor = op.join(base_path, "test_valid_output.json")
+        self.setup("docopt")
+        pydocopt_input = self.get_file_path("docopt_script_valid.py")
+        output_descriptor = self.get_file_path("test_valid_output.json")
 
         import_args = ["import", "docopt", output_descriptor, pydocopt_input]
         bosh(import_args)
 
-        test_invocation = op.join(base_path, "valid_invoc_mutex.json")
+        test_invocation = self.get_file_path("valid_invoc_mutex.json")
         launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
         os.remove(output_descriptor)
 
     def test_docopt_import_valid_options(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
-        pydocopt_input = op.join(base_path, "test_options.py")
-        output_descriptor = op.join(base_path, "test_options_output.json")
+        self.setup("docopt")
+        pydocopt_input = self.get_file_path("docopt_script_options.py")
+        output_descriptor = self.get_file_path("test_options_output.json")
 
         import_args = ["import", "docopt", output_descriptor, pydocopt_input]
         bosh(import_args)
 
-        test_invocation = op.join(base_path, "test_options_invocation.json")
+        test_invocation = self.get_file_path("test_options_invocation.json")
         launch_args = ["exec", "launch", output_descriptor, test_invocation]
         bosh(launch_args)
 
         os.remove(output_descriptor)
 
     def test_docopt_import_invalid(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
-        pydocopt_input = op.join(base_path, "test_invalid.py")
-        output_descriptor = op.join(base_path, "foobar.json")
+        self.setup("docopt")
+        pydocopt_input = self.get_file_path("docopt_script_invalid.py")
+        output_descriptor = self.get_file_path("foobar.json")
 
         args = ["import", "docopt", output_descriptor, pydocopt_input]
 
@@ -185,44 +180,49 @@ class TestImport(TestCase):
             self.fail("Output file should not exist")
 
     def test_docopt_nf(self):
-        base_path = op.join(op.split(bfile)[0], "tests/docopt")
-        pydocopt_input = op.join(base_path, "naval_fate.py")
-        output_descriptor = "schema/examples/naval_fate_descriptor.json"
+        self.setup("docopt")
+        pydocopt_input = self.get_file_path("naval_fate.py")
+        output_descriptor = self.get_file_path("naval_fate_descriptor.json")
 
         import_args = ["import", "docopt", output_descriptor, pydocopt_input]
         bosh(import_args)
 
-        test_invocation = op.join(base_path, "nf_invoc_new.json")
-        launch_args = ["exec", "launch", output_descriptor, test_invocation]
+        test_invocation = self.get_file_path("nf_invoc_new.json")
+        launch_args = ["exec", "simulate", output_descriptor,
+                       "-i", test_invocation]
         bosh(launch_args)
 
-        test_invocation = op.join(base_path, "nf_invoc_move.json")
-        launch_args = ["exec", "launch", output_descriptor, test_invocation]
+        test_invocation = self.get_file_path("nf_invoc_move.json")
+        launch_args = ["exec", "simulate", output_descriptor,
+                       "-i", test_invocation]
         bosh(launch_args)
 
-        test_invocation = op.join(base_path, "nf_invoc_shoot.json")
-        launch_args = ["exec", "launch", output_descriptor, test_invocation]
+        test_invocation = self.get_file_path("nf_invoc_shoot.json")
+        launch_args = ["exec", "simulate", output_descriptor,
+                       "-i", test_invocation]
         bosh(launch_args)
 
-        test_invocation = op.join(base_path, "nf_invoc_mine.json")
-        launch_args = ["exec", "launch", output_descriptor, test_invocation]
+        test_invocation = self.get_file_path("nf_invoc_mine.json")
+        launch_args = ["exec", "simulate", output_descriptor,
+                       "-i", test_invocation]
         bosh(launch_args)
 
-        test_invocation = op.join(base_path, "nf_invoc_help.json")
-        launch_args = ["exec", "launch", output_descriptor, test_invocation]
+        test_invocation = self.get_file_path("nf_invoc_help.json")
+        launch_args = ["exec", "simulate", output_descriptor,
+                       "-i", test_invocation]
         bosh(launch_args)
 
         os.remove(output_descriptor)
 
     def test_import_json_config(self):
-        base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected_desc = loadJson("schema/examples/json_config_desc.json")
-        config = op.join(base_path, "configuration.json")
-        output_descriptor = op.join(base_path, "output.json")
+        self.setup("config")
+        expected_desc = loadJson(self.get_file_path("json_config_desc.json"))
+        config = self.get_file_path("configuration.json")
+        output_descriptor = self.get_file_path("output.json")
 
         import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
-        result_desc = loadJson(op.join(base_path, "output.json"))
+        result_desc = loadJson(output_descriptor)
 
         if op.exists(output_descriptor):
             os.remove(output_descriptor)
@@ -231,14 +231,14 @@ class TestImport(TestCase):
         # Groups are needed in template but causes tests to fail
         del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
-        test_invoc = op.join(base_path, "test_config_import_invoc.json")
+        test_invoc = self.get_file_path("test_config_import_invoc.json")
         simulate_args = ["exec", "simulate", json.dumps(result_desc),
                          "-i", test_invoc]
 
         expected_cml = ("tool config.json")
         result_cml = bosh(simulate_args).shell_command
 
-        with open(op.join(base_path, "expected_config.json"), "r") as c:
+        with open(self.get_file_path("expected_config.json"), "r") as c:
             expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
             with open(result_desc['output-files']
@@ -252,14 +252,14 @@ class TestImport(TestCase):
         self.assertEqual(result_sim_out, expect_sim_out)
 
     def test_import_toml_config(self):
-        base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected_desc = loadJson("schema/examples/toml_config_desc.json")
-        config = op.join(base_path, "configuration.toml")
-        output_descriptor = op.join(base_path, "output.json")
+        self.setup("config")
+        expected_desc = loadJson(self.get_file_path("toml_config_desc.json"))
+        config = self.get_file_path("configuration.toml")
+        output_descriptor = self.get_file_path("output.json")
 
         import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
-        result_desc = loadJson(op.join(base_path, "output.json"))
+        result_desc = loadJson(output_descriptor)
 
         if op.exists(output_descriptor):
             os.remove(output_descriptor)
@@ -268,14 +268,14 @@ class TestImport(TestCase):
         # Groups are needed in template but causes tests to fail
         del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
-        test_invoc = op.join(base_path, "test_config_import_invoc.json")
+        test_invoc = self.get_file_path("test_config_import_invoc.json")
         simulate_args = ["exec", "simulate", json.dumps(result_desc),
                          "-i", test_invoc]
 
         expected_cml = ("tool config.toml")
         result_cml = bosh(simulate_args).shell_command
 
-        with open(op.join(base_path, "expected_config.toml"), "r") as c:
+        with open(self.get_file_path("expected_config.toml"), "r") as c:
             expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
             with open(result_desc['output-files']
@@ -289,14 +289,14 @@ class TestImport(TestCase):
         self.assertEqual(result_sim_out, expect_sim_out)
 
     def test_import_yaml_config(self):
-        base_path = op.join(op.split(bfile)[0], "tests/config")
-        expected_desc = loadJson("schema/examples/yaml_config_desc.json")
-        config = op.join(base_path, "configuration.yml")
-        output_descriptor = op.join(base_path, "output.json")
+        self.setup("config")
+        expected_desc = loadJson(self.get_file_path("yaml_config_desc.json"))
+        config = self.get_file_path("configuration.yml")
+        output_descriptor = self.get_file_path("output.json")
 
         import_args = ["import", "config", output_descriptor, config]
         bosh(import_args)
-        result_desc = loadJson(op.join(base_path, "output.json"))
+        result_desc = loadJson(output_descriptor)
 
         if op.exists(output_descriptor):
             os.remove(output_descriptor)
@@ -305,14 +305,14 @@ class TestImport(TestCase):
         # Groups are needed in template but causes tests to fail
         del result_desc['groups']
         # Tests the generated descriptor by running it with a test invocation
-        test_invoc = op.join(base_path, "test_config_import_invoc.json")
+        test_invoc = self.get_file_path("test_config_import_invoc.json")
         simulate_args = ["exec", "simulate", json.dumps(result_desc),
                          "-i", test_invoc]
 
         expected_cml = ("tool config.yml")
         result_cml = bosh(simulate_args).shell_command
 
-        with open(op.join(base_path, "expected_config.yml"), "r") as c:
+        with open(self.get_file_path("expected_config.yml"), "r") as c:
             expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
             with open(result_desc['output-files']

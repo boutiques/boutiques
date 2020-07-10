@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 from unittest import TestCase
 import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques.util.BaseTest import BaseTest
 
 
 def mock_get(*args, **kwargs):
@@ -24,20 +25,23 @@ def mock_get(*args, **kwargs):
     return mock_zenodo_search(mock_records)
 
 
-class TestLogger(TestCase):
+class TestLogger(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("example1")
 
-    def get_examples_dir(self):
-        return os.path.join(os.path.dirname(bfile),
-                            "schema", "examples")
+    # Captures the stdout and stderr during test execution
+    # and returns them as a tuple in readouterr()
+    @pytest.fixture(autouse=True)
+    def capfd(self, capfd):
+        self.capfd = capfd
 
     def test_raise_error(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        invocationStr = open(os.path.join(example1_dir,
-                                          "invocation_invalid.json")).read()
+        invocationStr = open(
+            self.get_file_path("invocation_invalid.json")).read()
         with pytest.raises(LoadError) as e:
             bosh.execute("launch",
-                         os.path.join(example1_dir,
-                                      "example1_docker.json"),
+                         self.get_file_path("example1_docker.json"),
                          invocationStr,
                          "--skip-data-collection")
         self.assertIn("[ ERROR ]", str(e.getrepr(style='long')))
@@ -62,15 +66,8 @@ class TestLogger(TestCase):
         self.assertIn("[ WARNING ]", out)
 
     def test_evaloutput(self):
-        example1_dir = os.path.join(self.get_examples_dir(), "example1")
-        desc = os.path.join(example1_dir, "example1_docker.json")
-        invo = os.path.join(example1_dir, "invocation.json")
-        query = bosh.evaluate(desc, invo, "invalid-query")
+        query = bosh.evaluate(self.get_file_path("example1_docker.json"),
+                              self.get_file_path("invocation.json"),
+                              "invalid-query")
         out, err = self.capfd.readouterr()
         self.assertIn("[ ERROR ]", out)
-
-    # Captures the stdout and stderr during test execution
-    # and returns them as a tuple in readouterr()
-    @pytest.fixture(autouse=True)
-    def capfd(self, capfd):
-        self.capfd = capfd

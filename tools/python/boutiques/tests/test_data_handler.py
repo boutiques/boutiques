@@ -11,17 +11,23 @@ import mock
 import shutil
 import pytest
 import boutiques
+from boutiques.util.BaseTest import BaseTest
 
 
-class TestDataHandler(TestCase):
+class TestDataHandler(BaseTest):
     @pytest.fixture(autouse=True)
     def reset(self):
         # Reset before each test
         if os.path.isdir(mock_get_data_cache()):
             shutil.rmtree(mock_get_data_cache())
-        src = os.path.join(os.path.dirname(bfile),
-                           "tests", "input-dir", "test-data-cache")
+        src = os.path.join(self.tests_dir, "input-dir", "test-data-cache")
         shutil.copytree(src, mock_get_data_cache())
+
+    # Captures the stdout and stderr during test execution
+    # and returns them as a tuple in readouterr()
+    @pytest.fixture(autouse=True)
+    def capfd(self, capfd):
+        self.capfd = capfd
 
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
@@ -100,8 +106,8 @@ class TestDataHandler(TestCase):
 
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())
-    @mock.patch('requests.get', side_effect=mock_get_publish_individual())
-    @mock.patch('requests.post', side_effect=mock_post_publish_individual())
+    @mock.patch('requests.get', side_effect=mock_get_publish_single())
+    @mock.patch('requests.post', side_effect=mock_post_publish_single())
     def test_publish_individual(self, mock_dir, mock_get, mock_post):
         bosh(["data", "publish", "-y", "--individual",
               "--sandbox", "--zenodo-token",
@@ -184,9 +190,3 @@ class TestDataHandler(TestCase):
                   "test", "-v"])
         except Exception as e:
             self.fail("Unexpected exception raised: " + str(e))
-
-    # Captures the stdout and stderr during test execution
-    # and returns them as a tuple in readouterr()
-    @pytest.fixture(autouse=True)
-    def capfd(self, capfd):
-        self.capfd = capfd

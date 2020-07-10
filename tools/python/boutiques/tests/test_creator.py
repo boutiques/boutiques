@@ -16,6 +16,9 @@ from boutiques.creator import CreatorError
 
 
 class TestCreator(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("creator")
 
     def test_success_template(self):
         fil = 'creator_output.json'
@@ -36,10 +39,8 @@ class TestCreator(BaseTest):
                         reason="Docker not installed")
     def test_fail_image_(self):
         fil = 'creator_output.json'
-        self.assertRaises(CreatorError,
-                          bosh,
-                          ['create', '-d', 'ihopethisdoesntexists', fil]
-                          )
+        self.assertRaises(CreatorError, bosh,
+                          ['create', '-d', 'ihopethisdoesntexists', fil])
 
     def test_not_an_argparser(self):
         self.assertRaises(CreatorError, bc.CreateDescriptor, "notaparser")
@@ -89,7 +90,9 @@ class TestCreator(BaseTest):
         self.assertIsNone(bosh(['invocation', fil, '-i', invof]))
 
     def test_success_template_camel_case(self):
-        template = './boutiques/templates/basic.json'
+        template = op.join(op.split(self.tests_dir)[0],
+                           'templates',
+                           'basic.json')
         fil = 'creator_output.json'
         bosh(['create', fil, '--camel-case'])
         self.assertIsNone(bosh(['validate', fil]))
@@ -109,11 +112,8 @@ class TestCreator(BaseTest):
             self.assertFalse(all([("_" in camelMbr) for camelMbr in camelMbrs]))
 
     def test_create_cl_template_from_descriptor(self):
-        base_path = op.join(op.split(bfile)[0], "tests/config")
-        cl_template = op.join(self.tests_dir,
-                              "creator",
-                              "expected_cl_template_create.json")
-        output = op.join(base_path, "out_desc.json")
+        cl_template = self.get_file_path("expected_cl_template_create.json")
+        output = self.get_file_path("out_desc.json")
         expected_cml = loadJson(cl_template)['command-line']
         expected_inputs = loadJson(cl_template)['inputs']
 
@@ -129,11 +129,8 @@ class TestCreator(BaseTest):
         self.assertEqual(expected_inputs, result_inputs)
 
     def test_create_cl_template_from_string(self):
-        base_path = op.join(op.split(bfile)[0], "tests/config")
-        output = op.join(base_path, "out_desc.json")
-        cl_template = op.join(self.tests_dir,
-                              "creator",
-                              "expected_cl_template_create.json")
+        cl_template = self.get_file_path("expected_cl_template_create.json")
+        output = self.get_file_path("out_desc.json")
         expected_cml = "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]"
         expected_inputs = loadJson(cl_template)['inputs']
 

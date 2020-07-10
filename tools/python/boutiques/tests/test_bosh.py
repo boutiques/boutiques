@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-from unittest import TestCase
 from boutiques.bosh import bosh
 from boutiques.localExec import ExecutorError
 from boutiques.dataHandler import DataHandlerError
 from boutiques import BoutiquesError
+from boutiques.util.BaseTest import BaseTest
 
 
-class TestBosh(TestCase):
+class TestBosh(BaseTest):
 
     def test_help(self):
         self.assertRaises(ExecutorError, bosh, [])

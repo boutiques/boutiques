@@ -1,0 +1,37 @@
+{
+    "command-line": "[INPUT_LIST_NUMBER] [INPUT_LIST_FILE] [INPUT_LIST_STRING]",
+    "description": "A command with custom list separators",
+    "inputs": [
+        {
+            "id": "input_list_number",
+            "name": "Input number list",
+            "type": "Number",
+            "list": true,
+            "list-separator": ":",
+            "min-list-entries": 2,
+            "value-key": "[INPUT_LIST_NUMBER]"
+        },
+        {
+            "id": "input_list_file",
+            "name": "Input file list",
+            "type": "File",
+            "list": true,
+            "list-separator": ",",
+            "min-list-entries": 2,
+            "value-key": "[INPUT_LIST_FILE]"
+        },
+        {
+            "id": "input_list_string",
+            "name": "Input string list",
+            "type": "String",
+            "list": true,
+            "min-list-entries": 4,
+            "list-separator": "', !",
+            "value-choices": ["string1", "string2"],
+            "value-key": "[INPUT_LIST_STRING]"
+        }
+    ],
+    "name": "list separator",
+    "schema-version": "0.5", 
+    "tool-version": "0.1"
+}

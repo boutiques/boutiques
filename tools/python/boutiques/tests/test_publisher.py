@@ -12,6 +12,25 @@ import mock
 from boutiques_mocks import *
 from unittest import TestCase
 from boutiques.util.utils import loadJson
+from boutiques.util.BaseTest import BaseTest
+import pytest
+
+
+def mock_zenodo_deposit_updated(old_zid, new_zid):
+    mock_json = {
+                  "links": {
+                    "latest_draft": "https://zenodo.org/api/record/%s"
+                                    % new_zid
+                  },
+                  "files": [
+                    {
+                      "id": 1234
+                    }
+                  ],
+                  "doi": "10.5072/zenodo.%s"
+                         % old_zid
+                }
+    return MockHttpResponse(201, mock_json)
 
 
 def mock_get_publish_then_update():
@@ -22,12 +41,6 @@ def mock_get_publish_then_update():
             mock_zenodo_test_api_fail(),
             mock_zenodo_test_api(),
             mock_zenodo_search([mock_record])])
-
-
-# for publishing updates with --replace option
-def mock_get_no_search():
-    return ([mock_zenodo_test_api_fail(),
-            mock_zenodo_test_api()])
 
 
 def mock_post_publish_then_update():
@@ -45,35 +58,17 @@ def mock_post_publish_update_only():
             mock_zenodo_publish(2345678)])
 
 
-def mock_put():
-    return mock_zenodo_update_metadata()
-
-
-def mock_delete():
-    return mock_zenodo_delete_files()
-
-
-def mock_get_auth_fail():
-    return mock_zenodo_test_api_fail()
-
-
-def mock_post_no_permission():
-    return mock_zenodo_no_permission()
-
-
-class TestPublisher(TestCase):
-
-    def get_examples_dir(self):
-        return op.join(op.dirname(bfile),
-                       "schema", "examples")
+class TestPublisher(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("example1")
 
     @mock.patch('requests.get', side_effect=mock_get_publish_then_update())
     @mock.patch('requests.post', side_effect=mock_post_publish_then_update())
-    @mock.patch('requests.put', return_value=mock_put())
-    @mock.patch('requests.delete', return_value=mock_delete())
+    @mock.patch('requests.put', return_value=mock_zenodo_test_api())
+    @mock.patch('requests.delete', return_value=mock_zenodo_delete_files())
     def test_publication(self, mock_get, mock_post, mock_put, mock_delete):
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-        example1_desc = op.join(example1_dir, "example1_docker.json")
+        example1_desc = self.get_file_path("example1_docker.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
@@ -105,8 +100,8 @@ class TestPublisher(TestCase):
         self.assertTrue("Descriptor already has a DOI" in str(e.exception))
 
         # Test publication of an updated version of the same descriptor
-        example1_desc_updated = op.join(example1_dir,
-                                        "example1_docker_updated.json")
+        example1_desc_updated = self.get_file_path(
+            "example1_docker_updated.json")
         temp_descriptor_updated = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc_updated, temp_descriptor_updated.name)
 
@@ -124,48 +119,39 @@ class TestPublisher(TestCase):
             self.assertNotEqual(new_doi, doi)
             self.assertEqual(descriptor_updated.get('doi'), new_doi)
 
-    @mock.patch('requests.get', return_value=mock_get_auth_fail())
+    @mock.patch('requests.get', return_value=mock_zenodo_test_api_fail())
     def test_publisher_auth(self, mock_get):
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-
+        test_desc = self.get_file_path("example1_docker.json")
         # Bad token should fail
         with self.assertRaises(ZenodoError) as e:
-            bosh(["publish",
-                  op.join(example1_dir, "example1_docker.json"),
-                  "--sandbox",
+            bosh(["publish", test_desc, "--sandbox",
                   "-y", "-v", "--zenodo-token", "12345"])
         self.assertIn("Cannot authenticate to Zenodo", str(e.exception))
 
         # No token should fail
         with self.assertRaises(ZenodoError) as e:
-            bosh(["publish",
-                 op.join(example1_dir,
-                         "example1_docker.json"),
-                 "--sandbox", "-y", "-v"])
+            bosh(["publish", test_desc, "--sandbox", "-y", "-v"])
         self.assertIn("Cannot authenticate to Zenodo", str(e.exception))
 
     # Note that this test does not use mocks as the mocks don't seem
     # to work with subprocess.Popen.
     def test_publisher_auth_fail_cli(self):
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-        command = ("bosh publish " + op.join(example1_dir,
-                                             "example1_docker.json") +
-                   " --sandbox -y -v "
-                   "--zenodo-token 12345")
+        command = ("bosh publish " +
+                   self.get_file_path("example1_docker.json") +
+                   " --sandbox -y -v --zenodo-token 12345")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         process.communicate()
         self.assertTrue(process.returncode)
 
-    @mock.patch('requests.get', side_effect=mock_get_no_search())
+    @mock.patch('requests.get', side_effect=mock_get_publish_bulk())
     @mock.patch('requests.post', side_effect=mock_post_publish_update_only())
-    @mock.patch('requests.put', return_value=mock_put())
-    @mock.patch('requests.delete', return_value=mock_delete())
+    @mock.patch('requests.put', return_value=mock_zenodo_test_api())
+    @mock.patch('requests.delete', return_value=mock_zenodo_delete_files())
     def test_publication_replace_with_id(self, mock_get, mock_post, mock_put,
                                          mock_delete):
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-        example1_desc = op.join(example1_dir, "example1_docker.json")
+        example1_desc = self.get_file_path("example1_docker.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
@@ -190,8 +176,7 @@ class TestPublisher(TestCase):
 
     def test_publication_errors(self):
         # Update an already published descriptor (wrong id)
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-        example1_desc = op.join(example1_dir, "example1_docker.json")
+        example1_desc = self.get_file_path("example1_docker.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
@@ -206,7 +191,7 @@ class TestPublisher(TestCase):
                         in str(e.exception))
 
         # Publish a descriptor that doesn't have an author
-        good_desc = op.join(self.get_examples_dir(), "good.json")
+        good_desc = op.join(self.tests_dir, "invocation", "good.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(good_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
@@ -220,7 +205,7 @@ class TestPublisher(TestCase):
                         in str(e.exception))
 
         # Publish a descriptor that doesn't have a container image
-        good_desc = op.join(self.get_examples_dir(), "no_container.json")
+        good_desc = op.join(self.tests_dir, "exec", "no_container.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(good_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
@@ -234,8 +219,6 @@ class TestPublisher(TestCase):
                         in str(e.exception))
 
         # Update a descriptor that doesn't have a DOI
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-        example1_desc = op.join(example1_dir, "example1_docker.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
         # Make sure that example1.json doesn't have a DOI yet
@@ -255,14 +238,13 @@ class TestPublisher(TestCase):
                         " contain a DOI"
                         in str(e.exception))
 
-    @mock.patch('requests.get', side_effect=mock_get_no_search())
+    @mock.patch('requests.get', side_effect=mock_get_publish_bulk())
     @mock.patch('requests.post', side_effect=mock_post_publish_update_only())
-    @mock.patch('requests.put', return_value=mock_put())
-    @mock.patch('requests.delete', return_value=mock_delete())
+    @mock.patch('requests.put', return_value=mock_zenodo_test_api())
+    @mock.patch('requests.delete', return_value=mock_zenodo_delete_files())
     def test_publication_replace_no_id(self, mock_get, mock_post, mock_put,
                                        mock_delete):
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-        example1_desc = op.join(example1_dir, "example1_docker_with_doi.json")
+        example1_desc = self.get_file_path("example1_docker_with_doi.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
@@ -288,29 +270,26 @@ class TestPublisher(TestCase):
             self.assertNotEqual(doi, old_doi)
             self.assertEqual(descriptor.get('doi'), doi)
 
-    @mock.patch('requests.get', side_effect=mock_get_no_search())
-    @mock.patch('requests.post', return_value=mock_post_no_permission())
+    @mock.patch('requests.get', side_effect=mock_get_publish_bulk())
+    @mock.patch('requests.post', return_value=mock_zenodo_no_permission())
     def test_publisher_auth_no_permission(self, mock_get, mock_post):
-        example1_dir = op.join(self.get_examples_dir(), "example1")
-
         # Trying to update a tool published by a different
         # user should inform the user that they do not
         # have permission to publish an update.
         with self.assertRaises(ZenodoError) as e:
             bosh(["publish",
-                  op.join(example1_dir, "example1_docker.json"),
+                  self.get_file_path("example1_docker.json"),
                   "--sandbox", "--id", "zenodo.12345",
                   "-y", "-v", "--zenodo-token", "12345"])
         self.assertIn("You do not have permission to access this "
                       "resource.", str(e.exception))
 
     @mock.patch('requests.post', side_effect=mock_post_publish_then_update())
-    @mock.patch('requests.put', return_value=mock_put())
-    @mock.patch('requests.delete', return_value=mock_delete())
+    @mock.patch('requests.put', return_value=mock_zenodo_test_api())
+    @mock.patch('requests.delete', return_value=mock_zenodo_delete_files())
     def test_publication_toolname_forwardslash(self,  mock_post,
                                                mock_put, mock_delete):
-        test_desc = op.join(self.get_examples_dir(),
-                            'test_forward_slash_toolName.json')
+        test_desc = self.get_file_path("test_forward_slash_toolName.json")
         with open(test_desc, 'r') as fhandle:
             descriptor = json.load(fhandle)
 

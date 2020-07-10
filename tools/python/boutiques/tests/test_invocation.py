@@ -5,36 +5,34 @@ from boutiques.bosh import bosh
 from boutiques import __file__ as bfile
 import os
 import subprocess
+from boutiques.util.BaseTest import BaseTest
+import pytest
 
 
-class TestInvocation(TestCase):
+class TestInvocation(BaseTest):
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup("invocation")
 
     def test_invocation(self):
-        descriptor = os.path.join(os.path.split(bfile)[0],
-                                  "schema/examples/good.json")
-        invocation = os.path.join(os.path.split(bfile)[0],
-                                  "schema/examples/good_invocation.json")
+        descriptor = self.get_file_path("good.json")
+        invocation = self.get_file_path("good_invocation.json")
         self.assertFalse(bosh(["invocation", descriptor, "-i",
                                invocation, "-w"]))
         self.assertFalse(bosh(["invocation", descriptor, "-i",
                                invocation, "-w"]))
 
     def test_invocation_json_obj(self):
-        descriptor = open(os.path.join(os.path.split(bfile)[0],
-                                       "schema/examples/good.json")).read()
-        invocation = open(os.path.join(os.path.split(bfile)[0],
-                                       "schema/examples/"
-                                       "good_invocation.json")).read()
+        descriptor = open(self.get_file_path("good.json")).read()
+        invocation = open(self.get_file_path("good_invocation.json")).read()
         self.assertFalse(bosh(["invocation", descriptor, "-i",
                                invocation, "-w"]))
         self.assertFalse(bosh(["invocation", descriptor, "-i",
                                invocation, "-w"]))
 
     def test_invocation_invalid_cli(self):
-        descriptor = os.path.join(os.path.split(bfile)[0],
-                                  "schema/examples/good.json")
-        invocation = os.path.join(os.path.split(bfile)[0],
-                                  "schema/examples/wrong_invocation.json")
+        descriptor = self.get_file_path("good.json")
+        invocation = self.get_file_path("wrong_invocation.json")
         command = ("bosh invocation " + descriptor + "-i " + invocation)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
