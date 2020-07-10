@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 
 from boutiques.util.BaseTest import BaseTest
+from boutiques import __file__ as bfile
 import boutiques as bosh
+import pytest
+import os
 
 
 class TestExample3(BaseTest):
-
-    def setUp(self):
-        self.setup("example3")
+    @pytest.fixture(autouse=True)
+    def set_test_dir(self):
+        self.setup(os.path.join(os.path.dirname(bfile),
+                                "schema", "examples", "example3"))
 
     def test_example3_exec(self):
         self.assert_successful_return(

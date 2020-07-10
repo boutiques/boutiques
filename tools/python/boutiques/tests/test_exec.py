@@ -23,12 +23,12 @@ class TestExec(BaseTest):
                            "--skip-data-collection"))
         self.assertRaises(ExecutorError, bosh.execute,
                           ("launch",
-                           self.get_file_path("example1_docker.json"),
+                           self.example1_descriptor,
                            self.get_file_path("fake.json"),
                            "--skip-data-collection"))
         self.assertRaises(ExecutorError, bosh.execute,
                           ("launch",
-                           self.get_file_path("example1_docker.json"),
+                           self.example1_descriptor,
                            self.get_file_path("exampleTool1.py"),
                            "--skip-data-collection"))
 

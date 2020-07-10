@@ -54,7 +54,7 @@ class TestDataCollection(BaseTest):
                         reason="Docker not installed")
     def test_data_collection(self):
         bosh.execute("launch",
-                     self.get_file_path("example1_docker.json"),
+                     self.example1_descriptor,
                      self.get_file_path("invocation.json"),
                      "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -98,7 +98,7 @@ class TestDataCollection(BaseTest):
             original_size = len(cache_fls)
 
         bosh.execute("launch",
-                     self.get_file_path("example1_docker.json"),
+                     self.example1_descriptor,
                      self.get_file_path("invocation.json"),
                      "--skip-data-collection",
                      "-v", "{}:/test_mount1".format(
@@ -162,7 +162,7 @@ class TestDataCollection(BaseTest):
             \"cluster\": \"beluga\"
         }"""
         bosh.execute("launch",
-                     self.get_file_path("example1_docker.json"),
+                     self.example1_descriptor,
                      self.get_file_path("invocation.json"),
                      "-v", "{}:/test_mount1".format(
                         self.get_file_path("example1_mount1")),

@@ -8,6 +8,7 @@ from boutiques.util.utils import loadJson
 from boutiques.deprecate import DeprecateError, deprecate
 from boutiques_mocks import mock_zenodo_test_api, mock_zenodo_delete_files,\
     example_boutiques_tool, get_zenodo_record, MockHttpResponse
+from boutiques.util.BaseTest import BaseTest
 
 
 def mock_get(*args, **kwargs):
@@ -74,7 +75,7 @@ def mock_download_deprecated(url, file_path):
 @mock.patch('requests.post', side_effect=mock_post)
 @mock.patch('requests.put', side_effect=mock_zenodo_test_api)
 @mock.patch('requests.delete', side_effect=mock_zenodo_delete_files)
-class TestDeprecate(TestCase):
+class TestDeprecate(BaseTest):
     def test_deprecate(self, *args):
         new_doi = bosh(["deprecate", "--verbose", "--by", "zenodo.12345",
                         "zenodo." + str(example_boutiques_tool.id),

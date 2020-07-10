@@ -10,13 +10,17 @@ from boutiques.util.BaseTest import BaseTest
 import pytest
 
 
+def mock_get():
+    return mock_zenodo_search([example_boutiques_tool])
+
+
 class TestEvaluate(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
         self.setup("example1")
 
     def test_evaloutput(self):
-        desc = self.get_file_path("example1_docker.json")
+        desc = self.example1_descriptor
         invo = self.get_file_path("invocation.json")
         query = bosh.evaluate(desc, invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
@@ -33,7 +37,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evaloutput_json_obj(self):
-        desc = open(self.get_file_path("example1_docker.json")).read()
+        desc = open(self.example1_descriptor).read()
         invo = open(self.get_file_path("invocation.json")).read()
         query = bosh.evaluate(desc, invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
@@ -49,8 +53,7 @@ class TestEvaluate(BaseTest):
         expect = {}
         self.assertEqual(query, expect)
 
-    @mock.patch('requests.get',
-                return_value=mock_zenodo_search([example_boutiques_tool]))
+    @mock.patch('requests.get', return_value=mock_get())
     def test_evaloutput_from_zenodo(self, _):
         desc = "zenodo." + str(example_boutiques_tool.id)
         invo = self.get_file_path("invocation.json")
@@ -69,7 +72,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evalinput(self):
-        desc = self.get_file_path("example1_docker.json")
+        desc = self.example1_descriptor
         invo = self.get_file_path("invocation.json")
         query = bosh.evaluate(desc, invo, "inputs/")
         expect = {'str_input_list': ["fo '; echo FAIL", 'bar'],
@@ -102,7 +105,7 @@ class TestEvaluate(BaseTest):
         self.assertEqual(query, expect)
 
     def test_evalgroups(self):
-        desc = self.get_file_path("example1_docker.json")
+        desc = self.example1_descriptor
         invo = self.get_file_path("invocation.json")
         query = bosh.evaluate(desc, invo, "groups/")
         expect = {'an_example_group': {'num_input': None,

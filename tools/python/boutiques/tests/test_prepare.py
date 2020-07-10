@@ -50,7 +50,7 @@ class TestPrepare(BaseTest):
                         reason="Docker not installed")
     def test_prepare_docker(self):
         ret = bosh.execute("prepare",
-                           self.get_file_path("example1_docker.json"))
+                           self.example1_descriptor)
         self.assertIn("Local copy", ret.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),

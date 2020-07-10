@@ -41,7 +41,7 @@ class TestLogger(BaseTest):
             self.get_file_path("invocation_invalid.json")).read()
         with pytest.raises(LoadError) as e:
             bosh.execute("launch",
-                         self.get_file_path("example1_docker.json"),
+                         self.example1_descriptor,
                          invocationStr,
                          "--skip-data-collection")
         self.assertIn("[ ERROR ]", str(e.getrepr(style='long')))
@@ -66,7 +66,7 @@ class TestLogger(BaseTest):
         self.assertIn("[ WARNING ]", out)
 
     def test_evaloutput(self):
-        query = bosh.evaluate(self.get_file_path("example1_docker.json"),
+        query = bosh.evaluate(self.example1_descriptor,
                               self.get_file_path("invocation.json"),
                               "invalid-query")
         out, err = self.capfd.readouterr()

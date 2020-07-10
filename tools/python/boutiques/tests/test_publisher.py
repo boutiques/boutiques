@@ -68,7 +68,7 @@ class TestPublisher(BaseTest):
     @mock.patch('requests.put', return_value=mock_zenodo_test_api())
     @mock.patch('requests.delete', return_value=mock_zenodo_delete_files())
     def test_publication(self, mock_get, mock_post, mock_put, mock_delete):
-        example1_desc = self.get_file_path("example1_docker.json")
+        example1_desc = self.example1_descriptor
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
@@ -121,7 +121,7 @@ class TestPublisher(BaseTest):
 
     @mock.patch('requests.get', return_value=mock_zenodo_test_api_fail())
     def test_publisher_auth(self, mock_get):
-        test_desc = self.get_file_path("example1_docker.json")
+        test_desc = self.example1_descriptor
         # Bad token should fail
         with self.assertRaises(ZenodoError) as e:
             bosh(["publish", test_desc, "--sandbox",
@@ -137,7 +137,7 @@ class TestPublisher(BaseTest):
     # to work with subprocess.Popen.
     def test_publisher_auth_fail_cli(self):
         command = ("bosh publish " +
-                   self.get_file_path("example1_docker.json") +
+                   self.example1_descriptor +
                    " --sandbox -y -v --zenodo-token 12345")
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
@@ -151,7 +151,7 @@ class TestPublisher(BaseTest):
     @mock.patch('requests.delete', return_value=mock_zenodo_delete_files())
     def test_publication_replace_with_id(self, mock_get, mock_post, mock_put,
                                          mock_delete):
-        example1_desc = self.get_file_path("example1_docker.json")
+        example1_desc = self.example1_descriptor
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
@@ -176,7 +176,7 @@ class TestPublisher(BaseTest):
 
     def test_publication_errors(self):
         # Update an already published descriptor (wrong id)
-        example1_desc = self.get_file_path("example1_docker.json")
+        example1_desc = self.example1_descriptor
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
@@ -278,7 +278,7 @@ class TestPublisher(BaseTest):
         # have permission to publish an update.
         with self.assertRaises(ZenodoError) as e:
             bosh(["publish",
-                  self.get_file_path("example1_docker.json"),
+                  self.example1_descriptor,
                   "--sandbox", "--id", "zenodo.12345",
                   "-y", "-v", "--zenodo-token", "12345"])
         self.assertIn("You do not have permission to access this "

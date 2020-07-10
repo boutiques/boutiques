@@ -2,6 +2,7 @@ from boutiques.bosh import bosh
 from unittest import TestCase
 import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques.util.BaseTest import BaseTest
 
 
 def mock_get(query, exact, *args, **kwargs):
@@ -31,7 +32,7 @@ def mock_get(query, exact, *args, **kwargs):
     return mock_zenodo_search(mock_records)
 
 
-class TestSearch(TestCase):
+class TestSearch(BaseTest):
     @mock.patch('requests.get',
                 side_effect=lambda *args, **kwargs: mock_get(
                     "", False, *args, **kwargs))

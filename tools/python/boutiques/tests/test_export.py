@@ -17,7 +17,7 @@ class TestExport(BaseTest):
         self.setup("example1")
 
     def test_export(self):
-        example1_desc = self.get_file_path("example1_docker.json")
+        example1_desc = self.example1_descriptor
         example1_desc_doi = self.get_file_path("example1_docker_with_doi.json")
         fout = "test-example1-carmin.json"
         ref_name = "example1_docker_exported.json"
@@ -53,7 +53,7 @@ class TestExport(BaseTest):
         os.remove(fout)
 
     def test_export_json_obj(self):
-        example1_desc = open(self.get_file_path("example1_docker.json")).read()
+        example1_desc = open(self.example1_descriptor).read()
         example1_desc_doi = self.get_file_path("example1_docker_with_doi.json")
         fout = "test-example1-carmin.json"
         ref_name = "example1_docker_exported.json"
