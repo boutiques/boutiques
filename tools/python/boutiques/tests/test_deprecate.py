@@ -7,7 +7,8 @@ from boutiques import __file__ as bfile
 from boutiques.util.utils import loadJson
 from boutiques.deprecate import DeprecateError, deprecate
 from boutiques_mocks import mock_zenodo_test_api, mock_zenodo_delete_files,\
-    example_boutiques_tool, get_zenodo_record, MockHttpResponse
+    example_boutiques_tool, get_zenodo_record, MockHttpResponse,\
+    mock_zenodo_search
 from boutiques.util.BaseTest import BaseTest
 
 
