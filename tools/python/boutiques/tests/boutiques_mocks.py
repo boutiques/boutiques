@@ -31,6 +31,10 @@ example_boutiques_tool = MockZenodoRecord(2644621, "Example Boutiques Tool",
                                           "5db6241a979f/example1_docker.json")
 
 
+def mock_get():
+    return mock_zenodo_search([example_boutiques_tool])
+
+
 def mock_zenodo_test_api(*args, **kwargs):
     return MockHttpResponse(200)
 

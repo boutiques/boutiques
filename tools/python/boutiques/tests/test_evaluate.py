@@ -5,19 +5,16 @@ from unittest import TestCase
 from boutiques import __file__ as bfile
 import boutiques as bosh
 import mock
-from boutiques_mocks import mock_zenodo_search, example_boutiques_tool
+from boutiques_mocks import mock_zenodo_search, example_boutiques_tool, mock_get
 from boutiques.util.BaseTest import BaseTest
 import pytest
-
-
-def mock_get():
-    return mock_zenodo_search([example_boutiques_tool])
 
 
 class TestEvaluate(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup("example1")
+        self.setup(os.path.join(os.path.dirname(bfile),
+                                "schema", "examples", "example1"))
 
     def test_evaloutput(self):
         desc = self.example1_descriptor

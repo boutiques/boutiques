@@ -8,8 +8,8 @@ from boutiques import __file__ as bfile
 class BaseTest(TestCase):
     dir = "."
     tests_dir = os.path.join(os.path.dirname(bfile), "tests")
-    example1_descriptor = os.path.join(tests_dir,
-                                       "example1",
+    example1_descriptor = os.path.join(os.path.dirname(bfile), "schema",
+                                       "examples", "example1",
                                        "example1_docker.json")
 
     def setup(self, dir):

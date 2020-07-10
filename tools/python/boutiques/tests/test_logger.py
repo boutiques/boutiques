@@ -28,7 +28,8 @@ def mock_get(*args, **kwargs):
 class TestLogger(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup("example1")
+        self.setup(os.path.join(os.path.dirname(bfile),
+                                "schema", "examples", "example1"))
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
@@ -37,8 +38,7 @@ class TestLogger(BaseTest):
         self.capfd = capfd
 
     def test_raise_error(self):
-        invocationStr = open(
-            self.get_file_path("invocation_invalid.json")).read()
+        invocationStr = "invalid json string"
         with pytest.raises(LoadError) as e:
             bosh.execute("launch",
                          self.example1_descriptor,

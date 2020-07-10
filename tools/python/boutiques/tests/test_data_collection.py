@@ -9,12 +9,8 @@ from boutiques import __file__ as bfile
 from boutiques.localExec import loadJson
 from boutiques.util.BaseTest import BaseTest
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
-    example_boutiques_tool
+    example_boutiques_tool, mock_get
 import boutiques as bosh
-
-
-def mock_get():
-    return mock_zenodo_search([example_boutiques_tool])
 
 
 def retrieve_data_record():
@@ -33,7 +29,8 @@ def retrieve_data_record():
 class TestDataCollection(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup("example1")
+        self.setup(os.path.join(os.path.dirname(bfile),
+                                "schema", "examples", "example1"))
 
     @pytest.fixture(autouse=True)
     def clean_up(self):

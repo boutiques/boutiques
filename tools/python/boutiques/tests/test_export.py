@@ -14,7 +14,8 @@ import pytest
 class TestExport(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup("example1")
+        self.setup(os.path.join(os.path.dirname(bfile),
+                                "schema", "examples", "example1"))
 
     def test_export(self):
         example1_desc = self.example1_descriptor

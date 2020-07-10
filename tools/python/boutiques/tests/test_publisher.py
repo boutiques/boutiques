@@ -61,7 +61,8 @@ def mock_post_publish_update_only():
 class TestPublisher(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup("example1")
+        self.setup(os.path.join(os.path.dirname(bfile),
+                                "schema", "examples", "example1"))
 
     @mock.patch('requests.get', side_effect=mock_get_publish_then_update())
     @mock.patch('requests.post', side_effect=mock_post_publish_then_update())

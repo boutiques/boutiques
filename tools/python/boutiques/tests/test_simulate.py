@@ -10,13 +10,9 @@ import boutiques as bosh
 import mock
 from boutiques.localExec import ExecutorError
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
-    example_boutiques_tool
+    example_boutiques_tool, mock_get
 from boutiques.util.BaseTest import BaseTest
 import pytest
-
-
-def mock_get():
-    return mock_zenodo_search([example_boutiques_tool])
 
 
 class TestSimulate(BaseTest):
