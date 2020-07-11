@@ -1,0 +1,134 @@
+{
+    "name": "tool name",
+    "description": "tool description",
+    "tool-version": "v0.1.0",
+    "schema-version": "0.5",
+    "command-line": "/path/to/myscript.py [MYARG1] [MYARG2] [MYARG3] [MYSUBPARSER] [SUBOPTION1] [SUBOPTION2] [SUBOPTION3] [SUBOPTIONFLAG1] [SUBOPTIONFLAG2] [SUBOPTLISTFLAG]",
+    "inputs": [
+        {
+            "name": "myarg1",
+            "id": "myarg1",
+            "description": "my help 1",
+            "type": "String",
+            "list": true,
+            "optional": false,
+            "value-key": "[MYARG1]"
+        },
+        {
+            "name": "myarg2",
+            "id": "myarg2",
+            "description": "my help 2",
+            "type": "Number",
+            "optional": false,
+            "value-key": "[MYARG2]"
+        },
+        {
+            "name": "myarg3",
+            "id": "myarg3",
+            "description": "my help 3",
+            "type": "String",
+            "optional": true,
+            "command-line-flag": "--myarg3",
+            "value-key": "[MYARG3]"
+        },
+        {
+            "name": "suboption1",
+            "id": "suboption1",
+            "description": "the first sub option option",
+            "type": "String",
+            "optional": true,
+            "value-key": "[SUBOPTION1]"
+        },
+        {
+            "name": "suboption2",
+            "id": "suboption2",
+            "description": "the first sub option option",
+            "type": "String",
+            "optional": true,
+            "default-value": "hello",
+            "value-key": "[SUBOPTION2]",
+            "value-choices": [
+                "hello",
+                "goodbye"
+            ]
+        },
+        {
+            "name": "suboption3",
+            "id": "suboption3",
+            "description": "the second sub option option",
+            "type": "String",
+            "optional": true,
+            "value-key": "[SUBOPTION3]"
+        },
+        {
+            "name": "suboptionflag1",
+            "id": "suboptionflag1",
+            "description": "the bool opt flag",
+            "type": "String",
+            "optional": true,
+            "command-line-flag": "--suboptionflag1",
+            "value-key": "[SUBOPTIONFLAG1]"
+        },
+        {
+            "name": "suboptionflag2",
+            "id": "suboptionflag2",
+            "description": "the second sub option flag",
+            "type": "Flag",
+            "optional": true,
+            "command-line-flag": "--suboptionflag2",
+            "value-key": "[SUBOPTIONFLAG2]"
+        },
+        {
+            "name": "suboptlistflag",
+            "id": "suboptlistflag",
+            "description": "listy flag",
+            "type": "String",
+            "list": true,
+            "optional": true,
+            "command-line-flag": "--suboptlistflag",
+            "value-key": "[SUBOPTLISTFLAG]"
+        },
+        {
+            "name": "mysubparser",
+            "id": "mysubparser",
+            "description": "the choices you will make",
+            "type": "String",
+            "optional": true,
+            "value-key": "[MYSUBPARSER]",
+            "value-choices": [
+                "option1",
+                "option2"
+            ],
+            "value-requires": {
+                "option1": [
+                    "suboption1",
+                    "suboption2"
+                ],
+                "option2": [
+                    "suboption3"
+                ]
+            },
+            "value-disables": {
+                "option1": [
+                    "suboptionflag2",
+                    "suboption3",
+                    "suboptionflag1",
+                    "suboptlistflag"
+                ],
+                "option2": [
+                    "suboption1",
+                    "suboption2"
+                ]
+            }
+        }
+    ],
+    "tags": {
+        "purpose": "testing-creator",
+        "foo": "bar"
+    },
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    }
+}

@@ -1,0 +1,7 @@
+usage: exampleTool1.py [-h] [-c CONFIG_FILE]
+                       [-i STRING_INPUT [STRING_INPUT ...]]
+                       [-l INT_INPUT [INT_INPUT ...]]
+                       [-t FILE_LIST [FILE_LIST ...]] [-f] [-n NUMBER]
+                       [-s STRING] [-e ENUM_INPUT] [--no-opts] [--cond_out]
+                       file_input output_file
+exampleTool1.py: error: too few arguments

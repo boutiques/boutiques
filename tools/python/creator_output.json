@@ -1,0 +1,81 @@
+{
+    "name": "tool name",
+    "description": "tool description",
+    "tool-version": "v0.1.0",
+    "schema-version": "0.5",
+    "command-line": "echo [PARAM1] [PARAM2] [FLAG1] > [OUTPUT1]",
+    "container-image": {
+        "image": "user/image",
+        "index": "docker://",
+        "type": "singularity"
+    },
+    "inputs": [
+        {
+            "name": "The first parameter",
+            "id": "basicParam1",
+            "type": "File",
+            "optional": true,
+            "value-key": "[PARAM1]"
+        },
+        {
+            "name": "The second parameter",
+            "id": "basicParam2",
+            "type": "String",
+            "optional": false,
+            "value-key": "[PARAM2]",
+            "value-choices": [
+                "mychoice1.log",
+                "mychoice2.log"
+            ]
+        },
+        {
+            "name": "The first flag",
+            "id": "basicFlag1",
+            "type": "Flag",
+            "optional": true,
+            "command-line-flag": "-f",
+            "value-key": "[FLAG1]"
+        }
+    ],
+    "output-files": [
+        {
+            "name": "The first output",
+            "id": "basic_output1",
+            "optional": false,
+            "path-template": "[PARAM2].txt",
+            "path-template-stripped-extensions": [
+                ".log"
+            ],
+            "value-key": "[OUTPUT1]"
+        }
+    ],
+    "groups": [
+        {
+            "all-or-none": true,
+            "mutually-exclusive": false,
+            "one-is-required": false,
+            "name": "the param group",
+            "id": "group1",
+            "members": [
+                "basicParam1",
+                "basicFlag1"
+            ]
+        }
+    ],
+    "tags": {
+        "status": "example",
+        "purpose": "testing",
+        "foo": "bar"
+    },
+    "suggested-resources": {
+        "cpu-cores": 1,
+        "ram": 1,
+        "walltime-estimate": 60
+    },
+    "error-codes": [
+        {
+            "code": 1,
+            "description": "Crashed"
+        }
+    ]
+}
