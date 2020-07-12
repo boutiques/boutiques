@@ -62,5 +62,5 @@ class Searcher():
         zenodoHelper = ZenodoHelper(sandbox=self.sandbox, verbose=self.verbose,
                                     max_results=self.max_results, no_trunc=self.no_trunc)
 
-        return zenodoHelper.search(self.query_line,firstKeyWord,
-                                    secondKeyWord, searchType)
+        return zenodoHelper.search(self.query, self.query_line, firstKeyWord,
+                                   secondKeyWord, searchType)

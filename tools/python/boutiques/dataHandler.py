@@ -303,10 +303,12 @@ class DataHandler(object):
         secondKeyWord = "boutiques-execution-record"
         searchType = "dataset"
         query = ''
+        query_line = ''
+
         from boutiques.zenodoHelper import ZenodoHelper
         zenodoHelper = ZenodoHelper(verbose=verbose, sandbox=sandbox)
 
-        return zenodoHelper.search(query, firstKeyWord,
+        return zenodoHelper.search(query, query_line, firstKeyWord,
                                     secondKeyWord, searchType)
 
 

@@ -235,8 +235,8 @@ class ZenodoHelper(object):
                        format(msg_obj, r.json()['doi']), r)
         return r.json()['doi']
 
-    def search(self, query, firstKeyWord, secondKeyWord, searchType):
-        results = self.zenodo_search(query, firstKeyWord,
+    def search(self, query, query_line, firstKeyWord, secondKeyWord, searchType):
+        results = self.zenodo_search(query, query_line, firstKeyWord,
                                     secondKeyWord, searchType)
         total_results = results.json()["hits"]["total"]
         total_deprecated = len([h['metadata']['keywords'] for h in
@@ -258,7 +258,7 @@ class ZenodoHelper(object):
                       % total_deprecated))
         return results_list
 
-    def zenodo_search(self, query, firstKeyWord, secondKeyWord, searchType):
+    def zenodo_search(self, query, query_line, firstKeyWord, secondKeyWord, searchType):
         # Get all results
         r = requests.get(self.zenodo_endpoint + '/api/records/?q='
                          'keywords:(/%s/) AND '
@@ -266,7 +266,7 @@ class ZenodoHelper(object):
                          '%s'
                          '&file_type=json&type=%s&'
                          'page=1&size=%s' % (firstKeyWord, secondKeyWord,
-                                              query, searchType, 9999))
+                                              query_line, searchType, 9999))
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
@@ -422,8 +422,9 @@ class ZenodoHelper(object):
                 json_files.append(entry["fname"])
                 continue
 
-            query='AND "'+entry["zid"]+'"'
-            r = self.zenodo_search(query, firstKeyWord, secondKeyWord, searchType)
+            query_line ='AND "'+entry["zid"]+'"'
+            query = ''
+            r = self.zenodo_search(query, query_line, firstKeyWord, secondKeyWord, searchType)
             if (dataPull == False):
                 if not len(r.json()["hits"]["hits"]):
                     raise_error(ZenodoError, "Descriptor \"{0}\" "
