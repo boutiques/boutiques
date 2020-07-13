@@ -16,15 +16,7 @@ import pytest
 import boutiques
 import tempfile
 import json
-
-try:
-    # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-    from urllib import urlretrieve
+from urllib.request import urlretrieve
 
 
 def setup():
@@ -133,15 +125,16 @@ def mock_get(query, *args, **kwargs):
 
 
 def mock_urlretrieve(*args, **kwargs):
-    mock_record1 = MockZenodoRecord(2636983, "fsl_bet-2019-04-11T215451.747382.json_foo", "",
-                                    "https://zenodo.org/api/files/"
-                                    "aae134af-9b9b-4613-b7b9-d5c5adcc7e61/"
-                                    "fsl_bet-2019-04-11T215451.747382.json")
-    mock_record2 = MockZenodoRecord(2636975, "MCFLIRT_2019-10-18T141903.880238_foo", "",
-                                    "https://zenodo.org/api/files/"
-                                    "151ef721-9f86-49bd-ae3d-045ae1766ee8/"
-                                    "MCFLIRT-2019-04-11T213108.473348.json")
-
+    mock_record1 = MockZenodoRecord(
+        2636983, "fsl_bet-2019-04-11T215451.747382.json_foo", "",
+        "https://zenodo.org/api/files/"
+        "aae134af-9b9b-4613-b7b9-d5c5adcc7e61/"
+        "fsl_bet-2019-04-11T215451.747382.json")
+    mock_record2 = MockZenodoRecord(
+        2636975, "MCFLIRT_2019-10-18T141903.880238_foo", "",
+        "https://zenodo.org/api/files/"
+        "151ef721-9f86-49bd-ae3d-045ae1766ee8/"
+        "MCFLIRT-2019-04-11T213108.473348.json")
 
     temp = tempfile.NamedTemporaryFile(delete=False, mode='w+t')
     if "sl_bet-2019-04-11T215451.747382.json" in args[0]:
@@ -178,7 +171,6 @@ class TestDataHandler(TestCase):
                           "DEPRECATED", "DOWNLOADS", "AUTHOR",
                           "DOI", "CONTAINER", "TAGS"])
 
-
     @mock.patch('requests.get')
     def test_search_sorts_by_num_downloads(self, mymockget):
         mymockget.side_effect = lambda *args, **kwargs:\
@@ -189,16 +181,17 @@ class TestDataHandler(TestCase):
             downloads.append(r["DOWNLOADS"])
         self.assertEqual(sorted(downloads, reverse=True), downloads)
 
-    @mock.patch('boutiques.dataHandler.urlretrieve', side_effect=mock_urlretrieve)
+    @mock.patch('boutiques.dataHandler.urlretrieve',
+                side_effect=mock_urlretrieve)
     def test_pull(self, mock_urlretrieve):
-        print(example_boutiques_tool.id)
         bosh(["data", "pull", "zenodo." + "2636975"])
         cache_dir = os.path.join(
             os.path.expanduser('~'), ".cache", "boutiques", "production")
         self.assertTrue(os.path.exists(os.path.join(
             cache_dir, "zenodo." + "2636975")))
 
-    @mock.patch('boutiques.dataHandler.urlretrieve', side_effect=mock_urlretrieve)
+    @mock.patch('boutiques.dataHandler.urlretrieve',
+                side_effect=mock_urlretrieve)
     def test_pull_multi(self, mock_urlretrieve):
         results = bosh(["data", "pull", "zenodo.2636983", "zenodo.2636975"])
         cache_dir = os.path.join(os.path.expanduser('~'),
@@ -208,18 +201,20 @@ class TestDataHandler(TestCase):
         # self.assertTrue(os.path.exists(os.path.join(cache_dir,
         #                                             "zenodo-3563099.json")))
         self.assertTrue(os.path.exists(os.path.join(
-            cache_dir, "zenodo." +"2636983")))
+            cache_dir, "zenodo." + "2636983")))
         self.assertTrue(os.path.exists(os.path.join(cache_dir,
                                                     "zenodo.2636975")))
         self.assertEqual(len(results), 2, results)
 
-    @mock.patch('boutiques.dataHandler.urlretrieve', side_effect=mock_urlretrieve)
+    @mock.patch('boutiques.dataHandler.urlretrieve',
+                side_effect=mock_urlretrieve)
     def test_pull_duplicate_collapses(self, mock_urlretrieve):
         results = bosh(["data", "pull", "zenodo.2636983", "zenodo.2636975",
                         "zenodo.2636975"])
         self.assertEqual(len(results), 2, results)
 
-    @mock.patch('boutiques.dataHandler.urlretrieve', side_effect=mock_urlretrieve)
+    @mock.patch('boutiques.dataHandler.urlretrieve',
+                side_effect=mock_urlretrieve)
     def test_pull_missing_raises_exception(self, mock_urlretrieve):
         good1 = "zenodo.2636983"
         good2 = "zenodo.2636975"
@@ -230,21 +225,21 @@ class TestDataHandler(TestCase):
             bad1.split(".")[1]),
             str(e.exception))
 
-    @mock.patch('boutiques.dataHandler.urlretrieve', side_effect=mock_urlretrieve)
+    @mock.patch('boutiques.dataHandler.urlretrieve',
+                side_effect=mock_urlretrieve)
     def test_pull_missing_prefix(self, mock_urlretrieve):
         with self.assertRaises(ZenodoError) as e:
             bosh(["data", "pull", "2636983"])
         self.assertIn("Zenodo ID must be prefixed by 'zenodo'",
                       str(e.exception))
 
-    @mock.patch('boutiques.dataHandler.urlretrieve', side_effect=mock_urlretrieve)
+    @mock.patch('boutiques.dataHandler.urlretrieve',
+                side_effect=mock_urlretrieve)
     def test_pull_not_found(self, mock_urlretrieve):
         with self.assertRaises(ZenodoError) as e:
             bosh(["data", "pull", "zenodo.99999"])
         self.assertIn("Execution record \"{0}\" not found".format("99999"),
                       str(e.exception))
-
-
 
     @mock.patch('boutiques.dataHandler.getDataCacheDir',
                 return_value=mock_get_data_cache())

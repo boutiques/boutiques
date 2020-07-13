@@ -1,13 +1,6 @@
 from boutiques.zenodoHelper import ZenodoError
-
-try:
-    # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-    from urllib import urlretrieve
+from urllib.request import urlopen
+from urllib.request import urlretrieve
 
 
 class Puller():
@@ -26,5 +19,4 @@ class Puller():
         zenodoHelper = ZenodoHelper(verbose=self.verbose, sandbox=self.sandbox)
 
         return zenodoHelper.zenodo_pull(self.zids, firstKeyWord,
-                                    secondKeyWord, searchType, dataPull)
-
+                                        secondKeyWord, searchType, dataPull)

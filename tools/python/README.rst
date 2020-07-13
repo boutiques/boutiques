@@ -36,7 +36,7 @@ Simple! Just open your favourite terminal and type:
 
 Alongside installing the Boutiques package, this will also ensure the
 dependencies are installed: ``simplejson``, ``jsonschema``,
-``requests``, ``pytest``, ``termcolor``, ``pyyaml``, ``tabulate`` and
+``requests``, ``pytest``, ``termcolor``, ``oyaml``, ``tabulate`` and
 ``mock``.
 
 If you want the latest changes that aren’t officially released yet, you

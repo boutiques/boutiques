@@ -11,6 +11,7 @@ import sys
 import mock
 from boutiques_mocks import *
 from unittest import TestCase
+from boutiques.util.utils import loadJson
 
 
 def mock_get_publish_then_update():
@@ -189,9 +190,13 @@ class TestPublisher(TestCase):
 
     def test_publication_errors(self):
         # Update an already published descriptor (wrong id)
+        example1_dir = op.join(self.get_examples_dir(), "example1")
+        example1_desc = op.join(example1_dir, "example1_docker.json")
+        temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
+        shutil.copyfile(example1_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
             wrong_id = bosh(["publish",
-                             "whatever.json",
+                             temp_descriptor.name,
                              "--sandbox", "-y", "-v",
                              "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
                                                "PWr2VeQZgBLErKbfF5RdrKhzzJ"
@@ -298,3 +303,25 @@ class TestPublisher(TestCase):
                   "-y", "-v", "--zenodo-token", "12345"])
         self.assertIn("You do not have permission to access this "
                       "resource.", str(e.exception))
+
+    @mock.patch('requests.post', side_effect=mock_post_publish_then_update())
+    @mock.patch('requests.put', return_value=mock_put())
+    @mock.patch('requests.delete', return_value=mock_delete())
+    def test_publication_toolname_forwardslash(self,  mock_post,
+                                               mock_put, mock_delete):
+        test_desc = op.join(self.get_examples_dir(),
+                            'test_forward_slash_toolName.json')
+        with open(test_desc, 'r') as fhandle:
+            descriptor = json.load(fhandle)
+
+        # Publish an updated version of an already published descriptor
+        doi = bosh(["publish",
+                    test_desc,
+                    "--sandbox", "-y", "-v",
+                    "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                      "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r"])
+
+        with open(test_desc, 'w') as fhandle:
+            fhandle.write(json.dumps(descriptor, indent=4))
+
+        self.assertEqual('10.5281/zenodo.1234567', doi)

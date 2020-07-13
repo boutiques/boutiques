@@ -7,7 +7,8 @@ from boutiques.util.utils import loadJson, customSortDescriptorByKey
 from boutiques.util.utils import customSortInvocationByInput
 from boutiques.logger import raise_error
 import boutiques
-import yaml
+import oyaml as yaml
+import toml
 import simplejson as json
 import os
 import os.path as op
@@ -16,7 +17,7 @@ import sys
 from docopt import parse_defaults, parse_pattern, parse_argv
 from docopt import formal_usage, DocoptLanguageError
 from docopt import AnyOptions, TokenStream, Option, Argument, Command
-import imp
+from importlib.machinery import SourceFileLoader
 import collections
 
 
@@ -94,7 +95,7 @@ class Importer():
         with open(self.output_descriptor, 'w') as fhandle:
             fhandle.write(json.dumps(
                 customSortDescriptorByKey(descriptor), indent=4))
-        validate_descriptor(self.output_descriptor)
+        validate_descriptor(loadJson(self.output_descriptor))
 
     def get_entry_point(self, input_descriptor):
         entrypoint = None
@@ -125,19 +126,12 @@ class Importer():
 
         return entrypoint
 
-    def import_docopt(self, desc_path):
-        template_file = op.join(desc_path)
-        docstring = imp.load_source(
-            'docopt_pyscript', self.input_descriptor).__doc__
-
-        docoptImporter = Docopt_Importer(docstring, template_file)
-        # The order matters
-        docoptImporter.loadDocoptDescription()
-        docoptImporter.loadDescriptionAndType()
-        docoptImporter.generateInputsAndCommandLine(docoptImporter.pattern)
-        docoptImporter.addInputsRecursive(docoptImporter.dependencies)
-        docoptImporter.determineOptionality()
-        docoptImporter.createRootOneIsRequiredGroup()
+    def import_docopt(self):
+        # input_descriptor is the .py containing docopt script
+        docstring = SourceFileLoader(
+            'docopt_script', self.input_descriptor).load_module().__doc__
+        # Init docopt importer and start import
+        docoptImporter = Docopt_Importer(docstring, self.output_descriptor)
 
         with open(self.output_descriptor, "w") as output:
             output.write(json.dumps(docoptImporter.descriptor, indent=4))
@@ -185,7 +179,8 @@ class Importer():
 
         # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
-            cwl_desc = yaml.load(f)
+            cwl_desc = json.loads(
+                json.dumps(yaml.load(f, Loader=yaml.FullLoader)))
 
         # validate yaml descriptor?
 
@@ -423,7 +418,7 @@ class Importer():
         with open(self.output_descriptor, 'w') as f:
             f.write(json.dumps(
                 customSortDescriptorByKey(bout_desc), indent=4))
-        validate_descriptor(self.output_descriptor)
+        validate_descriptor(loadJson(self.output_descriptor))
 
         if self.input_invocation is None:
             return
@@ -436,7 +431,7 @@ class Importer():
             return False
         boutiques_invocation = {}
         with open(self.input_invocation, 'r') as f:
-            cwl_inputs = yaml.load(f)
+            cwl_inputs = yaml.load(f, Loader=yaml.FullLoader)
         for input_name in cwl_inputs:
             if get_input(bout_desc['inputs'], input_name)['type'] != "File":
                 input_value = cwl_inputs[input_name]
@@ -448,6 +443,149 @@ class Importer():
                     boutiques_invocation, json.dumps(bout_desc)), indent=4))
         boutiques.invocation(self.output_descriptor,
                              "-i", self.output_invocation)
+
+    def import_config(self):
+        def _getConfigFileString():
+            with open(self.input_descriptor, "r") as configFile:
+                return configFile.read()
+
+        def _getPropertiesFromValue(value):
+            # Generate input properties from the input's value
+            if isinstance(value, bool):
+                return {'type': "Flag",
+                        'command-line-flag': "--TEMP",
+                        'optional': True,
+                        'default-value': value}
+            if isinstance(value, float):
+                return {'type': "Number", 'integer': False,
+                        'default-value': value}
+            elif isinstance(value, int):
+                return {'type': "Number", 'integer': True,
+                        'default-value': value}
+            elif isinstance(value, str):
+                if re.match(r"\/.*\.[\w:]+", value) is not None:
+                    return {'type': "File", 'default-value': value}
+                return {'type': "String", 'default-value': value}
+            elif isinstance(value, list):
+                # Check all elements of list to extract list properties
+                elementProperties, props = {}, []
+                for element in value:
+                    props.append(_getPropertiesFromValue(element))
+                if all([p['type'] == "Flag" for p in props]):
+                    elementProperties['type'] = "Flag"
+                    elementProperties['command-line-flag'] = "--TEMP"
+                    elementProperties['optional'] = True
+                elif all([p['type'] == "Number" for p in props]):
+                    elementProperties['type'] = "Number"
+                    elementProperties['integer'] =\
+                        all([p['integer'] for p in props])
+                elif all([p['type'] == "File" for p in props]):
+                    elementProperties['type'] = "File"
+                else:
+                    elementProperties['type'] = "String"
+                elementProperties['list'] = True
+                elementProperties['default-value'] = value
+                return elementProperties
+
+        def _createNameFromID(id):
+            name = [c for c in id]
+            for idx, c in enumerate(name):
+                if not c.isalnum():
+                    name[idx] = ' '
+                if c.isupper():
+                    name[idx] = ' ' + c.lower()
+            # Join char list into string and concatenate white spaces
+            return " ".join(''.join(name).split()).title()
+
+        def _getOutputConfigFileTemplate(configFileFormat):
+            return {
+                "id": "config_file",
+                "name": "Configuration file",
+                "value-key": "[CONFIG_FILE]",
+                "path-template": "config.{0}".format(configFileFormat),
+                "file-template": []
+            }
+
+        def _getInputsFromConfigDict(input_config):
+            # Generate inputs based on input config file (as dict)
+            desc_inputs = []
+            for id, value in input_config.items():
+                newInput = {'id': id, 'name': _createNameFromID(id)}
+                newInput.update(_getPropertiesFromValue(value))
+                newInput['value-key'] =\
+                    "[{0}]".format(newInput['name'].replace(' ', '_').upper())
+                desc_inputs.append(newInput)
+            return desc_inputs
+
+        def import_json(descriptor):
+            input_config = loadJson(self.input_descriptor)
+            imported_inputs = _getInputsFromConfigDict(input_config)
+            descriptor['inputs'].extend(imported_inputs)
+
+            # file-template formatting depends on the config file's format
+            output_config_file = _getOutputConfigFileTemplate(configFileFormat)
+            output_config_file['file-template'].append('{')
+            for inp in descriptor['inputs']:
+                input_entry = "\"{0}\": \"{1}\"".format(inp['id'],
+                                                        inp['value-key'])
+                if inp != descriptor['inputs'][-1]:
+                    input_entry += ","
+                output_config_file['file-template'].append(input_entry)
+            output_config_file['file-template'].append('}')
+
+            descriptor['output-files'].append(output_config_file)
+            return descriptor
+
+        def import_toml(descriptor):
+            tomlString = _getConfigFileString()
+            input_config = toml.loads(tomlString, _dict=collections.OrderedDict)
+            imported_inputs = _getInputsFromConfigDict(input_config)
+            descriptor['inputs'].extend(imported_inputs)
+
+            # file-template formatting depends on the config file's format
+            output_config_file = _getOutputConfigFileTemplate(configFileFormat)
+            for inp in descriptor['inputs']:
+                output_config_file['file-template'].append(
+                    "\"{0}\"=\"{1}\"".format(inp['id'], inp['value-key']))
+
+            descriptor['output-files'].append(output_config_file)
+            return descriptor
+
+        def import_yaml(descriptor):
+            yamlString = _getConfigFileString()
+            input_config = yaml.load(yamlString, Loader=yaml.FullLoader)
+            imported_inputs = _getInputsFromConfigDict(input_config)
+            descriptor['inputs'].extend(imported_inputs)
+
+            # file-template formatting depends on the config file's format
+            output_config_file = _getOutputConfigFileTemplate(configFileFormat)
+            for inp in descriptor['inputs']:
+                output_config_file['file-template'].append(
+                    "\"{0}\": {1}".format(inp['id'], inp['value-key']))
+
+            descriptor['output-files'].append(output_config_file)
+            return descriptor
+
+        descriptor = loadJson(self.output_descriptor)
+        # Remove inputs and output-files from descriptor
+        # Not emptying inputs also works, can be removed if needed
+        descriptor['inputs'], descriptor['output-files'] = [], []
+        configFileFormat = self.input_descriptor.split(".")[-1].lower()
+
+        # Config K:V pair loading changes depending on config file type
+        # Populating descriptor with inputs and configuration file
+        if configFileFormat == "json":
+            descriptor = import_json(descriptor)
+        elif configFileFormat == "toml":
+            descriptor = import_toml(descriptor)
+        elif configFileFormat == "yml":
+            descriptor = import_yaml(descriptor)
+
+        descriptor['command-line'] = "tool [CONFIG_FILE]"
+
+        with open(self.output_descriptor, "w+") as output:
+            output.write(json.dumps(
+                customSortDescriptorByKey(descriptor), indent=4))
 
 
 class Docopt_Importer():
@@ -485,6 +623,13 @@ class Docopt_Importer():
         except Exception:
             os.remove(base_descriptor)
             raise_error(ImportError, "Invalid docopt script")
+
+        self.loadDocoptDescription()
+        self.loadDescriptionAndType()
+        self.generateInputsAndCommandLine(self.pattern)
+        self.addInputsRecursive(self.dependencies)
+        self.determineOptionality()
+        self.createRootOneIsRequiredGroup()
 
     def loadDocoptDescription(self):
         # Get description of the script itself

@@ -8,16 +8,7 @@ import numbers
 from boutiques.logger import raise_error, print_info
 from collections import OrderedDict
 from operator import itemgetter
-
-
-try:
-    # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-    from urllib import urlretrieve
+from urllib.request import urlretrieve
 
 
 class ZenodoError(Exception):
@@ -27,7 +18,8 @@ class ZenodoError(Exception):
 class ZenodoHelper(object):
 
     # Constructor
-    def __init__(self, sandbox=False, no_int=False, verbose=False, no_trunc=False, max_results=sys.maxsize):
+    def __init__(self, sandbox=False, no_int=False, verbose=False,
+                 no_trunc=False, max_results=sys.maxsize):
         self.sandbox = sandbox
         self.no_int = no_int
         self.verbose = verbose
@@ -235,17 +227,18 @@ class ZenodoHelper(object):
                        format(msg_obj, r.json()['doi']), r)
         return r.json()['doi']
 
-    def search(self, query, query_line, firstKeyWord, secondKeyWord, searchType):
+    def search(self, query, query_line, firstKeyWord, secondKeyWord,
+               searchType):
         results = self.zenodo_search(query, query_line, firstKeyWord,
-                                    secondKeyWord, searchType)
+                                     secondKeyWord, searchType)
         total_results = results.json()["hits"]["total"]
         total_deprecated = len([h['metadata']['keywords'] for h in
                                 results.json()['hits']['hits'] if
                                 'metadata' in h and
                                 'keywords' in h['metadata'] and
                                 'deprecated' in h['metadata']['keywords']])
-        results_list = self.create_results_list_verbose(results.json(), searchType) if\
-            self.verbose else\
+        results_list = self.create_results_list_verbose(
+            results.json(), searchType) if self.verbose else\
             self.create_results_list(results.json())
         num_results = len(results_list)
         print_info("Showing %d of %d result(s)%s"
@@ -258,7 +251,8 @@ class ZenodoHelper(object):
                       % total_deprecated))
         return results_list
 
-    def zenodo_search(self, query, query_line, firstKeyWord, secondKeyWord, searchType):
+    def zenodo_search(self, query, query_line, firstKeyWord, secondKeyWord,
+                      searchType):
         # Get all results
         r = requests.get(self.zenodo_endpoint + '/api/records/?q='
                          'keywords:(/%s/) AND '
@@ -266,7 +260,7 @@ class ZenodoHelper(object):
                          '%s'
                          '&file_type=json&type=%s&'
                          'page=1&size=%s' % (firstKeyWord, secondKeyWord,
-                                              query_line, searchType, 9999))
+                                             query_line, searchType, 9999))
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
@@ -309,32 +303,32 @@ class ZenodoHelper(object):
                 version = hit["metadata"]["version"]
                 schema_version = keyword_data["schema-version"]
             other_tags = ",".join(keyword_data["other"])
-            if (searchType=="software"):
-                result_dict = OrderedDict([("ID", id),
-                                           ("TITLE", title),
-                                           ("DESCRIPTION", description),
-                                           ("PUBLICATION DATE", publication_date),
-                                           ("DEPRECATED", 'deprecated' in
-                                            keyword_data['other']),
-                                           ("DOWNLOADS", downloads),
-                                           ("AUTHOR", author),
-                                           ("VERSION", version),
-                                           ("DOI", doi),
-                                           ("SCHEMA VERSION", schema_version),
-                                           ("CONTAINER", container),
-                                           ("TAGS", other_tags)])
+            if (searchType == "software"):
+                result_dict = OrderedDict([
+                    ("ID", id),
+                    ("TITLE", title),
+                    ("DESCRIPTION", description),
+                    ("PUBLICATION DATE", publication_date),
+                    ("DEPRECATED", 'deprecated' in keyword_data['other']),
+                    ("DOWNLOADS", downloads),
+                    ("AUTHOR", author),
+                    ("VERSION", version),
+                    ("DOI", doi),
+                    ("SCHEMA VERSION", schema_version),
+                    ("CONTAINER", container),
+                    ("TAGS", other_tags)])
             else:
-                result_dict = OrderedDict([("ID", id),
-                                           ("TITLE", title),
-                                           ("DESCRIPTION", description),
-                                           ("PUBLICATION DATE", publication_date),
-                                           ("DEPRECATED", 'deprecated' in
-                                            keyword_data['other']),
-                                           ("DOWNLOADS", downloads),
-                                           ("AUTHOR", author),
-                                           ("DOI", doi),
-                                           ("CONTAINER", container),
-                                           ("TAGS", other_tags)])
+                result_dict = OrderedDict([
+                    ("ID", id),
+                    ("TITLE", title),
+                    ("DESCRIPTION", description),
+                    ("PUBLICATION DATE", publication_date),
+                    ("DEPRECATED", 'deprecated' in keyword_data['other']),
+                    ("DOWNLOADS", downloads),
+                    ("AUTHOR", author),
+                    ("DOI", doi),
+                    ("CONTAINER", container),
+                    ("TAGS", other_tags)])
 
             if sys.stdout.encoding.lower != "UTF-8":
                 for k, v in list(result_dict.items()):
@@ -383,9 +377,8 @@ class ZenodoHelper(object):
                 keyword_data["other"].append(keyword)
         return keyword_data
 
-
-    def zenodo_pull(self, zids,firstKeyWord,
-                                    secondKeyWord, searchType, dataPull):
+    def zenodo_pull(self, zids, firstKeyWord,
+                    secondKeyWord, searchType, dataPull):
         # return cached file if it exists
         zenodo_entries = []
         cache_dir = os.path.join(
@@ -422,10 +415,11 @@ class ZenodoHelper(object):
                 json_files.append(entry["fname"])
                 continue
 
-            query_line ='AND "'+entry["zid"]+'"'
+            query_line = 'AND "'+entry["zid"]+'"'
             query = ''
-            r = self.zenodo_search(query, query_line, firstKeyWord, secondKeyWord, searchType)
-            if (dataPull == False):
+            r = self.zenodo_search(query, query_line, firstKeyWord,
+                                   secondKeyWord, searchType)
+            if not dataPull:
                 if not len(r.json()["hits"]["hits"]):
                     raise_error(ZenodoError, "Descriptor \"{0}\" "
                                              "not found".format(entry["zid"]))
@@ -444,10 +438,11 @@ class ZenodoHelper(object):
                                        + downloaded[0])
                         json_files.append(downloaded[0])
                     else:
-                        raise_error(ZenodoError, "Searched-for descriptor \"{0}\" "
-                                                 "does not match descriptor \"{1}\" returned "
-                                                 "from Zenodo".format(entry["zid"], hit["id"]))
-
+                        raise_error(ZenodoError,
+                                    "Searched-for descriptor \"{0}\""
+                                    " does not match descriptor \"{1}\""
+                                    " returned from Zenodo".format(
+                                        entry["zid"], hit["id"]))
 
             else:
                 if not len(r.json()["hits"]["hits"]):
@@ -471,17 +466,37 @@ class ZenodoHelper(object):
                                 print_info("Downloading execution record %s"
                                            % file_name)
 
-                            downloaded = urlretrieve(file_path,
-                                                     os.path.join(cache_dir, "zenodo." + entry["zid"], new_filename))
+                            downloaded = urlretrieve(
+                                file_path,
+                                os.path.join(cache_dir, "zenodo." +
+                                             entry["zid"], new_filename))
 
                             if (self.verbose):
                                 print_info("Downloaded execution record to "
                                            + downloaded[0])
                             json_files.append(downloaded[0])
                         else:
-                            raise_error(ZenodoError, "Searched-for execution record \"{0}\" "
-                                                     "does not match execution record \"{1}\" returned "
-                                                     "from Zenodo".format(entry["zid"], hit["id"]))
+                            raise_error(ZenodoError,
+                                        "Searched-for descriptor \"{0}\""
+                                        " does not match descriptor \"{1}\""
+                                        " returned from Zenodo".format(
+                                            entry["zid"], hit["id"]))
         return json_files
 
+    def zenodo_upload_file(self, deposition_id, file_path,
+                           zenodo_access_token=None,
+                           error_msg="Cannot Upload to Zenodo",
+                           verbose_msg="Uploaded to Zenodo"):
+        zenodo_access_token = self.get_zenodo_access_token if\
+            zenodo_access_token is None else zenodo_access_token
+        r = requests.post(self.zenodo_endpoint +
+                          '/api/deposit/depositions/%s/files'
+                          % deposition_id,
+                          params={'access_token': zenodo_access_token},
+                          data={'filename': os.path.basename(file_path)},
+                          files={'file': open(file_path, 'rb')})
 
+        if(r.status_code != 201):
+            raise_error(ZenodoError, error_msg, r)
+        if(self.verbose):
+            print_info(verbose_msg, r)
