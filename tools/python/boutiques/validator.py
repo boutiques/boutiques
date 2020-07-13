@@ -18,7 +18,7 @@ class DescriptorValidationError(ValidationError):
 
 
 # Main validation module
-def validate_descriptor(json_file, **kwargs):
+def validate_descriptor(descriptor, **kwargs):
     """
     Validates the Boutiques descriptor against the schema.
     """
@@ -34,9 +34,6 @@ def validate_descriptor(json_file, **kwargs):
         'items']['properties']['type']['enum']
     allowed_keywords = ['and', 'or', 'false', 'true']
     allowed_comparators = ['==', '!=', '<', '>', '<=', '>=']
-
-    # Load descriptor
-    descriptor = loadJson(json_file, sandbox=kwargs.get('sandbox'))
 
     # Validate basic JSON schema compliance for descriptor
     # Note: if it fails basic schema compliance we don"t do more checks
@@ -521,8 +518,8 @@ def validate_descriptor(json_file, **kwargs):
 
     errors = None if errors == [] else errors
     if errors is None:
-        if kwargs.get('format_output'):
-            with open(json_file, 'w') as fhandle:
+        if kwargs.get('format_output') and kwargs.get('descriptor_path'):
+            with open(kwargs.get('descriptor_path'), 'w') as fhandle:
                 fhandle.write(json.dumps(
                     customSortDescriptorByKey(descriptor), indent=4))
         return descriptor

@@ -484,4 +484,20 @@ class ZenodoHelper(object):
                                                      "from Zenodo".format(entry["zid"], hit["id"]))
         return json_files
 
+    def zenodo_upload_file(self, deposition_id, file_path,
+                           zenodo_access_token=None,
+                           error_msg="Cannot Upload to Zenodo",
+                           verbose_msg="Uploaded to Zenodo"):
+        zenodo_access_token = self.get_zenodo_access_token if\
+            zenodo_access_token is None else zenodo_access_token
+        r = requests.post(self.zenodo_endpoint +
+                          '/api/deposit/depositions/%s/files'
+                          % deposition_id,
+                          params={'access_token': zenodo_access_token},
+                          data={'filename': os.path.basename(file_path)},
+                          files={'file': open(file_path, 'rb')})
 
+        if(r.status_code != 201):
+            raise_error(ZenodoError, error_msg, r)
+        if(self.verbose):
+            print_info(verbose_msg, r)

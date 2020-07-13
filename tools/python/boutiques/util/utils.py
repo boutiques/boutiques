@@ -1,5 +1,6 @@
 import os
 import simplejson as json
+from collections import OrderedDict
 from boutiques.logger import raise_error, print_warning
 from boutiques import __file__ as bfile
 
@@ -32,14 +33,16 @@ def loadJson(userInput, verbose=False, sandbox=False):
         json_file = puller.pull()[0]
     if json_file is not None:
         with open(json_file, 'r') as f:
-            return json.loads(f.read())
+            return OrderedDict(json.loads(f.read(),
+                                          object_pairs_hook=OrderedDict))
     # JSON file not found, so try to parse JSON object
     e = ("Cannot parse input {}: file not found, "
          "invalid Zenodo ID, or invalid JSON object").format(userInput)
     if userInput.isdigit():
         raise_error(LoadError, e)
     try:
-        return json.loads(userInput)
+        return OrderedDict(json.loads(userInput,
+                                      object_pairs_hook=OrderedDict))
     except ValueError:
         raise_error(LoadError, e)
 
@@ -77,32 +80,45 @@ def customSortDescriptorByKey(descriptor,
     def sortListedObjects(objList, template):
         sortedObjList = []
         for obj in objList:
-            sortedObj = {key: obj[key] for key in template if
-                         key in obj}
-            sortedObj.update(obj)
+            sortedObj = OrderedDict()
+            for key in template:
+                if key in obj:
+                    sortedObj[key] = obj[key]
+            for key in obj:
+                if key not in template:
+                    sortedObj[key] = obj[key]
             sortedObjList.append(sortedObj)
 
         if len(objList) != len(sortedObjList):
+            print_warning("Sorted list does not represent"
+                          " original list.")
             return objList
         for obj, sobj in zip(objList, sortedObjList):
-            if obj != sobj:
+            if obj != dict(sobj):
                 print_warning("Sorted list does not represent"
                               " original list.")
                 return objList
         return sortedObjList
 
     template = loadJson(template)
-    sortedDesc = {}
+    sortedDesc = OrderedDict()
+
     # Add k:v to sortedDesc according to their order in template
-    for key in [k for k in template if k in descriptor]:
-        if type(descriptor[key]) is list:
-            sortedDesc[key] =\
-                sortListedObjects(descriptor[key], template[key][0])
-        else:
-            sortedDesc[key] = descriptor[key]
+    for key in template:
+        if key in descriptor:
+            if type(descriptor[key]) is list:
+                sortedDesc[key] =\
+                    sortListedObjects(descriptor[key], template[key][0])
+            elif type(descriptor[key]) is dict:
+                sortedDesc[key] = customSortDescriptorByKey(
+                    descriptor[key], template=json.dumps(template[key]))
+            else:
+                sortedDesc[key] = descriptor[key]
 
     # Add remaining k:v that are missing from template
-    sortedDesc.update(descriptor)
+    for key in descriptor:
+        if key not in sortedDesc:
+            sortedDesc[key] = descriptor[key]
     if sortedDesc != descriptor:
         print_warning("Sorted descriptor does not represent"
                       " original descriptor.")
@@ -114,10 +130,11 @@ def customSortDescriptorByKey(descriptor,
 def customSortInvocationByInput(invocation, descriptor):
     descriptor = loadJson(descriptor)
     # sort invoc according to input's order in decsriptor
-    sortedInvoc = {key: invocation[key] for key in
-                   [inp['id'] for inp in descriptor['inputs']
-                    if descriptor['inputs'] is not None]
-                   if key in invocation}
+    sortedInvoc = OrderedDict()
+    sortedInvoc.update({key: invocation[key] for key in
+                        [inp['id'] for inp in descriptor['inputs']
+                            if descriptor['inputs'] is not None]
+                        if key in invocation})
     if sortedInvoc != invocation:
         print_warning("Sorted invocation does not represent"
                       " original invocation.")
@@ -152,3 +169,16 @@ def camelCaseInputIds(descriptor):
                                               "\'{0}\'".format(v))
     descriptor = json.loads(plainTextDesc)
     return descriptor
+
+
+def formatSphinxUsage(func, usage_str):
+    args = usage_str.replace("[", " ")\
+        .replace("]", " ")\
+        .replace("\n", "")\
+        .split(func)[1:]
+    args = "".join(args)
+    args = args.split("  ")[0:]
+    args = list(filter(lambda x: x != "", args))
+    args = ["\"{}\"".format(arg.strip()) for arg in args]
+    args = ", ".join(args)
+    return "[{}]".format(args)

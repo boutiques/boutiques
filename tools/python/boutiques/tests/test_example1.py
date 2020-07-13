@@ -11,6 +11,8 @@ import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
     example_boutiques_tool
 from boutiques import __file__ as bfile
+from shutil import copy2
+import simplejson as json
 
 
 def mock_get():
@@ -314,28 +316,32 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     def test_example1_exec_missing_script(self):
         self.clean_up()
+        be = bosh.execute(
+            "launch",
+            self.get_file_path("example1_docker.json"),
+            self.get_file_path("invocation_missing_script.json"),
+            "--skip-data-collection",
+            "--no-automounts",
+            "-v", "{}:/test_mount1".format(
+                self.get_file_path("example1_mount1")),
+            "-v", "{}:/test_mount2".format(
+                self.get_file_path("example1_mount2")))
         self.assert_failed_return(
-            bosh.execute("launch",
-                         self.get_file_path("example1_docker.json"),
-                         self.get_file_path(
-                             "invocation_missing_script.json"),
-                         "--skip-data-collection",
-                         "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_mount1")),
-                         "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_mount2"))),
-            2, "File does not exist!", ["log-4-pwet.txt"], 1)
+            be, 2, "File does not exist!", ["log-4-pwet.txt"], 1)
 
     def test_example1_exec_fail_cli(self):
         self.clean_up()
-        command = ("bosh exec launch " +
-                   self.get_file_path("example1_docker.json") + " " +
-                   self.get_file_path("invocation_missing_script.json") +
-                   " --skip-data-collection",
-                   "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_mount1")),
-                         "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_mount2")))
+        command = (
+            "bosh", "exec", "launch",
+            self.get_file_path("example1_docker.json"),
+            self.get_file_path("invocation_missing_script.json"),
+            "--skip-data-collection",
+            "--no-automounts",
+            "-v", "{}:/test_mount1".format(
+                self.get_file_path("example1_mount1")),
+            "-v", "{}:/test_mount2".format(
+                self.get_file_path("example1_mount2")))
+        command = " ".join(command)
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
@@ -501,7 +507,7 @@ class TestExample1(BaseTest):
             self.assertIn('file.txt (output_file, Required)', outFileList)
             with open(outFileList[0].split()[0]) as file:
                 text = file.read()
-                self.assertIn('doesnt/matter/what/this/is/test_path.d', text)
+                self.assertIn('subdir1/test_path.d', text)
         finally:
             if os.path.isfile(outFileList[0].split()[0]):
                 os.remove(outFileList[0].split()[0])
@@ -518,6 +524,74 @@ class TestExample1(BaseTest):
                       ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
         self.clean_up()
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_autoMount_input_files(self):
+        base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
+        test_invoc = os.path.join(base_path, "test_automount_invoc.json")
+        # Test files must be created outside of [...]/tools/python/
+        # because it is mounted by default
+        test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])
+        copy2(os.path.join(base_path, "file1.txt"), test_dir)
+        copy2(os.path.join(base_path, "file2.txt"), test_dir)
+        copy2(os.path.join(base_path, "file3.txt"), test_dir)
+        invoc_dict = {"file": test_dir + "/file1.txt",
+                      "file_list": ["../file2.txt", "../file3.txt"]}
+        # Create test invoc based on absolute test_dir path
+        with open(test_invoc, "w+") as invoc:
+            invoc.write(json.dumps(invoc_dict))
+
+        ex = bosh.execute("launch",
+                          os.path.join(
+                              base_path,
+                              "test_automount_desc.json"),
+                          test_invoc,
+                          "--skip-data-collection")
+
+        try:
+            self.assertIn('Hello, World!', ex.stdout)
+        finally:
+            os.remove(os.path.join(test_dir, "file1.txt"))
+            os.remove(os.path.join(test_dir, "file2.txt"))
+            os.remove(os.path.join(test_dir, "file3.txt"))
+            os.remove(test_invoc)
+
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
+    def test_example1_autoMount_none(self):
+        base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
+        test_invoc = os.path.join(base_path, "test_automount_invoc.json")
+        # Test files must be created outside of [...]/tools/python/
+        # because it is mounted by default
+        test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])
+        copy2(os.path.join(base_path, "file1.txt"), test_dir)
+        copy2(os.path.join(base_path, "file2.txt"), test_dir)
+        copy2(os.path.join(base_path, "file3.txt"), test_dir)
+        invoc_dict = {"file":
+                      "/home/darrin/Documents/Github/boutiques/tools/file1.txt",
+                      "file_list": ["../file2.txt", "../file3.txt"]}
+        # Create test invoc based on absolute test_dir path
+        with open(test_invoc, "w+") as invoc:
+            invoc.write(json.dumps(invoc_dict))
+
+        ex = bosh.execute("launch",
+                          os.path.join(
+                              base_path,
+                              "test_automount_desc.json"),
+                          test_invoc,
+                          "--no-automounts",
+                          "--skip-data-collection")
+
+        try:
+            self.assertIn('file1.txt: No such file or directory', ex.stderr)
+            self.assertIn('file2.txt: No such file or directory', ex.stderr)
+            self.assertIn('file3.txt: No such file or directory', ex.stderr)
+        finally:
+            os.remove(os.path.join(test_dir, "file1.txt"))
+            os.remove(os.path.join(test_dir, "file2.txt"))
+            os.remove(os.path.join(test_dir, "file3.txt"))
+            os.remove(test_invoc)
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
