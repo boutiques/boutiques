@@ -46,7 +46,8 @@ class DataHandler(object):
                 self._display_file(file_path)
             else:
                 print("No records in the cache at the moment.")
-        # Print information about files in cache and the directory of caching data
+        # Print information about files in cache
+        # and the directory of caching data
         else:
             print("There are {} unpublished records in the cache"
                   .format(len(self.record_files)))
@@ -54,7 +55,9 @@ class DataHandler(object):
                   .format(len(self.descriptor_files)))
             for i in range(len(self.cache_files)):
                 print(self.cache_files[i])
-            print("Execution records are stored in: " + os.path.join(os.path.expanduser('~'), ".cache", "boutiques", "data"))
+            print("Execution records are stored in: " +
+                  os.path.join(os.path.expanduser('~'),
+                               ".cache", "boutiques", "data"))
 
     # Private function to print a file to console
     def _display_file(self, file_path):
@@ -285,8 +288,6 @@ class DataHandler(object):
              for f in self.cache_files]
             print_info("All files have been removed from the data cache")
 
-
-
     def search(self, verbose=False, sandbox=False):
         firstKeyWord = "Boutiques"
         secondKeyWord = "boutiques-execution-record"
@@ -298,8 +299,7 @@ class DataHandler(object):
         zenodoHelper = ZenodoHelper(verbose=verbose, sandbox=sandbox)
 
         return zenodoHelper.search(query, query_line, firstKeyWord,
-                                    secondKeyWord, searchType)
-
+                                   secondKeyWord, searchType)
 
     def pull(self, zids, verbose=False, sandbox=False):
         dataPull = True
@@ -311,8 +311,7 @@ class DataHandler(object):
         zenodoHelper = ZenodoHelper(verbose=verbose, sandbox=sandbox)
 
         return zenodoHelper.zenodo_pull(zids, firstKeyWord,
-                                    secondKeyWord, searchType, dataPull)
-
+                                        secondKeyWord, searchType, dataPull)
 
     def _file_exists_in_cache(self, filename):
         file_path = os.path.join(self.cache_dir, filename)

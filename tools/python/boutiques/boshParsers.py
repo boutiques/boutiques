@@ -140,7 +140,7 @@ def add_subparser_data(subparsers):
         "pull", description="Ensures that execution data records from Zenodo"
                             "are locally cached, downloading them if needed.")
     parser_data_pull.set_defaults(mode='pull')
-    parser_data_pull.add_argument("zids", nargs="+", action="store", 
+    parser_data_pull.add_argument("zids", nargs="+", action="store",
                                   help="One or more Zenodo IDs for the excution"
                                   " record(s) to pull, prefixed by 'zenodo.',"
                                   " e.g. zenodo.123456 zenodo.123457")

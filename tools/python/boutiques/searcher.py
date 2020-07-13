@@ -56,7 +56,8 @@ class Searcher():
         searchType = "software"
         from boutiques.zenodoHelper import ZenodoHelper
         zenodoHelper = ZenodoHelper(sandbox=self.sandbox, verbose=self.verbose,
-                                    max_results=self.max_results, no_trunc=self.no_trunc)
+                                    max_results=self.max_results,
+                                    no_trunc=self.no_trunc)
 
         return zenodoHelper.search(self.query, self.query_line, firstKeyWord,
                                    secondKeyWord, searchType)

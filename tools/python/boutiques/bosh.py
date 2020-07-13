@@ -389,39 +389,28 @@ def data(*params):
         parser.parse_known_args(params + ('--help',))
         raise_error(DataHandlerError,
                     "Missing data mode {delete, inspect, publish}.")
-    elif results.mode == "inspect":
+    else:
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
-        return dataHandler.inspect(results.example)
-    elif results.mode == "publish":
-        from boutiques.dataHandler import DataHandler
-        dataHandler = DataHandler()
-        return dataHandler.publish(results.file, results.zenodo_token,
-                                   results.author, results.nexus_token,
-                                   results.nexus_org, results.nexus_project,
-                                   results.individually, results.sandbox,
-                                   results.no_int, results.verbose,
-                                   results.nexus)
-    elif results.mode == "delete":
-        from boutiques.dataHandler import DataHandler
-        dataHandler = DataHandler()
-        return dataHandler.delete(results.file, results.no_int)
 
-    if action == "search":
-        parser = parser_dataSearch()
-        results = parser.parse_args(params)
+        if results.mode == "inspect":
+            return dataHandler.inspect(results.example)
+        elif results.mode == "publish":
+            return dataHandler.publish(results.file, results.zenodo_token,
+                                       results.author, results.nexus_token,
+                                       results.nexus_org, results.nexus_project,
+                                       results.individually, results.sandbox,
+                                       results.no_int, results.verbose,
+                                       results.nexus)
+        elif results.mode == "delete":
+            return dataHandler.delete(results.file, results.no_int)
 
-        from boutiques.dataHandler import DataHandler
-        dataHandler = DataHandler()
-        return dataHandler.search(results.verbose, results.sandbox)
+        elif results.mode == "search":
+            return dataHandler.search(results.verbose, results.sandbox)
 
-    if action == "pull":
-        parser = parser_dataPull()
-        results = parser.parse_args(params)
-
-        from boutiques.dataHandler import DataHandler
-        dataHandler = DataHandler()
-        return dataHandler.pull(results.zids, results.verbose, results.sandbox)
+        elif results.mode == "pull":
+            return dataHandler.pull(results.zids, results.verbose,
+                                    results.sandbox)
 
 
 def deprecate(*params):
