@@ -16,15 +16,7 @@ import pytest
 import boutiques
 import tempfile
 import json
-
-try:
-    # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-    from urllib import urlretrieve
+from urllib.request import urlretrieve
 
 
 def setup():
@@ -162,6 +154,7 @@ class TestDataHandler(TestCase):
         mymockget.side_effect = lambda *args, **kwargs: \
             mock_get("", False, *args, **kwargs)
         results = bosh(["data", "search"])
+        print(results)
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
                          ["ID", "TITLE", "DESCRIPTION",
@@ -172,6 +165,7 @@ class TestDataHandler(TestCase):
         mymockget.side_effect = lambda *args, **kwargs: \
             mock_get("", False, *args, **kwargs)
         results = bosh(["data", "search", "-v"])
+        print(results)
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
                          ["ID", "TITLE", "DESCRIPTION", "PUBLICATION DATE",
@@ -184,6 +178,7 @@ class TestDataHandler(TestCase):
         mymockget.side_effect = lambda *args, **kwargs:\
             mock_get("boutiques",  *args, **kwargs)
         results = bosh(["data", "search"])
+        print(results)
         downloads = []
         for r in results:
             downloads.append(r["DOWNLOADS"])

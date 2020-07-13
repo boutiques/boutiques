@@ -93,8 +93,11 @@ class Publisher():
             from boutiques.searcher import Searcher
             searcher = Searcher(self.descriptor.get("name"), self.verbose,
                                 self.sandbox, exact_match=True)
-            r = self.zenodo_helper.zenodo_search(searcher.query,
-                                                 searcher.query_line)
+            zenodoHelper = ZenodoHelper(sandbox=self.sandbox,
+                                        verbose=self.verbose)
+            r = zenodoHelper.zenodo_search(searcher.query, searcher.query_line,
+                                           "Boutiques", "schema-version.*",
+                                           "software")
 
             publish_update = False
             for hit in r.json()["hits"]["hits"]:

@@ -1,4 +1,6 @@
 from boutiques.zenodoHelper import ZenodoError
+from urllib.request import urlopen
+from urllib.request import urlretrieve
 
 
 class Puller():

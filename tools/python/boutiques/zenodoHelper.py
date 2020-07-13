@@ -237,7 +237,7 @@ class ZenodoHelper(object):
 
     def search(self, query, query_line, firstKeyWord, secondKeyWord, searchType):
         results = self.zenodo_search(query, query_line, firstKeyWord,
-                                    secondKeyWord, searchType)
+                                     secondKeyWord, searchType)
         total_results = results.json()["hits"]["total"]
         total_deprecated = len([h['metadata']['keywords'] for h in
                                 results.json()['hits']['hits'] if
