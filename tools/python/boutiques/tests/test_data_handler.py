@@ -155,7 +155,6 @@ class TestDataHandler(TestCase):
         mymockget.side_effect = lambda *args, **kwargs: \
             mock_get("", False, *args, **kwargs)
         results = bosh(["data", "search"])
-        print(results)
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
                          ["ID", "TITLE", "DESCRIPTION",
@@ -166,7 +165,6 @@ class TestDataHandler(TestCase):
         mymockget.side_effect = lambda *args, **kwargs: \
             mock_get("", False, *args, **kwargs)
         results = bosh(["data", "search", "-v"])
-        print(results)
         self.assertGreater(len(results), 0)
         self.assertEqual(list(results[0].keys()),
                          ["ID", "TITLE", "DESCRIPTION", "PUBLICATION DATE",
@@ -178,7 +176,6 @@ class TestDataHandler(TestCase):
         mymockget.side_effect = lambda *args, **kwargs:\
             mock_get("boutiques",  *args, **kwargs)
         results = bosh(["data", "search"])
-        print(results)
         downloads = []
         for r in results:
             downloads.append(r["DOWNLOADS"])
@@ -187,7 +184,6 @@ class TestDataHandler(TestCase):
     @mock.patch('boutiques.dataHandler.urlretrieve',
                 side_effect=mock_urlretrieve)
     def test_pull(self, mock_urlretrieve):
-        print(example_boutiques_tool.id)
         bosh(["data", "pull", "zenodo." + "2636975"])
         cache_dir = os.path.join(
             os.path.expanduser('~'), ".cache", "boutiques", "production")
