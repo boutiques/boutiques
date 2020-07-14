@@ -50,8 +50,32 @@ script:
 - pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
 - jsonlint -q boutiques/schema/descriptor.schema.json
 - COVERALLS_PARALLEL=true #coveralls merge coverage report
-- coverage run --source boutiques setup.py pytest -n 12 -k "test_bids or test_bosh or test_creash_python3 or test_deprecate or test_evaluate or test_exec or test_export or test_import or test_invocation or test_logger or test_pprint or test_prepare or test_publisher or test_pull or test_pythoninterface or test_requires_group or test_search or test_simulate or test_validator"
-- coverage run --source boutiques setup.py pytest "test_creator or test_data_collection or test_data_handler or test_example or test_output_files or test_test"
+- coverage run --parallel-mode boutiques/tests/test_bids.py &\
+ coverage run --parallel-mode boutiques/tests/test_bosh.py &\
+ coverage run --parallel-mode boutiques/tests/test_creash_python3.py &\
+ coverage run --parallel-mode boutiques/tests/test_deprecate.py &\
+ coverage run --parallel-mode boutiques/tests/test_evaluate.py &\
+ coverage run --parallel-mode boutiques/tests/test_exec.py &\
+ coverage run --parallel-mode boutiques/tests/test_export.py &\
+ coverage run --parallel-mode boutiques/tests/boutiques/tests/test_import.py &\
+ coverage run --parallel-mode boutiques/tests/test_invocation.py &\
+ coverage run --parallel-mode boutiques/tests/test_logger.py &\
+ coverage run --parallel-mode boutiques/tests/test_pprint.py &\
+ coverage run --parallel-mode boutiques/tests/test_prepare.py &\
+ coverage run --parallel-mode boutiques/tests/test_publisher.py &\
+ coverage run --parallel-mode boutiques/tests/test_pull.py &\
+ coverage run --parallel-mode boutiques/tests/test_pythoninterface.py &\
+ coverage run --parallel-mode boutiques/tests/test_requires_group.py &\
+ coverage run --parallel-mode boutiques/tests/test_search.py &\
+ coverage run --parallel-mode boutiques/tests/test_simulate.py &\
+ coverage run --parallel-mode boutiques/tests/test_validator.py
+- coverage run boutiques/tests/test_creator.py
+- coverage run boutiques/tests/test_data_collection.py
+- coverage run boutiques/tests/test_data_handler.py
+- coverage run boutiques/tests/test_example.py
+- coverage run boutiques/tests/test_output_files.py
+- coverage run boutiques/tests/test_test.py
+- coverage combine
 - coverage report -m
 
 after_success:
