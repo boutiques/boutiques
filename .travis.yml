@@ -20,7 +20,6 @@ go:
 
 env:
 - SINGVER=3.4.2  # the version of docker2singularity used below should match this one
-- COVERALLS_PARALLEL=true #coveralls
 
 before_install:
 - sudo apt-get update -qq
@@ -50,6 +49,7 @@ install:
 script:
 - pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
 - jsonlint -q boutiques/schema/descriptor.schema.json
+- COVERALLS_PARALLEL=true #coveralls merge coverage report
 - coverage run --source boutiques setup.py pytest -n 12 -k "test_bids or test_bosh or test_creash_python3 or test_deprecate or test_evaluate or test_exec or test_export or test_import or test_invocation or test_logger or test_pprint or test_prepare or test_publisher or test_pull or test_pythoninterface or test_requires_group or test_search or test_simulate or test_validator"
 - coverage run --source boutiques setup.py pytest "test_creator or test_data_collection or test_data_handler or test_example or test_output_files or test_test"
 - coverage report -m
