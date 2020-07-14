@@ -14,6 +14,7 @@ from unittest import TestCase
 from boutiques.util.utils import loadJson
 from boutiques.util.BaseTest import BaseTest
 import pytest
+from collections import OrderedDict
 
 
 def mock_zenodo_deposit_updated(old_zid, new_zid):
@@ -61,8 +62,7 @@ def mock_post_publish_update_only():
 class TestPublisher(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup(os.path.join(os.path.dirname(bfile),
-                                "schema", "examples", "example1"))
+        self.setup("publisher")
 
     @mock.patch('requests.get', side_effect=mock_get_publish_then_update())
     @mock.patch('requests.post', side_effect=mock_post_publish_then_update())
@@ -245,6 +245,7 @@ class TestPublisher(BaseTest):
     @mock.patch('requests.delete', return_value=mock_zenodo_delete_files())
     def test_publication_replace_no_id(self, mock_get, mock_post, mock_put,
                                        mock_delete):
+        self.setup("export")
         example1_desc = self.get_file_path("example1_docker_with_doi.json")
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
@@ -292,7 +293,7 @@ class TestPublisher(BaseTest):
                                                mock_put, mock_delete):
         test_desc = self.get_file_path("test_forward_slash_toolName.json")
         with open(test_desc, 'r') as fhandle:
-            descriptor = json.load(fhandle)
+            descriptor = json.load(fhandle, object_pairs_hook=OrderedDict)
 
         # Publish an updated version of an already published descriptor
         doi = bosh(["publish",

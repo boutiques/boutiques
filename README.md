@@ -46,3 +46,5 @@ Excited by the project and want to get involved?! *Please* check out our [contri
 "[good first issue](https://github.com/boutiques/boutiques/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)") to start seeing where
 you can lend a hand. We look forward to approving your amazing contributions!
 
+# Examples
+We have a [simple]() and a [complex](https://github.com/boutiques/boutiques/tree/master/tools/python/boutiques/schema/examples/example1) Boutiques descriptor to help you get started with your own descriptor.

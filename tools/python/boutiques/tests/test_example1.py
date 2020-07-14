@@ -19,8 +19,7 @@ from boutiques.descriptor2func import function
 class TestExample1(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup(os.path.join(os.path.dirname(bfile),
-                                "schema", "examples", "example1"))
+        self.setup("example1")
 
     @pytest.fixture(autouse=True)
     def clean_up(self):
@@ -37,19 +36,23 @@ class TestExample1(BaseTest):
         self.capfd = capfd
 
     def test_example1_no_exec(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("simulate",
                          self.example1_descriptor,
                          "-i",
-                         self.get_file_path("invocation.json")),
+                         invoc),
             aditional_assertions=self.assert_only_stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         ret = bosh.execute("launch",
                            self.example1_descriptor,
-                           self.get_file_path("invocation.json"),
+                           invoc,
                            "--skip-data-collection",
                            "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -69,11 +72,13 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_debug(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch",
                          self.example1_descriptor,
                          "-x",
-                         self.get_file_path("invocation.json"),
+                         invoc,
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -85,10 +90,12 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_stream_output(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         ret = bosh.execute("launch",
                            self.example1_descriptor,
                            "-s",
-                           self.get_file_path("invocation.json"),
+                           invoc,
                            "--skip-data-collection",
                            "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -107,7 +114,8 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_inv_as_json_obj(self):
-        invocationStr = open(self.get_file_path("invocation.json")).read()
+        invocationStr = open(os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")).read()
         self.assert_successful_return(
             bosh.execute("launch",
                          self.example1_descriptor,
@@ -123,11 +131,13 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_inv_as_json_obj_debug(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch",
                          self.example1_descriptor,
                          "-x",
-                         self.get_file_path("invocation.json"),
+                         invoc,
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
@@ -140,10 +150,12 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     def test_example1_exec_docker_desc_as_json_obj(self):
         descStr = open(self.example1_descriptor).read()
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch",
                          descStr,
-                         self.get_file_path("invocation.json"),
+                         invoc,
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -155,11 +167,13 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_desc_as_json_obj_debug(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch",
                          self.example1_descriptor,
                          "-x",
-                         self.get_file_path("invocation.json"),
+                         invoc,
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -185,9 +199,11 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     @mock.patch('requests.get', return_value=mock_get())
     def test_example1_exec_docker_from_zenodo(self, _):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         ret = bosh.execute("launch",
                            "zenodo." + str(example_boutiques_tool.id),
-                           self.get_file_path("invocation.json"),
+                           invoc,
                            "--skip-data-collection",
                            "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -207,10 +223,12 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     @mock.patch('requests.get', return_value=mock_get())
     def test_example1_exec_docker_from_zenodo_debug(self, _):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
                          "-x",
-                         self.get_file_path("invocation.json"),
+                         invoc,
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -373,9 +391,11 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_non_utf8(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         ret = bosh.execute("launch",
                            self.get_file_path("example1_docker_nonutf8.json"),
-                           self.get_file_path("invocation.json"),
+                           invoc,
                            "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                            "-v", "{}:/test_mount2".format(
@@ -388,11 +408,13 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_non_utf8_debug(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_docker_nonutf8.json"),
                          "-x",
-                         self.get_file_path("invocation.json"),
+                         invoc,
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(

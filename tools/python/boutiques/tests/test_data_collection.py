@@ -29,8 +29,7 @@ def retrieve_data_record():
 class TestDataCollection(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup(os.path.join(os.path.dirname(bfile),
-                                "schema", "examples", "example1"))
+        self.setup("data_collection")
 
     @pytest.fixture(autouse=True)
     def clean_up(self):
@@ -50,9 +49,11 @@ class TestDataCollection(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_data_collection(self):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         bosh.execute("launch",
                      self.example1_descriptor,
-                     self.get_file_path("invocation.json"),
+                     invoc,
                      "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                      "-v", "{}:/test_mount2".format(
@@ -94,9 +95,11 @@ class TestDataCollection(BaseTest):
             cache_fls = os.listdir(cache_dir)
             original_size = len(cache_fls)
 
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         bosh.execute("launch",
                      self.example1_descriptor,
-                     self.get_file_path("invocation.json"),
+                     invoc,
                      "--skip-data-collection",
                      "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
@@ -113,8 +116,10 @@ class TestDataCollection(BaseTest):
                         reason="Docker not installed")
     @mock.patch('requests.get', return_value=mock_get())
     def test_read_doi_zenodo(self, mock_get):
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
-                     self.get_file_path("invocation.json"))
+                     invoc)
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")
@@ -158,9 +163,11 @@ class TestDataCollection(BaseTest):
             \"dataset id\": \"1234\",
             \"cluster\": \"beluga\"
         }"""
+        invoc = os.path.join(os.path.dirname(bfile), "schema",
+                             "examples", "example1", "invocation.json")
         bosh.execute("launch",
                      self.example1_descriptor,
-                     self.get_file_path("invocation.json"),
+                     invoc,
                      "-v", "{}:/test_mount1".format(
                         self.get_file_path("example1_mount1")),
                      "-v", "{}:/test_mount2".format(
