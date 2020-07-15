@@ -71,7 +71,6 @@ script:
     coverage run --source=boutiques --parallel-mode -m pytest boutiques/tests/test_search.py & 
     coverage run --source=boutiques --parallel-mode -m pytest boutiques/tests/test_simulate.py & 
     coverage run --source=boutiques --parallel-mode -m pytest boutiques/tests/test_validator.py & 
-    wait
 - echo "Sequential tests:"
 - coverage run --source=boutiques --parallel-mode -m pytest boutiques/tests/test_creator.py
 - coverage run --source=boutiques --parallel-mode -m pytest boutiques/tests/test_data_collection.py
