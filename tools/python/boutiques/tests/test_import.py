@@ -80,7 +80,7 @@ class TestImport(BaseTest):
         os.remove(fout)
 
     def test_import_cwl_valid(self):
-        self.setup("cwl")
+        self.setup("import/cwl/")
         ex_dir = self.get_file_path("")
         # These ones are supposed to crash
         bad_dirs = ["1st-workflow",  # workflow
@@ -137,7 +137,7 @@ class TestImport(BaseTest):
                                      cwl_descriptor)
 
     def test_docopt_import_valid(self):
-        self.setup("docopt")
+        self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("docopt_script_valid.py")
         output_descriptor = self.get_file_path("test_valid_output.json")
 
@@ -151,7 +151,7 @@ class TestImport(BaseTest):
         os.remove(output_descriptor)
 
     def test_docopt_import_valid_options(self):
-        self.setup("docopt")
+        self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("docopt_script_options.py")
         output_descriptor = self.get_file_path("test_options_output.json")
 
@@ -165,7 +165,7 @@ class TestImport(BaseTest):
         os.remove(output_descriptor)
 
     def test_docopt_import_invalid(self):
-        self.setup("docopt")
+        self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("docopt_script_invalid.py")
         output_descriptor = self.get_file_path("foobar.json")
 
@@ -180,7 +180,7 @@ class TestImport(BaseTest):
             self.fail("Output file should not exist")
 
     def test_docopt_nf(self):
-        self.setup("docopt")
+        self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("naval_fate.py")
         output_descriptor = self.get_file_path("naval_fate_descriptor.json")
 
@@ -215,7 +215,7 @@ class TestImport(BaseTest):
         os.remove(output_descriptor)
 
     def test_import_json_config(self):
-        self.setup("config")
+        self.setup("import/config/")
         expected_desc = loadJson(self.get_file_path("json_config_desc.json"))
         config = self.get_file_path("configuration.json")
         output_descriptor = self.get_file_path("output.json")
@@ -252,7 +252,7 @@ class TestImport(BaseTest):
         self.assertEqual(result_sim_out, expect_sim_out)
 
     def test_import_toml_config(self):
-        self.setup("config")
+        self.setup("import/config/")
         expected_desc = loadJson(self.get_file_path("toml_config_desc.json"))
         config = self.get_file_path("configuration.toml")
         output_descriptor = self.get_file_path("output.json")
@@ -289,7 +289,7 @@ class TestImport(BaseTest):
         self.assertEqual(result_sim_out, expect_sim_out)
 
     def test_import_yaml_config(self):
-        self.setup("config")
+        self.setup("import/config/")
         expected_desc = loadJson(self.get_file_path("yaml_config_desc.json"))
         config = self.get_file_path("configuration.yml")
         output_descriptor = self.get_file_path("output.json")

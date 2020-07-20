@@ -13,7 +13,7 @@ import pytest
 class TestExample(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup("docopt")
+        self.setup("import/docopt/")
 
     def test_reqInpGroup_nf_wGroup_OK(self):
         nf_desc = self.get_file_path('naval_fate.json')

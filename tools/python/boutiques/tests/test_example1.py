@@ -35,6 +35,9 @@ class TestExample1(BaseTest):
     def capfd(self, capfd):
         self.capfd = capfd
 
+    def test_example1_validate(self):
+        self.assertIsNone(bosh.validate(self.example1_descriptor))
+
     def test_example1_no_exec(self):
         invoc = os.path.join(os.path.dirname(bfile), "schema",
                              "examples", "example1", "invocation.json")
@@ -560,7 +563,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_autoMount_input_files(self):
-        base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
+        base_path = self.get_file_path("automount")
         test_invoc = self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
@@ -590,7 +593,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_autoMount_none(self):
-        base_path = os.path.join(os.path.split(bfile)[0], "tests/automount/")
+        base_path = self.get_file_path("automount")
         test_invoc = self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default

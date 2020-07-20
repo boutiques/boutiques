@@ -13,6 +13,9 @@ class TestExample3(BaseTest):
         self.setup(os.path.join(os.path.dirname(bfile),
                                 "schema", "examples", "example3"))
 
+    def test_example3_validate(self):
+        self.assertIsNone(bosh.validate(self.get_file_path("example3.json")))
+
     def test_example3_exec(self):
         self.assert_successful_return(
             bosh.execute("launch",
