@@ -1,22 +1,22 @@
 # Release process
 
 1. Bump version number in `boutiques/__version__.py`
-2. If schema was modified, re-generate `schema/README.md` using [jsonschema2md](https://github.com/adobe/jsonschema2md)
+2. If schema was modified, re-generate `boutiques/schema/README.md` using [jsonschema2md](https://github.com/adobe/jsonschema2md)
    ```
    git clone https://github.com/adobe/jsonschema2md.git
    cd jsonschema2md
    npm link
    cd ..
-   jsonschema2md -d ./tools/python/boutiques/schema/descriptor.schema.json -v 04
-   cp out/descriptor.schema.md schema/README.md
+   jsonschema2md -d ./boutiques/schema/descriptor.schema.json -v 04
+   cp out/descriptor.schema.md ./boutiques/schema/README.md
    ```
-3. If the `README.md` at the root of this repository was updated, update `tools/python/README.rst` using [pandoc](https://pandoc.org/)
+3. If the `README.md` at the base of this repository was updated, update `./README.rst` using [pandoc](https://pandoc.org/)
    ```
-   cp tools/python/README.rst tools/python/README_old.rst
-   pandoc --from=markdown --to=rst --output=tools/python/README.rst README.md
+   cp ./README.rst ./README_old.rst
+   pandoc --from=markdown --to=rst --output=./README.rst README.md
    # Manually, you may need to replace the links near the top with the badges as specified in the top of the README_old.rst file
    # Once this is done, remove the old copy.
-   # rm tools/python/README_old.rst
+   # rm ./README_old.rst
    ```
 4. Merge `develop` in `master`
 5. Create tag on GitHub, add release notes 
@@ -28,7 +28,7 @@
 7. Install [Sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html) for python 3
 8. Generate Bosh API docs
    ```
-   cd ./tools/sphinx/
+   cd ./sphinx
    pip install sphinx-rtd-theme sphinx-argparse
    python argparse_docs.py
    ```

@@ -21,8 +21,7 @@ This guide will help you set up your local environment for coding and testing Bo
 ## 2. Create a virtual environment
 - Install virtualenv:
   - `pip install --user virtualenv`
-- Create a virtual envrionment in the Python tools root directory:
-  - `cd boutiques/tools/python`
+- Create a virtual envrionment in the base directory:
   - `mkdir env`
   - `virtualenv env/boutiques -p python3.6`  (replace python3.6 with the executable for the version of Python you wish to use)
 - Use the environment whenever you work on Boutiques by running:
@@ -30,7 +29,7 @@ This guide will help you set up your local environment for coding and testing Bo
 - Note: if you wish to leave the virtual environment, simply run `deactivate`.
 
 ## 3. Install Boutiques, test framework and validation tools
-From within your virtual environment in the `boutiques/tools/python` directory:
+From within your virtual environment in the base directory:
 - Upgrade setuptools: `pip install --upgrade setuptools`
 - Install pytest, pytest-runner and pycodestyle: `pip install pytest pytest-runner pycodestyle`
   - pytest is a unit testing framework for Python.
@@ -43,10 +42,10 @@ From within your virtual environment in the `boutiques/tools/python` directory:
 
 ## 4. Build the container images needed for testing
 - Certain test cases involve example descriptors that use a Docker or Singularity container image. These images are not available on DockerHub or SingularityHub and must be built locally.
-- From the `boutiques/tools/python` directory, build the example Docker image with the following command:
+- From the base directory, build the example Docker image with the following command:
   - Note: skip the following step if you do not have Docker installed.
   - `docker build -t boutiques/example1:test ./boutiques/schema/examples/example1`
-- Once the Docker image is built, convert it to a Singularity image. Again, from within the `boutiques/tools/python` directory:
+- Once the Docker image is built, convert it to a Singularity image. Again, from within the base directory:
   - Note: skip the following steps if you do not have Singularity installed.
   - `docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity boutiques/example1:test`
   - `IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)`
@@ -54,7 +53,7 @@ From within your virtual environment in the `boutiques/tools/python` directory:
   - Your directory should now contain a ~70MB file called `boutiques_example1_test.simg`.
  
 ## 5. Try it out!
-- Run `pytest` in the `boutiques/tools/python` directory to run all tests.
+- Run `pytest` in the base directory to run all tests
 - Run an individual test file with `pytest boutiques/tests/test_<something>.py`
 - Validate your code style by running:
   - `pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py`

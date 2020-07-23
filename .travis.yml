@@ -25,7 +25,7 @@ before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential libarchive-dev
 - npm install jsonlint -g 
-- docker build -t boutiques/example1:test ./tools/python/boutiques/schema/examples/example1
+- docker build -t boutiques/example1:test ./boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity:v3.4.0 boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
 - wget https://github.com/sylabs/singularity/releases/download/v$SINGVER/singularity-$SINGVER.tar.gz
@@ -36,7 +36,7 @@ before_install:
 - sudo make -C ./builddir install
 - singularity --version
 - cat /etc/singularity/singularity.conf
-- cd ${TRAVIS_BUILD_DIR}/tools/python/
+- cd ${TRAVIS_BUILD_DIR}/
 - mv ${IMGNAME} ./boutiques-example1-test.simg
 
 install:

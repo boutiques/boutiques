@@ -30,7 +30,7 @@ Alongside installing the Boutiques package, this will also ensure the dependenci
 
 If you want the latest changes that aren't officially released yet, you can also install directly from GitHub:
 
-    $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques&subdirectory=tools/python"
+    $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques&subdirectory=/"
 
 # Tutorial
 
@@ -47,4 +47,4 @@ Excited by the project and want to get involved?! *Please* check out our [contri
 you can lend a hand. We look forward to approving your amazing contributions!
 
 # Examples
-We have a [simple]() and a [complex](https://github.com/boutiques/boutiques/tree/master/tools/python/boutiques/schema/examples/example1) Boutiques descriptor to help you get started with your own descriptor.
+We have a [simple](https://github.com/boutiques/boutiques/tree/master/boutiques/schema/examples/example3) and a [complex](https://github.com/boutiques/boutiques/tree/master/boutiques/schema/examples/example1) Boutiques descriptor to help you get started with your own descriptor.
