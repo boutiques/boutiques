@@ -28,7 +28,7 @@
 7. Install [Sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html) for python 3
 8. Generate Bosh API docs
    ```
-   cd ./sphinx
+   cd ./docs
    pip install sphinx-rtd-theme sphinx-argparse
    python argparse_docs.py
    ```

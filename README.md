@@ -30,7 +30,7 @@ Alongside installing the Boutiques package, this will also ensure the dependenci
 
 If you want the latest changes that aren't officially released yet, you can also install directly from GitHub:
 
-    $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques&subdirectory=/"
+    $ pip install "git+https://github.com/boutiques/boutiques@develop#egg=boutiques"
 
 # Tutorial
 
