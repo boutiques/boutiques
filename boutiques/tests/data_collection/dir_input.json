@@ -2,7 +2,7 @@
     "author": "Test author",
     "command-line": "cp -Rf [DIR_INPUT] [DIR_OUTPUT]",
     "description": "This property describes the tool or application",
-    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/examples/example-dir/example_dir.json",
+    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/boutiques/schema/examples/example-dir/example_dir.json",
     "inputs": [
         {
             "id": "input_dir",

@@ -8,7 +8,7 @@
     },
     "description": "This is an updated version of an existing descriptor",
     "url": "http://example.com",
-    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/examples/example1/example1_docker.json",
+    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/boutiques/schema/examples/example1/example1_docker.json",
     "tool-doi": "00.0000/example.0000000",
     "environment-variables": [
         {

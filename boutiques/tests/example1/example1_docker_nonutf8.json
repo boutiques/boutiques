@@ -10,7 +10,7 @@
         "type": "docker"
     },
     "description": "This property describes the tool or application",
-    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/tools/python/boutiques/schema/examples/example1/example1_docker.json",
+    "descriptor-url": "https://github.com/boutiques/boutiques/blob/master/boutiques/schema/examples/example1/example1_docker.json",
     "environment-variables": [
         {
             "name": "ENVAR",
