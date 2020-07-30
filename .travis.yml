@@ -30,7 +30,7 @@ before_install:
 - tar xvf singularity-$SINGVER.tar.gz
 - cd singularity
 - ./mconfig --prefix=/usr/local --sysconfdir=/etc
-- make -C ./builddir
+- sudo make -C ./builddir
 - cd ${TRAVIS_BUILD_DIR}/
 - mv ${IMGNAME} ./boutiques-example1-test.simg
 - docker version # Docker installation check
