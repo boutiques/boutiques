@@ -135,17 +135,17 @@ def mock_urlretrieve(*args, **kwargs):
         "https://zenodo.org/api/files/"
         "151ef721-9f86-49bd-ae3d-045ae1766ee8/"
         "MCFLIRT-2019-04-11T213108.473348.json")
-
     temp = tempfile.NamedTemporaryFile(delete=False, mode='w+t')
-    if "sl_bet-2019-04-11T215451.747382.json" in args[0]:
+    if "2636983" in args[0]:
         json.dump(mock_zenodo_search([mock_record1]).mock_json, temp)
         temp.close()
-        return urlretrieve("file://%s" % temp.name, args[1])
-    if "MCFLIRT-2019-04-11T213108.473348.json" in args[0]:
+        return mock_zenodo_search([mock_record1])
+    elif "2636975" in args[0]:
         json.dump(mock_zenodo_search([mock_record2]).mock_json, temp)
         temp.close()
-        return urlretrieve("file://%s" % temp.name, args[1])
-    return urlretrieve(args[0], args[1])
+        return mock_zenodo_search([mock_record2])
+    else:
+        return mock_zenodo_search([])
 
 
 class TestDataHandler(TestCase):
@@ -181,8 +181,7 @@ class TestDataHandler(TestCase):
             downloads.append(r["DOWNLOADS"])
         self.assertEqual(sorted(downloads, reverse=True), downloads)
 
-    @mock.patch('boutiques.dataHandler.urlretrieve',
-                side_effect=mock_urlretrieve)
+    @mock.patch('requests.get', side_effect=mock_urlretrieve)
     def test_pull(self, mock_urlretrieve):
         bosh(["data", "pull", "zenodo." + "2636975"])
         cache_dir = os.path.join(
@@ -190,31 +189,24 @@ class TestDataHandler(TestCase):
         self.assertTrue(os.path.exists(os.path.join(
             cache_dir, "zenodo." + "2636975")))
 
-    @mock.patch('boutiques.dataHandler.urlretrieve',
-                side_effect=mock_urlretrieve)
+    @mock.patch('requests.get', side_effect=mock_urlretrieve)
     def test_pull_multi(self, mock_urlretrieve):
         results = bosh(["data", "pull", "zenodo.2636983", "zenodo.2636975"])
         cache_dir = os.path.join(os.path.expanduser('~'),
                                  ".cache", "boutiques", "production")
-        # self.assertTrue(os.path.exists(os.path.join(
-        #     cache_dir, "zenodo" +"2636983" + ".json")))
-        # self.assertTrue(os.path.exists(os.path.join(cache_dir,
-        #                                             "zenodo-3563099.json")))
         self.assertTrue(os.path.exists(os.path.join(
             cache_dir, "zenodo." + "2636983")))
         self.assertTrue(os.path.exists(os.path.join(cache_dir,
                                                     "zenodo.2636975")))
         self.assertEqual(len(results), 2, results)
 
-    @mock.patch('boutiques.dataHandler.urlretrieve',
-                side_effect=mock_urlretrieve)
+    @mock.patch('requests.get', side_effect=mock_urlretrieve)
     def test_pull_duplicate_collapses(self, mock_urlretrieve):
         results = bosh(["data", "pull", "zenodo.2636983", "zenodo.2636975",
                         "zenodo.2636975"])
         self.assertEqual(len(results), 2, results)
 
-    @mock.patch('boutiques.dataHandler.urlretrieve',
-                side_effect=mock_urlretrieve)
+    @mock.patch('requests.get', side_effect=mock_urlretrieve)
     def test_pull_missing_raises_exception(self, mock_urlretrieve):
         good1 = "zenodo.2636983"
         good2 = "zenodo.2636975"
@@ -225,17 +217,14 @@ class TestDataHandler(TestCase):
             bad1.split(".")[1]),
             str(e.exception))
 
-    @mock.patch('boutiques.dataHandler.urlretrieve',
-                side_effect=mock_urlretrieve)
+    @mock.patch('requests.get', side_effect=mock_urlretrieve)
     def test_pull_missing_prefix(self, mock_urlretrieve):
         with self.assertRaises(ZenodoError) as e:
             bosh(["data", "pull", "2636983"])
         self.assertIn("Zenodo ID must be prefixed by 'zenodo'",
                       str(e.exception))
 
-    @mock.patch('boutiques.dataHandler.urlretrieve',
-                side_effect=mock_urlretrieve)
-    def test_pull_not_found(self, mock_urlretrieve):
+    def test_pull_not_found(self):
         with self.assertRaises(ZenodoError) as e:
             bosh(["data", "pull", "zenodo.99999"])
         self.assertIn("Execution record \"{0}\" not found".format("99999"),

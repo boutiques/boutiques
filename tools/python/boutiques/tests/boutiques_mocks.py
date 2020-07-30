@@ -81,7 +81,8 @@ def get_zenodo_record(record):
             {
                 "links": {
                     "self": record.filename
-                }
+                },
+                "key": 'Test key'
             }
         ],
         "id": record.id,

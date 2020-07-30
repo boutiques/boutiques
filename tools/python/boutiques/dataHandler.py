@@ -10,16 +10,6 @@ from boutiques.nexusHelper import NexusHelper
 from pip._vendor.distlib.compat import raw_input
 
 
-try:
-    # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-    from urllib import urlretrieve
-
-
 class DataHandler(object):
 
     # Constructor
