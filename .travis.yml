@@ -33,9 +33,6 @@ before_install:
 - cd singularity
 - ./mconfig --prefix=/usr/local --sysconfdir=/etc
 - make -C ./builddir
-- sudo make -C ./builddir install
-- singularity --version
-- cat /etc/singularity/singularity.conf
 - cd ${TRAVIS_BUILD_DIR}/
 - mv ${IMGNAME} ./boutiques-example1-test.simg
 
