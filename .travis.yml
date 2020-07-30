@@ -16,13 +16,13 @@ node_js:
 - 5
 
 env:
-- SINGVER=3.6.1  # the version of docker2singularity used below should match this one
+- SINGVER=3.5.3  # the version of docker2singularity used below should match this one
 
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -y -qq python dh-autoreconf squashfs-tools build-essential libarchive-dev
 - npm install jsonlint -g 
-- eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.14 bash)"
+- eval "$(curl -sL https://raw.githubusercontent.com/travis-ci/gimme/master/gimme | GIMME_GO_VERSION=1.13 bash)"
 - docker build -t boutiques/example1:test ./boutiques/schema/examples/example1
 - docker run -v /var/run/docker.sock:/var/run/docker.sock -v ${HOME}:/output --privileged -t --rm singularityware/docker2singularity boutiques/example1:test
 - IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
@@ -33,6 +33,8 @@ before_install:
 - make -C ./builddir
 - cd ${TRAVIS_BUILD_DIR}/
 - mv ${IMGNAME} ./boutiques-example1-test.simg
+- docker version # Docker installation check
+- singularity version # Singularity installation check
 
 install:
 - pip install --upgrade setuptools
