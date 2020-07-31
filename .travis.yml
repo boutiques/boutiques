@@ -32,7 +32,7 @@ before_install:
 - ./mconfig --prefix=/usr/local --sysconfdir=/etc
 - make -C ./builddir
 - sudo make -C builddir install
-- cd ${TRAVIS_BUILD_DIR}/
+- cd ${TRAVIS_BUILD_DIR}/tools/python/
 - mv ${IMGNAME} ./boutiques-example1-test.simg
 - docker version # Docker installation check
 - singularity version # Singularity installation check
