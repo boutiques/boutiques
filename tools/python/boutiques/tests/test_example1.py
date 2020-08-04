@@ -536,7 +536,7 @@ class TestExample1(BaseTest):
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file": test_dir + "/file1.txt",
+        invoc_dict = {"file": "../file1.txt",
                       "file_list": ["../file2.txt", "../file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
@@ -548,7 +548,6 @@ class TestExample1(BaseTest):
                               "test_automount_desc.json"),
                           test_invoc,
                           "--skip-data-collection")
-
         try:
             self.assertIn('Hello, World!', ex.stdout)
         finally:
@@ -568,8 +567,7 @@ class TestExample1(BaseTest):
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file":
-                      "/home/darrin/Documents/Github/boutiques/tools/file1.txt",
+        invoc_dict = {"file": "../file1.txt",
                       "file_list": ["../file2.txt", "../file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
