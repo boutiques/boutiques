@@ -7,7 +7,6 @@ from boutiques.logger import raise_error, print_info
 from boutiques.util.utils import extractFileName, loadJson
 from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
 from boutiques.nexusHelper import NexusHelper
-from pip._vendor.distlib.compat import raw_input
 
 
 class DataHandler(object):
@@ -87,10 +86,7 @@ class DataHandler(object):
         # Verify publishing
         if not self.no_int:
             prompt = self._get_publishing_prompt()
-            try:
-                ret = raw_input(prompt)  # Python 2
-            except NameError:
-                ret = input(prompt)  # Python 3
+            ret = input(prompt)
             if ret.upper() != "Y":
                 return
 
@@ -256,10 +252,7 @@ class DataHandler(object):
         # Verify deletion
         if not self.no_int:
             prompt = self._get_delete_prompt()
-            try:
-                ret = raw_input(prompt)  # Python 2
-            except NameError:
-                ret = input(prompt)  # Python 3
+            ret = input(prompt)
             if ret.upper() != "Y":
                 return
 

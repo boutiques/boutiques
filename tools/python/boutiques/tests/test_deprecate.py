@@ -1,6 +1,7 @@
 from boutiques.bosh import bosh
 from unittest import TestCase
 import os
+import re
 import mock
 import json
 from boutiques import __file__ as bfile
@@ -20,7 +21,9 @@ def mock_get(*args, **kwargs):
     # Records command
     if command == "records":
         assert(len(split) >= 6)
-        record_id = split[10] if len(split) > 6 else split[5]
+        regex_match = re.search(r"\d{5}", args[0])
+        record_id = regex_match.group(0)
+
         if record_id == "00000":
             # Inexistent tool
             return MockHttpResponse(404)
