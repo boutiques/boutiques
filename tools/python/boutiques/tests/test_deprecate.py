@@ -23,7 +23,7 @@ def mock_get(*args, **kwargs):
         assert(len(split) >= 6)
         regex_match = re.search(r"\d{5}", args[0])
         record_id = regex_match.group(0)
-        
+
         if record_id == "00000":
             # Inexistent tool
             return MockHttpResponse(404)
