@@ -590,7 +590,7 @@ class LocalExecutor(object):
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
                                   forceDocker=False):
         if ((conType == 'docker' and not forceSing or forceDocker) and
-            self._isCommandInstalled('docker')):
+           self._isCommandInstalled('docker')):
             return "docker"
 
         if self._isCommandInstalled('singularity'):
