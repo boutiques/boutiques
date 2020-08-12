@@ -567,12 +567,12 @@ class TestExample1(BaseTest):
         test_invoc = self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
-        test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])
+        test_dir = os.path.split(os.path.split(bfile)[0])[0]
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file": test_dir + "/file1.txt",
-                      "file_list": ["../file2.txt", "../file3.txt"]}
+        invoc_dict = {"file": "./file1.txt",
+                      "file_list": ["./file2.txt", "./file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
             invoc.write(json.dumps(invoc_dict))
@@ -597,12 +597,12 @@ class TestExample1(BaseTest):
         test_invoc = self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
-        test_dir = "/".join(os.path.split(bfile)[0].split("/")[0:-2])
+        test_dir = os.path.split(os.path.split(bfile)[0])[0]
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file": test_dir + "/file1.txt",
-                      "file_list": ["../file2.txt", "../file3.txt"]}
+        invoc_dict = {"file": test_dir + "./file1.txt",
+                      "file_list": [test_dir + "./file2.txt", test_dir + "./file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
             invoc.write(json.dumps(invoc_dict))
