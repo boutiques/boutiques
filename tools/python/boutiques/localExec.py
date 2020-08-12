@@ -261,7 +261,10 @@ class LocalExecutor(object):
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
             # Get the supported shell by the docker or singularity
-            cmdString = "#!"+self.shell+" -l"+os.linesep+str(command)
+            cmdString = "#!{}".format(self.shell)
+            if self.shell == "/bin/sh":
+                cmdString += " -l"
+            cmdString += os.linesep + str(command)
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
