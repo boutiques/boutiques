@@ -129,12 +129,13 @@ def get_zenodo_record(record):
 
 
 def mock_get_data_cache():
-    return os.path.join(os.path.dirname(bfile), "tests", "test-data-cache")
+    return os.path.join(os.path.split(os.path.split(bfile)[0])[0],
+                        "test_temp", "test-data-cache")
 
 
 def mock_get_data_cache_file():
-    return os.path.join(
-        os.path.dirname(bfile), "tests", "test-data-cache", "nexus")
+    return os.path.join(os.path.split(os.path.split(bfile)[0])[0],
+                        "test_temp", "test-data-cache", "nexus")
 
 
 def mock_get_publish_single():

@@ -1206,9 +1206,8 @@ class LocalExecutor(object):
             dirs = os.path.dirname(fileName)
             if dirs and not os.path.exists(dirs):
                 os.makedirs(dirs)
-            file = open(fileName, 'w')
-            file.write(template)
-            file.close()
+            with open(fileName, 'w+') as fil:
+                fil.write(template)
 
     # Private method to build the actual command line by substitution,
     # using the input data

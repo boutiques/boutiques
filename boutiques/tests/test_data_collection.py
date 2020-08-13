@@ -128,6 +128,9 @@ class TestDataCollection(BaseTest):
                          "10.5281/zenodo." + str(example_boutiques_tool.id))
 
     def test_directory_input_output(self):
+        import shutil
+        if os.path.exists(self.test_temp):
+            shutil.rmtree(self.test_temp)
         bosh.execute("launch",
                      self.get_file_path("dir_input.json"),
                      self.get_file_path("dir_invocation.json"),

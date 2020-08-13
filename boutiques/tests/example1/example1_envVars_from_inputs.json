@@ -1,6 +1,6 @@
 {
     "author": "Test author",
-    "command-line": "echo $env_var > file.txt",
+    "command-line": "echo $env_var",
     "container-image": {
         "container-opts": [
             "-e",
@@ -29,13 +29,6 @@
         }
     ],
     "name": "Test Boutiques Tool",
-    "output-files": [
-        {
-            "id": "output_file", 
-            "name": "output file", 
-            "path-template": "file.txt"
-        }
-    ],
     "schema-version": "0.5",
     "tool-doi": "00.0000/example.0000000",
     "tool-version": "0.0.1"

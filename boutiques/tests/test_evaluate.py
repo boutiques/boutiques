@@ -19,13 +19,13 @@ class TestEvaluate(BaseTest):
         desc = self.example1_descriptor
         invo = self.get_file_path("invocation.json")
         query = bosh.evaluate(desc, invo, "output-files/")
-        expect = {'logfile': 'log-4-coin;plop.txt',
+        expect = {'logfile': './test_temp/log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
-                  'config_file': './test_temp/subdir1/subdir2/config.txt'}
+                  'config_file': './test_temp/config.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=logfile")
-        expect = {'logfile': 'log-4-coin;plop.txt'}
+        expect = {'logfile': './test_temp/log-4-coin;plop.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=log-file")
@@ -36,13 +36,13 @@ class TestEvaluate(BaseTest):
         desc = open(self.example1_descriptor).read()
         invo = open(self.get_file_path("invocation.json")).read()
         query = bosh.evaluate(desc, invo, "output-files/")
-        expect = {'logfile': 'log-4-coin;plop.txt',
+        expect = {'logfile': './test_temp/log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
-                  'config_file': './test_temp/subdir1/subdir2/config.txt'}
+                  'config_file': './test_temp/config.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=logfile")
-        expect = {'logfile': 'log-4-coin;plop.txt'}
+        expect = {'logfile': './test_temp/log-4-coin;plop.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=log-file")
@@ -54,13 +54,13 @@ class TestEvaluate(BaseTest):
         desc = "zenodo." + str(example_boutiques_tool.id)
         invo = self.get_file_path("invocation.json")
         query = bosh.evaluate(desc, invo, "output-files/")
-        expect = {'logfile': 'log-4-coin;plop.txt',
+        expect = {'logfile': './test_temp/log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
                   'config_file': './test_temp/config.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=logfile")
-        expect = {'logfile': 'log-4-coin;plop.txt'}
+        expect = {'logfile': './test_temp/log-4-coin;plop.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=log-file")

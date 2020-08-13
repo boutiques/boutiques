@@ -1,5 +1,5 @@
 {
-    "command-line": "echo [INPUT] > file.txt", 
+    "command-line": "echo [INPUT] > ./test_temp/file.txt", 
     "description": "a tool with no container image",
     "container-image": {
         "type": "docker",
@@ -19,7 +19,7 @@
         {
             "id": "output_file", 
             "name": "output file", 
-            "path-template": "file.txt"
+            "path-template": "./test_temp/file.txt"
         }
     ], 
     "schema-version": "0.5", 

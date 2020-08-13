@@ -139,7 +139,7 @@
             "description": "The output log file from the example tool",
             "id": "logfile",
             "name": "Log file",
-            "path-template": "log-[CONFIG_NUMBER]-[STRING_INPUT].txt",
+            "path-template": "./test_temp/log-[CONFIG_NUMBER]-[STRING_INPUT].txt",
             "path-template-stripped-extensions": [
                 ".txt",
                 ".csv"
@@ -162,7 +162,7 @@
             ],
             "id": "config_file",
             "name": "Configuration file",
-            "path-template": "./config.txt",
+            "path-template": "./test_temp/config.txt",
             "value-key": "[CONFIG_FILE]"
         }
     ],

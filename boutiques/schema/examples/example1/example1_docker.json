@@ -178,7 +178,7 @@
             ],
             "id": "config_file",
             "name": "Configuration file",
-            "path-template": "./test_temp/subdir1/subdir2/config.txt",
+            "path-template": "./test_temp/config.txt",
             "value-key": "[CONFIG_FILE]"
         }
     ],

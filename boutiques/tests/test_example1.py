@@ -69,7 +69,7 @@ class TestExample1(BaseTest):
         self.assertNotIn("This is stderr", out)
 
         self.assert_successful_return(
-            ret, ["log-4-coin;plop.txt"], 2,
+            ret, ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -80,14 +80,14 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          self.example1_descriptor,
-                         "-x",
+                         "--debug",
                          invoc,
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4-coin;plop.txt"], 2,
+            ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -128,7 +128,7 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4-coin;plop.txt"], 2,
+            ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -139,14 +139,14 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          self.example1_descriptor,
-                         "-x",
+                         "--debug",
                          invoc,
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2")),
                          "--skip-data-collection"),
-            ["log-4-coin;plop.txt"], 2,
+            ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -164,25 +164,26 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4-coin;plop.txt"], 2,
+            ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_desc_as_json_obj_debug(self):
+        descStr = open(self.example1_descriptor).read()
         invoc = os.path.join(os.path.dirname(bfile), "schema",
                              "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch",
-                         self.example1_descriptor,
-                         "-x",
+                         descStr,
                          invoc,
+                         "--debug",
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4-coin;plop.txt"], 2,
+            ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -219,7 +220,7 @@ class TestExample1(BaseTest):
         self.assertNotIn("This is stdout", out)
         self.assertNotIn("This is stderr", out)
         self.assert_successful_return(ret,
-                                      ["log-4-coin;plop.txt"], 2,
+                                      ["./test_temp/log-4-coin;plop.txt"], 2,
                                       self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -230,14 +231,14 @@ class TestExample1(BaseTest):
                              "examples", "example1", "invocation.json")
         self.assert_successful_return(
             bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
-                         "-x",
+                         "--debug",
                          invoc,
                          "--skip-data-collection",
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4-coin;plop.txt"], 2,
+            ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -254,7 +255,7 @@ class TestExample1(BaseTest):
                            config_num=4,
                            enum_input='val1')
         self.assert_successful_return(ret,
-                                      ["log-4-coin;plop.txt"], 2,
+                                      ["./test_temp/log-4-coin;plop.txt"], 2,
                                       self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -272,7 +273,7 @@ class TestExample1(BaseTest):
                            config_num=4,
                            enum_input='val1')
         self.assert_successful_return(ret,
-                                      ["log-4-coin;plop.txt"], 2,
+                                      ["./test_temp/log-4-coin;plop.txt"], 2,
                                       self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -315,7 +316,7 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4.txt"], 2,
+            ["./test_temp/log-4.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(
@@ -325,13 +326,13 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_sing.json"),
-                         "-x",
+                         "--debug",
                          self.get_file_path("invocation_sing.json"),
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4.txt"], 2,
+            ["./test_temp/log-4.txt"], 2,
             self.assert_reflected_output)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
@@ -365,7 +366,7 @@ class TestExample1(BaseTest):
             "-v", "{}:/test_mount2".format(
                 self.get_file_path("example1_mount2")))
         self.assert_failed_return(
-            be, 2, "File does not exist!", ["log-4-pwet.txt"], 1)
+            be, 2, "File does not exist!", ["./test_temp/log-4-pwet.txt"], 1)
 
     def test_example1_exec_fail_cli(self):
         command = (
@@ -405,7 +406,7 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount2")))
 
         self.assert_successful_return(
-            ret, ["log-4-coin;plop.txt"], 2,
+            ret, ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output_nonutf8)
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
@@ -416,13 +417,13 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             bosh.execute("launch",
                          self.get_file_path("example1_docker_nonutf8.json"),
-                         "-x",
+                         "--debug",
                          invoc,
                          "-v", "{}:/test_mount1".format(
                              self.get_file_path("example1_mount1")),
                          "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2"))),
-            ["log-4-coin;plop.txt"], 2,
+            ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output_nonutf8)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
@@ -439,7 +440,7 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount2")))
 
         self.assert_successful_return(
-            ret, ["log-4-coin;plop.txt"], 2,
+            ret, ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
         self.assertIn("Local (boutiques-example1-test.simg)",
                       ret.container_location)
@@ -459,7 +460,7 @@ class TestExample1(BaseTest):
                            "--force-singularity")
 
         self.assert_successful_return(
-            ret, ["log-4-coin;plop.txt"], 2,
+            ret, ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
         self.assertIn("Local (boutiques-example1-test.simg)",
                       ret.container_location)
@@ -479,7 +480,7 @@ class TestExample1(BaseTest):
                              self.get_file_path("example1_mount2")))
 
         self.assert_successful_return(
-            ret, ["log-4.txt"], 2,
+            ret, ["./test_temp/log-4.txt"], 2,
             self.assert_reflected_output)
         self.assertIn("Local copy", ret.container_location)
         self.assertIn("docker run", ret.container_command)
@@ -505,7 +506,7 @@ class TestExample1(BaseTest):
                            "-v", "{}:/test_mount2".format(
                              self.get_file_path("example1_mount2")))
         self.assert_successful_return(
-            ret, ["log-4-coin;plop.txt"], 2,
+            ret, ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
         self.assertIn("Local (boutiques-example1-test.simg)",
                       ret.container_location)
@@ -514,6 +515,7 @@ class TestExample1(BaseTest):
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_conditional_outputFiles_created(self):
+        os.makedirs(self.test_temp, exist_ok=True)
         base_path = os.path.join(self.tests_dir, "example1")
         ex = bosh.execute("launch",
                           self.get_file_path(
@@ -523,9 +525,9 @@ class TestExample1(BaseTest):
                           "--skip-data-collection")
 
         outFileList = [str(out) for out in ex.output_files]
-        self.assertIn("TEST.one.three.two_out1.txt (out1, Required)",
+        self.assertIn("./test_temp/TEST.one.three.two_out1.txt (out1, Required)",
                       outFileList)
-        self.assertIn("TEST_string1.txt (out2, Required)",
+        self.assertIn("./test_temp/TEST_string1.txt (out2, Required)",
                       outFileList)
         self.assertEqual([], ex.missing_files)
 
@@ -538,15 +540,7 @@ class TestExample1(BaseTest):
             self.get_file_path("test_input_env_var_invoc.json"),
             "--skip-data-collection")
 
-        outFileList = [str(out) for out in ex.output_files]
-        try:
-            self.assertIn('file.txt (output_file, Required)', outFileList)
-            with open(outFileList[0].split()[0]) as file:
-                text = file.read()
-                self.assertIn('subdir1/test_path.d', text)
-        finally:
-            if os.path.isfile(outFileList[0].split()[0]):
-                os.remove(outFileList[0].split()[0])
+        self.assertIn("./test_temp/test_path.d", ex.stdout)
 
     @pytest.mark.skipif(subprocess.Popen("type singularity", shell=True).wait(),
                         reason="Singularity not installed")

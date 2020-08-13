@@ -4,6 +4,7 @@ import sys
 import pytest
 from unittest import TestCase
 from boutiques import __file__ as bfile
+import glob
 import shutil
 
 
@@ -18,10 +19,12 @@ class BaseTest(TestCase):
 
     @pytest.fixture(autouse=True)
     def clean_test_temp(self):
-        # Clean test temp directory before every test
+        # Clean test temp directory after every test
         yield
         if os.path.exists(self.test_temp):
             shutil.rmtree(self.test_temp)
+
+        os.makedirs(self.test_temp, exist_ok=True)
 
     def setup(self, dir):
         self.dir = dir
