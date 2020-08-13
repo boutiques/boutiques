@@ -1,16 +1,27 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import pytest
 from unittest import TestCase
 from boutiques import __file__ as bfile
+import shutil
 
 
 class BaseTest(TestCase):
     dir = "."
     tests_dir = os.path.join(os.path.dirname(bfile), "tests")
+    test_temp = os.path.join(os.path.split(os.path.split(bfile)[0])[0],
+                             "test_temp")
     example1_descriptor = os.path.join(os.path.dirname(bfile), "schema",
                                        "examples", "example1",
                                        "example1_docker.json")
+
+    @pytest.fixture(autouse=True)
+    def clean_test_temp(self):
+        # Clean test temp directory before every test
+        yield
+        if os.path.exists(self.test_temp):
+            shutil.rmtree(self.test_temp)
 
     def setup(self, dir):
         self.dir = dir

@@ -15,7 +15,7 @@
     "name": "Example Boutiques Tool",
     "output-files": [
         {
-            "path-template": "output-dir",
+            "path-template": "test_temp",
             "description": "This directory will contain output files.",
             "optional": true,
             "id": "results",

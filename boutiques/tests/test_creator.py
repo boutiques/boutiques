@@ -20,24 +20,24 @@ class TestCreator(BaseTest):
         self.setup("creator")
 
     def test_success_template(self):
-        fil = 'creator_output.json'
+        fil = './test_temp/creator_output.json'
         descriptor = bosh(['create', fil])
         self.assertIsNone(bosh(['validate', fil]))
 
     def test_success_docker(self):
-        fil = 'creator_output.json'
+        fil = './test_temp/creator_output.json'
         descriptor = bosh(['create', '-d', 'mysql:latest', fil])
         self.assertIsNone(bosh(['validate', fil]))
 
     def test_success_docker_sing_import(self):
-        fil = 'creator_output.json'
+        fil = './test_temp/creator_output.json'
         descriptor = bosh(['create', '-d', 'mysql:latest', '-u', fil])
         self.assertIsNone(bosh(['validate', fil]))
 
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_fail_image_(self):
-        fil = 'creator_output.json'
+        fil = './test_temp/creator_output.json'
         self.assertRaises(CreatorError, bosh,
                           ['create', '-d', 'ihopethisdoesntexists', fil])
 
@@ -73,10 +73,10 @@ class TestCreator(BaseTest):
                                          tags={"purpose": "testing-creator",
                                                "foo": "bar"})
 
-        fil = './test-created-argparse-descriptor.json'
+        fil = './test_temp/test-created-argparse-descriptor.json'
         creatorObj.save(fil)
 
-        invof = './test-created-argparse-inputs.json'
+        invof = './test_temp/test-created-argparse-inputs.json'
         args = parser.parse_args([['val1', 'val2'], '2', 'option2',
                                   'subval1', 'subval3',
                                   '--suboptionflag1', 't1',
@@ -92,7 +92,7 @@ class TestCreator(BaseTest):
         template = op.join(op.split(self.tests_dir)[0],
                            'templates',
                            'basic.json')
-        fil = 'creator_output.json'
+        fil = './test_temp/creator_output.json'
         bosh(['create', fil, '--camel-case'])
         self.assertIsNone(bosh(['validate', fil]))
 

@@ -21,7 +21,7 @@ class TestEvaluate(BaseTest):
         query = bosh.evaluate(desc, invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
-                  'config_file': './subdir1/subdir2/config.txt'}
+                  'config_file': './test_temp/subdir1/subdir2/config.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=logfile")
@@ -38,7 +38,7 @@ class TestEvaluate(BaseTest):
         query = bosh.evaluate(desc, invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
-                  'config_file': './subdir1/subdir2/config.txt'}
+                  'config_file': './test_temp/subdir1/subdir2/config.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=logfile")
@@ -56,7 +56,7 @@ class TestEvaluate(BaseTest):
         query = bosh.evaluate(desc, invo, "output-files/")
         expect = {'logfile': 'log-4-coin;plop.txt',
                   'output_files': 'output/*_exampleOutputTag.resultType',
-                  'config_file': './config.txt'}
+                  'config_file': './test_temp/config.txt'}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "output-files/id=logfile")
