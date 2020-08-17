@@ -4,6 +4,7 @@ import sys
 import pytest
 from unittest import TestCase
 from boutiques import __file__ as bfile
+from boutiques_mocks import example_boutiques_tool
 import glob
 import shutil
 
@@ -25,6 +26,10 @@ class BaseTest(TestCase):
             shutil.rmtree(self.test_temp)
 
         os.makedirs(self.test_temp, exist_ok=True)
+
+    @pytest.fixture(autouse=True)
+    def reset_mock_zenodo_record(self):
+        example_boutiques_tool.reset()
 
     def setup(self, dir):
         self.dir = dir

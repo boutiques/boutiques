@@ -22,6 +22,16 @@ class MockZenodoRecord:
         self.keywords = keywords
         self.is_last_version = is_last_version
 
+    def reset(self, id=660699, title="Example Boutiques Tool", description="",
+              filename="", downloads=1, keywords=[], is_last_version=True):
+        self.id = id
+        self.title = title
+        self.filename = filename
+        self.downloads = downloads
+        self.description = description
+        self.keywords = keywords
+        self.is_last_version = is_last_version
+
 
 # Mock object representing the current version of Example Boutiques Tool
 # on Zenodo
@@ -32,7 +42,10 @@ example_boutiques_tool = MockZenodoRecord(660699, "Example Boutiques Tool",
 
 
 def mock_get():
-    return mock_zenodo_search([example_boutiques_tool])
+    return mock_zenodo_search([MockZenodoRecord(660699, "Example Boutiques Tool",
+                               filename="https://sandbox.zenodo.org/"
+                               "record/660699/files/"
+                               "example1_docker.json")])
 
 
 def mock_zenodo_test_api(*args, **kwargs):
