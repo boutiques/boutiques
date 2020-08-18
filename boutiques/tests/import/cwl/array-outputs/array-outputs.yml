@@ -1,4 +1,4 @@
 touchfiles:
-  - foo.txt
-  - bar.dat
-  - baz.txt
+  - ./test_temp/foo.txt
+  - ./test_temp/bar.dat
+  - ./test_temp/baz.txt

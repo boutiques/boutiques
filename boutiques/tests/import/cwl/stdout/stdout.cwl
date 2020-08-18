@@ -1,7 +1,7 @@
 cwlVersion: v1.0
 class: CommandLineTool
 baseCommand: echo
-stdout: output.txt
+stdout: ./test_temp/output.txt
 inputs:
   message:
     type: string

@@ -25,4 +25,8 @@ inputs:
       separate: false
       position: 4
 
-outputs: []
+outputs:
+  output:
+    type: File
+    outputBinding:
+      glob: "./test_temp/whale.txt"

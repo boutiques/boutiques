@@ -11,4 +11,9 @@ requirements:
 
 inputs:
   message: string
-outputs: []
+outputs:
+  output:
+    type: File
+    outputBinding:
+      glob: "./test_temp/example.conf"
+stdout: ./test_temp/stdout.txt

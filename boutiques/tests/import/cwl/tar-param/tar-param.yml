@@ -1,4 +1,4 @@
 tarfile:
   class: File
-  path: hello.tar
-extractfile: goodbye.txt
+  path: ./test_temp/hello.tar
+extractfile: ./test_temp/goodbye.txt

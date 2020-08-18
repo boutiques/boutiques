@@ -10,4 +10,4 @@ outputs:
   example_out:
     type: File
     outputBinding:
-      glob: hello.txt
+      glob: ./test_temp/hello.txt

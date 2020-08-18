@@ -1,4 +1,4 @@
 inp:
   class: File
-  path: hello.tar
+  path: ./test_temp/hello.tar
 ex: Hello.java

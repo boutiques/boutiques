@@ -28,4 +28,4 @@ class TestExample3(BaseTest):
         self.assertEqual(bosh.evaluate(self.get_file_path("example3.json"),
                                        self.get_file_path("invocation.json"),
                                        "output-files/"),
-                         {'logfile': 'log-FileValue.txt'})
+                         {'logfile': './test_temp/log-FileValue.txt'})

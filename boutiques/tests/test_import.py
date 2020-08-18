@@ -23,19 +23,22 @@ class TestImport(BaseTest):
     @pytest.fixture(scope='session', autouse=True)
     def clean_up(self):
         yield
-        if os.path.isfile("user-image.simg"):
-            os.remove("user-image.simg")
+        remove_list = ["user-image.simg", "example.conf", "stdout.txt"]
+        for item in remove_list:
+            if os.path.isfile(item):
+                os.remove(item)
 
     def test_import_bids_good(self):
         self.setup("bids")
         bids_app = self.get_file_path("example_good")
-        outfile = "test-import.json"
+        outfile = "./test_temp/test-import.json"
         ref_name = "test-import-ref.json"
         if op.isfile(outfile):
             os.remove(outfile)
         self.assertFalse(bosh(["import", "bids", outfile, bids_app]))
         self.assertEqual(open(outfile).read().strip(),
                          open(opj(bids_app, ref_name)).read().strip())
+        self.assertFalse(bosh(["validate", outfile, "-b"]))
 
     def test_import_bids_bad(self):
         self.setup("bids")
@@ -43,10 +46,6 @@ class TestImport(BaseTest):
         self.assertRaises(ValidationError, bosh, ["import", "bids",
                                                   "test-import.json",
                                                   bids_app])
-
-    def test_import_bids_valid(self):
-        self.assertFalse(bosh(["validate", "test-import.json", "-b"]))
-        os.remove("test-import.json")
 
     def test_upgrade_04(self):
         self.setup("import")
@@ -95,8 +94,8 @@ class TestImport(BaseTest):
             cwl_descriptor = op.abspath(opj(ex_dir, d, d+".cwl"))
             cwl_invocation = op.abspath(opj(ex_dir, d, d+".yml"))
             assert(os.path.isfile(cwl_descriptor))
-            out_desc = "./cwl_out.json"
-            out_inv = "./cwl_inv_out.json"
+            out_desc = "./test_temp/cwl_out.json"
+            out_inv = "./test_temp/cwl_inv_out.json"
             run = False
             if os.path.isfile(cwl_invocation):
                 args = ["import",
@@ -118,14 +117,14 @@ class TestImport(BaseTest):
                 self.assertFalse(bosh(args), cwl_descriptor)
                 if run:
                     # write files required by cwl tools
-                    with open('hello.js', 'w') as f:
+                    with open('./test_temp/hello.js', 'w') as f:
                         f.write("'hello'")
-                    with open('goodbye.txt', 'w') as f:
+                    with open('./test_temp/goodbye.txt', 'w') as f:
                         f.write("goodbye")
                     # closing required for Python 2.6...
-                    with tarfile.open('hello.tar',
+                    with tarfile.open('./test_temp/hello.tar',
                                       'w') as tar:
-                        tar.add('goodbye.txt')
+                        tar.add('./test_temp/goodbye.txt')
                     ret = boutiques.execute(
                             "launch",
                             out_desc,

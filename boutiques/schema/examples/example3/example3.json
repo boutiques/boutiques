@@ -57,7 +57,7 @@
             "description": "The output log file from the example tool",
             "id": "logfile",
             "name": "Log file",
-            "path-template": "log-[FILE_INPUT].txt",
+            "path-template": "./test_temp/log-[FILE_INPUT].txt",
             "path-template-stripped-extensions": [
                 ".txt",
                 ".csv"
