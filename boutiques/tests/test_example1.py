@@ -525,8 +525,8 @@ class TestExample1(BaseTest):
                           "--skip-data-collection")
 
         outFileList = [str(out) for out in ex.output_files]
-        self.assertIn("./test_temp/TEST.one.three.two_out1.txt (out1, Required)",
-                      outFileList)
+        self.assertIn("./test_temp/TEST.one.three.two_out1.txt"
+                      " (out1, Required)", outFileList)
         self.assertIn("./test_temp/TEST_string1.txt (out2, Required)",
                       outFileList)
         self.assertEqual([], ex.missing_files)
@@ -596,7 +596,8 @@ class TestExample1(BaseTest):
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
         invoc_dict = {"file": test_dir + "./file1.txt",
-                      "file_list": [test_dir + "./file2.txt", test_dir + "./file3.txt"]}
+                      "file_list": [test_dir + "./file2.txt",
+                                    test_dir + "./file3.txt"]}
         # Create test invoc based on absolute test_dir path
         with open(test_invoc, "w+") as invoc:
             invoc.write(json.dumps(invoc_dict))
