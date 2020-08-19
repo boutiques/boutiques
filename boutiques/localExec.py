@@ -1408,17 +1408,6 @@ def addDefaultValues(desc_dict, in_dict):
     return in_dict
 
 
-# Parses absolute path into filename
-def extractFileName(path):
-    # Helps OS path handle case where "/" is at the end of path
-    if path is None:
-        return None
-    elif path[:-1] == '/':
-        return os.path.basename(path[:-1]) + "/"
-    else:
-        return os.path.basename(path)
-
-
 # Hashes files with MD5,
 # capable of handling large data files
 def computeMD5(filepath):

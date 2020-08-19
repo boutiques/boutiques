@@ -33,7 +33,7 @@ class TestLogger(BaseTest):
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
     @pytest.fixture(autouse=True)
-    def capfd(self, capfd):
+    def capture_st(self, capfd):
         self.capfd = capfd
 
     def test_raise_error(self):
