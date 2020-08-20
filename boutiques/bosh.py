@@ -22,6 +22,7 @@ from boutiques.util.utils import formatSphinxUsage
 from boutiques.logger import raise_error, print_error, print_info
 from tabulate import tabulate
 import argparse
+import traceback
 
 
 def pprint(*params):
@@ -494,9 +495,11 @@ def bosh(args=None):
         elif func == "deprecate":
             out = deprecate(*params)
             return bosh_return(out)
+        elif func == "-h" or func == "--help":
+            return bosh_return(parser_bosh().format_help())
         else:
             print(parser_bosh().format_help())
-            raise_error(ExecutorError,
+            raise_error(SystemExit,
                         "Incorrect bosh mode \'{}\'".format(func))
 
     except (ZenodoError,
@@ -510,12 +513,16 @@ def bosh(args=None):
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
-            print(e)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            print("".join(
+                traceback.format_exception(exc_type, exc_value, exc_traceback)))
             return 99  # Note: this conflicts with tool error codes.
         raise e
     except SystemExit as e:
         if runs_as_cli():
-            print(e)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            print("".join(
+                traceback.format_exception(exc_type, exc_value, exc_traceback)))
             return 99  # Note: this conflicts with tool error codes.
         raise_error(BoutiquesError,
                     "Unable to parse arguments resulting in SystemExit.")
