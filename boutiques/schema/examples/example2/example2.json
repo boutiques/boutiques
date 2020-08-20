@@ -1,0 +1,57 @@
+{
+    "command-line": "/usr/bin/printf '[STRING_INPUT]\n' > [LOG]",
+    "description": "This property describes the tool or application",
+    "inputs": [
+        {
+            "default-value": "aStringValue",
+            "description": "Describe the use and meaning of the parameter",
+            "id": "str_input",
+            "list": true,
+            "max-list-entries": 3,
+            "min-list-entries": 1,
+            "name": "A string input",
+            "type": "String",
+            "value-key": "[STRING_INPUT]"
+        }
+    ],
+    "invocation-schema": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "additionalProperties": false,
+        "dependencies": {},
+        "description": "Invocation schema for example boutiques tool.",
+        "properties": {
+            "file_input": {
+                "type": "string"
+            },
+            "str_input": {
+                "items": {
+                    "type": "string"
+                },
+                "maxItems": 3,
+                "minItems": 1,
+                "type": "array"
+            }
+        },
+        "required": [
+            "str_input"
+        ],
+        "title": "Example Boutiques Tool.invocationSchema",
+        "type": "object"
+    },
+    "name": "Example Boutiques Tool",
+    "output-files": [
+        {
+            "description": "The output log file from the example tool",
+            "id": "logfile",
+            "name": "Log file",
+            "path-template": "./test_temp/log.txt",
+            "path-template-stripped-extensions": [
+                ".txt",
+                ".csv"
+            ],
+            "value-key": "[LOG]"
+        }
+    ],
+    "schema-version": "0.5",
+    "tool-version": "0.0.1"
+}

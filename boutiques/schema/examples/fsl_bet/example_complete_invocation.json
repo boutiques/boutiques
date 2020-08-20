@@ -1,0 +1,21 @@
+{
+    "approx_skull_flag": true,
+    "binary_mask_flag": true,
+    "center_of_gravity": [
+        -6.146,
+        -46.492,
+        -10.684
+    ],
+    "debug_flag": false,
+    "fractional_intensity": 0.991,
+    "head_radius": -2.001,
+    "infile": "f_infile_98.csv",
+    "maskfile": "str_maskfile_rH",
+    "no_seg_output_flag": false,
+    "overlay_flag": false,
+    "robust_iters_flag": false,
+    "thresholding_flag": true,
+    "verbose_flag": true,
+    "vg_fractional_intensity": -0.195,
+    "vtk_mesh": true
+}

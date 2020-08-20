@@ -15,3 +15,4 @@ temp-*.localExec.boshjob.sh
 .vscode
 .idea/
 boutiques-example1-test.simg
+test_temp/*

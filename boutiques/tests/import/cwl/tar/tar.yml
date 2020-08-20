@@ -1,0 +1,3 @@
+tarfile:
+  class: File
+  path: ./test_temp/hello.tar
