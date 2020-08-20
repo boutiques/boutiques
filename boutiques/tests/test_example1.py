@@ -8,7 +8,7 @@ import boutiques as bosh
 from boutiques.localExec import ExecutorError
 from boutiques.util.utils import LoadError
 import mock
-from boutiques_mocks import MockZenodoRecord, example_boutiques_tool, mock_get
+from boutiques_mocks import example_boutiques_tool, mock_get
 from boutiques import __file__ as bfile
 from shutil import copy2
 import simplejson as json

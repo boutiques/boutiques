@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import pytest
-import boutiques
 import subprocess
 import os
 import simplejson as json
@@ -83,7 +82,7 @@ class TestOutputFiles(BaseTest):
             template_desc_json = json.load(base_desc)
 
         test_json = {k: template_desc_json[k] for k in template_desc_json if
-                     k is not 'output-files'}
+                     k != 'output-files'}
         output_list = template_desc_json['output-files']
 
         # Test non-optional conditional-path-template with missing default
