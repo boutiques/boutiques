@@ -7,7 +7,7 @@ import pytest
 from boutiques import __file__ as bfile
 from boutiques.localExec import loadJson
 from boutiques.tests.BaseTest import BaseTest
-from boutiques_mocks import MockZenodoRecord, example_boutiques_tool, mock_get
+from boutiques_mocks import example_boutiques_tool, mock_get
 import boutiques as bosh
 
 
