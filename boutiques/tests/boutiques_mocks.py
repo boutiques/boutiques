@@ -23,7 +23,9 @@ class MockZenodoRecord:
         self.is_last_version = is_last_version
 
     def reset(self, id=660699, title="Example Boutiques Tool", description="",
-              filename="", downloads=1, keywords=[], is_last_version=True):
+              filename="https://sandbox.zenodo.org/record/660699/files/"
+              "example1_docker.json", downloads=1, keywords=[],
+              is_last_version=True):
         self.id = id
         self.title = title
         self.filename = filename
