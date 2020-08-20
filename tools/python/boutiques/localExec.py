@@ -592,9 +592,8 @@ class LocalExecutor(object):
     # descriptor, executor options and if Docker is installed.
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
                                   forceDocker=False):
-        if (self._isCommandInstalled('docker') and
-                (conType == 'docker' and not forceSing or
-                 forceDocker)):
+        if ((conType == 'docker' and not forceSing or forceDocker) and
+           self._isCommandInstalled('docker')):
             return "docker"
 
         if self._isCommandInstalled('singularity'):
