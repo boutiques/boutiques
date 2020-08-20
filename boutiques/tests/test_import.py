@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from boutiques import bosh
-from boutiques import __file__ as bfile
 from jsonschema.exceptions import ValidationError
 import os
 import os.path as op
@@ -10,10 +9,7 @@ import pytest
 from boutiques.importer import ImportError
 import boutiques
 import tarfile
-from contextlib import closing
 import simplejson as json
-from docopt import docopt
-import subprocess
 from boutiques.util.utils import loadJson
 from boutiques.tests.BaseTest import BaseTest
 
@@ -90,7 +86,6 @@ class TestImport(BaseTest):
         for d in os.listdir(ex_dir):
             if d == "README.md":
                 continue
-            files = os.listdir(opj(ex_dir, d))
             cwl_descriptor = op.abspath(opj(ex_dir, d, d+".cwl"))
             cwl_invocation = op.abspath(opj(ex_dir, d, d+".yml"))
             assert(os.path.isfile(cwl_descriptor))

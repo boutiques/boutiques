@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
-from boutiques.bosh import bosh
 import subprocess
-import os.path as op
-import simplejson as json
-from boutiques import __file__ as bfile
 from boutiques.tests.BaseTest import BaseTest
 import pytest
 

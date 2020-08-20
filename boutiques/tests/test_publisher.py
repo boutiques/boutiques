@@ -1,16 +1,15 @@
-from boutiques import __file__ as bfile
 from boutiques.publisher import ZenodoError
 from boutiques.bosh import bosh
 import simplejson as json
 import subprocess
 import shutil
 import tempfile
-import os
 import os.path as op
-import sys
 import mock
-from boutiques_mocks import *
-from boutiques.util.utils import loadJson
+from boutiques_mocks import MockHttpResponse, MockZenodoRecord,\
+    mock_zenodo_test_api_fail, mock_zenodo_test_api, mock_zenodo_search,\
+    mock_zenodo_deposit, mock_zenodo_upload_descriptor, mock_zenodo_publish,\
+    mock_zenodo_delete_files, mock_get_publish_bulk, mock_zenodo_no_permission
 from boutiques.tests.BaseTest import BaseTest
 import pytest
 from collections import OrderedDict
@@ -180,13 +179,13 @@ class TestPublisher(BaseTest):
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
-            wrong_id = bosh(["publish",
-                             temp_descriptor.name,
-                             "--sandbox", "-y", "-v",
-                             "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
-                                               "PWr2VeQZgBLErKbfF5RdrKhzzJ"
-                                               "i8i2hnN8r",
-                             "--id", "this_is_a_wrong_id"])
+            bosh(["publish",
+                  temp_descriptor.name,
+                  "--sandbox", "-y", "-v",
+                  "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                    "PWr2VeQZgBLErKbfF5RdrKhzzJ"
+                                    "i8i2hnN8r",
+                  "--id", "this_is_a_wrong_id"])
         self.assertTrue("Zenodo ID must be prefixed by 'zenodo'"
                         in str(e.exception))
 
@@ -195,12 +194,12 @@ class TestPublisher(BaseTest):
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(good_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
-            no_author = bosh(["publish",
-                              temp_descriptor.name,
-                              "--sandbox", "-y", "-v",
-                              "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
-                                                "PWr2VeQZgBLErKbfF5RdrKhzzJ"
-                                                "i8i2hnN8r"])
+            bosh(["publish",
+                  temp_descriptor.name,
+                  "--sandbox", "-y", "-v",
+                  "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                    "PWr2VeQZgBLErKbfF5RdrKhzzJ"
+                                    "i8i2hnN8r"])
         self.assertTrue("Tool must have an author to be published."
                         in str(e.exception))
 
@@ -209,12 +208,12 @@ class TestPublisher(BaseTest):
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(good_desc, temp_descriptor.name)
         with self.assertRaises(ZenodoError) as e:
-            no_container = bosh(["publish",
-                                 temp_descriptor.name,
-                                 "--sandbox", "-y", "-v",
-                                 "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
-                                                   "PWr2VeQZgBLErKbfF5RdrKhzzJ"
-                                                   "i8i2hnN8r"])
+            bosh(["publish",
+                  temp_descriptor.name,
+                  "--sandbox", "-y", "-v",
+                  "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                    "PWr2VeQZgBLErKbfF5RdrKhzzJ"
+                                    "i8i2hnN8r"])
         self.assertTrue("Tool must have a container image to be published."
                         in str(e.exception))
 
@@ -227,12 +226,12 @@ class TestPublisher(BaseTest):
             self.assertIsNone(descriptor.get('doi'))
         # Try to update it
         with self.assertRaises(ZenodoError) as e:
-            doi = bosh(["publish",
-                        temp_descriptor.name,
-                        "--sandbox", "-y", "-v",
-                        "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
-                                          "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
-                        "--replace"])
+            bosh(["publish",
+                  temp_descriptor.name,
+                  "--sandbox", "-y", "-v",
+                  "--zenodo-token", "hAaW2wSBZMskxpfigTYHcuDrC"
+                                    "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                  "--replace"])
         self.assertTrue("To publish an updated version of a previously "
                         "published descriptor, the descriptor must"
                         " contain a DOI"

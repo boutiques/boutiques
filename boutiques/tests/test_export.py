@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
 import os
-import sys
 from boutiques import bosh
-from boutiques import __file__ as bfile
 from boutiques.exporter import ExportError
-from os.path import join as opj
 from boutiques.tests.BaseTest import BaseTest
 import pytest
 

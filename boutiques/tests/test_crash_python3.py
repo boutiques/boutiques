@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-import os
 import subprocess
 import pytest
-from boutiques import __file__ as bfile
-import boutiques as bosh
-from os.path import join as opj
 from boutiques.tests.BaseTest import BaseTest
 
 

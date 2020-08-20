@@ -2,14 +2,10 @@
 
 import subprocess
 import pytest
-import os.path as op
-from boutiques import __file__ as bfile
 from boutiques import bosh
 from jsonschema.exceptions import ValidationError
-import sys
 import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
-    example_boutiques_tool
+from boutiques_mocks import mock_zenodo_search, example_boutiques_tool
 from boutiques.tests.BaseTest import BaseTest
 
 

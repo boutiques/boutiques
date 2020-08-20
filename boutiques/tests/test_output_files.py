@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-from os.path import join as opj
-from boutiques import __file__ as bfile
 import pytest
 import boutiques
 import subprocess
 import os
-import os.path as op
 import simplejson as json
 from boutiques.tests.BaseTest import BaseTest
 
@@ -20,7 +17,7 @@ class TestOutputFiles(BaseTest):
     def clean_up(self):
         yield
         if os.path.exists(self.get_file_path("get_test_desc.json")):
-            os.remove(test_desc_path)
+            os.remove(self.get_file_path("get_test_desc.json"))
 
     def test_output_conditional_path_template_validity(self):
         test_desc_path = self.get_file_path("test_fixANDcond_output_desc.json")
@@ -42,7 +39,7 @@ class TestOutputFiles(BaseTest):
             template_desc_json = json.load(base_desc)
 
         test_json = {k: template_desc_json[k] for k in template_desc_json if
-                     k is not 'output-files'}
+                     k != 'output-files'}
         output_list = template_desc_json['output-files']
 
         # Test descriptor with only path template output file

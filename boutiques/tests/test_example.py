@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
-from boutiques.bosh import bosh
-from boutiques import __file__ as bfile
-from boutiques.validator import DescriptorValidationError
 import subprocess
-import os.path as op
-import os
 import simplejson as json
 from boutiques.tests.BaseTest import BaseTest
 import pytest

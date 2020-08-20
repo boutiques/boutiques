@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import os.path as op
-import subprocess
-from boutiques import __file__ as bfile
 import boutiques
 from boutiques.tests.BaseTest import BaseTest
 

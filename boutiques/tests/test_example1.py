@@ -8,10 +8,9 @@ import boutiques as bosh
 from boutiques.localExec import ExecutorError
 from boutiques.util.utils import LoadError
 import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
-    example_boutiques_tool, mock_get
+from boutiques_mocks import MockZenodoRecord, example_boutiques_tool, mock_get
 from boutiques import __file__ as bfile
-from shutil import copy2, rmtree
+from shutil import copy2
 import simplejson as json
 from boutiques.descriptor2func import function
 
@@ -66,7 +65,7 @@ class TestExample1(BaseTest):
         # for non-streaming mode
         out, err = self.capfd.readouterr()
         self.assertNotIn("This is stdout", out)
-        self.assertNotIn("This is stderr", out)
+        self.assertNotIn("This is stderr", err)
 
         self.assert_successful_return(
             ret, ["./test_temp/log-4-coin;plop.txt"], 2,
@@ -107,7 +106,7 @@ class TestExample1(BaseTest):
 
         # Make sure stdout and stderr are printed on the fly for
         # streaming mode
-        out, err = self.capfd.readouterr()
+        out, _ = self.capfd.readouterr()
         self.assertIn("This is stdout", out)
         self.assertIn("This is stderr", out)
 
@@ -218,7 +217,7 @@ class TestExample1(BaseTest):
         # for non-streaming mode
         out, err = self.capfd.readouterr()
         self.assertNotIn("This is stdout", out)
-        self.assertNotIn("This is stderr", out)
+        self.assertNotIn("This is stderr", err)
         self.assert_successful_return(ret,
                                       ["./test_temp/log-4-coin;plop.txt"], 2,
                                       self.assert_reflected_output)
@@ -516,7 +515,6 @@ class TestExample1(BaseTest):
                         reason="Docker not installed")
     def test_example1_conditional_outputFiles_created(self):
         os.makedirs(self.test_temp, exist_ok=True)
-        base_path = os.path.join(self.tests_dir, "example1")
         ex = bosh.execute("launch",
                           self.get_file_path(
                               "example1_docker_conditional_outputFiles.json"),
