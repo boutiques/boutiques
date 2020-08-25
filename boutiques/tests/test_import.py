@@ -6,7 +6,7 @@ import os
 import os.path as op
 from os.path import join as opj
 import pytest
-from boutiques.importer import ImportError
+from boutiques.importer import ImporterError
 import boutiques
 import tarfile
 import simplejson as json
@@ -106,7 +106,7 @@ class TestImport(BaseTest):
                         out_desc,
                         cwl_descriptor]
             if d in bad_dirs:
-                with pytest.raises(ImportError):
+                with pytest.raises(ImporterError):
                     bosh(args)
             else:
                 self.assertFalse(bosh(args), cwl_descriptor)
@@ -164,9 +164,9 @@ class TestImport(BaseTest):
 
         args = ["import", "docopt", output_descriptor, pydocopt_input]
 
-        with pytest.raises(ImportError, match="Invalid docopt script"):
+        with pytest.raises(ImporterError, match="Invalid docopt script"):
             bosh(args)
-            self.fail("Did not raise ImportError or" +
+            self.fail("Did not raise ImporterError or" +
                       " message did not match Invalid docopt script")
 
         if op.isfile(output_descriptor):

@@ -5,6 +5,8 @@ import os
 import sys
 import os.path as op
 import pytest
+import argparse
+import traceback
 from jsonschema import ValidationError
 from boutiques.boshParsers import *
 from boutiques.dataHandler import DataHandlerError
@@ -15,13 +17,12 @@ from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorOutput
 from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
-from boutiques.importer import ImportError
+from boutiques.importer import ImporterError
 from boutiques.localExec import addDefaultValues
 from boutiques.util.utils import loadJson, customSortInvocationByInput
 from boutiques.util.utils import formatSphinxUsage
 from boutiques.logger import raise_error, print_error, print_info
 from tabulate import tabulate
-import argparse
 
 
 def pprint(*params):
@@ -433,6 +434,11 @@ def bosh(args=None):
             return code  # everything went well
         return val  # calling function wants this value
 
+    def print_traceback():
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        print("".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)))
+
     # Params are set depending on where bosh is called from
     if runs_as_cli():
         func = sys.argv[1] if len(sys.argv) >= 2 else None
@@ -494,10 +500,12 @@ def bosh(args=None):
         elif func == "deprecate":
             out = deprecate(*params)
             return bosh_return(out)
+        elif func == "-h" or func == "--help":
+            return bosh_return(parser_bosh().format_help())
         else:
             print(parser_bosh().format_help())
-            raise_error(ExecutorError,
-                        "Incorrect bosh mode \'{}\'".format(func))
+            raise_error(SystemExit,
+                        "Incorrect bosh command \'{}\'".format(func))
 
     except (ZenodoError,
             NexusError,
@@ -505,17 +513,17 @@ def bosh(args=None):
             InvocationValidationError,
             ValidationError,
             ExportError,
-            ImportError,
+            ImporterError,
             ExecutorError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
-            print(e)
+            print_traceback()
             return 99  # Note: this conflicts with tool error codes.
         raise e
     except SystemExit as e:
         if runs_as_cli():
-            print(e)
+            print_traceback()
             return 99  # Note: this conflicts with tool error codes.
         raise_error(BoutiquesError,
                     "Unable to parse arguments resulting in SystemExit.")

@@ -71,8 +71,7 @@ class TestValidator(BaseTest):
         process = subprocess.Popen(command, shell=True,
                                    stdout=subprocess.PIPE)
         stdout = process.stdout.read().decode("utf-8").strip()
-        self.assertEqual(stdout,
-                         ('ContainerError: container image'
-                          ' \"docker://index.docker.io\" is prepended by index'
-                          ' that doesn\'t match container index value'
-                          ' \"shub://\"'))
+        self.assertIn('ContainerError: container image'
+                      ' \"docker://index.docker.io\" is prepended by index'
+                      ' that doesn\'t match container index value'
+                      ' \"shub://\"', stdout)
