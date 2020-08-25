@@ -8,7 +8,7 @@ import pytest
 import argparse
 import traceback
 from jsonschema import ValidationError
-from boutiques.boshParsers import *
+from boutiques.boshParsers import parser_bosh
 from boutiques.dataHandler import DataHandlerError
 from boutiques.validator import DescriptorValidationError
 from boutiques.publisher import ZenodoError
