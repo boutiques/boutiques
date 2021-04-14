@@ -72,7 +72,7 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
     # Save descriptor in temp file
     tmp = tempfile.NamedTemporaryFile(delete=False, mode='w', suffix=".json")
     content = json.dumps(descriptor_json, indent=4,
-                         sort_keys=True)
+                         sort_keys=False)
     tmp.write(content)
     tmp.close()
 

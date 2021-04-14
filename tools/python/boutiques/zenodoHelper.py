@@ -45,7 +45,7 @@ class ZenodoHelper(object):
         json_creds = self.read_credentials()
         json_creds[self.config_token_property_name()] = access_token
         with open(self.config_file, 'w') as f:
-            f.write(json.dumps(json_creds, indent=4, sort_keys=True))
+            f.write(json.dumps(json_creds, indent=4, sort_keys=False))
         if (self.verbose):
             print_info("Zenodo access token saved in {0}".
                        format(self.config_file))
