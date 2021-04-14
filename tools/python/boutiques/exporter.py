@@ -85,4 +85,4 @@ class Exporter():
             carmin_desc['errorCodesAndMessages'].append(obj)
 
         with open(output_file, 'w') as fhandle:
-            fhandle.write(json.dumps(carmin_desc, indent=4, sort_keys=True))
+            fhandle.write(json.dumps(carmin_desc, indent=4, sort_keys=False))

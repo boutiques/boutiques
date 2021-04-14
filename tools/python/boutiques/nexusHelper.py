@@ -82,7 +82,7 @@ class NexusHelper(object):
         json_creds["nexus-organization"] = org
         json_creds["nexus-project"] = project
         with open(self.config_file, 'w') as f:
-            f.write(json.dumps(json_creds, indent=4, sort_keys=True))
+            f.write(json.dumps(json_creds, indent=4, sort_keys=False))
         if self.verbose:
             print_info("Nexus access token, organization and project"
                        " saved in {0}".format(self.config_file))
