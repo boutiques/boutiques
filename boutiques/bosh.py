@@ -4,7 +4,6 @@ import simplejson as json
 import os
 import sys
 import os.path as op
-import pytest
 from jsonschema import ValidationError
 from boutiques.boshParsers import *
 from boutiques.dataHandler import DataHandlerError
@@ -18,7 +17,7 @@ from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.localExec import addDefaultValues
 from boutiques.util.utils import loadJson, customSortInvocationByInput
-from boutiques.util.utils import formatSphinxUsage
+from boutiques.util.utils import formatSphinxUsage, importCatcher
 from boutiques.logger import raise_error, print_error, print_info
 from tabulate import tabulate
 import argparse
@@ -289,7 +288,7 @@ def evaluate(*params):
         query_results += [evaluateEngine(executor, query)]
     return query_results[0] if len(query_results) == 1 else query_results
 
-
+@importCatcher()
 def test(*params):
     parser = parser_bosh()
     params = ('test',) + params
@@ -324,6 +323,7 @@ def test(*params):
     test_args = [test_path, "--descriptor", results.descriptor]
     if results.imagepath:
         test_args.extend(["--imagepath", results.imagepath])
+    import pytest
     return pytest.main(args=test_args)
 
 

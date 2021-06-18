@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import requests
 import sys
 from collections import OrderedDict
 import numbers

@@ -4,19 +4,14 @@ from argparse import ArgumentParser
 from jsonschema import ValidationError
 from boutiques.validator import validate_descriptor
 from boutiques.util.utils import loadJson, customSortDescriptorByKey
-from boutiques.util.utils import customSortInvocationByInput
+from boutiques.util.utils import customSortInvocationByInput, importCatcher
 from boutiques.logger import raise_error
 import boutiques
-import oyaml as yaml
-import toml
 import simplejson as json
 import os
 import os.path as op
 import re
 import sys
-from docopt import parse_defaults, parse_pattern, parse_argv
-from docopt import formal_usage, DocoptLanguageError
-from docopt import AnyOptions, TokenStream, Option, Argument, Command
 from importlib.machinery import SourceFileLoader
 import collections
 
@@ -126,7 +121,11 @@ class Importer():
 
         return entrypoint
 
+    @importCatcher()
     def import_docopt(self):
+        from docopt import parse_defaults, parse_pattern, parse_argv
+        from docopt import formal_usage, DocoptLanguageError
+        from docopt import AnyOptions, TokenStream, Option, Argument, Command
         # input_descriptor is the .py containing docopt script
         docstring = SourceFileLoader(
             'docopt_script', self.input_descriptor).load_module().__doc__
@@ -175,7 +174,9 @@ class Importer():
         with open(self.output_descriptor, "w") as f:
             f.write(template_string)
 
+    @importCatcher()
     def import_cwl(self):
+        import oyaml as yaml
 
         # Read the CWL descriptor
         with open(self.input_descriptor, 'r') as f:
@@ -537,6 +538,7 @@ class Importer():
             return descriptor
 
         def import_toml(descriptor):
+            import toml
             tomlString = _getConfigFileString()
             input_config = toml.loads(tomlString, _dict=collections.OrderedDict)
             imported_inputs = _getInputsFromConfigDict(input_config)

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 import os
-import requests
 import time
 import hashlib
 from boutiques.logger import raise_error, print_info
-from boutiques.util.utils import extractFileName, loadJson
-from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
+from boutiques.util.utils import extractFileName, loadJson, importCatcher
+
 from boutiques.nexusHelper import NexusHelper
 
 
@@ -53,6 +52,7 @@ class DataHandler(object):
     # Function to publish a data set to Zenodo or Nexus
     # Options allow to only publish a single file, publish files individually as
     # data sets or bulk publish all files in the cache as one data set (default)
+    @importCatcher()
     def publish(self, file, zenodo_token, author, nexus_token,
                 nexus_org, nexus_project,
                 individually=False, sandbox=False,
@@ -67,6 +67,7 @@ class DataHandler(object):
         self.verbose = verbose
         self.to_nexus = to_nexus
         if not self.to_nexus:
+            from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
             self.zenodo_access_token = zenodo_token
             self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
             self.zenodo_endpoint = self.zenodo_helper.zenodo_endpoint

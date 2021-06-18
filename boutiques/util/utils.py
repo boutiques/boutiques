@@ -5,6 +5,21 @@ from boutiques.logger import raise_error, print_warning
 from boutiques import __file__ as bfile
 
 
+# Utility function to wrap modules that don't 
+def importCatcher():
+  def decorate(f):
+    def applicator(*args, **kwargs):
+      try:
+         return f(*args,**kwargs)
+      except ImportError as e:
+         print(e)
+         raise ImportError("Try installing the full version of Boutiques "
+                           "with: \n\t pip install -e boutiques[all]")
+
+    return applicator
+  return decorate
+
+
 # Parses absolute path into filename
 def extractFileName(path):
     # Helps OS path handle case where "/" is at the end of path
