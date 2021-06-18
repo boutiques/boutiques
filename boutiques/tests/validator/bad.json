@@ -65,6 +65,7 @@
       "name": "extra 1",
       "type": "File",
       "value-key": "[extra1]",
+      "disables-inputs": ["extra2"],
       "optional": true
     },
     {

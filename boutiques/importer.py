@@ -121,11 +121,7 @@ class Importer():
 
         return entrypoint
 
-    @importCatcher()
     def import_docopt(self):
-        from docopt import parse_defaults, parse_pattern, parse_argv
-        from docopt import formal_usage, DocoptLanguageError
-        from docopt import AnyOptions, TokenStream, Option, Argument, Command
         # input_descriptor is the .py containing docopt script
         docstring = SourceFileLoader(
             'docopt_script', self.input_descriptor).load_module().__doc__
@@ -537,6 +533,7 @@ class Importer():
             descriptor['output-files'].append(output_config_file)
             return descriptor
 
+        @importCatcher()
         def import_toml(descriptor):
             import toml
             tomlString = _getConfigFileString()
@@ -553,7 +550,9 @@ class Importer():
             descriptor['output-files'].append(output_config_file)
             return descriptor
 
+        @importCatcher()
         def import_yaml(descriptor):
+            import oyaml as yaml
             yamlString = _getConfigFileString()
             input_config = yaml.load(yamlString, Loader=yaml.FullLoader)
             imported_inputs = _getInputsFromConfigDict(input_config)
@@ -591,7 +590,11 @@ class Importer():
 
 
 class Docopt_Importer():
+    @importCatcher()
     def __init__(self, docopt_str, base_descriptor):
+        from docopt import parse_defaults, parse_pattern, parse_argv
+        from docopt import formal_usage, DocoptLanguageError
+        from docopt import AnyOptions, TokenStream, Option
         with open(base_descriptor, "r") as base_desc:
             self.descriptor = collections.OrderedDict(json.load(base_desc))
 
@@ -645,7 +648,9 @@ class Docopt_Importer():
                 'options:', self.docopt_str)), "")\
             .replace("\n\n", "\n").strip()
 
+    @importCatcher()
     def loadDescriptionAndType(self):
+        from docopt import Option
         # using docopt code to extract description and type from args
         for line in (self._parse_section('arguments:', self.docopt_str) +
                      self._parse_section('options:', self.docopt_str)):
@@ -690,6 +695,7 @@ class Docopt_Importer():
             self._loadInputsFromUsage(node)
 
     def _loadInputsFromUsage(self, usage):
+        from docopt import Argument
         ancestors = []
         for arg in usage.children:
             # Traverse usage args and add them to dependencies tree
@@ -819,7 +825,9 @@ class Docopt_Importer():
             new_arg["flag"] = node.long
         return new_arg
 
+    @importCatcher()
     def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
+        from docopt import Argument
         # Add mutex choice group arg to dependency tree
         # group_arg contains members as dependency arguments
         options = arg.children[0].children

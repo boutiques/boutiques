@@ -50,12 +50,18 @@ class TestSimulate(BaseTest):
         desc_json = open(self.example1_descriptor).read()
         test_json = json.loads(desc_json)
         del test_json['groups']
+        # Have to tweak flag_input because it disables number_input
+        target_input = [i for i in test_json["inputs"]
+                        if i["id"] == "flag_input"][0]
+        del target_input["disables-inputs"]
+
+        # Make number_input mandatory
         target_input = [i for i in test_json["inputs"]
                         if i["id"] == "num_input"][0]
         target_input["optional"] = False
+        target_input["exclusive-minimum"] = False
 
         # Test inclusive lower bound
-        target_input["exclusive-minimum"] = False
         mock_random.return_value = -0.001
         self.assertRaises(ExecutorError, bosh.execute, ("simulate",
                                                         json.dumps(test_json),

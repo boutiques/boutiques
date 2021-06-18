@@ -21,6 +21,8 @@ eDEPS = {
          "toml",
          "docopt",
          "pytest",
+         "pytest-runner",
+         "coverage",
          "nexus-sdk",
          "requests",
          "mock"
