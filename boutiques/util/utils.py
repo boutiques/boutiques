@@ -5,7 +5,7 @@ from boutiques.logger import raise_error, print_warning
 from boutiques import __file__ as bfile
 
 
-# Utility function to wrap modules that don't 
+# Utility function to wrap modules that use non-essential libs
 def importCatcher():
   def decorate(f):
     def applicator(*args, **kwargs):

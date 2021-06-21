@@ -67,7 +67,7 @@ class DataHandler(object):
         self.verbose = verbose
         self.to_nexus = to_nexus
         if not self.to_nexus:
-            from boutiques.zenodoHelper import ZenodoHelper, ZenodoError
+            from boutiques.zenodoHelper import ZenodoHelper
             self.zenodo_access_token = zenodo_token
             self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
             self.zenodo_endpoint = self.zenodo_helper.zenodo_endpoint

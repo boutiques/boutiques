@@ -4,7 +4,6 @@ from boutiques.validator import validate_descriptor, ValidationError
 from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 from boutiques.util.utils import customSortDescriptorByKey, loadJson
-from boutiques.util.utils import importCatcher
 import simplejson as json
 import os
 

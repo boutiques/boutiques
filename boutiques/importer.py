@@ -650,7 +650,7 @@ class Docopt_Importer():
 
     @importCatcher()
     def loadDescriptionAndType(self):
-        from docopt import Option
+        from docopt import Option, Argument
         # using docopt code to extract description and type from args
         for line in (self._parse_section('arguments:', self.docopt_str) +
                      self._parse_section('options:', self.docopt_str)):
