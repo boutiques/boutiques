@@ -291,7 +291,7 @@ class Importer():
                 bout_input['list'] = True
                 if cwl_input_binding.get("itemSeparator"):
                     if cwl_input_binding['itemSeparator'] != ' ':
-                        raise_error(ImportError, 'Array separators won't be '
+                        raise_error(ImportError, 'Array separators will not be '
                                     'supported until #76 is implemented')
 
         # Outputs
