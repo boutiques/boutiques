@@ -104,7 +104,7 @@ class Importer():
             if line.startswith("ENTRYPOINT"):
                 entrypoint_values = line.strip("ENTRYPOINT").strip()
 
-                # According to DOCKER documetation the ENTRYPOINT can
+                # According to DOCKER documentation the ENTRYPOINT can
                 # be like:
                 #   > ENTRYPOINT ["executable", "param1", "param2"]
                 # or:
@@ -291,7 +291,7 @@ class Importer():
                 bout_input['list'] = True
                 if cwl_input_binding.get("itemSeparator"):
                     if cwl_input_binding['itemSeparator'] != ' ':
-                        raise_error(ImportError, 'Array separators wont be '
+                        raise_error(ImportError, 'Array separators won't be '
                                     'supported until #76 is implemented')
 
         # Outputs
@@ -537,7 +537,7 @@ class Docopt_Importer():
             for child in node.children:
                 self.generateInputsAndCommandLine(child)
         else:
-            # Traversing reached usage level, add script commnad
+            # Traversing reached usage level, add script command
             self.descriptor['command-line'] = self._parse_section(
                 'usage:', self.docopt_str)[0].split("\n")[1:][0].split()[0]
             self._loadInputsFromUsage(node)

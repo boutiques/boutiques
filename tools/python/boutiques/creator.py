@@ -138,7 +138,7 @@ class CreateDescriptor(object):
         elif (type(action) is argparse._SubParsersAction and
               not kwargs.get("addParser")):
             if kwargs.get("verbose"):
-                print_info("_SubParsersAction: Interpretting & Adding")
+                print_info("_SubParsersAction: Interpreting & Adding")
 
             # First, add the subparser itself as an input.
             subparser = self.parseAction(action, addParser=True)
