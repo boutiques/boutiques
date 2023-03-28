@@ -76,7 +76,7 @@ class Searcher():
                       total_results if self.verbose
                       else total_results - total_deprecated,
                       "." if self.verbose
-                      else ", exluding %d deprecated result(s)."
+                      else ", excluding %d deprecated result(s)."
                       % total_deprecated))
         return results_list
 
