@@ -4,7 +4,7 @@ import mock
 from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
 
 
-def mock_get(query, exact, *args, **kwargs):
+def mock_get(query, exact, *args, include_version=True, **kwargs):
     max_results = args[0].split("=")[-1]
 
     # Long description text to test truncation
@@ -28,7 +28,7 @@ def mock_get(query, exact, *args, **kwargs):
             mock_records.append(MockZenodoRecord(1234568, "foo-" + query))
             mock_records.append(MockZenodoRecord(1234569, query + "-bar"))
 
-    return mock_zenodo_search(mock_records)
+    return mock_zenodo_search(mock_records, include_version)
 
 
 class TestSearch(TestCase):
@@ -73,6 +73,18 @@ class TestSearch(TestCase):
                          ["ID", "TITLE", "DESCRIPTION", "PUBLICATION DATE",
                           "DEPRECATED", "DOWNLOADS", "AUTHOR", "VERSION",
                           "DOI", "SCHEMA VERSION", "CONTAINER", "TAGS"])
+
+    @mock.patch('requests.get')
+    def test_search_verbose_missing_metadata(self, mymockget):
+        mymockget.side_effect = lambda *args, **kwargs:\
+            mock_get("", False, *args, include_version=False, **kwargs)
+        results = bosh(["search", "-v"])
+        self.assertGreater(len(results), 0)
+        self.assertEqual(list(results[0].keys()),
+                         ["ID", "TITLE", "DESCRIPTION", "PUBLICATION DATE",
+                          "DEPRECATED", "DOWNLOADS", "AUTHOR", "VERSION",
+                          "DOI", "SCHEMA VERSION", "CONTAINER", "TAGS"])
+        self.assertEqual(results[0]["VERSION"], "unknown")
 
     @mock.patch('requests.get')
     def test_search_specify_max_results(self, mymockget):

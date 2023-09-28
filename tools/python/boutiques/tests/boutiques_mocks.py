@@ -74,8 +74,8 @@ def mock_zenodo_delete_files():
     return MockHttpResponse(204)
 
 
-def get_zenodo_record(record):
-    return {
+def get_zenodo_record(record, include_version=True):
+    record = {
         "doi": "10.5281/zenodo.%s" % record.id,
         "files": [
             {
@@ -115,12 +115,15 @@ def get_zenodo_record(record):
             "version_downloads": record.downloads
         }
     }
+    if not include_version:
+        del record['metadata']['version']
+    return record
 
 
-def mock_zenodo_search(mock_records):
+def mock_zenodo_search(mock_records, include_version=True):
     mock_results = []
     for record in mock_records:
-        mock_results.append(get_zenodo_record(record))
+        mock_results.append(get_zenodo_record(record, include_version))
     mock_json = {"hits": {"hits": mock_results, "total": len(mock_results)}}
     return MockHttpResponse(200, mock_json)
 
