@@ -122,7 +122,7 @@ class PrettyPrinter():
                 output_info += temp_info
 
         self.epilog = "\n\n{0}\n\n{1}".format(self.sep, config_info) \
-            if config_info is not "Config Files:" else ""
+            if config_info != "Config Files:" else ""
         self.epilog += "\n\n{0}\n\n{1}".format(self.sep, output_info)
 
     def descGroups(self):
@@ -315,12 +315,12 @@ class PrettyPrinter():
                      + req_inp_desc_footer
 
             # Add args for required inputs
-            if req_inp_descr is not "":
+            if req_inp_descr != "":
                 inp_kwargs['help'] = textwrap.dedent(req_inp_descr)
                 required.add_argument(*inp_args, **inp_kwargs)
 
             # Add args for optional inputs
-            if opt_inp_descr is not "":
+            if opt_inp_descr != "":
                 inp_kwargs['help'] = textwrap.dedent(opt_inp_descr)
                 parsed_flags = list(self.parser._option_string_actions.keys())
                 for i in range(0, len(parsed_flags)):
