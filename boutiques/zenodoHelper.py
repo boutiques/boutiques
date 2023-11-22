@@ -221,16 +221,18 @@ class ZenodoHelper(object):
 
     def zenodo_search(self, query, query_line):
         # Get all results
-        r = requests.get(self.zenodo_endpoint + '/api/records/?q='
+        get_request =  self.zenodo_endpoint + ('/api/records/?q='
                          'keywords:(/Boutiques/) AND '
-                         'keywords:(/schema-version.*/)'
+                         'keywords:(/schema.*/) AND keywords:(/version.*/)'
                          '%s'
                          '&file_type=json&type=software&'
                          'page=1&size=%s' % (query_line, 9999))
+        r = requests.get(get_request)
         if(r.status_code != 200):
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if(self.verbose):
             print_info("Search successful for query \"%s\"" % query, r)
+            print_info(f'GET request: {get_request}')
         return r
 
     def zenodo_upload_file(self, deposition_id, file_path,
