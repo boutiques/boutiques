@@ -5,7 +5,6 @@ from boutiques.logger import raise_error, print_info
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 from boutiques.util.utils import customSortDescriptorByKey, loadJson
 import simplejson as json
-import requests
 import os
 
 

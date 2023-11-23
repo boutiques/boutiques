@@ -340,6 +340,14 @@ def validate_descriptor(descriptor, **kwargs):
                        for ids2 in inp["disables-inputs"]
                        if ids1 == ids2]
 
+        # Verify that disableed inputs cannot be required
+        msg_template = " InputError: \"{0}\" disables required id \"{1}\""
+        if "disables-inputs" in inp.keys():
+            errors += [msg_template.format(inp["id"], ids)
+                       for ids in inp["disables-inputs"]
+                       if ids in inIds and not inById(ids).get("optional")]
+
+
         # Verify required inputs cannot require or disable other parameters
         if "requires-inputs" in inp.keys() or "disables-inputs" in inp.keys():
             msg_template = (" InputError: \"{0}\" cannot require or"

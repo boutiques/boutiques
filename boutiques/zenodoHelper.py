@@ -2,7 +2,7 @@
 import os
 import re
 import simplejson as json
-import requests
+from boutiques.util.utils import importCatcher
 from boutiques.logger import raise_error, print_info
 
 
@@ -58,7 +58,9 @@ class ZenodoHelper(object):
                        .format(endpoint))
         return endpoint
 
+    @importCatcher()
     def record_exists(self, record_id):
+        import requests
         r = requests.get(self.zenodo_endpoint +
                          '/api/records/{}'.format(record_id))
         if r.status_code == 200:
@@ -68,7 +70,9 @@ class ZenodoHelper(object):
         raise_error(ZenodoError,
                     "Cannot test existence of record {}".format(record_id), r)
 
+    @importCatcher()
     def zenodo_get_record(self, zenodo_id):
+        import requests
         r = requests.get(self.zenodo_endpoint +
                          '/api/records/{}'.format(zenodo_id))
         if r.status_code != 200:
@@ -118,7 +122,9 @@ class ZenodoHelper(object):
             json_creds = {}
         return json_creds
 
+    @importCatcher()
     def zenodo_test_api(self, access_token):
+        import requests
         r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions')
         if(r.status_code != 401):
             raise_error(ZenodoError, "Cannot access Zenodo", r)
@@ -132,7 +138,9 @@ class ZenodoHelper(object):
         if(self.verbose):
             print_info("Authentication to Zenodo successful", r)
 
+    @importCatcher()
     def zenodo_deposit(self, metadata, access_token):
+        import requests
         headers = {"Content-Type": "application/json"}
         data = metadata
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
@@ -148,8 +156,10 @@ class ZenodoHelper(object):
                        format(zid), r)
         return zid
 
+    @importCatcher()
     def zenodo_deposit_updated_version(self, metadata,
                                        access_token, deposition_id):
+        import requests
         r = requests.post(self.zenodo_endpoint +
                           '/api/deposit/depositions/%s/actions/newversion'
                           % deposition_id,
@@ -172,8 +182,10 @@ class ZenodoHelper(object):
         self.zenodo_delete_files(new_zid, r.json()["files"], access_token)
         return new_zid
 
+    @importCatcher()
     def zenodo_update_metadata(self, new_deposition_id, old_doi,
                                metadata, access_token):
+        import requests
         data = metadata
 
         # Add the new DOI to the metadata
@@ -195,7 +207,9 @@ class ZenodoHelper(object):
 
     # When a new version is created, the files from the old version are
     # automatically copied over. This method removes them.
+    @importCatcher()
     def zenodo_delete_files(self, new_deposition_id, files, access_token):
+        import requests
         for file in files:
             file_id = file["id"]
             r = requests.delete(self.zenodo_endpoint +
@@ -207,7 +221,9 @@ class ZenodoHelper(object):
             if(self.verbose):
                 print_info("Deleted old file", r)
 
+    @importCatcher()
     def zenodo_publish(self, access_token, deposition_id, msg_obj):
+        import requests
         r = requests.post(self.zenodo_endpoint +
                           '/api/deposit/depositions/%s/actions/publish'
                           % deposition_id,
@@ -219,7 +235,9 @@ class ZenodoHelper(object):
                        format(msg_obj, r.json()['doi']), r)
         return r.json()['doi']
 
+    @importCatcher()
     def zenodo_search(self, query, query_line):
+        import requests
         # Get all results
         get_request =  self.zenodo_endpoint + ('/api/records/?q='
                          'keywords:(/Boutiques/) AND '
@@ -235,10 +253,12 @@ class ZenodoHelper(object):
             print_info(f'GET request: {get_request}')
         return r
 
+    @importCatcher()
     def zenodo_upload_file(self, deposition_id, file_path,
                            zenodo_access_token=None,
                            error_msg="Cannot Upload to Zenodo",
                            verbose_msg="Uploaded to Zenodo"):
+        import requests
         zenodo_access_token = self.get_zenodo_access_token if\
             zenodo_access_token is None else zenodo_access_token
         r = requests.post(self.zenodo_endpoint +

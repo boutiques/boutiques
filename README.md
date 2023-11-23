@@ -26,8 +26,11 @@ Simple! Just open your favourite terminal and type:
 
     $ pip install boutiques
 
-Alongside installing the Boutiques package, this will also ensure the dependencies are installed: `simplejson`, `jsonschema`,
-`requests`, `pytest`, `termcolor`, `oyaml`, `tabulate` and `mock`.
+Alongside installing the Boutiques package, this will also ensure the dependencies are installed for basic functionality: `simplejson`, `jsonschema`, `termcolor`, and `tabulate`. With this, you'll be able to validate and run your tools through Boutiques. For full functionality, you can install the library as follows:
+
+    $ pip install boutiques[all]
+
+This will add some more dependencies, and let you use all of the features: `requests`, `pytest`, `termcolor`, `oyaml`, `tabulate` and `mock`. Now you'll also be able to search for tools and publish your own and records from when you ran your tool!
 
 If you want the latest changes that aren't officially released yet, you can also install directly from GitHub:
 

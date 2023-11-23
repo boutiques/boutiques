@@ -11,17 +11,23 @@ with open(verfile) as fhandle:
 
 DEPS = [
          "simplejson",
-         "requests",
-         "pytest",
          "termcolor",
-         "oyaml",
          "jsonschema",
          "tabulate",
-         "mock",
+]
+eDEPS = {
+    "all": [
+         "oyaml",
+         "toml",
          "docopt",
+         "pytest",
+         "pytest-runner",
+         "coverage",
          "nexus-sdk",
-         "toml"
-       ]
+         "requests",
+         "mock"
+    ]
+}
 
 setup(name="boutiques",
       version=VERSION,
@@ -48,6 +54,7 @@ setup(name="boutiques",
       test_suite="pytest",
       tests_require=["pytest"],
       setup_requires=DEPS,
+      extras_require=eDEPS,
       install_requires=DEPS,
       entry_points={
         "console_scripts": [
