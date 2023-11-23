@@ -21,7 +21,7 @@ from importlib.machinery import SourceFileLoader
 import collections
 
 
-class ImportError(Exception):
+class ImporterError(Exception):
     pass
 
 
@@ -68,7 +68,7 @@ class Importer():
         descriptor = loadJson(self.input_descriptor)
 
         if descriptor["schema-version"] != "0.4":
-            raise_error(ImportError, "The input descriptor must have "
+            raise_error(ImporterError, "The input descriptor must have "
                         "'schema-version'=0.4")
         descriptor["schema-version"] = "0.5"
 
@@ -187,7 +187,7 @@ class Importer():
         bout_desc = {}
         # Command line
         if cwl_desc.get('baseCommand') is None:
-            raise_error(ImportError, 'Cannot find baseCommand attribute, '
+            raise_error(ImporterError, 'Cannot find baseCommand attribute, '
                         'perhaps you passed a workflow document, '
                         'this is not supported')
         if type(cwl_desc['baseCommand']) is list:
@@ -199,9 +199,9 @@ class Importer():
         if cwl_desc.get('arguments'):
             for i in cwl_desc['arguments']:
                 if type(i) is dict:
-                    raise_error(ImportError, 'Dict arguments not supported.')
+                    raise_error(ImporterError, 'Dict arguments not supported.')
                 if "$(runtime." in i:
-                    raise_error(ImportError, 'Runtime parameters '
+                    raise_error(ImporterError, 'Runtime parameters '
                                 ' are not supported:'
                                 " "+i)
                 command_line += i+" "
@@ -247,19 +247,19 @@ class Importer():
                 cwl_type = 'string'
             if type(cwl_type) is dict:  # It must be an array
                 if cwl_type['type'] != "array":
-                    raise_error(ImportError, "Only 1-level nested "
+                    raise_error(ImporterError, "Only 1-level nested "
                                 "types of type"
                                 " 'array' are supported (CWL input: {0})".
                                 format(cwl_input))
                 if cwl_type.get('inputBinding') is not None:
-                    raise_error(ImportError, "Input bindings of "
+                    raise_error(ImporterError, "Input bindings of "
                                 "array elements "
                                 "are not supported (CWL input: {0})".
                                 format(cwl_input))
                 cwl_type = cwl_type['items']
                 bout_input['list'] = True
             if type(cwl_type) != str:
-                raise_error(ImportError, "Unknown type:"
+                raise_error(ImporterError, "Unknown type:"
                             " {0}".format(str(cwl_type)))
             boutiques_type = boutiques_types[cwl_type.replace("[]", "")
                                                      .replace("?", "")]
@@ -286,7 +286,7 @@ class Importer():
                 bout_input['list'] = True
                 if cwl_input_binding.get("itemSeparator"):
                     if cwl_input_binding['itemSeparator'] != ' ':
-                        raise_error(ImportError, 'Array separators wont be '
+                        raise_error(ImporterError, 'Array separators wont be '
                                     'supported until #76 is implemented')
 
         # Outputs
@@ -295,12 +295,12 @@ class Importer():
             if not glob.startswith("$"):
                 return glob
             if not glob.startswith("$(inputs."):
-                raise_error(ImportError, "Unsupported reference: "+glob)
+                raise_error(ImporterError, "Unsupported reference: "+glob)
             input_id = glob.replace("$(inputs.", "").replace(")", "")
             for i in boutiques_inputs:
                 if i['id'] == input_id:
                     return i['value-key']
-            raise_error(ImportError, "Unresolved reference"
+            raise_error(ImporterError, "Unresolved reference"
                         " in glob: " + glob)
 
         boutiques_outputs = []
@@ -326,7 +326,7 @@ class Importer():
                        cwl_out_obj['type']['type'] == 'array'):
                         bout_output['list'] = True
                     else:
-                        raise_error(ImportError, 'Unsupported output type: ' +
+                        raise_error(ImporterError, 'Unsupported output type: ' +
                                     cwl_output['type'])
                 boutiques_outputs.append(bout_output)
         # Boutiques descriptors have to have at least 1 output file
@@ -405,7 +405,7 @@ class Importer():
                             'file-template': template
                         })
                 return
-            raise_error(ImportError, 'Unsupported requirement: '+str(req))
+            raise_error(ImporterError, 'Unsupported requirement: '+str(req))
 
         for key in ['requirements', 'hints']:
             if(cwl_desc.get(key)):
@@ -622,7 +622,7 @@ class Docopt_Importer():
             matched, left, collected = self.pattern.fix().match(argv)
         except Exception:
             os.remove(base_descriptor)
-            raise_error(ImportError, "Invalid docopt script")
+            raise_error(ImporterError, "Invalid docopt script")
 
         self.loadDocoptDescription()
         self.loadDescriptionAndType()
@@ -737,7 +737,7 @@ class Docopt_Importer():
                 ancestors.append(arg.name)
             else:
                 raise_error(
-                    ImportError,
+                    ImporterError,
                     "Non implemented docopt arg.type: {0}".format(arg_type))
 
     def _addArgumentToDependencies(self, node, ancestors=None,

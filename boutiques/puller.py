@@ -4,15 +4,7 @@ import os
 from boutiques.logger import raise_error, print_info
 from boutiques.searcher import Searcher
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
-
-try:
-    # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
-except ImportError:
-    # Python 2
-    from urllib2 import urlopen
-    from urllib import urlretrieve
+from urllib.request import urlretrieve
 
 
 class Puller():
