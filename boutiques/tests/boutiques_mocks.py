@@ -52,14 +52,6 @@ def mock_zenodo_test_api(*args, **kwargs):
     return MockHttpResponse(200)
 
 
-def mock_zenodo_search(mock_records):
-    mock_results = []
-    for record in mock_records:
-        mock_results.append(get_zenodo_record(record))
-    mock_json = {"hits": {"hits": mock_results, "total": len(mock_results)}}
-    return MockHttpResponse(200, mock_json)
-
-
 def mock_zenodo_upload_descriptor():
     return MockHttpResponse(201)
 
@@ -98,8 +90,8 @@ def mock_empty_function():
     return
 
 
-def get_zenodo_record(record):
-    return {
+def get_zenodo_record(record, include_version=True):
+    record = {
         "doi": "10.5281/zenodo.%s" % record.id,
         "files": [
             {
@@ -139,12 +131,21 @@ def get_zenodo_record(record):
             "version_downloads": record.downloads
         }
     }
+    if not include_version:
+        del record['metadata']['version']
+    return record
 
 
 def mock_get_data_cache():
     return os.path.join(os.path.split(os.path.split(bfile)[0])[0],
                         "test_temp", "test-data-cache")
 
+def mock_zenodo_search(mock_records, include_version=True):
+    mock_results = []
+    for record in mock_records:
+        mock_results.append(get_zenodo_record(record, include_version))
+    mock_json = {"hits": {"hits": mock_results, "total": len(mock_results)}}
+    return MockHttpResponse(200, mock_json)
 
 def mock_get_data_cache_file():
     return os.path.join(os.path.split(os.path.split(bfile)[0])[0],

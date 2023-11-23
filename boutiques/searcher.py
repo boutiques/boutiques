@@ -103,7 +103,7 @@ class Searcher():
         for hit in results["hits"]["hits"]:
             (id, title, description, downloads) = self.parse_basic_info(hit)
             author = hit["metadata"]["creators"][0]["name"]
-            version = hit["metadata"]["version"]
+            version = hit["metadata"].get("version", "unknown")
             publication_date = hit["metadata"]['publication_date']
             doi = hit["doi"]
             keyword_data = self.get_keyword_data(hit["metadata"]["keywords"])
