@@ -24,7 +24,7 @@ This guide will help you set up your local environment for coding and testing Bo
 
 -   Install virtualenv:
   -   `pip install --user virtualenv`
--   Create a virtual envrionment in the base directory:
+-   Create a virtual environment in the base directory:
   -   `mkdir env`
   -   `virtualenv env/boutiques -p python3.6`  (replace python3.6 with the executable for the version of Python you wish to use)
 -   Use the environment whenever you work on Boutiques by running:

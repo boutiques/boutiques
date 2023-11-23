@@ -39,9 +39,9 @@ def pytest_generate_tests(metafunc):
 
     if metafunc.config.option.imagepath is not None:
         additional_params['--imagepath'] = metafunc.config.option.imagepath
-    # Each element in 'tests' will hold the necessary informations
+    # Each element in 'tests' will hold the necessary information
     # for a single test
-    # Those informations are:
+    # Those information are:
     #     . The descriptor (common to all)
     #     . The related JSON data, describing the test
     #       (more convenient, no need to extract

@@ -129,7 +129,7 @@ def customSortDescriptorByKey(descriptor,
 # Sorts tool invocations according to descriptor's inputs'
 def customSortInvocationByInput(invocation, descriptor):
     descriptor = loadJson(descriptor)
-    # sort invoc according to input's order in decsriptor
+    # sort invoc according to input's order in descriptor
     sortedInvoc = OrderedDict()
     sortedInvoc.update({key: invocation[key] for key in
                         [inp['id'] for inp in descriptor['inputs']

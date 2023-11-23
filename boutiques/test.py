@@ -38,10 +38,10 @@ def test(descriptor, test, invocation, paramsDict):
             file_path = outputted[output_file["id"]]
             assert op.exists(file_path)
 
-            # Optionaly, an md5 reference may have been specified
+            # Optionally, an md5 reference may have been specified
             if "md5-reference" in output_file:
 
-                # MD5 checksum comparaison
+                # MD5 checksum comparison
                 output_md5 = compute_md5(file_path)
                 reference_md5 = output_file["md5-reference"]
                 assert output_md5 == reference_md5
