@@ -1088,7 +1088,7 @@ class LocalExecutor(object):
                        template.find(clk) > 0 and is_output):
                         val = op.basename(val)
                 # Here val can be a number so we need to cast it
-                if val is not None and val is not "":
+                if val is not None and val != "":
                     template = template.replace(clk, str(val))
                 else:
                     template = template.replace(' ' + clk, str(val))
