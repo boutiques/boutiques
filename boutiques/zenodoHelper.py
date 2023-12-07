@@ -125,13 +125,15 @@ class ZenodoHelper(object):
     @importCatcher()
     def zenodo_test_api(self, access_token):
         import requests
-        r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions')
-        if(r.status_code != 401):
+        r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions',
+                         headers={"Authorization": f"Bearer {access_token}"})
+        if(r.status_code != 200):
             raise_error(ZenodoError, "Cannot access Zenodo", r)
         if(self.verbose):
             print_info("Zenodo is accessible", r)
+
         r = requests.get(self.zenodo_endpoint+'/api/deposit/depositions',
-                         params={'access_token': access_token})
+                         headers={"Authorization": f"Bearer {access_token}"})
         message = "Cannot authenticate to Zenodo API, check your access token"
         if(r.status_code != 200):
             raise_error(ZenodoError, message, r)
@@ -141,10 +143,10 @@ class ZenodoHelper(object):
     @importCatcher()
     def zenodo_deposit(self, metadata, access_token):
         import requests
-        headers = {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json",
+                   "Authorization": f"Bearer {access_token}"}
         data = metadata
         r = requests.post(self.zenodo_endpoint+'/api/deposit/depositions',
-                          params={'access_token': access_token},
                           json={},
                           data=json.dumps(data),
                           headers=headers)
@@ -163,7 +165,7 @@ class ZenodoHelper(object):
         r = requests.post(self.zenodo_endpoint +
                           '/api/deposit/depositions/%s/actions/newversion'
                           % deposition_id,
-                          params={'access_token': access_token})
+                          headers={"Authorization": f"Bearer {access_token}"})
         if r.status_code == 403:
             raise_error(ZenodoError, "You do not have permission to access "
                                      "this resource. Note that you cannot "
@@ -194,10 +196,10 @@ class ZenodoHelper(object):
         new_doi = '.'.join(old_doi_split)
         data['metadata']['doi'] = new_doi
 
-        headers = {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json",
+                   "Authorization": f"Bearer {access_token}"}
         r = requests.put(self.zenodo_endpoint+'/api/deposit/depositions/%s'
                          % new_deposition_id,
-                         params={'access_token': access_token},
                          data=json.dumps(data),
                          headers=headers)
         if(r.status_code != 200):
@@ -215,7 +217,7 @@ class ZenodoHelper(object):
             r = requests.delete(self.zenodo_endpoint +
                                 '/api/deposit/depositions/%s/files/%s'
                                 % (new_deposition_id, file_id),
-                                params={'access_token': access_token})
+                                headers={"Authorization": f"Bearer {access_token}"})
             if(r.status_code != 204):
                 raise_error(ZenodoError, "Could not delete old file", r)
             if(self.verbose):
@@ -227,7 +229,7 @@ class ZenodoHelper(object):
         r = requests.post(self.zenodo_endpoint +
                           '/api/deposit/depositions/%s/actions/publish'
                           % deposition_id,
-                          params={'access_token': access_token})
+                          headers={"Authorization": f"Bearer {access_token}"})
         if(r.status_code != 202):
             raise_error(ZenodoError, "Cannot publish {}".format(msg_obj), r)
         if(self.verbose):
@@ -264,7 +266,7 @@ class ZenodoHelper(object):
         r = requests.post(self.zenodo_endpoint +
                           '/api/deposit/depositions/%s/files'
                           % deposition_id,
-                          params={'access_token': zenodo_access_token},
+                          headers={"Authorization": f"Bearer {zenodo_access_token}"},
                           data={'filename': os.path.basename(file_path)},
                           files={'file': open(file_path, 'rb')})
 
