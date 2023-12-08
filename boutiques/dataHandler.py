@@ -23,13 +23,22 @@ class DataHandler(object):
     # Option to display an example file which displays an pre-made example file
     # or the first file of the cache if it exists
     # Otherwise displays information about the cache and a list of files
-    def inspect(self, example=False):
+    def inspect(self, example=False, latest=False):
         self.example = example
+        self.latest = latest
         # Display an example json file
         if self.example:
             # Display the first file in cache
             if len(self.record_files) > 0:
                 filename = self.record_files[0]
+                file_path = os.path.join(self.cache_dir, filename)
+                self._display_file(file_path)
+            else:
+                print("No records in the cache at the moment.")
+        elif self.latest:
+            if len(self.record_files) > 0:
+                self.record_files = sorted(self.record_files)
+                filename = self.record_files[-1]
                 file_path = os.path.join(self.cache_dir, filename)
                 self._display_file(file_path)
             else:

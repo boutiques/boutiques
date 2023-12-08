@@ -393,7 +393,7 @@ def data(*params):
     elif results.mode == "inspect":
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
-        return dataHandler.inspect(results.example)
+        return dataHandler.inspect(results.example, results.latest)
     elif results.mode == "publish":
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
