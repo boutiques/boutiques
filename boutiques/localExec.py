@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import shutil
 import sys
 import re
 import simplejson as json
@@ -1357,6 +1358,20 @@ class LocalExecutor(object):
         file = open(file_path, 'w+')
         file.write(content)
         file.close()
+        if self.provenancePath:
+            if os.path.exists(self.provenancePath):
+                if os.path.isfile(self.provenancePath):
+                    shutil.copy(file_path, self.provenancePath)
+                    print_info("provenance file already exists, overwritting file {}, provenance file saved in {}".format((os.path.basename(self.provenancePath)), self.provenancePath))
+                elif os.path.isdir(self.provenancePath):
+                    shutil.copy(file_path, os.path.join(self.provenancePath, filename))
+                    print_info("provenance file saved as {}".format(os.path.join(self.provenancePath, filename)))
+            elif os.path.exists(os.path.dirname(self.provenancePath)):
+                shutil.copy(file_path, self.provenancePath)
+                print_info("provenance file saved as {}".format(self.provenancePath))
+            else:
+                print_info("Invalid path: {}, provenance file saved in the default directory {}".format(os.path.abspath(self.provenancePath), file_path))
+                shutil.copy(file_path, os.getcwd())
         if self.debug:
             print_info("Data capture from execution saved to cache as {}"
                        .format(filename))

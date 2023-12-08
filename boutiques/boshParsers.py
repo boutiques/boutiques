@@ -293,6 +293,12 @@ def add_subparser_execute(subparsers):
         action="store_true",
         help="Disable automatic mount of all input files "
         "present in the invocation")
+    parser_exec_launch.add_argument(
+        "--provenance-path",
+        action="store",
+        help="Path to a directory to save provenance file." 
+        "If not specified, will generate " 
+        "the provenance file at the current directory.")
     force_group = parser_exec_launch.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "
