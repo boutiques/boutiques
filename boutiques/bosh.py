@@ -107,7 +107,8 @@ def execute(*params):
                                   "provenance": results.provenance,
                                   "noContainer": results.no_container,
                                   "sandbox": results.sandbox,
-                                  "noAutomounts": results.no_automounts})
+                                  "noAutomounts": results.no_automounts,
+                                  "provenancePath": results.provenance_path})
         # Execute it
         return executor.execute(results.volumes)
 
