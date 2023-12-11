@@ -37,8 +37,8 @@ class DataHandler(object):
                 print("No records in the cache at the moment.")
         elif self.latest:
             if len(self.record_files) > 0:
-                self.record_files = sorted(self.record_files)
-                filename = self.record_files[-1]
+                self.record_files.sort(key=lambda x: os.path.getmtime(os.path.join(self.cache_dir, x)), reverse=True)
+                filename = self.record_files[0]
                 file_path = os.path.join(self.cache_dir, filename)
                 self._display_file(file_path)
             else:

@@ -1371,7 +1371,6 @@ class LocalExecutor(object):
                 print_info("provenance file saved as {}".format(self.provenancePath))
             else:
                 print_info("Invalid path: {}, provenance file saved in the default directory {}".format(os.path.abspath(self.provenancePath), file_path))
-                shutil.copy(file_path, os.getcwd())
         if self.debug:
             print_info("Data capture from execution saved to cache as {}"
                        .format(filename))

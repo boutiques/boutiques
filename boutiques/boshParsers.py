@@ -298,9 +298,10 @@ def add_subparser_execute(subparsers):
     parser_exec_launch.add_argument(
         "--provenance-path",
         action="store",
-        help="Path to a directory to save provenance file." 
-        "If not specified, will generate " 
-        "the provenance file at the current directory.")
+        metavar='',
+        help="Specify the path to save the provenance file. " 
+        "For invalid paths, will use the default directory. " 
+        "Optionally, include the filename after the path.")
     force_group = parser_exec_launch.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
                              help="Tries to run Singularity images with "
