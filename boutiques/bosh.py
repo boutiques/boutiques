@@ -377,7 +377,7 @@ def pull(*params):
 def data(*params):
     parser = parser_bosh()
     params = ('data',) + params
-    try:
+    try:    
         # Try to parse input with argparse
         results, _ = parser.parse_known_args(params)
     except SystemExit as e:
@@ -392,7 +392,7 @@ def data(*params):
     elif results.mode == "inspect":
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
-        return dataHandler.inspect(results.example)
+        return dataHandler.inspect(results.example, results.latest)
     elif results.mode == "publish":
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
