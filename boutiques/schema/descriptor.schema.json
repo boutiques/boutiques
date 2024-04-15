@@ -1,174 +1,200 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "id": "http://github.com/boutiques/boutiques-schema",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://github.com/boutiques/boutiques-schema",
     "type": "object",
     "title": "Tool",
     "properties": {
         "name": {
-            "id": "http://github.com/boutiques/boutiques-schema/name",
+            "$id": "http://github.com/boutiques/boutiques-schema/name",
             "minLength": 1,
             "description": "Tool name.",
             "type": "string"
         },
         "tool-version": {
-            "id": "http://github.com/boutiques/boutiques-schema/description",
+            "$id": "http://github.com/boutiques/boutiques-schema/tool-version",
             "minLength": 1,
             "description": "Tool version.",
             "type": "string"
         },
         "description": {
-            "id": "http://github.com/boutiques/boutiques-schema/description",
+            "$id": "http://github.com/boutiques/boutiques-schema/description",
             "minLength": 1,
             "description": "Tool description.",
             "type": "string"
         },
         "deprecated-by-doi": {
-            "id": "http://github.com/boutiques/boutiques-schema/deprecated-by-doi",
-            "minLength": 1,
+            "$id": "http://github.com/boutiques/boutiques-schema/deprecated-by-doi",
             "description": "doi of the tool that deprecates the current one. May be set to 'true' if the current tool is deprecated but no specific tool deprecates it.",
-            "type": ["string", "boolean"]
+            "anyOf": [
+                {
+                    "type": "string",
+                    "minLength": 1
+                },
+                {
+                    "type": "boolean"
+                }
+            ]
         },
         "author": {
-            "id": "http://github.com/boutiques/boutiques-schema/author",
+            "$id": "http://github.com/boutiques/boutiques-schema/author",
             "minLength": 1,
             "description": "Tool author name(s).",
             "type": "string"
         },
         "url": {
-            "id": "http://github.com/boutiques/boutiques-schema/url",
+            "$id": "http://github.com/boutiques/boutiques-schema/url",
             "minLength": 1,
             "description": "Tool URL.",
             "type": "string"
         },
         "descriptor-url": {
-            "id": "http://github.com/boutiques/boutiques-schema/descriptor-url",
+            "$id": "http://github.com/boutiques/boutiques-schema/descriptor-url",
             "minLength": 1,
             "description": "Link to the descriptor itself (e.g. the GitHub repo where it is hosted).",
             "type": "string"
         },
         "doi": {
-            "id": "http://github.com/boutiques/boutiques-schema/doi",
+            "$id": "http://github.com/boutiques/boutiques-schema/doi",
             "minLength": 1,
             "description": "DOI of the descriptor (not of the tool itself).",
             "type": "string"
         },
         "shell": {
-            "id": "http://github.com/boutiques/boutiques-schema/shell",
+            "$id": "http://github.com/boutiques/boutiques-schema/shell",
             "minLength": 1,
             "description": "Absolute path of the shell interpreter to use in the container (defaults to /bin/sh).",
             "type": "string"
         },
         "tool-doi": {
-            "id": "http://github.com/boutiques/boutiques-schema/tool-doi",
+            "$id": "http://github.com/boutiques/boutiques-schema/tool-doi",
             "minLength": 1,
             "description": "DOI of the tool (not of the descriptor).",
             "type": "string"
         },
         "command-line": {
-            "id": "http://github.com/boutiques/boutiques-schema/command-line",
+            "$id": "http://github.com/boutiques/boutiques-schema/command-line",
             "minLength": 1,
             "description": "A string that describes the tool command line, where input and output values are identified by \"keys\". At runtime, command-line keys are substituted with flags and values.",
             "type": "string"
         },
         "container-image": {
-            "id": "http://github.com/boutiques/boutiques-schema/container-image",
+            "$id": "http://github.com/boutiques/boutiques-schema/container-image",
             "type": "object",
-            "allOf": [{
-                "properties": {
-                    "working-directory": {
-                        "id": "http://github.com/boutiques/boutiques-schema/container/working-directory",
-                        "minLength": 1,
-                        "description": "Location from which this task must be launched within the container.",
-                        "type": "string"
-                    },
-                    "container-hash": {
-                        "id": "http://github.com/boutiques/boutiques-schema/container/container-hash",
-                        "minLength": 1,
-                        "description": "Hash for the given container.",
-                        "type": "string"
+            "allOf": [
+                {
+                    "properties": {
+                        "working-directory": {
+                            "$id": "http://github.com/boutiques/boutiques-schema/container/working-directory",
+                            "minLength": 1,
+                            "description": "Location from which this task must be launched within the container.",
+                            "type": "string"
+                        },
+                        "container-hash": {
+                            "$id": "http://github.com/boutiques/boutiques-schema/container/container-hash",
+                            "minLength": 1,
+                            "description": "Hash for the given container.",
+                            "type": "string"
+                        }
                     }
+                },
+                {
+                    "oneOf": [
+                        {
+                            "properties": {
+                                "type": {
+                                    "enum": [
+                                        "docker",
+                                        "singularity"
+                                    ]
+                                },
+                                "image": {
+                                    "$id": "http://github.com/boutiques/boutiques-schema/container/image",
+                                    "minLength": 1,
+                                    "description": "Name of an image where the tool is installed and configured. Example: bids/mriqc.",
+                                    "type": "string"
+                                },
+                                "entrypoint": {
+                                    "$id": "http://github.com/boutiques/boutiques-schema/container/entrypoint",
+                                    "description": "Flag indicating whether or not the container uses an entrypoint.",
+                                    "type": "boolean"
+                                },
+                                "index": {
+                                    "$id": "http://github.com/boutiques/boutiques-schema/container/index",
+                                    "minLength": 1,
+                                    "description": "Optional index where the image is available, if not the standard location. Example: docker.io",
+                                    "type": "string"
+                                },
+                                "container-opts": {
+                                    "$id": "http://github.com/boutiques/boutiques-schema/container/container-opts",
+                                    "description": "Container-level arguments for the application. Example: --privileged",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "working-directory": true,
+                                "container-hash": true
+                            },
+                            "required": [
+                                "type",
+                                "image"
+                            ],
+                            "additionalProperties": false,
+                            "description": "Object representing a docker or singularity container for the tool."
+                        },
+                        {
+                            "properties": {
+                                "type": {
+                                    "const": "rootfs"
+                                },
+                                "url": {
+                                    "$id": "http://github.com/boutiques/boutiques-schema/container/url",
+                                    "minLength": 1,
+                                    "description": "URL where the image is available.",
+                                    "type": "string"
+                                },
+                                "working-directory": true,
+                                "container-hash": true
+                            },
+                            "required": [
+                                "type",
+                                "url"
+                            ],
+                            "additionalProperties": false,
+                            "description": "Object representing a rootfs container for the tool."
+                        }
+                    ]
                 }
-            },{
-                "oneOf": [{
-                    "properties": {
-                        "type": { "enum": ["docker", "singularity"] },
-                        "image": {
-                            "id": "http://github.com/boutiques/boutiques-schema/container/image",
-                            "minLength": 1,
-                            "description": "Name of an image where the tool is installed and configured. Example: bids/mriqc.",
-                            "type": "string"
-                        },
-                        "entrypoint": {
-                            "id": "http://github.com/boutiques/boutiques-schema/container/entrypoint",
-                            "description": "Flag indicating whether or not the container uses an entrypoint.",
-                            "type": "boolean"
-                        },
-                        "index": {
-                            "id": "http://github.com/boutiques/boutiques-schema/container/index",
-                            "minLength": 1,
-                            "description": "Optional index where the image is available, if not the standard location. Example: docker.io",
-                            "type": "string"
-                        },
-                        "container-opts": {
-                            "id": "http://github.com/boutiques/boutiques-schema/container/container-opts",
-                            "description": "Container-level arguments for the application. Example: --privileged",
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "working-directory": {},
-                        "container-hash": {}
-                    },
-                    "required": ["type", "image"],
-                    "additionalProperties": false,
-                    "description": "Object representing a docker or singularity container for the tool."
-                }, {
-                    "properties": {
-                        "type": { "enum": ["rootfs"] },
-                        "url": {
-                            "id": "http://github.com/boutiques/boutiques-schema/container/url",
-                            "minLength": 1,
-                            "description": "URL where the image is available.",
-                            "type": "string"
-                        },
-                        "working-directory": {},
-                        "container-hash": {}
-                    },
-                    "required": ["type", "url"],
-                    "additionalProperties": false,
-                    "description": "Object representing a rootfs container for the tool."
-                }]
-            }]
+            ]
         },
         "schema-version": {
-            "id": "http://github.com/boutiques/boutiques-schema/schema-version",
+            "$id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.5"]
+            "const": "0.5"
         },
         "environment-variables": {
-            "id": "http://github.com/boutiques/boutiques-schema/environment-variables",
+            "$id": "http://github.com/boutiques/boutiques-schema/environment-variables",
             "type": "array",
             "description": "An array of key-value pairs specifying environment variable names and their values to be used in the execution environment.",
             "items": {
-                "id": "http://github.com/boutiques/boutiques-schema/environment-variable",
+                "$id": "http://github.com/boutiques/boutiques-schema/environment-variable",
                 "type": "object",
                 "properties": {
                     "name": {
-                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/name",
+                        "$id": "http://github.com/boutiques/boutiques-schema/environment-variable/name",
                         "minLength": 1,
                         "description": "The environment variable name (identifier) containing only alphanumeric characters and underscores. Example: \"PROGRAM_PATH\".",
                         "type": "string",
                         "pattern": "^[a-z,A-Z][0-9,_,a-z,A-Z]*$"
                     },
                     "value": {
-                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/value",
+                        "$id": "http://github.com/boutiques/boutiques-schema/environment-variable/value",
                         "description": "The value of the environment variable.",
                         "type": "string"
                     },
                     "description": {
-                        "id": "http://github.com/boutiques/boutiques-schema/environment-variable/description",
+                        "$id": "http://github.com/boutiques/boutiques-schema/environment-variable/description",
                         "description": "Description of the environment variable.",
                         "type": "string"
                     }
@@ -179,37 +205,37 @@
                 ],
                 "additionalProperties": false
             },
-        "minItems": 1,
-        "uniqueItems": true
+            "minItems": 1,
+            "uniqueItems": true
         },
         "groups": {
-            "id": "http://github.com/boutiques/boutiques-schema/groups",
+            "$id": "http://github.com/boutiques/boutiques-schema/groups",
             "description": "Sets of identifiers of inputs, each specifying an input group.",
             "type": "array",
             "items": {
-                "id": "http://github.com/boutiques/boutiques-schema/group",
+                "$id": "http://github.com/boutiques/boutiques-schema/group",
                 "type": "object",
                 "properties": {
                     "id": {
-                        "id": "http://github.com/boutiques/boutiques-schema/group/id",
+                        "$id": "http://github.com/boutiques/boutiques-schema/group/id",
                         "minLength": 1,
                         "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"outfile_group\".",
                         "type": "string",
                         "pattern": "^[0-9,_,a-z,A-Z]*$"
                     },
                     "name": {
-                        "id": "http://github.com/boutiques/boutiques-schema/group/name",
+                        "$id": "http://github.com/boutiques/boutiques-schema/group/name",
                         "minLength": 1,
                         "description": "A human-readable name for the input group.",
                         "type": "string"
                     },
                     "description": {
-                        "id": "http://github.com/boutiques/boutiques-schema/group/description",
+                        "$id": "http://github.com/boutiques/boutiques-schema/group/description",
                         "description": "Description of the input group.",
                         "type": "string"
                     },
                     "members": {
-                        "id": "http://github.com/boutiques/boutiques-schema/group/members",
+                        "$id": "http://github.com/boutiques/boutiques-schema/group/members",
                         "description": "IDs of the inputs belonging to this group.",
                         "type": "array",
                         "items": {
@@ -219,17 +245,17 @@
                         }
                     },
                     "mutually-exclusive": {
-                        "id": "http://github.com/boutiques/boutiques-schema/group/mutually-exclusive",
+                        "$id": "http://github.com/boutiques/boutiques-schema/group/mutually-exclusive",
                         "description": "True if only one input in the group may be active at runtime.",
                         "type": "boolean"
                     },
                     "one-is-required": {
-                        "id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
+                        "$id": "http://github.com/boutiques/boutiques-schema/group/one-is-required",
                         "description": "True if at least one of the inputs in the group must be active at runtime.",
                         "type": "boolean"
                     },
                     "all-or-none": {
-                        "id": "http://github.com/boutiques/boutiques-schema/group/all-or-none",
+                        "$id": "http://github.com/boutiques/boutiques-schema/group/all-or-none",
                         "description": "True if members of the group need to be toggled together",
                         "type": "boolean"
                     }
@@ -241,67 +267,72 @@
                 ],
                 "additionalProperties": false
             },
-        "minItems": 1,
-        "uniqueItems": true
+            "minItems": 1,
+            "uniqueItems": true
         },
         "inputs": {
-            "id": "http://github.com/boutiques/boutiques-schema/inputs",
+            "$id": "http://github.com/boutiques/boutiques-schema/inputs",
             "type": "array",
             "items": {
-                "id": "http://github.com/boutiques/boutiques-schema/input",
+                "$id": "http://github.com/boutiques/boutiques-schema/input",
                 "type": "object",
                 "properties": {
                     "id": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/id",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/id",
                         "minLength": 1,
                         "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"data_file\".",
                         "type": "string",
                         "pattern": "^[0-9,_,a-z,A-Z]*$"
                     },
                     "name": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/name",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/name",
                         "minLength": 1,
                         "description": "A human-readable input name. Example: 'Data file'.",
                         "type": "string"
                     },
                     "type": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/type",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/type",
                         "type": "string",
                         "description": "Input type.",
-                        "enum": ["String", "File", "Flag", "Number"]
+                        "enum": [
+                            "String",
+                            "File",
+                            "Flag",
+                            "Number"
+                        ]
                     },
                     "description": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/description",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/description",
                         "description": "Input description.",
                         "type": "string"
                     },
                     "value-key": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/value-key",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/value-key",
                         "description": "A string contained in command-line, substituted by the input value and/or flag at runtime.",
                         "type": "string"
                     },
                     "list": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/list",
-                        "description":"True if input is a list of value. An input of type \"Flag\" cannot be a list.",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/list",
+                        "description": "True if input is a list of value. An input of type \"Flag\" cannot be a list.",
                         "type": "boolean"
                     },
                     "list-separator": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/list-separator",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/list-separator",
                         "description": "Separator used between list items. Defaults to a single space.",
                         "type": "string"
                     },
                     "optional": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/optional",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/optional",
                         "description": "True if input is optional.",
                         "type": "boolean"
                     },
                     "command-line-flag": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag",
                         "description": "Option flag of the input, involved in the value-key substitution. Inputs of type \"Flag\" have to have a command-line flag. Examples: -v, --force.",
                         "type": "string"
                     },
                     "requires-inputs": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/required-inputs",
                         "description": "Ids of the inputs or ids of groups whose members must be active for this input to be available.",
                         "type": "array",
                         "items": {
@@ -309,7 +340,7 @@
                         }
                     },
                     "disables-inputs": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/disabled-by-inputs",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/disabled-by-inputs",
                         "description": "Ids of the inputs that are disabled when this input is active.",
                         "type": "array",
                         "items": {
@@ -317,76 +348,80 @@
                         }
                     },
                     "command-line-flag-separator": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag-separator",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/command-line-flag-separator",
                         "description": "Separator used between flags and their arguments. Defaults to a single space.",
                         "type": "string"
                     },
                     "default-value": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/default-value",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/default-value",
                         "description": "Default value of the input. The default value is set when no value is specified, even when the input is optional. If the desired behavior is to omit the input from the command line when no value is specified, then no default value should be used. In this case, the tool might still use a default value internally, but this will remain undocumented in the Boutiques interface."
                     },
                     "value-choices": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/value-choices",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/value-choices",
                         "description": "Permitted choices for input value. May not be used with the Flag type.",
                         "type": "array",
                         "items": {
-                            "oneOf":  [
-                                { "type": "string" },
-                                { "type": "number" }
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "number"
+                                }
                             ]
                         }
                     },
                     "value-requires": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/value-requires",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/value-requires",
                         "description": "Ids of the inputs that are required when the corresponding value choice is selected.",
                         "type": "object",
                         "properties": {},
                         "additionalProperties": true
                     },
                     "value-disables": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/value-disables",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/value-disables",
                         "description": "Ids of the inputs that are disabled when the corresponding value choice is selected.",
                         "type": "object",
                         "properties": {},
                         "additionalProperties": true
                     },
                     "integer": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/integer",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/integer",
                         "description": "Specify whether the input should be an integer. May only be used with Number type inputs.",
                         "type": "boolean"
                     },
                     "minimum": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/minimum",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/minimum",
                         "description": "Specify the minimum value of the input (inclusive). May only be used with Number type inputs.",
                         "type": "number"
                     },
                     "maximum": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/maximum",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/maximum",
                         "description": "Specify the maximum value of the input (inclusive). May only be used with Number type inputs.",
                         "type": "number"
                     },
                     "exclusive-minimum": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/exclusive-minimum",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/exclusive-minimum",
                         "description": "Specify whether the minimum is exclusive or not. May only be used with Number type inputs.",
                         "type": "boolean"
                     },
                     "exclusive-maximum": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/exclusive-maximum",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/exclusive-maximum",
                         "description": "Specify whether the maximum is exclusive or not. May only be used with Number type inputs.",
                         "type": "boolean"
                     },
                     "min-list-entries": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/min-list-entries",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/min-list-entries",
                         "description": "Specify the minimum number of entries in the list. May only be used with List type inputs.",
                         "type": "number"
                     },
                     "max-list-entries": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/max-list-entries",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/max-list-entries",
                         "description": "Specify the maximum number of entries in the list. May only be used with List type inputs.",
                         "type": "number"
                     },
                     "uses-absolute-path": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/uses-absolute-path",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/uses-absolute-path",
                         "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs.",
                         "type": "boolean"
                     }
@@ -396,134 +431,176 @@
                     "id",
                     "type"
                 ],
-                "anyOf": [{
-                    "properties": {
-                        "type": { "enum": ["Flag"] },
-                        "list": { "enum": [false] }
+                "anyOf": [
+                    {
+                        "properties": {
+                            "type": {
+                                "const": "Flag"
+                            },
+                            "list": {
+                                "const": false
+                            }
+                        }
+                    },
+                    {
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "String",
+                                    "File",
+                                    "Number"
+                                ]
+                            }
+                        }
                     }
-                }, {
-                    "properties": {
-                        "type": { "enum": ["String", "File", "Number"] }
-                    }
-                }],
+                ],
                 "dependencies": {
-                    "command-line-flag-separator": ["command-line-flag"],
-                    "min-list-entries": ["list"],
-                    "max-list-entries": ["list"],
-                    "list-separator": ["list"],
+                    "command-line-flag-separator": [
+                        "command-line-flag"
+                    ],
+                    "min-list-entries": [
+                        "list"
+                    ],
+                    "max-list-entries": [
+                        "list"
+                    ],
+                    "list-separator": [
+                        "list"
+                    ],
                     "value-choices": {
                         "properties": {
-                            "type": {"enum": ["String", "Number"]}
+                            "type": {
+                                "enum": [
+                                    "String",
+                                    "Number"
+                                ]
+                            }
                         }
                     },
                     "integer": {
                         "properties": {
-                            "type": {"enum": ["Number"]}
+                            "type": {
+                                "const": "Number"
+                            }
                         }
                     },
                     "minimum": {
                         "properties": {
-                            "type": {"enum": ["Number"]}
+                            "type": {
+                                "const": "Number"
+                            }
                         }
                     },
                     "maximum": {
                         "properties": {
-                            "type": {"enum": ["Number"]}
+                            "type": {
+                                "const": "Number"
+                            }
                         }
                     },
                     "uses-absolute-path": {
                         "properties": {
-                            "type": {"enum": ["File"]}
+                            "type": {
+                                "const": "File"
+                            }
                         }
                     },
-                    "exclusive-minimum": ["minimum"],
-                    "exclusive-maximum": ["maximum"],
-                    "value-disables": ["value-choices"],
-                    "value-enables": ["value-choices"]
+                    "exclusive-minimum": [
+                        "minimum"
+                    ],
+                    "exclusive-maximum": [
+                        "maximum"
+                    ],
+                    "value-disables": [
+                        "value-choices"
+                    ],
+                    "value-enables": [
+                        "value-choices"
+                    ]
                 },
                 "additionalProperties": false
             },
-        "minItems": 1,
-        "uniqueItems": true
+            "minItems": 1,
+            "uniqueItems": true
         },
         "tests": {
-            "id": "http://github.com/boutiques/boutiques-schema/tests",
+            "$id": "http://github.com/boutiques/boutiques-schema/tests",
             "type": "array",
             "minItems": 1,
             "items": {
-                "id": "http://github.com/boutiques/boutiques-schema/tests/test-case",
+                "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case",
                 "type": "object",
                 "properties": {
                     "name": {
-                        "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/name",
+                        "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case/name",
                         "minLength": 1,
                         "description": "Name of the test-case",
                         "type": "string"
                     },
                     "invocation": {
-                        "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/invocation",
+                        "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case/invocation",
                         "type": "object"
                     },
                     "assertions": {
-                        "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions",
+                        "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions",
                         "type": "object",
                         "properties": {
                             "exit-code": {
-                                "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/exit-code",
+                                "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/exit-code",
                                 "description": "Expected code returned by the program.",
                                 "type": "integer"
                             },
                             "output-files": {
-                                "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files",
+                                "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files",
                                 "type": "array",
                                 "minItems": 1,
                                 "items": {
-                                    "id": "http://github.com/boutiques/boutiques-schema/test-case/assertions/out-files/output",
+                                    "$id": "http://github.com/boutiques/boutiques-schema/test-case/assertions/out-files/output",
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/id",
+                                            "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/id",
                                             "description": "Id referring to an output-file",
                                             "minLength": 1,
                                             "pattern": "^[0-9,_,a-z,A-Z]*$",
                                             "type": "string"
                                         },
                                         "md5-reference": {
-                                            "id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/reference",
+                                            "$id": "http://github.com/boutiques/boutiques-schema/tests/test-case/assertions/out-files/output/reference",
                                             "description": "MD5 checksum string to match against the MD5 checksum of the output-file specified by the id object",
                                             "minLength": 1,
                                             "type": "string"
                                         }
                                     },
-                                "required": [
-                                    "id"
-                                ]
+                                    "required": [
+                                        "id"
+                                    ]
                                 }
-                          }
+                            }
                         },
                         "anyOf": [
-                          {
-                            "required": [
-                              "exit-code"
-                            ]
-                          },
-                          {
-                            "required": [
-                              "output-files"
-                            ]
-                          }
+                            {
+                                "required": [
+                                    "exit-code"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "output-files"
+                                ]
+                            }
                         ]
                     }
                 },
                 "required": [
-                  "name",
-                  "assertions",
-                  "invocation"
+                    "name",
+                    "assertions",
+                    "invocation"
                 ]
             }
         },
         "online-platform-urls": {
-            "id": "http://github.com/boutiques/boutiques-schema/online-platforms",
+            "$id": "http://github.com/boutiques/boutiques-schema/online-platforms",
             "type": "array",
             "description": "Online platform URLs from which the tool can be executed.",
             "items": {
@@ -532,43 +609,43 @@
             }
         },
         "output-files": {
-            "id": "http://github.com/boutiques/boutiques-schema/output-files",
+            "$id": "http://github.com/boutiques/boutiques-schema/output-files",
             "type": "array",
             "items": {
-                "id": "http://github.com/boutiques/boutiques-schema/output",
+                "$id": "http://github.com/boutiques/boutiques-schema/output",
                 "type": "object",
                 "properties": {
                     "id": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/id",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/id",
                         "minLength": 1,
                         "description": "A short, unique, informative identifier containing only alphanumeric characters and underscores. Typically used to generate variable names. Example: \"data_file\"",
                         "pattern": "^[0-9,_,a-z,A-Z]*$",
                         "type": "string"
                     },
                     "name": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/name",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/name",
                         "description": "A human-readable output name. Example: 'Data file'",
                         "minLength": 1,
                         "type": "string"
                     },
                     "description": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/description",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/description",
                         "description": "Output description.",
                         "type": "string"
                     },
                     "value-key": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/value-key",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/value-key",
                         "description": "A string contained in command-line, substituted by the output value and/or flag at runtime.",
                         "type": "string"
                     },
                     "path-template": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/path-template",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/path-template",
                         "description": "Describes the output file path relatively to the execution directory. May contain input value keys and wildcards. Example: \"results/[INPUT1]_brain*.mnc\".",
                         "minLength": 1,
                         "type": "string"
                     },
                     "conditional-path-template": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/conditional-path-template",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/conditional-path-template",
                         "description": "List of objects containing boolean statement (Limited python syntax: ==, !=, <, >, <=, >=, and, or) and output file paths relative to the execution directory, assign path of first true boolean statement. May contain input value keys, \"default\" object required if \"optional\" set to True . Example list: \"[{\"[PARAM1] > 8\": \"outputs/[INPUT1].txt\"}, {\"default\": \"outputs/default.txt\"}]\".",
                         "minLength": 1,
                         "type": "array",
@@ -582,7 +659,7 @@
                         }
                     },
                     "path-template-stripped-extensions": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/path-template-stripped-extensions",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/path-template-stripped-extensions",
                         "description": "List of file extensions that will be stripped from the input values before being substituted in the path template. Example: [\".nii\",\".nii.gz\"].",
                         "type": "array",
                         "items": {
@@ -590,140 +667,170 @@
                         }
                     },
                     "list": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/list",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/list",
                         "description": "True if output is a list of value.",
                         "type": "boolean"
                     },
                     "optional": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/optional",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/optional",
                         "description": "True if output may not be produced by the tool.",
                         "type": "boolean"
                     },
                     "command-line-flag": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag",
                         "description": "Option flag of the output, involved in the value-key substitution. Examples: -o, --output",
                         "type": "string"
                     },
                     "command-line-flag-separator": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag-separator",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output/command-line-flag-separator",
                         "description": "Separator used between flags and their arguments. Defaults to a single space.",
                         "type": "string"
                     },
                     "uses-absolute-path": {
-                        "id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
+                        "$id": "http://github.com/boutiques/boutiques-schema/output-files/uses-absolute-path",
                         "description": "Specifies that this output filepath will be given as an absolute path.",
                         "type": "boolean"
                     },
                     "file-template": {
-                        "id": "http://github.com/boutiques/boutiques-schema/input/file-template",
+                        "$id": "http://github.com/boutiques/boutiques-schema/input/file-template",
                         "description": "An array of strings that may contain value keys. Each item will be a line in the configuration file.",
                         "type": "array",
                         "minItems": 1,
-                        "items": { "type": "string" }
+                        "items": {
+                            "type": "string"
+                        }
                     }
-
                 },
                 "required": [
                     "id",
                     "name"
                 ],
-                "oneOf":[{
-                    "properties": {
-                        "path-template": {"enum": [true]}
+                "oneOf": [
+                    {
+                        "properties": {
+                            "path-template": {
+                                "const": true
+                            }
+                        }
+                    },
+                    {
+                        "properties": {
+                            "conditional-path-template": {
+                                "const": true
+                            }
+                        }
                     }
-                }, {
-                    "properties": {
-                        "conditional-path-template": {"enum": [true]}
+                ],
+                "anyOf": [
+                    {
+                        "properties": {
+                            "file-template": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "list": {
+                                "const": false
+                            }
+                        }
+                    },
+                    {
+                        "properties": {
+                            "file-template": {
+                                "const": false
+                            }
+                        }
                     }
-                }],
-                "anyOf": [{
-                    "properties": {
-                        "file-template": {
-                            "type": "array",
-                            "minItems": 1,
-                            "items": { "type": "string" }
-                        },
-                        "list": { "enum": [false] }
-                    }
-                }, {
-                    "properties": {
-                        "file-template": { "enum": [false]} }
-                }],
+                ],
                 "dependencies": {
-                    "command-line-flag-separator": ["command-line-flag"]
+                    "command-line-flag-separator": [
+                        "command-line-flag"
+                    ]
                 },
                 "additionalProperties": false
             },
-        "minItems": 1,
-        "uniqueItems": true
+            "minItems": 1,
+            "uniqueItems": true
         },
         "invocation-schema": {
-            "id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
+            "$id": "http://github.com/boutiques/boutiques-schema/invocation-schema",
             "type": "object"
         },
         "suggested-resources": {
-            "id": "http://github.com/boutiques/boutiques-schema/suggested-resources",
+            "$id": "http://github.com/boutiques/boutiques-schema/suggested-resources",
             "type": "object",
             "properties": {
                 "cpu-cores": {
-                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/cpu-cores",
+                    "$id": "http://github.com/boutiques/boutiques-schema/suggested-resources/cpu-cores",
                     "description": "The requested number of cpu cores to run the described application",
                     "type": "integer",
                     "minimum": 1
                 },
                 "ram": {
-                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/ram",
+                    "$id": "http://github.com/boutiques/boutiques-schema/suggested-resources/ram",
                     "description": "The requested number of GB RAM to run the described application",
                     "type": "number",
                     "minimum": 0
                 },
                 "disk-space": {
-                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/disk-space",
+                    "$id": "http://github.com/boutiques/boutiques-schema/suggested-resources/disk-space",
                     "description": "The requested number of GB of storage to run the described application",
                     "type": "number",
                     "minimum": 0
                 },
                 "nodes": {
-                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/nodes",
+                    "$id": "http://github.com/boutiques/boutiques-schema/suggested-resources/nodes",
                     "description": "The requested number of nodes to spread the described application across",
                     "type": "integer",
                     "minimum": 1
                 },
                 "walltime-estimate": {
-                    "id": "http://github.com/boutiques/boutiques-schema/suggested-resources/walltime-estimate",
+                    "$id": "http://github.com/boutiques/boutiques-schema/suggested-resources/walltime-estimate",
                     "type": "number",
                     "description": "Estimated wall time of a task in seconds.",
                     "minimum": 0
                 }
             }
         },
-    "tags": {
-            "id": "http://github.com/boutiques/boutiques-schema/tags",
+        "tags": {
+            "$id": "http://github.com/boutiques/boutiques-schema/tags",
             "type": "object",
             "description": "A set of key-value pairs specifying tags describing the pipeline. The tag names are open, they might be more constrained in the future.",
             "additionalProperties": {
-                "type": ["string", "array", "boolean"],
-                "items": {
-                    "type": "string"
-                },
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "type": "boolean"
+                    }
+                ],
                 "description": "Tag values"
             }
         },
-    "error-codes": {
-            "id": "http://github.com/boutiques/boutiques-schema/error-codes",
+        "error-codes": {
+            "$id": "http://github.com/boutiques/boutiques-schema/error-codes",
             "type": "array",
             "description": "An array of key-value pairs specifying exit codes and their description. Can be used for tools to specify the meaning of particular exit codes. Exit code 0 is assumed to indicate a successful execution.",
             "items": {
-                "id": "http://github.com/boutiques/boutiques-schema/error-codes",
+                "$id": "http://github.com/boutiques/boutiques-schema/error-codes/error-code",
                 "type": "object",
                 "properties": {
                     "code": {
-                        "id": "http://github.com/boutiques/boutiques-schema/error-codes/code",
+                        "$id": "http://github.com/boutiques/boutiques-schema/error-codes/code",
                         "description": "Value of the exit code",
                         "type": "integer"
                     },
                     "description": {
-                        "id": "http://github.com/boutiques/boutiques-schema/error-codes/description",
+                        "$id": "http://github.com/boutiques/boutiques-schema/error-codes/description",
                         "description": "Description of the error code.",
                         "type": "string"
                     }
@@ -734,11 +841,11 @@
                 ],
                 "additionalProperties": false
             },
-        "minItems": 1,
-        "uniqueItems": true
-    },
+            "minItems": 1,
+            "uniqueItems": true
+        },
         "custom": {
-            "id": "http://github.com/boutiques/boutiques-schema/custom",
+            "$id": "http://github.com/boutiques/boutiques-schema/custom",
             "type": "object"
         }
     },
