@@ -32,7 +32,7 @@ eDEPS = {
 setup(name="boutiques",
       version=VERSION,
       description="Schema for describing bash command-line tools",
-      long_description=open("./README.rst").read(),
+      long_description=open("./README.rst", encoding="utf-8").read(),
       url="http://github.com/boutiques/boutiques",
       author="Tristan Glatard, Gregory Kiar",
       author_email="tristan.glatard@concordia.ca, gkiar07@gmail.com",
