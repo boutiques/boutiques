@@ -32,8 +32,15 @@ jobs:
                 python-version: '3.12'
                 allow-prereleases: false
 
+        -   name: Setup node
+            uses: actions/setup-node@v4
+            with:
+                node-version: 18
+
         -   name: Install dependencies
-            run: python -m pip install pycodestyle "jsonschema>=2.6.0,<3.0.0"
+            run: |
+                pip install pycodestyle "jsonschema>=2.6.0,<3.0.0"
+                npm install jsonlint -g
 
         -   name: run jsonlint
             run: jsonlint -q boutiques/schema/descriptor.schema.json
