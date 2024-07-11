@@ -39,11 +39,11 @@ jobs:
 
         -   name: Install dependencies
             run: |
-                pip install pycodestyle "jsonschema>=2.6.0,<3.0.0"
+                pip install pycodestyle
                 npm install jsonlint -g
 
         -   name: run jsonlint
-            run: jsonlint -q boutiques/schema/descriptor.schema.json
+            run: jsonlint boutiques/schema/descriptor.schema.json
 
         -   name: run pycodestyle
             run: pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
