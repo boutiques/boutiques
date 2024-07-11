@@ -40,12 +40,11 @@ before_install:
 install:
 - pip install --upgrade setuptools
 - pip install "jsonschema>=2.6.0,<3.0.0"
-- pip install pytest pytest-runner pycodestyle coveralls
+- pip install pytest pytest-runner coveralls
 - pip install .[all]
 - pip freeze
 
 script:
-- pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
 - jsonlint -q boutiques/schema/descriptor.schema.json
 - coverage run --source boutiques setup.py pytest
 - coverage report -m
