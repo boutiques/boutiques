@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers --showlocals -s -vv --durations=0"
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+junit_family = "xunit2"
+minversion = "6.0"
+xfail_strict = true

@@ -6,4 +6,4 @@ docker run \
     --privileged -t --rm \
     singularityware/docker2singularity boutiques/example1:test
 IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
-mv --verbsose ${IMGNAME} ./boutiques-example1-test.simg
+mv --verbose ${IMGNAME} ./boutiques-example1-test.simg
