@@ -42,8 +42,8 @@ jobs:
                 pip install pycodestyle
                 npm install jsonlint -g
 
-        -   name: run jsonlint
+        -   name: Run jsonlint
             run: jsonlint boutiques/schema/descriptor.schema.json
 
-        -   name: run pycodestyle
+        -   name: Run pycodestyle
             run: pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
