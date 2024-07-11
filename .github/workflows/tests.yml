@@ -35,3 +35,21 @@ jobs:
 
         -   name: Build apptainer def
             run: make docker2singularity
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.8'
+                allow-prereleases: false
+
+        -   name: Install dependencies
+            run: |
+                pip install --upgrade setuptools
+                pip install pytest pytest-runner coveralls
+                pip install .[all]
+                pip freeze
+
+        -   name: Run tests
+            run: |
+                coverage run --source boutiques setup.py pytest
+                coverage report -m

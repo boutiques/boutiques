@@ -39,11 +39,11 @@ jobs:
 
         -   name: Install dependencies
             run: |
-                pip install pycodestyle
+                pip install tox
                 npm install jsonlint -g
 
         -   name: Run jsonlint
             run: jsonlint boutiques/schema/descriptor.schema.json
 
-        -   name: Run pycodestyle
-            run: pycodestyle --max-line-length=80 boutiques/*.py boutiques/tests/*.py
+        -   name: Run style checks
+            run: tox run -e lint
