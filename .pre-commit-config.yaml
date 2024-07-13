@@ -9,6 +9,11 @@ repos:
     -   id: check-ast
     -   id: check-case-conflict
     -   id: check-json
+        exclude: |
+            (?x)^(
+                boutiques/tests/example1/invocation_invalid.json
+                | boutiques/tests/validator/invalid_json.json
+            )$
     -   id: check-merge-conflict
     -   id: check-toml
     -   id: check-yaml

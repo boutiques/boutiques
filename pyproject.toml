@@ -1,5 +1,5 @@
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --showlocals -s -vv --durations=0"
+addopts = "-ra --strict-config --strict-markers --showlocals -s -vv"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 minversion = "6.0"
