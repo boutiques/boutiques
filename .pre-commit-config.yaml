@@ -34,3 +34,11 @@ repos:
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
+
+# Checks for spelling errors
+-   repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+    -   id: codespell
+        args: [--toml, pyproject.toml]
+        additional_dependencies: [tomli]
