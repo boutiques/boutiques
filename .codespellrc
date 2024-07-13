@@ -1,4 +1,4 @@
 [codespell]
 skip = .git,*.pdf,*.svg,*.json
 # nd, fo, minum, manum - some short imports/variables
-ignore-words-list = nd,fo,minum,manum
+ignore-words-list = nd,fo,minum,manum,assertIn
