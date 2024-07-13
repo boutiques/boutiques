@@ -9,6 +9,9 @@ on:
         branches:
         -   '*'
 
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
@@ -19,8 +22,15 @@ env:
 
 jobs:
     test:
-        name: Run tests
-        runs-on: ubuntu-latest
+        name: Test with ${{ matrix.py }} on ${{ matrix.os }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                py: ['3.12', '3.11', '3.10', '3.9', '3.8']
+                os: [ubuntu-latest, macos-latest, windows-latest]
+
+        runs-on: ${{ matrix.os }}
 
         steps:
         -   name: Checkout
@@ -30,16 +40,13 @@ jobs:
             with:
                 apptainer-version: 1.3.0
 
-        -   name: Build docker image
-            run: make docker_build
-
-        -   name: Build apptainer def
-            run: make docker2singularity
+        -   name: Build docker and apptainer images
+            run: make boutiques-example1-test.simg
 
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: '3.8'
+                python-version: ${{ matrix.py }}
                 allow-prereleases: false
 
         -   name: Install dependencies
@@ -53,3 +60,19 @@ jobs:
             run: |
                 coverage run --source boutiques setup.py pytest
                 coverage report -m
+
+        -   name: Coveralls Parallel
+            uses: coverallsapp/github-action@v2
+            with:
+                flag-name: run-${{ join(matrix.*, '-') }}
+                parallel: true
+
+    finish:
+        needs: test
+        if: ${{ always() }}
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Coveralls Finished
+            uses: coverallsapp/github-action@v2
+            with:
+                parallel-finished: true

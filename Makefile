@@ -1,8 +1,13 @@
 clean:
-	rm -rf temp-*.sh log*.txt config*.txt user-image.simg example.conf stdout.txt
+	rm temp-*.sh
+	rm log*.txt
+	rm config*.txt
+	rm user-image.simg
+	rm example.conf
+	rm stdout.txt
 
-docker_build:
-	docker build -t boutiques/example1:test ./boutiques/schema/examples/example1
+docker_build: boutiques/schema/examples/example1/
+	docker build -t boutiques/example1:test boutiques/schema/examples/example1
 
-docker2singularity:
+boutiques-example1-test.simg: docker_build
 	bash tools/docker2singularity.sh

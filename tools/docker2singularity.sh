@@ -2,8 +2,9 @@
 
 docker run \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v ${HOME}:/output \
+    -v "${HOME}:/output" \
     --privileged -t --rm \
     singularityware/docker2singularity boutiques/example1:test
-IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)
-mv --verbose ${IMGNAME} ./boutiques-example1-test.simg
+
+IMGNAME=$(ls "$HOME/boutiques_example1_test*.simg")
+mv --verbose "${IMGNAME}" ./boutiques-example1-test.simg

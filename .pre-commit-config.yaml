@@ -23,7 +23,9 @@ repos:
     -   id: yamlfmt
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
-
-
-
-
+# Format TOML files
+-   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.13.0
+    hooks:
+    -   id: pretty-format-toml
+        args: [--autofix, --indent, '4']
