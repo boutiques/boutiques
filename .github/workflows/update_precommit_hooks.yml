@@ -21,14 +21,11 @@ on:
     # Run first day of every 3 months at midnight UTC
     -   cron: 0 0 1 1,4,7,10 *
 
-  # Allows you to run this workflow manually from the Actions tab
+    # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
 jobs:
     update_precommit_hooks:
-
-    # only run on upstream repo
-        if: github.repository_owner == 'nilearn'
 
         runs-on: ubuntu-latest
         steps:
@@ -51,4 +48,3 @@ jobs:
                 token: ${{ secrets.GITHUB_TOKEN }}
                 delete-branch: true
                 title: '[BOT] update pre-commit hooks'
-                body: done via this [GitHub Action](https://github.com/${{ github.repository_owner }}/nilearn/blob/main/.github/workflows/update_precommit_hooks.yml)
