@@ -217,7 +217,7 @@ def add_subparser_example(subparsers):
 
 def add_subparser_execute(subparsers):
     parser_exec = subparsers.add_parser(
-        "exec", description="Boutiques local executor")
+        "exec", description="Boutiques local executor", aliases=["execute"])
     parser_exec.set_defaults(function='exec')
     exec_subparsers = parser_exec.add_subparsers(
         help="Mode of operation to use. Launch: takes a "
