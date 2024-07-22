@@ -430,7 +430,7 @@ class Importer:
                 if req.get("ramMin"):
                     suggested_resources["ram"] = req["ramMin"]
                 if req.get("coresMin"):
-                    suggeseted_resources["cpu-cores"] = req["coresMin"]
+                    suggested_resources["cpu-cores"] = req["coresMin"]
                 bout_desc["suggested-resources"] = suggested_resources
                 return
             if req_type == "InitialWorkDirRequirement":
