@@ -4,13 +4,15 @@
 # validation for Boutiques application descriptors
 # Requires jsonschema 2.5
 
-import jsonschema
+import argparse
 import os
 import sys
-import argparse
 from functools import reduce
+
+import jsonschema
 from jsonschema import ValidationError
-from boutiques.logger import raise_error, print_info
+
+from boutiques.logger import print_info, raise_error
 
 
 # An exception class specific to invocations

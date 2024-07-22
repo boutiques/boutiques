@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
+import numbers
 import sys
 from collections import OrderedDict
-import numbers
 from operator import itemgetter
-from boutiques.logger import raise_error, print_info
+from urllib.parse import quote
+
+from boutiques.logger import print_info, raise_error
 from boutiques.publisher import ZenodoError
 from boutiques.zenodoHelper import ZenodoHelper
-from urllib.parse import quote
 
 
 class Searcher():

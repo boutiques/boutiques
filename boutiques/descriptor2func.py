@@ -1,6 +1,7 @@
-from boutiques.util.utils import loadJson
-from boutiques import validate, execute, pprint
 import json
+
+from boutiques import execute, pprint, validate
+from boutiques.util.utils import loadJson
 
 
 def function(descriptor):

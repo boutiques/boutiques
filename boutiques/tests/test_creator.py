@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser
-from boutiques import bosh
-from boutiques import __file__ as bfile
-from boutiques.util.utils import loadJson
-import boutiques.creator as bc
-import subprocess
-import os.path as op
-import simplejson as json
 import os
+import os.path as op
+import subprocess
+from argparse import ArgumentParser
+
 import pytest
-from boutiques.tests.BaseTest import BaseTest
+import simplejson as json
+
+import boutiques.creator as bc
+from boutiques import __file__ as bfile, bosh
 from boutiques.creator import CreatorError
+from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.utils import loadJson
 
 
 class TestCreator(BaseTest):

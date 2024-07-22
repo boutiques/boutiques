@@ -1,14 +1,21 @@
-from boutiques.bosh import bosh
-import os
-import mock
 import json
+import os
+
+import mock
+from boutiques_mocks import (
+    MockHttpResponse,
+    example_boutiques_tool,
+    get_zenodo_record,
+    mock_zenodo_delete_files,
+    mock_zenodo_search,
+    mock_zenodo_test_api,
+)
+
 from boutiques import __file__ as bfile
-from boutiques.util.utils import loadJson
+from boutiques.bosh import bosh
 from boutiques.deprecate import DeprecateError, deprecate
-from boutiques_mocks import mock_zenodo_test_api, mock_zenodo_delete_files,\
-    example_boutiques_tool, get_zenodo_record, MockHttpResponse,\
-    mock_zenodo_search
 from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.utils import loadJson
 
 
 def mock_get(*args, **kwargs):

@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 import os
-from boutiques import __file__ as bfile
+
+import pytest
+
 import boutiques as bosh
+from boutiques import __file__ as bfile
 from boutiques.localExec import ExecutorError
 from boutiques.tests.BaseTest import BaseTest
-import pytest
 
 
 class TestExec(BaseTest):

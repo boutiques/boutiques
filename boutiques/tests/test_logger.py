@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
 import os
+from argparse import ArgumentParser
+
+import mock
 import pytest
+from boutiques_mocks import MockZenodoRecord, mock_zenodo_search
+
 import boutiques as bosh
 import boutiques.creator as bc
 from boutiques import __file__ as bfile
-from boutiques.util.utils import LoadError
-from argparse import ArgumentParser
-import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
 from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.utils import LoadError
 
 
 def mock_get(*args, **kwargs):

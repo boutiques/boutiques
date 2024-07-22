@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-import pytest
-import subprocess
 import os
+import subprocess
+
+import pytest
 import simplejson as json
+
 from boutiques.tests.BaseTest import BaseTest
 
 

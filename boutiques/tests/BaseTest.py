@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-import os
-import sys
-import pytest
-from unittest import TestCase
-from boutiques import __file__ as bfile
-from boutiques_mocks import example_boutiques_tool
 import glob
+import os
 import shutil
+import sys
+from unittest import TestCase
+
+import pytest
+from boutiques_mocks import example_boutiques_tool
+
+from boutiques import __file__ as bfile
 
 
 class BaseTest(TestCase):

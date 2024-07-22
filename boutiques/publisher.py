@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-from boutiques.validator import validate_descriptor, ValidationError
-from boutiques.logger import raise_error, print_info
-from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
-from boutiques.util.utils import customSortDescriptorByKey, loadJson
-import simplejson as json
 import os
+
+import simplejson as json
+
+from boutiques.logger import print_info, raise_error
+from boutiques.util.utils import customSortDescriptorByKey, loadJson
+from boutiques.validator import ValidationError, validate_descriptor
+from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 
 
 class Publisher():

@@ -1,25 +1,31 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import re
-import simplejson as json
-import random as rnd
-import string
-import math
-import random
-import subprocess
-import time
 import datetime
 import hashlib
-import boutiques
+import math
+import os
 import os.path as op
+import random
+import random as rnd
+import re
+import string
+import subprocess
+import sys
+import time
 from glob import glob
+
+import simplejson as json
 from termcolor import colored
-from boutiques.evaluate import evaluateEngine
-from boutiques.logger import raise_error, print_info, print_warning
+
+import boutiques
 from boutiques.dataHandler import getDataCacheDir
-from boutiques.util.utils import extractFileName, loadJson, conditionalExpFormat
+from boutiques.evaluate import evaluateEngine
+from boutiques.logger import print_info, print_warning, raise_error
+from boutiques.util.utils import (
+    conditionalExpFormat,
+    extractFileName,
+    loadJson,
+)
 
 
 class ExecutorOutput():

@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 
+import os
+import shutil
+import sys
+from unittest import skipIf
+
+import mock
+import pytest
+from boutiques_mocks import *
+
+import boutiques
 from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
-from unittest import skipIf
-from boutiques_mocks import *
 from boutiques.nexusHelper import NexusError
-import sys
-import os
-import mock
-import shutil
-import pytest
-import boutiques
 from boutiques.tests.BaseTest import BaseTest
 
 

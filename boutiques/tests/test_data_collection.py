@@ -1,14 +1,16 @@
 import datetime as dt
-import os
 import glob
-import mock
+import os
 import subprocess
+
+import mock
 import pytest
+from boutiques_mocks import example_boutiques_tool, mock_get
+
+import boutiques as bosh
 from boutiques import __file__ as bfile
 from boutiques.localExec import loadJson
 from boutiques.tests.BaseTest import BaseTest
-from boutiques_mocks import example_boutiques_tool, mock_get
-import boutiques as bosh
 
 
 def retrieve_data_record():

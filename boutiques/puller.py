@@ -1,18 +1,20 @@
-import requests
-import urllib
 import os
-from boutiques.logger import raise_error, print_info
+import urllib
+
+import requests
+
+from boutiques.logger import print_info, raise_error
 from boutiques.searcher import Searcher
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 
 try:
     # Python 3
-    from urllib.request import urlopen
-    from urllib.request import urlretrieve
+    from urllib.request import urlopen, urlretrieve
 except ImportError:
     # Python 2
-    from urllib2 import urlopen
     from urllib import urlretrieve
+
+    from urllib2 import urlopen
 
 
 class Puller():

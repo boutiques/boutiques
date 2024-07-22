@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 import pytest
-from boutiques.tests.BaseTest import BaseTest
+
 import boutiques as bosh
+from boutiques.tests.BaseTest import BaseTest
 
 
 class TestExampleFlag(BaseTest):

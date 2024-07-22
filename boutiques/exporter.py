@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-import simplejson as json
 import os
 import uuid
-from boutiques.util.utils import loadJson
+
+import simplejson as json
+
 from boutiques.logger import raise_error
+from boutiques.util.utils import loadJson
 
 
 class ExportError(Exception):

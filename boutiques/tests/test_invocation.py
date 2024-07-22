@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-from boutiques.bosh import bosh
-from boutiques import __file__ as bfile
 import os
 import subprocess
-from boutiques.tests.BaseTest import BaseTest
+
 import pytest
+
+from boutiques import __file__ as bfile
+from boutiques.bosh import bosh
+from boutiques.tests.BaseTest import BaseTest
 
 
 class TestInvocation(BaseTest):

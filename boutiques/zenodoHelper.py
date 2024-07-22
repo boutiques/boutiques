@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import os
 import re
+
 import simplejson as json
+
+from boutiques.logger import print_info, raise_error
 from boutiques.util.utils import importCatcher
-from boutiques.logger import raise_error, print_info
 
 
 class ZenodoError(Exception):
@@ -240,6 +242,7 @@ class ZenodoHelper(object):
     @importCatcher()
     def zenodo_search(self, query, query_line):
         import requests
+
         # Get all results
         get_request =  self.zenodo_endpoint + ('/api/records/?q='
                          'keywords:(/Boutiques/) AND '

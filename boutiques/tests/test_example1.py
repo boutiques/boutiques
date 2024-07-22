@@ -2,17 +2,19 @@
 
 import os
 import subprocess
-import pytest
-from boutiques.tests.BaseTest import BaseTest
-import boutiques as bosh
-from boutiques.localExec import ExecutorError
-from boutiques.util.utils import LoadError
-import mock
-from boutiques_mocks import example_boutiques_tool, mock_get
-from boutiques import __file__ as bfile
 from shutil import copy2
+
+import mock
+import pytest
 import simplejson as json
+from boutiques_mocks import example_boutiques_tool, mock_get
+
+import boutiques as bosh
+from boutiques import __file__ as bfile
 from boutiques.descriptor2func import function
+from boutiques.localExec import ExecutorError
+from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.utils import LoadError
 
 
 class TestExample1(BaseTest):

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+import os
 import subprocess
 
-from boutiques.tests.BaseTest import BaseTest
-from boutiques import __file__ as bfile
-import boutiques as bosh
 import pytest
-import os
+
+import boutiques as bosh
+from boutiques import __file__ as bfile
+from boutiques.tests.BaseTest import BaseTest
 
 
 class TestExample3(BaseTest):

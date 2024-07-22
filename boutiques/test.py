@@ -1,7 +1,8 @@
-import os.path as op
-from boutiques import __file__ as bfile
-import boutiques as bosh
 import hashlib
+import os.path as op
+
+import boutiques as bosh
+from boutiques import __file__ as bfile
 
 
 def compute_md5(filename):

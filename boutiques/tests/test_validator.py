@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-from boutiques.bosh import bosh
-from boutiques import __file__ as bfile
-from boutiques.validator import DescriptorValidationError
-import subprocess
-import os.path as op
 import os
-from boutiques.tests.BaseTest import BaseTest
+import os.path as op
+import subprocess
+
 import pytest
+
+from boutiques import __file__ as bfile
+from boutiques.bosh import bosh
+from boutiques.tests.BaseTest import BaseTest
+from boutiques.validator import DescriptorValidationError
 
 
 class TestValidator(BaseTest):

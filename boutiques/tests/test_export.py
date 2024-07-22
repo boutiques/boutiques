@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import os
+
+import pytest
+
 from boutiques import bosh
 from boutiques.exporter import ExportError
 from boutiques.tests.BaseTest import BaseTest
-import pytest
 
 
 class TestExport(BaseTest):

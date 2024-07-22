@@ -3,8 +3,9 @@ import os
 from codecs import open
 
 import simplejson as json
+
+from boutiques.logger import print_info, raise_error
 from boutiques.util.utils import importCatcher
-from boutiques.logger import raise_error, print_info
 
 
 class NexusError(Exception):
@@ -113,7 +114,8 @@ class NexusHelper(object):
 
     @importCatcher()
     def nexus_test_api(self, access_token, org, project):
-        from requests.exceptions import HTTPError, ConnectionError
+        from requests.exceptions import ConnectionError, HTTPError
+
         # Test connection to endpoint without token
         self.nexus.config.set_environment(self.nexus_endpoint)
         try:

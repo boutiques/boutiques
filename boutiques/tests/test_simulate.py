@@ -3,15 +3,21 @@
 import os
 import re
 import subprocess
-import simplejson as json
-from boutiques import __file__ as bfile
-import boutiques as bosh
+
 import mock
-from boutiques.localExec import ExecutorError
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
-    example_boutiques_tool, mock_get
-from boutiques.tests.BaseTest import BaseTest
 import pytest
+import simplejson as json
+from boutiques_mocks import (
+    MockZenodoRecord,
+    example_boutiques_tool,
+    mock_get,
+    mock_zenodo_search,
+)
+
+import boutiques as bosh
+from boutiques import __file__ as bfile
+from boutiques.localExec import ExecutorError
+from boutiques.tests.BaseTest import BaseTest
 
 
 class TestSimulate(BaseTest):

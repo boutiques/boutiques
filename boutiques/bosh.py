@@ -1,26 +1,30 @@
 #!/usr/bin/env python
 
-import simplejson as json
+import argparse
 import os
-import sys
 import os.path as op
+import sys
+
+import simplejson as json
 from jsonschema import ValidationError
+from tabulate import tabulate
+
 from boutiques.boshParsers import *
 from boutiques.dataHandler import DataHandlerError
-from boutiques.validator import DescriptorValidationError
-from boutiques.publisher import ZenodoError
-from boutiques.nexusHelper import NexusError
-from boutiques.invocationSchemaHandler import InvocationValidationError
-from boutiques.localExec import ExecutorOutput
-from boutiques.localExec import ExecutorError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
-from boutiques.localExec import addDefaultValues
-from boutiques.util.utils import loadJson, customSortInvocationByInput
-from boutiques.util.utils import formatSphinxUsage, importCatcher
-from boutiques.logger import raise_error, print_error, print_info
-from tabulate import tabulate
-import argparse
+from boutiques.invocationSchemaHandler import InvocationValidationError
+from boutiques.localExec import ExecutorError, ExecutorOutput, addDefaultValues
+from boutiques.logger import print_error, print_info, raise_error
+from boutiques.nexusHelper import NexusError
+from boutiques.publisher import ZenodoError
+from boutiques.util.utils import (
+    customSortInvocationByInput,
+    formatSphinxUsage,
+    importCatcher,
+    loadJson,
+)
+from boutiques.validator import DescriptorValidationError
 
 
 def pprint(*params):

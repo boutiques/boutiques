@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import subprocess
+
 import pytest
+
 from boutiques.tests.BaseTest import BaseTest
 
 

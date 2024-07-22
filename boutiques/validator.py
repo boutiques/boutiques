@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 
-import re
 import keyword
 import os.path as op
-import simplejson as json
-from jsonschema import validate, ValidationError
+import re
 from argparse import ArgumentParser
+
+import simplejson as json
+from jsonschema import ValidationError, validate
+
 from boutiques import __file__ as bfile
-from boutiques.util.utils import loadJson, conditionalExpFormat
-from boutiques.util.utils import customSortDescriptorByKey
-from boutiques.logger import raise_error, print_info
+from boutiques.logger import print_info, raise_error
+from boutiques.util.utils import (
+    conditionalExpFormat,
+    customSortDescriptorByKey,
+    loadJson,
+)
 
 
 # An exception class specific to descriptors

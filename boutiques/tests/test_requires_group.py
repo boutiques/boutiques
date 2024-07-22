@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 import subprocess
-from boutiques.tests.BaseTest import BaseTest
+
 import pytest
+
+from boutiques.tests.BaseTest import BaseTest
 
 
 class TestExample(BaseTest):

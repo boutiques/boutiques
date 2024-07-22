@@ -1,7 +1,7 @@
-import sys
-from setuptools import setup
 import os.path as op
+import sys
 
+from setuptools import setup
 
 # Loads version information from file inside package. This allows the package
 # itself to be aware of its version.

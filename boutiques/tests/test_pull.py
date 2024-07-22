@@ -1,13 +1,17 @@
+import json
+import os
+import tempfile
+from urllib.request import urlopen, urlretrieve
+
+import mock
+from boutiques_mocks import (
+    MockZenodoRecord,
+    example_boutiques_tool,
+    mock_zenodo_search,
+)
+
 from boutiques.bosh import bosh
 from boutiques.puller import ZenodoError
-import os
-import mock
-import tempfile
-import json
-from urllib.request import urlopen
-from urllib.request import urlretrieve
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord,\
-    example_boutiques_tool
 from boutiques.tests.BaseTest import BaseTest
 
 

@@ -1,19 +1,25 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser
-from jsonschema import ValidationError
-from boutiques.validator import validate_descriptor
-from boutiques.util.utils import loadJson, customSortDescriptorByKey
-from boutiques.util.utils import customSortInvocationByInput, importCatcher
-from boutiques.logger import raise_error
-import boutiques
-import simplejson as json
+import collections
 import os
 import os.path as op
 import re
 import sys
+from argparse import ArgumentParser
 from importlib.machinery import SourceFileLoader
-import collections
+
+import simplejson as json
+from jsonschema import ValidationError
+
+import boutiques
+from boutiques.logger import raise_error
+from boutiques.util.utils import (
+    customSortDescriptorByKey,
+    customSortInvocationByInput,
+    importCatcher,
+    loadJson,
+)
+from boutiques.validator import validate_descriptor
 
 
 class ImportError(Exception):
@@ -592,9 +598,16 @@ class Importer():
 class Docopt_Importer():
     @importCatcher()
     def __init__(self, docopt_str, base_descriptor):
-        from docopt import parse_defaults, parse_pattern, parse_argv
-        from docopt import formal_usage, DocoptLanguageError
-        from docopt import AnyOptions, TokenStream, Option
+        from docopt import (
+            AnyOptions,
+            DocoptLanguageError,
+            Option,
+            TokenStream,
+            formal_usage,
+            parse_argv,
+            parse_defaults,
+            parse_pattern,
+        )
         with open(base_descriptor, "r") as base_desc:
             self.descriptor = collections.OrderedDict(json.load(base_desc))
 
@@ -650,7 +663,8 @@ class Docopt_Importer():
 
     @importCatcher()
     def loadDescriptionAndType(self):
-        from docopt import Option, Argument
+        from docopt import Argument, Option
+
         # using docopt code to extract description and type from args
         for line in (self._parse_section('arguments:', self.docopt_str) +
                      self._parse_section('options:', self.docopt_str)):
@@ -828,6 +842,7 @@ class Docopt_Importer():
     @importCatcher()
     def _addGroupArgumentToDependencies(self, arg, ancestors, optional=False):
         from docopt import Argument
+
         # Add mutex choice group arg to dependency tree
         # group_arg contains members as dependency arguments
         options = arg.children[0].children

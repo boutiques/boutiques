@@ -1,19 +1,24 @@
 #!/usr/bin/env python
 
-import tempfile
 import argparse
-import sys
 import os
-import re
-import simplejson as json
 import os.path as op
-from jsonschema import validate, ValidationError
-from argparse import ArgumentParser
-from boutiques import __file__ as bfile
-from boutiques.logger import raise_error, print_info, print_warning
-from boutiques.util.utils import loadJson
-from boutiques.util.utils import customSortDescriptorByKey, camelCaseInputIds
+import re
 import subprocess
+import sys
+import tempfile
+from argparse import ArgumentParser
+
+import simplejson as json
+from jsonschema import ValidationError, validate
+
+from boutiques import __file__ as bfile
+from boutiques.logger import print_info, print_warning, raise_error
+from boutiques.util.utils import (
+    camelCaseInputIds,
+    customSortDescriptorByKey,
+    loadJson,
+)
 
 
 # An exception class specific to creating descriptors.

@@ -1,6 +1,8 @@
-import simplejson as json
-import tempfile
 import os.path as op
+import tempfile
+
+import simplejson as json
+
 from boutiques.util.utils import loadJson
 
 

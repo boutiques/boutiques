@@ -33,8 +33,9 @@ OTHER
 '''
 
 import os
-import simplejson as json
 from argparse import ArgumentParser, RawTextHelpFormatter
+
+import simplejson as json
 
 
 def add_subparser_create(subparsers):

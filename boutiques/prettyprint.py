@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-from argparse import ArgumentParser, RawTextHelpFormatter
-from tabulate import tabulate
 import textwrap
+from argparse import ArgumentParser, RawTextHelpFormatter
+
 import simplejson as json
+from tabulate import tabulate
 
 
 class PrettyPrinter():

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
 
-import argparse, os, sys
+import argparse
+import os
+import sys
 
 
 def file_exists(parser, file_name):

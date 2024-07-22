@@ -1,14 +1,14 @@
 from __future__ import absolute_import
 
-from .localExec import LocalExecutor
-from .invocationSchemaHandler import generateInvocationSchema
-from .validator import validate_descriptor
-from .creator import CreateDescriptor
 from .bids import validate_bids
-from .publisher import Publisher
-from .evaluate import evaluateEngine
-from .prettyprint import PrettyPrinter
 from .bosh import *
+from .creator import CreateDescriptor
+from .evaluate import evaluateEngine
+from .invocationSchemaHandler import generateInvocationSchema
+from .localExec import LocalExecutor
+from .prettyprint import PrettyPrinter
+from .publisher import Publisher
+from .validator import validate_descriptor
 
 __all__ = ['localExec',
            'invocationSchemaHandler',

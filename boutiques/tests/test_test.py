@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
 import subprocess
-import pytest
-from boutiques import bosh
-from jsonschema.exceptions import ValidationError
+
 import mock
-from boutiques_mocks import mock_zenodo_search, example_boutiques_tool
+import pytest
+from boutiques_mocks import example_boutiques_tool, mock_zenodo_search
+from jsonschema.exceptions import ValidationError
+
+from boutiques import bosh
 from boutiques.tests.BaseTest import BaseTest
 
 

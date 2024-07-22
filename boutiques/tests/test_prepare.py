@@ -2,13 +2,15 @@
 
 import os
 import subprocess
-import pytest
-from boutiques import __file__ as bfile
-import boutiques as bosh
-from boutiques.localExec import ExecutorError
-import mock
 import sys
+
+import mock
+import pytest
 from boutiques_mocks import *
+
+import boutiques as bosh
+from boutiques import __file__ as bfile
+from boutiques.localExec import ExecutorError
 from boutiques.tests.BaseTest import BaseTest
 
 

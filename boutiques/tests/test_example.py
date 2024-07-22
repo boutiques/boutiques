@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import subprocess
-import simplejson as json
-from boutiques.tests.BaseTest import BaseTest
+
 import pytest
+import simplejson as json
+
+from boutiques.tests.BaseTest import BaseTest
 
 
 class TestExample(BaseTest):

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
+import hashlib
 import os
 import time
-import hashlib
-from boutiques.logger import raise_error, print_info
-from boutiques.util.utils import extractFileName, loadJson, importCatcher
 
+from boutiques.logger import print_info, raise_error
 from boutiques.nexusHelper import NexusHelper
+from boutiques.util.utils import extractFileName, importCatcher, loadJson
 
 
 class DataHandler(object):

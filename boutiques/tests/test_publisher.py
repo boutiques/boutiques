@@ -1,18 +1,29 @@
-from boutiques.publisher import ZenodoError
-from boutiques.bosh import bosh
-import simplejson as json
-import subprocess
-import shutil
-import tempfile
 import os.path as op
-import mock
-from boutiques_mocks import MockHttpResponse, MockZenodoRecord,\
-    mock_zenodo_test_api_fail, mock_zenodo_test_api, mock_zenodo_search,\
-    mock_zenodo_deposit, mock_zenodo_upload_descriptor, mock_zenodo_publish,\
-    mock_zenodo_delete_files, mock_get_publish_bulk, mock_zenodo_no_permission
-from boutiques.tests.BaseTest import BaseTest
-import pytest
+import shutil
+import subprocess
+import tempfile
 from collections import OrderedDict
+
+import mock
+import pytest
+import simplejson as json
+from boutiques_mocks import (
+    MockHttpResponse,
+    MockZenodoRecord,
+    mock_get_publish_bulk,
+    mock_zenodo_delete_files,
+    mock_zenodo_deposit,
+    mock_zenodo_no_permission,
+    mock_zenodo_publish,
+    mock_zenodo_search,
+    mock_zenodo_test_api,
+    mock_zenodo_test_api_fail,
+    mock_zenodo_upload_descriptor,
+)
+
+from boutiques.bosh import bosh
+from boutiques.publisher import ZenodoError
+from boutiques.tests.BaseTest import BaseTest
 
 
 def mock_zenodo_deposit_updated(old_zid, new_zid):

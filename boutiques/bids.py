@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-import re
-import simplejson
 import os.path as op
+import re
+
+import simplejson
+
+from boutiques.logger import print_info, raise_error
 from boutiques.validator import DescriptorValidationError
-from boutiques.logger import raise_error, print_info
 
 
 # BIDS validation module

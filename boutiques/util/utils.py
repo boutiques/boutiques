@@ -1,8 +1,10 @@
 import os
-import simplejson as json
 from collections import OrderedDict
-from boutiques.logger import raise_error, print_warning
+
+import simplejson as json
+
 from boutiques import __file__ as bfile
+from boutiques.logger import print_warning, raise_error
 
 
 # Utility function to wrap modules that use non-essential libs

@@ -1,6 +1,7 @@
-from boutiques.bosh import bosh
 import mock
-from boutiques_mocks import mock_zenodo_search, MockZenodoRecord
+from boutiques_mocks import MockZenodoRecord, mock_zenodo_search
+
+from boutiques.bosh import bosh
 from boutiques.tests.BaseTest import BaseTest
 
 

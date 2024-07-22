@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
-import subprocess
-
-from boutiques import bosh
-from jsonschema.exceptions import ValidationError
 import os
 import os.path as op
-from os.path import join as opj
-import pytest
-from boutiques.importer import ImportError
-import boutiques
+import subprocess
 import tarfile
+from os.path import join as opj
+
+import pytest
 import simplejson as json
-from boutiques.util.utils import loadJson
+from jsonschema.exceptions import ValidationError
+
+import boutiques
+from boutiques import bosh
+from boutiques.importer import ImportError
 from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.utils import loadJson
 
 
 class TestImport(BaseTest):

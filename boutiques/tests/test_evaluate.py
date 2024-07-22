@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 import os
-from boutiques import __file__ as bfile
-import boutiques as bosh
+
 import mock
-from boutiques_mocks import example_boutiques_tool, mock_get
-from boutiques.tests.BaseTest import BaseTest
 import pytest
+from boutiques_mocks import example_boutiques_tool, mock_get
+
+import boutiques as bosh
+from boutiques import __file__ as bfile
+from boutiques.tests.BaseTest import BaseTest
 
 
 class TestEvaluate(BaseTest):

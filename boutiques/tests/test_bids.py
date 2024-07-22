@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-from boutiques.bosh import bosh
-from boutiques.bids import validate_bids
-from boutiques.validator import DescriptorValidationError
-from boutiques.tests.BaseTest import BaseTest
 import pytest
+
+from boutiques.bids import validate_bids
+from boutiques.bosh import bosh
+from boutiques.tests.BaseTest import BaseTest
+from boutiques.validator import DescriptorValidationError
 
 
 class TestBIDS(BaseTest):
