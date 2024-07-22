@@ -10,10 +10,10 @@ exclude =
 
 docstring-convention = numpy
 max-line-length = 80
-; max_complexity = 43
-; max_function_length = 407
-; max_parameters_amount = 27
-; max_returns_amount = 10
+max_complexity = 100
+max_function_length = 650
+max_parameters_amount = 12
+max_returns_amount = 30
 
 # ----------------------- errors to include / exclude -----------------------
 
@@ -59,4 +59,4 @@ max-line-length = 80
 
 ; extend-ignore = B026, B028, CFQ003, D105, D107, E203, E402, W503, W504, W605
 
-extend-ignore = B, D, D100, D101, D102, D103, E, F, CFQ
+extend-ignore = B, D, D100, D101, D102, D103, E, F
