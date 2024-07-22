@@ -268,7 +268,7 @@ The environment variable name (identifier) containing only alphanumeric characte
 `string`
 * minimum length: 1 characters
 
-All instances must conform to this regular expression 
+All instances must conform to this regular expression
 (test examples [here](https://regexr.com/?expression=%5E%5Ba-z%2CA-Z%5D%5B0-9%2C_%2Ca-z%2CA-Z%5D*%24)):
 ```regex
 ^[a-z,A-Z][0-9,_,a-z,A-Z]*$
@@ -463,7 +463,7 @@ A short, unique, informative identifier containing only alphanumeric characters 
 `string`
 * minimum length: 1 characters
 
-All instances must conform to this regular expression 
+All instances must conform to this regular expression
 (test examples [here](https://regexr.com/?expression=%5E%5B0-9%2C_%2Ca-z%2CA-Z%5D*%24)):
 ```regex
 ^[0-9,_,a-z,A-Z]*$
@@ -494,7 +494,7 @@ All items must be of the type:
 `string`
 * minimum length: 1 characters
 
-All instances must conform to this regular expression 
+All instances must conform to this regular expression
 (test examples [here](https://regexr.com/?expression=%5E%5B0-9%2C_%2Ca-z%2CA-Z%5D*%24)):
 ```regex
 ^[0-9,_,a-z,A-Z]*$
@@ -785,7 +785,7 @@ A short, unique, informative identifier containing only alphanumeric characters 
 `string`
 * minimum length: 1 characters
 
-All instances must conform to this regular expression 
+All instances must conform to this regular expression
 (test examples [here](https://regexr.com/?expression=%5E%5B0-9%2C_%2Ca-z%2CA-Z%5D*%24)):
 ```regex
 ^[0-9,_,a-z,A-Z]*$
@@ -1233,7 +1233,7 @@ All items must be of the type:
 `string`
 
 
-All instances must conform to this regular expression 
+All instances must conform to this regular expression
 (test examples [here](https://regexr.com/?expression=%5Ehttps%3F%3A%2F%2F)):
 ```regex
 ^https?://
@@ -1441,7 +1441,7 @@ A short, unique, informative identifier containing only alphanumeric characters 
 `string`
 * minimum length: 1 characters
 
-All instances must conform to this regular expression 
+All instances must conform to this regular expression
 (test examples [here](https://regexr.com/?expression=%5E%5B0-9%2C_%2Ca-z%2CA-Z%5D*%24)):
 ```regex
 ^[0-9,_,a-z,A-Z]*$
@@ -1955,7 +1955,3 @@ Tool URL.
 
 `string`
 * minimum length: 1 characters
-
-
-
-

@@ -43,11 +43,11 @@ def evaluateEngine(executor, query):
                     query_result[obj["id"]] = executor.in_dict.get(obj["id"])
                 elif "groups" in layers:
                     query_result[obj["id"]] = {}
-                    for mem in obj['members']:
+                    for mem in obj["members"]:
                         query_result[obj["id"]][mem] = executor.in_dict.get(mem)
 
         return query_result
 
     except Exception:
-        print_error("Invalid query ({0}). See --help.".format(query))
+        print_error(f"Invalid query ({query}). See --help.")
         return {}
