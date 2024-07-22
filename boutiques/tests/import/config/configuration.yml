@@ -1,14 +1,13 @@
----
 # This is a demo configuration file
 numInput: 5050
 flagInput: true
 # This is a comment
-listNumInput: [1, 2, 3, 4, 5]
+listNumInput: [1,2,3,4,5]
 # This input is hard-coded
-stringInput: foo
-fileInput: /somewhere/something.txt
+stringInput: "foo"
+fileInput: "/somewhere/something.txt"
 # This is an optional input. Line will be removed when value is not defined.
-optStringInput: Hello, world!
+optStringInput: "Hello, world!"
 # And here is the result
-fileOutput: /somewhere/somethingelse.txt
+fileOutput: "/somewhere/somethingelse.txt"
 doubleInput: 50.5
