@@ -172,7 +172,7 @@ class TestSearch(BaseTest):
     def test_search_truncates_long_text(self, mymockget):
         results = bosh(["search"])
         for r in results:
-            for k, v in r.items():
+            for _, v in r.items():
                 self.assertLessEqual(len(str(v)), 43)
 
     @mock.patch(
@@ -185,7 +185,7 @@ class TestSearch(BaseTest):
         results = bosh(["search", "--no-trunc"])
         has_no_trunc = False
         for r in results:
-            for k, v in r.items():
+            for _, v in r.items():
                 if len(str(v)) > 43:
                     has_no_trunc = True
                     break

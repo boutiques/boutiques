@@ -1070,7 +1070,7 @@ class LocalExecutor:
                 for r in result:
                     self.in_dict[r["id"]] = makeParam(r)
                     # Check for mutex between in_dict and last in param
-                    for group, mbs in [
+                    for _, mbs in [
                         (x, x["members"])
                         for x in self.groups
                         if x.get("mutually-exclusive")
