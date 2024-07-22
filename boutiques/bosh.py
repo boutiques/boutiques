@@ -584,9 +584,9 @@ def bosh(args=None):
             out = data(*params)
             return bosh_return(out)
         elif func == "version":
-            from boutiques.__version__ import VERSION
+            from boutiques._version import __version__
 
-            return bosh_return(VERSION)
+            return bosh_return(__version__)
         elif func == "deprecate":
             out = deprecate(*params)
             return bosh_return(out)
