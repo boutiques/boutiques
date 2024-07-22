@@ -12,6 +12,11 @@ boutiques/tests/import/docopt/test_options_output.json
 boutiques/tests/import/docopt/test_valid_output.json
 test_temp/*
 
+# docs
+docs/cli.rst
+docs/index.rst
+docs/pythonApi.rst
+
 # handled by hatchling
 boutiques/_version.py
 
