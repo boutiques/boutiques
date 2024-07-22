@@ -1,9 +1,9 @@
 import json
 import os
 import tempfile
+from unittest import mock
 from urllib.request import urlopen, urlretrieve
 
-import mock
 from boutiques_mocks import (
     MockZenodoRecord,
     example_boutiques_tool,
@@ -68,7 +68,7 @@ class TestPull(BaseTest):
         bad1 = "zenodo.9999990"
         with self.assertRaises(ZenodoError) as e:
             bosh(["pull", good1, bad1, good2])
-        self.assertIn("Descriptor \"{0}\" not found".format(
+        self.assertIn("Descriptor \"{}\" not found".format(
             bad1.split(".")[1]),
             str(e.exception))
 
@@ -83,5 +83,5 @@ class TestPull(BaseTest):
     def test_pull_not_found(self, mock_urlretrieve):
         with self.assertRaises(ZenodoError) as e:
             bosh(["pull", "zenodo.99999"])
-        self.assertIn("Descriptor \"{0}\" not found".format("99999"),
+        self.assertIn("Descriptor \"{}\" not found".format("99999"),
                       str(e.exception))

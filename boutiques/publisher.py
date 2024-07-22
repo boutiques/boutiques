@@ -153,7 +153,7 @@ class Publisher():
                 'title': self.descriptor['name'],
                 'upload_type': 'software',
                 'description': self.descriptor['description'] or "Boutiques "
-                               "descriptor for {0}".format(
+                               "descriptor for {}".format(
                                                    self.descriptor['name']),
                 'creators': [{'name': self.creator}],
                 'version': self.descriptor['tool-version'],

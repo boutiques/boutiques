@@ -42,14 +42,14 @@ def function(descriptor):
 
     # Documentation
     doc = []
-    doc.append(r'''Runs {0} through its Boutiques interface.
+    doc.append(r'''Runs {} through its Boutiques interface.
     *args:
         - mode: 'launch' or 'simulate'. Defaults to 'launch'.
         - other arguments: will be passed to bosh execute. Examples: '-s',
           '-x'. See help(bosh.execute) for a complete list.
     *kwargs:
-        {1} arguments as defined in the Boutiques descriptor, referenced
-        from input ids. Example: {2}='some_value'. See complete
+        {} arguments as defined in the Boutiques descriptor, referenced
+        from input ids. Example: {}='some_value'. See complete
         list in descriptor help below.
 
 '''.format(f.__name__, f.__name__, descriptor_json['inputs'][0]['id']))

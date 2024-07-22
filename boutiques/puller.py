@@ -39,7 +39,7 @@ class Puller():
                 zid = zid.split('/')[-1]
                 newzid = zid.split(".", 1)[1]
                 newfname = os.path.join(self.cache_dir,
-                                        "zenodo-{0}.json".format(newzid))
+                                        f"zenodo-{newzid}.json")
                 self.zenodo_entries.append({"zid": newzid, "fname": newfname})
             except IndexError:
                 raise_error(ZenodoError, "Zenodo ID must be prefixed by "
@@ -48,7 +48,7 @@ class Puller():
         self.sandbox = sandbox
         if(self.verbose):
             for zid in discarded_zids:
-                print_info("Discarded duplicate id {0}".format(zid))
+                print_info(f"Discarded duplicate id {zid}")
         self.zenodo_helper = ZenodoHelper(sandbox=self.sandbox,
                                           verbose=self.verbose)
 
@@ -68,7 +68,7 @@ class Puller():
             r = self.zenodo_helper.zenodo_search(searcher.query,
                                                  searcher.query_line)
             if not len(r.json()["hits"]["hits"]):
-                raise_error(ZenodoError, "Descriptor \"{0}\" "
+                raise_error(ZenodoError, "Descriptor \"{}\" "
                             "not found".format(entry["zid"]))
             for hit in r.json()["hits"]["hits"]:
                 file_path = hit["files"][0]["links"]["self"]
@@ -85,8 +85,8 @@ class Puller():
                                    + downloaded[0])
                     json_files.append(downloaded[0])
                 else:
-                    raise_error(ZenodoError, "Searched-for descriptor \"{0}\" "
-                                "does not match descriptor \"{1}\" returned "
+                    raise_error(ZenodoError, "Searched-for descriptor \"{}\" "
+                                "does not match descriptor \"{}\" returned "
                                 "from Zenodo".format(entry["zid"], hit["id"]))
 
         return json_files

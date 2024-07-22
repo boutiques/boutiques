@@ -3,8 +3,8 @@
 import os
 import subprocess
 from shutil import copy2
+from unittest import mock
 
-import mock
 import pytest
 import simplejson as json
 from boutiques_mocks import example_boutiques_tool, mock_get

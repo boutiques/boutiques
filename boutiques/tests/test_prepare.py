@@ -3,8 +3,8 @@
 import os
 import subprocess
 import sys
+from unittest import mock
 
-import mock
 import pytest
 from boutiques_mocks import *
 

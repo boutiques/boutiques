@@ -36,7 +36,7 @@ class TestOutputFiles(BaseTest):
         test_desc_path = self.get_file_path("test_desc.json")
 
         template_desc_json = {}
-        with open(base_desc_path, 'r') as base_desc:
+        with open(base_desc_path) as base_desc:
             template_desc_json = json.load(base_desc)
 
         test_json = {k: template_desc_json[k] for k in template_desc_json if
@@ -80,7 +80,7 @@ class TestOutputFiles(BaseTest):
         test_desc_path = self.get_file_path("test_desc.json")
 
         template_desc_json = {}
-        with open(base_desc_path, 'r') as base_desc:
+        with open(base_desc_path) as base_desc:
             template_desc_json = json.load(base_desc)
 
         test_json = {k: template_desc_json[k] for k in template_desc_json if
@@ -121,11 +121,11 @@ class TestOutputFiles(BaseTest):
         test_desc_path = self.get_file_path("test_desc.json")
 
         template_desc_json = {}
-        with open(base_desc_path, 'r') as base_desc:
+        with open(base_desc_path) as base_desc:
             template_desc_json = json.load(base_desc)
 
         test_json = {k: template_desc_json[k] for k in template_desc_json if
-                     k is not 'output-files'}
+                     k != 'output-files'}
         output_list = template_desc_json['output-files']
 
         # Test non-optional conditional-path-template with wrong ID name

@@ -12,7 +12,7 @@ class ZenodoError(Exception):
     pass
 
 
-class ZenodoHelper(object):
+class ZenodoHelper:
 
     # Constructor
     def __init__(self, sandbox=False, no_int=False, verbose=False):
@@ -37,7 +37,7 @@ class ZenodoHelper(object):
         if (self.no_int):
             raise_error(ZenodoError, "Cannot find Zenodo credentials.")
         prompt = ("Please enter your Zenodo access token (it will be "
-                  "saved in {0} for future use): ".format(self.config_file))
+                  "saved in {} for future use): ".format(self.config_file))
         try:
             return raw_input(prompt)  # Python 2
         except NameError:
@@ -56,7 +56,7 @@ class ZenodoHelper(object):
         endpoint = "https://sandbox.zenodo.org" if self.sandbox \
             else "https://zenodo.org"
         if (self.verbose):
-            print_info("Using Zenodo endpoint {0}"
+            print_info("Using Zenodo endpoint {}"
                        .format(endpoint))
         return endpoint
 
@@ -64,22 +64,22 @@ class ZenodoHelper(object):
     def record_exists(self, record_id):
         import requests
         r = requests.get(self.zenodo_endpoint +
-                         '/api/records/{}'.format(record_id))
+                         f'/api/records/{record_id}')
         if r.status_code == 200:
             return True
         if r.status_code == 404:
             return False
         raise_error(ZenodoError,
-                    "Cannot test existence of record {}".format(record_id), r)
+                    f"Cannot test existence of record {record_id}", r)
 
     @importCatcher()
     def zenodo_get_record(self, zenodo_id):
         import requests
         r = requests.get(self.zenodo_endpoint +
-                         '/api/records/{}'.format(zenodo_id))
+                         f'/api/records/{zenodo_id}')
         if r.status_code != 200:
             raise_error(ZenodoError,
-                        "Descriptor \"{}\" not found".format(zenodo_id), r)
+                        f"Descriptor \"{zenodo_id}\" not found", r)
         return r.json()
 
     def get_record_id_from_zid(self, zenodo_id):
@@ -107,7 +107,7 @@ class ZenodoHelper(object):
 
     def get_doi_from_zid(self, zenodo_id):
         prefix = "10.5072" if self.sandbox else "10.5281"
-        return '{}/{}'.format(prefix, zenodo_id)
+        return f'{prefix}/{zenodo_id}'
 
     def config_token_property_name(self):
         if self.sandbox:
@@ -116,9 +116,9 @@ class ZenodoHelper(object):
 
     def read_credentials(self):
         try:
-            with open(self.config_file, "r") as f:
+            with open(self.config_file) as f:
                 json_creds = json.load(f)
-        except IOError:
+        except OSError:
             json_creds = {}
         except ValueError:
             json_creds = {}
@@ -233,7 +233,7 @@ class ZenodoHelper(object):
                           % deposition_id,
                           headers={"Authorization": f"Bearer {access_token}"})
         if(r.status_code != 202):
-            raise_error(ZenodoError, "Cannot publish {}".format(msg_obj), r)
+            raise_error(ZenodoError, f"Cannot publish {msg_obj}", r)
         if(self.verbose):
             print_info("{0} published to Zenodo, doi is {1}".
                        format(msg_obj, r.json()['doi']), r)

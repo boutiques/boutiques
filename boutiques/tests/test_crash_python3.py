@@ -14,7 +14,7 @@ class TestCrashPython3(BaseTest):
 
     def test_no_container(self):
         command = ("bosh exec launch --skip-data-collection "
-                   "{0} {1}".format(
+                   "{} {}".format(
                        self.get_file_path("crash3.json"),
                        self.get_file_path("crash3_invocation.json")))
         print(command)

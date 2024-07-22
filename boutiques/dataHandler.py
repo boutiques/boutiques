@@ -8,7 +8,7 @@ from boutiques.nexusHelper import NexusHelper
 from boutiques.util.utils import extractFileName, importCatcher, loadJson
 
 
-class DataHandler(object):
+class DataHandler:
 
     # Constructor
     def __init__(self):
@@ -54,7 +54,7 @@ class DataHandler(object):
 
     # Private function to print a file to console
     def _display_file(self, file_path):
-        with open(file_path, 'r') as file_in:
+        with open(file_path) as file_in:
             print(file_in.read())
             file_in.close()
 
@@ -172,9 +172,9 @@ class DataHandler(object):
                     publishable_dict[fl] = fl_dict
                 # Descriptor isn't published, inform user with full prompt
                 else:
-                    print("Record {0} cannot be published as its descriptor "
+                    print("Record {} cannot be published as its descriptor "
                           "is not yet published. ".format(fl))
-                    desc_to_publish.add("bosh publish {}".format(desc_path))
+                    desc_to_publish.add(f"bosh publish {desc_path}")
             # Descriptor doi is stored correctly in record
             else:
                 publishable_dict[fl] = fl_dict
@@ -193,7 +193,7 @@ class DataHandler(object):
         identifier = hash.hexdigest()
         data = {
             'metadata': {
-                'title': 'Boutiques-execution-{}'.format(identifier[:6]),
+                'title': f'Boutiques-execution-{identifier[:6]}',
                 'upload_type': 'dataset',
                 'description': 'Boutiques execution data-set',
                 'creators': [{'name': self.author}]
@@ -201,10 +201,10 @@ class DataHandler(object):
         }
 
         # Get unique list of tool names and descriptors
-        unique_names = set([v['summary']['name']
-                            for v in records_dict.values()])
-        unique_descriptors = set([v['summary']['descriptor-doi']
-                                  for v in records_dict.values()])
+        unique_names = {v['summary']['name']
+                            for v in records_dict.values()}
+        unique_descriptors = {v['summary']['descriptor-doi']
+                                  for v in records_dict.values()}
 
         # Add tool name(s) to keywords
         data['metadata']['keywords'] = [v for v in unique_names]
@@ -286,7 +286,7 @@ class DataHandler(object):
         file_path = os.path.join(self.cache_dir, filename)
         # Incorrect filename input
         if not os.path.isfile(file_path):
-            msg = "File {} does not exist in the data cache".format(filename)
+            msg = f"File {filename} does not exist in the data cache"
             raise_error(ValueError, msg)
 
     def _get_delete_prompt(self):

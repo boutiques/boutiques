@@ -3,8 +3,8 @@ import shutil
 import subprocess
 import tempfile
 from collections import OrderedDict
+from unittest import mock
 
-import mock
 import pytest
 import simplejson as json
 from boutiques_mocks import (
@@ -83,7 +83,7 @@ class TestPublisher(BaseTest):
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
         # Make sure that example1.json doesn't have a DOI yet
-        with open(temp_descriptor.name, 'r') as fhandle:
+        with open(temp_descriptor.name) as fhandle:
             descriptor = json.load(fhandle)
             self.assertIsNone(descriptor.get('doi'))
 
@@ -96,7 +96,7 @@ class TestPublisher(BaseTest):
         self.assertTrue(doi)
 
         # Now descriptor should have a DOI
-        with open(temp_descriptor.name, 'r') as fhandle:
+        with open(temp_descriptor.name) as fhandle:
             descriptor = json.load(fhandle)
             self.assertEqual(descriptor.get('doi'), doi)
 
@@ -124,7 +124,7 @@ class TestPublisher(BaseTest):
         self.assertTrue(new_doi)
 
         # Updated version of descriptor should have a new DOI
-        with open(temp_descriptor_updated.name, 'r') as fhandle:
+        with open(temp_descriptor_updated.name) as fhandle:
             descriptor_updated = json.load(fhandle)
             self.assertNotEqual(new_doi, doi)
             self.assertEqual(descriptor_updated.get('doi'), new_doi)
@@ -166,7 +166,7 @@ class TestPublisher(BaseTest):
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
         # Make sure that example1.json doesn't have a DOI yet
-        with open(temp_descriptor.name, 'r') as fhandle:
+        with open(temp_descriptor.name) as fhandle:
             descriptor = json.load(fhandle)
             self.assertIsNone(descriptor.get('doi'))
 
@@ -180,7 +180,7 @@ class TestPublisher(BaseTest):
         self.assertTrue(doi)
 
         # Now descriptor should have a DOI
-        with open(temp_descriptor.name, 'r') as fhandle:
+        with open(temp_descriptor.name) as fhandle:
             descriptor = json.load(fhandle)
             self.assertEqual(descriptor.get('doi'), doi)
 
@@ -232,7 +232,7 @@ class TestPublisher(BaseTest):
         temp_descriptor = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc, temp_descriptor.name)
         # Make sure that example1.json doesn't have a DOI yet
-        with open(temp_descriptor.name, 'r') as fhandle:
+        with open(temp_descriptor.name) as fhandle:
             descriptor = json.load(fhandle)
             self.assertIsNone(descriptor.get('doi'))
         # Try to update it
@@ -260,7 +260,7 @@ class TestPublisher(BaseTest):
         shutil.copyfile(example1_desc, temp_descriptor.name)
 
         # Make sure that descriptor has a DOI
-        with open(temp_descriptor.name, 'r') as fhandle:
+        with open(temp_descriptor.name) as fhandle:
             descriptor = json.load(fhandle)
             self.assertIsNotNone(descriptor.get('doi'))
             old_doi = descriptor['doi']
@@ -276,7 +276,7 @@ class TestPublisher(BaseTest):
 
         # Now descriptor should have a DOI which should be different
         # than the old DOI
-        with open(temp_descriptor.name, 'r') as fhandle:
+        with open(temp_descriptor.name) as fhandle:
             descriptor = json.load(fhandle)
             self.assertNotEqual(doi, old_doi)
             self.assertEqual(descriptor.get('doi'), doi)
@@ -301,7 +301,7 @@ class TestPublisher(BaseTest):
     def test_publication_toolname_forwardslash(self,  mock_post,
                                                mock_put, mock_delete):
         test_desc = self.get_file_path("test_forward_slash_toolName.json")
-        with open(test_desc, 'r') as fhandle:
+        with open(test_desc) as fhandle:
             descriptor = json.load(fhandle, object_pairs_hook=OrderedDict)
 
         # Publish an updated version of an already published descriptor

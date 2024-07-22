@@ -2,8 +2,8 @@
 
 import os
 from argparse import ArgumentParser
+from unittest import mock
 
-import mock
 import pytest
 from boutiques_mocks import MockZenodoRecord, mock_zenodo_search
 

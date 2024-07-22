@@ -2,8 +2,8 @@ import datetime as dt
 import glob
 import os
 import subprocess
+from unittest import mock
 
-import mock
 import pytest
 from boutiques_mocks import example_boutiques_tool, mock_get
 

@@ -21,7 +21,7 @@ class Searcher():
             if not exact_match:
                 terms = self.query.replace('/', '.').split(" ")
                 for t in terms:
-                    uncased_term = ["[{0}]".format(ch.upper() + ch.lower()
+                    uncased_term = ["[{}]".format(ch.upper() + ch.lower()
                                                    if ch.isalpha() else ch)
                                     for ch in t]
                     uncased_term = quote("".join(uncased_term))

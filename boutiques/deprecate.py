@@ -26,17 +26,17 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
     deprecated = descriptor_json.get('deprecated-by-doi')
     if deprecated is not None:
         if isinstance(deprecated, str):
-            print_info('Tool {0} is already deprecated by {1} '
+            print_info('Tool {} is already deprecated by {} '
                        .format(zenodo_id, deprecated))
         if by_zenodo_id is not None:
-            prompt = ("Tool {0} will be deprecated by {1}, "
+            prompt = ("Tool {} will be deprecated by {}, "
                       "this cannot be undone. Are you sure? (Y/n) ")\
                           .format(zenodo_id, by_zenodo_id)
             ret = input(prompt)
             if ret.upper() != "Y":
                 return
         else:
-            print_warning('Tool {0} is already deprecated'.format(zenodo_id))
+            print_warning(f'Tool {zenodo_id} is already deprecated')
             return
     # Set record id and Zenodo id
     zhelper = ZenodoHelper(sandbox=sandbox, no_int=True, verbose=verbose)
@@ -48,8 +48,8 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
     if not record['metadata']['relations']['version'][0]['is_last']:
         new_version = (record['metadata']['relations']
                        ['version'][0]['last_child']['pid_value'])
-        raise_error(DeprecateError, 'Tool {0} has a newer version '
-                                    '(zenodo.{1}), it cannot be deprecated.'
+        raise_error(DeprecateError, 'Tool {} has a newer version '
+                                    '(zenodo.{}), it cannot be deprecated.'
                                     .format(zenodo_id, new_version))
         return
 
@@ -61,7 +61,7 @@ def deprecate(zenodo_id, by_zenodo_id=None, sandbox=False, verbose=False,
         by_record_id = zhelper.get_record_id_from_zid(by_zenodo_id)
         if zhelper.record_exists(by_record_id) is False:
             raise_error(DeprecateError,
-                        "Tool does not exist: {0}".format(by_zenodo_id))
+                        f"Tool does not exist: {by_zenodo_id}")
         # Assign deprecated-by property
         by_doi_id = zhelper.get_doi_from_zid(by_zenodo_id)
         descriptor_json['deprecated-by-doi'] = by_doi_id

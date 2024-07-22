@@ -1,4 +1,5 @@
-import mock
+from unittest import mock
+
 from boutiques_mocks import MockZenodoRecord, mock_zenodo_search
 
 from boutiques.bosh import bosh

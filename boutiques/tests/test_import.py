@@ -240,11 +240,11 @@ class TestImport(BaseTest):
         expected_cml = ("tool config.json")
         result_cml = bosh(simulate_args).shell_command
 
-        with open(self.get_file_path("expected_config.json"), "r") as c:
+        with open(self.get_file_path("expected_config.json")) as c:
             expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
             with open(result_desc['output-files']
-                      [0]['path-template'], "r") as r:
+                      [0]['path-template']) as r:
                 result_sim_out = r.readlines()
             os.remove(result_desc['output-files'][0]['path-template'])
 
@@ -277,11 +277,11 @@ class TestImport(BaseTest):
         expected_cml = ("tool config.toml")
         result_cml = bosh(simulate_args).shell_command
 
-        with open(self.get_file_path("expected_config.toml"), "r") as c:
+        with open(self.get_file_path("expected_config.toml")) as c:
             expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
             with open(result_desc['output-files']
-                      [0]['path-template'], "r") as r:
+                      [0]['path-template']) as r:
                 result_sim_out = r.readlines()
             os.remove(result_desc['output-files'][0]['path-template'])
 
@@ -314,11 +314,11 @@ class TestImport(BaseTest):
         expected_cml = ("tool config.yml")
         result_cml = bosh(simulate_args).shell_command
 
-        with open(self.get_file_path("expected_config.yml"), "r") as c:
+        with open(self.get_file_path("expected_config.yml")) as c:
             expect_sim_out = c.readlines()
         if op.exists(result_desc['output-files'][0]['path-template']):
             with open(result_desc['output-files']
-                      [0]['path-template'], "r") as r:
+                      [0]['path-template']) as r:
                 result_sim_out = r.readlines()
             os.remove(result_desc['output-files'][0]['path-template'])
 

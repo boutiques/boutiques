@@ -49,7 +49,7 @@ def test_cwd_envVar(results):
 
 def test_config_file(results):
     if results.config_file:
-        with(open(results.config_file, 'r')) as co:
+        with(open(results.config_file)) as co:
             config_string = co.read()
             if config_string != "# This is a demo configuration file\nnumInput=4\nstrInput='coin;plop'":
                 sys.stderr.write(
@@ -59,12 +59,12 @@ def test_config_file(results):
 
 def test_conditional_output_paths(results):
     if results.cond_out:
-        path = "{0}_default.txt".format(results.output_file)
+        path = f"{results.output_file}_default.txt"
         if results.string and results.number > 10:
-            path = "{0}_{1}_{2}.txt".format(
+            path = "{}_{}_{}.txt".format(
                 results.output_file, results.string, results.number)
         elif results.string:
-            path = "{0}_{1}.txt".format(results.output_file, results.string)
+            path = f"{results.output_file}_{results.string}.txt"
 
         with open(results.output_file + "_out1.txt", 'w') as f:
             f.write("File content")

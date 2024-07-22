@@ -3,9 +3,8 @@
 import os
 import shutil
 import sys
-from unittest import skipIf
+from unittest import mock, skipIf
 
-import mock
 import pytest
 from boutiques_mocks import *
 

@@ -107,7 +107,7 @@ class FileDescription():
             self.optional = 'Required'
 
     def __str__(self):
-        return "{0} ({1}, {2})".format(self.file_name, self.boutiques_name,
+        return "{} ({}, {})".format(self.file_name, self.boutiques_name,
                                        self.optional)
 
 
@@ -116,7 +116,7 @@ class ExecutorError(Exception):
 
 
 # Executor class
-class LocalExecutor(object):
+class LocalExecutor:
     """
     This class represents a json descriptor of a tool, and can execute
     various tasks related to it. It is constructed first via an
@@ -267,7 +267,7 @@ class LocalExecutor(object):
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
             # Get the supported shell by the docker or singularity
-            cmdString = "#!{}".format(self.shell)
+            cmdString = f"#!{self.shell}"
             if self.shell == "/bin/sh":
                 cmdString += " -l"
             cmdString += os.linesep + str(command)
@@ -279,7 +279,7 @@ class LocalExecutor(object):
             envString = ""
             if envVars:
                 for (key, val) in list(envVars.items()):
-                    envString += "SINGULARITYENV_{0}='{1}' ".format(key, val)
+                    envString += f"SINGULARITYENV_{key}='{val}' "
             # Change launch (working) directory if desired
             launchDir = self.launchDir
             if launchDir is None:
@@ -367,7 +367,7 @@ class LocalExecutor(object):
                 envString = " "
                 if envVars:
                     for (key, val) in list(envVars.items()):
-                        envString += " -e {0}='{1}' ".format(key, val)
+                        envString += f" -e {key}='{val}' "
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
                 # If --changeUser was desired, provides the current user id
@@ -388,7 +388,7 @@ class LocalExecutor(object):
                 envString = ""
                 if envVars:
                     for (key, val) in list(envVars.items()):
-                        envString += "SINGULARITYENV_{0}='{1}' ".format(key,
+                        envString += "SINGULARITYENV_{}='{}' ".format(key,
                                                                         val)
                 singularity_mounts = '-B ' + ' -B '.join(mount_strings)
                 container_command = (envString + 'singularity exec '
@@ -510,7 +510,7 @@ class LocalExecutor(object):
             # Check if container already exists
             if self._singConExists(conName, imageDir):
                 conPath = op.abspath(op.join(imageDir, conName))
-                return conPath, "Local ({0})".format(conName)
+                return conPath, f"Local ({conName})"
 
             # Container does not exist, try to pull it
             if self.imagePath:
@@ -535,7 +535,7 @@ class LocalExecutor(object):
                         # Check if container was created while waiting
                         if self._singConExists(conName, imageDir):
                             conPath = op.abspath(op.join(imageDir, conName))
-                            container_location = "Local ({0})".format(conName)
+                            container_location = f"Local ({conName})"
                         # Container still does not exist, so pull it
                         else:
                             conPath, container_location = self._pullSingImage(
@@ -547,7 +547,7 @@ class LocalExecutor(object):
             # raise an error
             if self._singConExists(conName, imageDir):
                 conPath = op.abspath(op.join(imageDir, conName))
-                return conPath, "Local ({0})".format(conName)
+                return conPath, f"Local ({conName})"
             raise_error(ExecutorError, "Unable to retrieve Singularity "
                         "image.")
 
@@ -562,7 +562,7 @@ class LocalExecutor(object):
         # Set the pull directory to the specified imagePath
         if self.imagePath:
             os.environ["SINGULARITY_PULLFOLDER"] = imageDir
-        pull_loc = "\"{0}\" {1}{2}".format(conNameTmp, conIndex, conImage)
+        pull_loc = f"\"{conNameTmp}\" {conIndex}{conImage}"
         container_location = ("Pulled from {1}{2} ({0} not found "
                               "in current working "
                               "directory or specified "
@@ -591,7 +591,7 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isCommandInstalled(self, command):
-        return not subprocess.Popen("{} --version".format(command),
+        return not subprocess.Popen(f"{command} --version",
                                     shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
@@ -615,7 +615,7 @@ class LocalExecutor(object):
         # Note: invokes the command through the shell
         # (potential injection dangers)
         if self.debug:
-            print_info("Running: {0}".format(command))
+            print_info(f"Running: {command}")
         try:
             if self.stream:
                 process = subprocess.Popen(command, shell=True,
@@ -1043,7 +1043,7 @@ class LocalExecutor(object):
             try:
                 from shlex import quote
             except ImportError as e:
-                from pipes import quote
+                from shlex import quote
             return quote(s)
 
         # Concatenate input and output dictionaries
@@ -1169,11 +1169,11 @@ class LocalExecutor(object):
             in_out_dict = self.in_dict.copy()
             in_out_dict.update(self.out_dict)
             if word in in_out_dict:
-                value = "{0}".format(in_out_dict[word])
+                value = f"{in_out_dict[word]}"
                 if value.replace(".", "").replace("-", "").isdigit():
                     parsedExp.append(in_out_dict[word])
                 else:
-                    parsedExp.append("\"{0}\"".format(value))
+                    parsedExp.append(f"\"{value}\"")
             # Boolean expression key is not chosen (optional input),
             # therefore expression is false
             elif word in all_ids:
@@ -1182,7 +1182,7 @@ class LocalExecutor(object):
             # Word is an expression char, just append it
             else:
                 parsedExp.append(word)
-        return " ".join("{0}".format(w) for w in parsedExp)
+        return " ".join(f"{w}" for w in parsedExp)
 
     # Private method to write configuration files
     # Configuration files are output files that have a file-template
@@ -1358,7 +1358,7 @@ class LocalExecutor(object):
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file
         data_cache_dir = getDataCacheDir()
-        filename = "{0}_{1}.json".format(tool_name, date_time)
+        filename = f"{tool_name}_{date_time}.json"
         file_path = os.path.join(data_cache_dir, filename)
         file = open(file_path, 'w+')
         file.write(content)
@@ -1394,7 +1394,7 @@ class LocalExecutor(object):
         # Write descriptor to data cache and save return filename
         content = json.dumps(self.desc_dict, indent=4)
         date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
-        filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
+        filename = f"descriptor_{tool_name}_{date_time}.json"
         path = os.path.join(data_cache_dir, filename)
         file = open(path, 'w+')
         file.write(content)

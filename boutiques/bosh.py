@@ -501,7 +501,7 @@ def bosh(args=None):
         else:
             print(parser_bosh().format_help())
             raise_error(ExecutorError,
-                        "Incorrect bosh mode \'{}\'".format(func))
+                        f"Incorrect bosh mode \'{func}\'")
 
     except (ZenodoError,
             NexusError,

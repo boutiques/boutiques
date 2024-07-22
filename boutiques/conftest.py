@@ -55,7 +55,7 @@ def pytest_generate_tests(metafunc):
     # Generate the test ids for each of the test cases.
     # An id is created by concatenaning the name of the descriptor
     # with the name of the test case.
-    names = ["{0}_{1}".format(op.basename(descriptor_filename),
+    names = ["{}_{}".format(op.basename(descriptor_filename),
              params[1]["name"].replace(' ', '-')) for params in tests]
 
     metafunc.parametrize("descriptor, test, invocation, paramsDict",

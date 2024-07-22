@@ -49,7 +49,7 @@ def loadJson(userInput, verbose=False, sandbox=False):
         puller = Puller([userInput], verbose, sandbox)
         json_file = puller.pull()[0]
     if json_file is not None:
-        with open(json_file, 'r') as f:
+        with open(json_file) as f:
             return OrderedDict(json.loads(f.read(),
                                           object_pairs_hook=OrderedDict))
     # JSON file not found, so try to parse JSON object
@@ -75,11 +75,11 @@ def conditionalExpFormat(s):
     while idx < len(s):
         c = s[idx]
         if c in ['=', '!', '<', '>']:
-            cleanedExpression += " {0}{1}".format(
+            cleanedExpression += " {}{}".format(
                 c, "=" if s[idx+1] == "=" else " ")
             idx += 1
         elif c in ['(', ')']:
-            cleanedExpression += " {0} ".format(c)
+            cleanedExpression += f" {c} "
         else:
             cleanedExpression += c
         idx += 1
@@ -180,10 +180,10 @@ def camelCaseInputIds(descriptor):
     for k, v in conversion_dict.items():
         # Only replace ids surrounded by single/double quotes,
         # in case the the old input ids are used in other strings
-        plainTextDesc = plainTextDesc.replace("\"{0}\"".format(k),
-                                              "\"{0}\"".format(v))
-        plainTextDesc = plainTextDesc.replace("\'{0}\'".format(k),
-                                              "\'{0}\'".format(v))
+        plainTextDesc = plainTextDesc.replace(f"\"{k}\"",
+                                              f"\"{v}\"")
+        plainTextDesc = plainTextDesc.replace(f"\'{k}\'",
+                                              f"\'{v}\'")
     descriptor = json.loads(plainTextDesc)
     return descriptor
 
@@ -196,6 +196,6 @@ def formatSphinxUsage(func, usage_str):
     args = "".join(args)
     args = args.split("  ")[0:]
     args = list(filter(lambda x: x != "", args))
-    args = ["\"{}\"".format(arg.strip()) for arg in args]
+    args = [f"\"{arg.strip()}\"" for arg in args]
     args = ", ".join(args)
-    return "[{}]".format(args)
+    return f"[{args}]"

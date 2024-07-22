@@ -99,9 +99,9 @@ def validate_descriptor(descriptor, **kwargs):
                     if not isValidSubExp:
                         return False
                     else:
-                        rebuiltExp += "{0}".format(isValidSubExp)
+                        rebuiltExp += f"{isValidSubExp}"
             elif brackets == 0:
-                rebuiltExp += "{0}".format(c)
+                rebuiltExp += f"{c}"
         rebuiltExp = rebuiltExp.strip()
 
         # If there are no more parentheses, check if sub-expression is valid
@@ -209,7 +209,7 @@ def validate_descriptor(descriptor, **kwargs):
 
             # Verify output keys contain only one default condition
             if out_keys.count('default') > 1:
-                errors += ["OutputError: \"{0}\". Only one \"default\" "
+                errors += ["OutputError: \"{}\". Only one \"default\" "
                            "condition is permitted in a "
                            "conditional-path-template.".format(outF['id'])]
 

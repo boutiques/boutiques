@@ -31,11 +31,11 @@ def validate_bids(descriptor, valid=False):
 
     # Verify IDs are present which link to the OUTPUT_DIR
     # key bot as File and String
-    ftypes = set(["File", "String"])
+    ftypes = {"File", "String"}
     msg_template = "   OutError: \"{}\" types for outdir do not match \"{}\""
-    outtypes = set([inp["type"]
+    outtypes = {inp["type"]
                     for inp in descriptor["inputs"]
-                    if inp["value-key"] == "[OUTPUT_DIR]"])
+                    if inp["value-key"] == "[OUTPUT_DIR]"}
     if outtypes != ftypes:
         errors += [msg_template.format(", ".join(outtypes), ", ".join(ftypes))]
 

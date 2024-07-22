@@ -1,7 +1,7 @@
 import json
 import os
+from unittest import mock
 
-import mock
 from boutiques_mocks import (
     MockHttpResponse,
     example_boutiques_tool,

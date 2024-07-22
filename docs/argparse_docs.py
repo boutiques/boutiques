@@ -8,7 +8,7 @@ import boutiques
 def CreateBoshDocs():
     # Get file as plain text
     def readFile(path):
-        with open(path, "r") as file:
+        with open(path) as file:
             return file.read()
 
     # create an RST index page

@@ -60,14 +60,14 @@ class PrettyPrinter():
 
     def descMetadata(self):
         # Gather main description and basic metadata
-        name = "Tool name: {0} (ver: {1})".format(self.desc['name'],
+        name = "Tool name: {} (ver: {})".format(self.desc['name'],
                                                   self.desc.get("tool-version"))
-        description = "Tool description: {0}".format(self.desc['description'])
+        description = "Tool description: {}".format(self.desc['description'])
         if self.desc.get("tags"):
-            taglist = ["{0}: {1}".format(k, v) if not isinstance(v, list)
-                       else "{0}: {1}".format(k, ", ".join(v))
+            taglist = [f"{k}: {v}" if not isinstance(v, list)
+                       else "{}: {}".format(k, ", ".join(v))
                        for k, v in self.desc["tags"].items()]
-            tags = "Tags: {0}".format("; ".join(taglist))
+            tags = "Tags: {}".format("; ".join(taglist))
         else:
             tags = ""
 
@@ -77,7 +77,7 @@ class PrettyPrinter():
         cend = min(len(cline.split(' ')[0]) + 1, 35)
         cline = textwrap.wrap("  " + self.desc['command-line'],
                               subsequent_indent='  ' + ' ' * cend)
-        cline = "Command-line:\n{0}".format("\n".join(cline))
+        cline = "Command-line:\n{}".format("\n".join(cline))
 
         # Initialize the tool description with the pieces we've collected so far
         self.helptext = ("{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}"
@@ -87,7 +87,7 @@ class PrettyPrinter():
         conimage = self.desc["container-image"]
         container_info = "Container Information:\n"
         container_info += "\t"
-        container_info += "\n\t".join(["{0}: {1}".format(k.title(), conimage[k])
+        container_info += "\n\t".join([f"{k.title()}: {conimage[k]}"
                                        for k in conimage.keys()])
         self._addSegment(container_info)
 
@@ -97,8 +97,8 @@ class PrettyPrinter():
         config_info = "Config Files:"
         for output in outputs:
             required = "Optional" if output.get("optional") else "Required"
-            temp_info = "\n  Name: {0} ({1})".format(output["name"], required)
-            temp_info += "\n\tFormat: {0}".format(output["path-template"])
+            temp_info = "\n  Name: {} ({})".format(output["name"], required)
+            temp_info += "\n\tFormat: {}".format(output["path-template"])
 
             # Identifies input dependencies based on filename
             depids = ["/".join(self.lut[inp])
@@ -106,25 +106,25 @@ class PrettyPrinter():
                       if inp in output["path-template"]]
             if depids:
                 temp_info += ("\n\tFilename depends on Input IDs: "
-                              "{0}".format(", ".join(depids)))
+                              "{}".format(", ".join(depids)))
 
             # Gets stripped extensions
             if output.get("path-template-stripped-extensions"):
                 exts = ", ".join(output["path-template-stripped-extensions"])
                 temp_info += ("\n\tStripped extensions (before substitution):"
-                              " {0}".format(exts))
+                              " {}".format(exts))
 
             # If a config file, add the template
             if output.get("file-template"):
-                temp_info += ("\n\tTemplate:\n\t {0}"
+                temp_info += ("\n\tTemplate:\n\t {}"
                               "".format("\n\t ".join(output["file-template"])))
                 config_info += temp_info
             else:
                 output_info += temp_info
 
-        self.epilog = "\n\n{0}\n\n{1}".format(self.sep, config_info) \
+        self.epilog = f"\n\n{self.sep}\n\n{config_info}" \
             if config_info != "Config Files:" else ""
-        self.epilog += "\n\n{0}\n\n{1}".format(self.sep, output_info)
+        self.epilog += f"\n\n{self.sep}\n\n{output_info}"
 
     def descGroups(self):
         groups = self.desc["groups"]
@@ -135,12 +135,12 @@ class PrettyPrinter():
             gtype += [0] if bool(group.get("mutually-exclusive")) else []
             gtype += [1] if bool(group.get("all-or-none")) else []
             gtype += [2] if bool(group.get("one-is-required")) else []
-            group_info += "\n\tName: {0}".format(group["name"].title())
-            group_info += "\n\tType: {0}\n".format(", ".join([gtypes[ind]
+            group_info += "\n\tName: {}".format(group["name"].title())
+            group_info += "\n\tType: {}\n".format(", ".join([gtypes[ind]
                                                               for ind
                                                               in gtype]))
             group_info += ("\tGroup Member IDs: "
-                           "{0}".format(", ".join(group["members"])))
+                           "{}".format(", ".join(group["members"])))
             group_info += "\n"
         self._addSegment(group_info)
 
@@ -149,7 +149,7 @@ class PrettyPrinter():
         res_info = "Suggested Resources:"
         for rkey in res.keys():
             kx = rkey.replace('-', ' ').title()
-            res_info += "\n\t{0}: {1}".format(kx, res[rkey])
+            res_info += f"\n\t{kx}: {res[rkey]}"
             if rkey == "ram":
                 res_info += " GB"
             elif rkey == "walltime-estimate":
@@ -161,7 +161,7 @@ class PrettyPrinter():
         ecod = self.desc["error-codes"]
         ecod_info = "Error Codes:"
         for ecod_obj in ecod:
-            ecod_info += ("\n\tReturn Code: {0}\n\tDescription: {1}\n"
+            ecod_info += ("\n\tReturn Code: {}\n\tDescription: {}\n"
                           "".format(ecod_obj["code"], ecod_obj["description"]))
         ecod_info += "\n"
         self._addSegment(ecod_info)
@@ -228,8 +228,8 @@ class PrettyPrinter():
                     req_inp_descr += req_inp_desc_header.format(i_inp + 1)
 
                 # Grab basic input fields first
-                tmp_inp_descr = ("ID: {0}\nValue Key: {1}\nType: {2}\n"
-                                 "List: {3}\nOptional: {4}\n"
+                tmp_inp_descr = ("ID: {}\nValue Key: {}\nType: {}\n"
+                                 "List: {}\nOptional: {}\n"
                                  "".format(inp.get("id"),
                                            inp.get("value-key"),
                                            inp.get("type"),
@@ -241,28 +241,28 @@ class PrettyPrinter():
                     milen = inp.get("min-list-entries")
                     malen = inp.get("max-list-entries")
                     if milen and malen:
-                        listlen = "{0} - {1}".format(milen,
+                        listlen = "{} - {}".format(milen,
                                                      malen)
                     elif milen:
-                        listlen = ">= {0}".format(milen)
+                        listlen = f">= {milen}"
                     elif malen:
-                        listlen = "<= {0}".format(malen)
+                        listlen = f"<= {malen}"
                     else:
                         listlen = "N/A"
-                    tmp_inp_descr += ("List Length: {0}"
+                    tmp_inp_descr += ("List Length: {}"
                                       "\n"
                                       "".format(listlen))
 
                 # If it's a number, get min and max values and exclusivity and
                 # present it as a standard number range. Also identify if an Int
                 if inp.get("type") == "Number":
-                    tmp_inp_descr += ("Integer: {0}\n"
+                    tmp_inp_descr += ("Integer: {}\n"
                                       "".format(bool(inp.get("integer"))))
                     minum = inp.get("minimum") or "N/A"
                     manum = inp.get("maximum") or "N/A"
                     emi = "(" if inp.get("exclusive-minimum") else "["
                     ema = ")" if inp.get("exclusive-maximum") else "]"
-                    tmp_inp_descr += "Range: {0}{1}, {2}{3}\n".format(emi,
+                    tmp_inp_descr += "Range: {}{}, {}{}\n".format(emi,
                                                                       minum,
                                                                       manum,
                                                                       ema)
@@ -273,16 +273,16 @@ class PrettyPrinter():
                     inp_kwargs["choices"] = inp["value-choices"]
                 if inp.get("default-value"):
                     inp_kwargs["default"] = inp["default-value"]
-                    tmp_inp_descr += ("Default Value: {0}\n"
+                    tmp_inp_descr += ("Default Value: {}\n"
                                       "".format(inp['default-value']))
 
                 # Show exclusivity with other inputs
                 if inp.get("disables-inputs"):
-                    tmp_inp_descr += ("Disables: {0}\n"
+                    tmp_inp_descr += ("Disables: {}\n"
                                       "".format(", ".join(
                                                        inp["disables-inputs"])))
                 if inp.get("requires-inputs"):
-                    tmp_inp_descr += ("Requires: {0}\n"
+                    tmp_inp_descr += ("Requires: {}\n"
                                       "".format(", ".join(
                                                        inp["requires-inputs"])))
 
@@ -297,12 +297,12 @@ class PrettyPrinter():
                                        ", ".join(vdtab[tkey]),
                                        ", ".join(vrtab[tkey])]]
                     tmp_table = tabulate(tmp_table, headers=tmp_table_headers)
-                    tmp_inp_descr += ("Value Dependency: \n {0}\n"
+                    tmp_inp_descr += ("Value Dependency: \n {}\n"
                                       "".format(tmp_table))
 
                 # Finally, add the actual description
                 if inp.get("description"):
-                    descr_text = "Description: {0}".format(inp["description"])
+                    descr_text = "Description: {}".format(inp["description"])
                 else:
                     descr_text = ""
 
@@ -328,9 +328,9 @@ class PrettyPrinter():
                     if "_DUP" in parsed_flags[i]:
                         parsed_flags[i] = parsed_flags[i][0:-5]
                 if inp_args[0] in parsed_flags:
-                    inp_args[0] = "{0}_DUP{1}".format(
+                    inp_args[0] = "{}_DUP{}".format(
                         inp_args[0], parsed_flags.count(inp_args[0]))
                 self.parser.add_argument(*inp_args, **inp_kwargs)
 
     def _addSegment(self, segment):
-        self.helptext += "\n\n{0}\n\n{1}".format(segment, self.sep)
+        self.helptext += f"\n\n{segment}\n\n{self.sep}"

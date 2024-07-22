@@ -258,7 +258,7 @@ def add_subparser_execute(subparsers):
         "-u",
         "--user",
         action="store_true",
-        help="Runs the container as local user ({0})"
+        help="Runs the container as local user ({})"
         " instead of root.".format(
             os.getenv("USER")))
     parser_exec_launch.add_argument(
@@ -386,7 +386,7 @@ def add_subparser_import(subparsers):
         " CWL descriptor or docopt script to spec.")
     parser_import.set_defaults(function='import')
     parser_import.add_argument(
-        "type", help="Type of import we are performing. Allowed values: {0}"
+        "type", help="Type of import we are performing. Allowed values: {}"
         .format(", ".join(["bids", "0.4", "cwl", "docopt", "config"])),
         choices=["bids", "0.4", "cwl", "docopt", "config"],
         metavar='type')

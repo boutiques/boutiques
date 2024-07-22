@@ -3,8 +3,8 @@
 import os
 import re
 import subprocess
+from unittest import mock
 
-import mock
 import pytest
 import simplejson as json
 from boutiques_mocks import (
@@ -170,7 +170,7 @@ class TestSimulate(BaseTest):
                          " > {1} " +
                          " && bosh exec simulate {0} -i {1}").format(descriptor,
                                                                      invoc)
-        noInvocCommand = "bosh exec simulate {0}".format(descriptor, invoc)
+        noInvocCommand = f"bosh exec simulate {descriptor}"
 
         subprocess.call(wInvocCommand, shell=True)
         with open(config, "r+") as configFile:

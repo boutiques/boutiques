@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from .bids import validate_bids
 from .bosh import *
 from .creator import CreateDescriptor

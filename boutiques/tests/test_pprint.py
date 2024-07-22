@@ -19,7 +19,7 @@ class TestPPrint(BaseTest):
     def test_doesntcrash(self):
         fil = self.get_file_path('test_pretty_print.json')
         prettystring = bosh.pprint(fil)
-        self.assertIsInstance(prettystring, string_types)
+        self.assertIsInstance(prettystring, (str,))
 
     def test_categories_and_order(self):
         fil = self.get_file_path('test_pretty_print.json')

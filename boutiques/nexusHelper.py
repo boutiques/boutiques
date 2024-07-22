@@ -12,7 +12,7 @@ class NexusError(Exception):
     pass
 
 
-class NexusHelper(object):
+class NexusHelper:
 
     # Constructor
     def __init__(self, sandbox=False, no_int=False, verbose=False):
@@ -52,7 +52,7 @@ class NexusHelper(object):
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus credentials.")
         prompt = ("Please enter your Nexus access token (it will be "
-                  "saved in {0} for future use): ".format(self.config_file))
+                  "saved in {} for future use): ".format(self.config_file))
         return self.prompt(prompt)
 
     def get_nexus_organization(self):
@@ -62,7 +62,7 @@ class NexusHelper(object):
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus organization.")
         prompt = ("Please enter the Nexus organization you want to publish to"
-                  " (it will be saved in {0} for future use): "
+                  " (it will be saved in {} for future use): "
                   .format(self.config_file))
         return self.prompt(prompt)
 
@@ -73,7 +73,7 @@ class NexusHelper(object):
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus project.")
         prompt = ("Please enter the Nexus project you want to publish to"
-                  " (it will be saved in {0} for future use): "
+                  " (it will be saved in {} for future use): "
                   .format(self.config_file))
         return self.prompt(prompt)
 
@@ -86,14 +86,14 @@ class NexusHelper(object):
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
         if self.verbose:
             print_info("Nexus access token, organization and project"
-                       " saved in {0}".format(self.config_file))
+                       " saved in {}".format(self.config_file))
 
     def get_nexus_endpoint(self):
         # change once nexus is setup
         endpoint = "https://sandbox.bluebrainnexus.io/v1" if self.sandbox \
             else "https://sandbox.bluebrainnexus.io/v1"
         if self.verbose:
-            print_info("Using Nexus endpoint {0}"
+            print_info("Using Nexus endpoint {}"
                        .format(endpoint))
         return endpoint
 
@@ -104,9 +104,9 @@ class NexusHelper(object):
 
     def read_credentials(self):
         try:
-            with open(self.config_file, "r") as f:
+            with open(self.config_file) as f:
                 json_creds = json.load(f)
-        except IOError:
+        except OSError:
             json_creds = {}
         except ValueError:
             json_creds = {}

@@ -26,7 +26,7 @@ class CreatorError(ValidationError):
     pass
 
 
-class CreateDescriptor(object):
+class CreateDescriptor:
     def __init__(self, parser=None, **kwargs):
         template = op.join(op.split(bfile)[0], "templates", "basic.json")
         with open(template) as f:
@@ -90,14 +90,14 @@ class CreateDescriptor(object):
         ((stdout, stderr),
          returncode) = self.executor("docker pull "+docker_image_name)
         if returncode:
-            raise_error(CreatorError, "Cannot pull Docker image {0}: {1} "
-                        "{2} {3}".format(docker_image_name, stdout,
+            raise_error(CreatorError, "Cannot pull Docker image {}: {} "
+                        "{} {}".format(docker_image_name, stdout,
                                          os.linesep, stderr))
         ((stdout, stderr),
          returncode) = self.executor("docker inspect "+docker_image_name)
         if returncode:
-            raise_error(CreatorError, "Cannot inspect Docker image {0}: {1} "
-                        "{2} {3}".format(docker_image_name, stdout,
+            raise_error(CreatorError, "Cannot inspect Docker image {}: {} "
+                        "{} {}".format(docker_image_name, stdout,
                                          os.linesep, stderr))
         image_attrs = json.loads(stdout.decode("utf-8"))[0]
         if (image_attrs.get('ContainerConfig')):
@@ -176,9 +176,9 @@ class CreateDescriptor(object):
 
             # Once all subparsers are processed, identify which inputs need to
             # be disabled by which subparsers.
-            inpt_ids = set([inp
+            inpt_ids = {inp
                             for iact in inpts
-                            for inp in inpts[iact]])
+                            for inp in inpts[iact]}
             subparser["value-disables"] = {}
             for act in subparser["value-choices"]:
                 # Add all IDs created by the subparser that do not also belong
@@ -194,10 +194,10 @@ class CreateDescriptor(object):
             if kwargs.get("verbose"):
                 actstring = str(type(action))
                 actstring = actstring.split("'")[1].split(".")[-1]
-                print_info("{0}: Adding".format(actstring))
+                print_info(f"{actstring}: Adding")
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
-                adest = "subparser_{0}".format(self.sp_count)
+                adest = f"subparser_{self.sp_count}"
                 if kwargs.get("verbose"):
                     print_warning("Subparser has no destination set, "
                                   "invocation parsing may not work as "
@@ -212,7 +212,7 @@ class CreateDescriptor(object):
             if any(adest == it["id"] for it in self.descriptor["inputs"]):
                 if kwargs.get("verbose"):
                     print_info("Duplicate: Argument won't be added multiple "
-                               "times ({0})".format(adest))
+                               "times ({})".format(adest))
                 # If this action belongs to a subparser return a flag alongside
                 # the empty object, indicating it is not required
                 if kwargs.get("subaction"):
@@ -228,7 +228,7 @@ class CreateDescriptor(object):
                 "description": action.help,
                 "optional": kwargs.get("subaction") or not action.required,
                 "type": "String",
-                "value-key": "[{0}]".format(adest.upper().strip("[]"))
+                "value-key": "[{}]".format(adest.upper().strip("[]"))
             }
 
             if action.type is not None:
@@ -259,7 +259,7 @@ class CreateDescriptor(object):
             if type(action) is argparse._StoreTrueAction:
                 newinput["type"] = "Flag"
 
-            self.descriptor["command-line"] += " [{0}]".format(
+            self.descriptor["command-line"] += " [{}]".format(
                                                     adest.upper().strip("[]"))
             # If this action belongs to a subparser, return a flag along
             # with the object, indicating its required/not required status.

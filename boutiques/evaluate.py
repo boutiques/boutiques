@@ -49,5 +49,5 @@ def evaluateEngine(executor, query):
         return query_result
 
     except Exception:
-        print_error("Invalid query ({0}). See --help.".format(query))
+        print_error(f"Invalid query ({query}). See --help.")
         return {}

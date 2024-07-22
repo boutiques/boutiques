@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import os
+from unittest import mock
 
-import mock
 import pytest
 from boutiques_mocks import example_boutiques_tool, mock_get
 
