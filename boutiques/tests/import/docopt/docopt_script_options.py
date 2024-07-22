@@ -1,4 +1,4 @@
-'''
+"""
 Sample Docopt script for bosh import testing
 
 Usage:
@@ -10,4 +10,4 @@ Options:
   -c --cee        C
   -h --help       Help descriptions
   -v --version    Versions
-'''
+"""

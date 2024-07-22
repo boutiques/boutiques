@@ -1,4 +1,4 @@
-'''
+"""
 Naval Fate.
 
 Usage:
@@ -15,4 +15,4 @@ Options:
   --speed=<kn>  Speed in knots [default: 10].
   --moored      Moored (anchored) mine.
   --drifting    Drifting mine.
-  '''
+  """

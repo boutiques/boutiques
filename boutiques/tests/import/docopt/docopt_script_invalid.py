@@ -1,4 +1,4 @@
-'''
+"""
 Sample Docopt script for bad docopt script import testing
 
 Usage!!!:
@@ -6,4 +6,4 @@ Usage!!!:
 
 Options:
   -x          X desc
-'''
+"""

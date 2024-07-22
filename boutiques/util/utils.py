@@ -9,17 +9,20 @@ from boutiques.logger import print_warning, raise_error
 
 # Utility function to wrap modules that use non-essential libs
 def importCatcher():
-  def decorate(f):
-    def applicator(*args, **kwargs):
-      try:
-         return f(*args,**kwargs)
-      except ImportError as e:
-         print(e)
-         raise ImportError("Try installing the full version of Boutiques "
-                           "with: \n\t pip install -e boutiques[all]")
+    def decorate(f):
+        def applicator(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except ImportError as e:
+                print(e)
+                raise ImportError(
+                    "Try installing the full version of Boutiques "
+                    "with: \n\t pip install -e boutiques[all]"
+                )
 
-    return applicator
-  return decorate
+        return applicator
+
+    return decorate
 
 
 # Parses absolute path into filename
@@ -27,7 +30,7 @@ def extractFileName(path):
     # Helps OS path handle case where "/" is at the end of path
     if path is None:
         return None
-    elif path[:-1] == '/':
+    elif path[:-1] == "/":
         return os.path.basename(path[:-1]) + "/"
     else:
         return os.path.basename(path)
@@ -44,22 +47,27 @@ def loadJson(userInput, verbose=False, sandbox=False):
     json_file = None
     if os.path.isfile(userInput):
         json_file = userInput
-    elif "zenodo" in ".".join(userInput.split('.')[:-1]).lower():
+    elif "zenodo" in ".".join(userInput.split(".")[:-1]).lower():
         from boutiques.puller import Puller
+
         puller = Puller([userInput], verbose, sandbox)
         json_file = puller.pull()[0]
     if json_file is not None:
         with open(json_file) as f:
-            return OrderedDict(json.loads(f.read(),
-                                          object_pairs_hook=OrderedDict))
+            return OrderedDict(
+                json.loads(f.read(), object_pairs_hook=OrderedDict)
+            )
     # JSON file not found, so try to parse JSON object
-    e = ("Cannot parse input {}: file not found, "
-         "invalid Zenodo ID, or invalid JSON object").format(userInput)
+    e = (
+        "Cannot parse input {}: file not found, "
+        "invalid Zenodo ID, or invalid JSON object"
+    ).format(userInput)
     if userInput.isdigit():
         raise_error(LoadError, e)
     try:
-        return OrderedDict(json.loads(userInput,
-                                      object_pairs_hook=OrderedDict))
+        return OrderedDict(
+            json.loads(userInput, object_pairs_hook=OrderedDict)
+        )
     except ValueError:
         raise_error(LoadError, e)
 
@@ -74,11 +82,12 @@ def conditionalExpFormat(s):
     idx = 0
     while idx < len(s):
         c = s[idx]
-        if c in ['=', '!', '<', '>']:
+        if c in ["=", "!", "<", ">"]:
             cleanedExpression += " {}{}".format(
-                c, "=" if s[idx+1] == "=" else " ")
+                c, "=" if s[idx + 1] == "=" else " "
+            )
             idx += 1
-        elif c in ['(', ')']:
+        elif c in ["(", ")"]:
             cleanedExpression += f" {c} "
         else:
             cleanedExpression += c
@@ -88,11 +97,12 @@ def conditionalExpFormat(s):
 
 # Sorts and returns a descriptor dictionary according to
 # the keys' order in a template descriptor
-def customSortDescriptorByKey(descriptor,
-                              template=os.path.join(
-                                  os.path.dirname(bfile),
-                                  "templates",
-                                  "ordered_keys_desc.json")):
+def customSortDescriptorByKey(
+    descriptor,
+    template=os.path.join(
+        os.path.dirname(bfile), "templates", "ordered_keys_desc.json"
+    ),
+):
 
     def sortListedObjects(objList, template):
         sortedObjList = []
@@ -107,13 +117,13 @@ def customSortDescriptorByKey(descriptor,
             sortedObjList.append(sortedObj)
 
         if len(objList) != len(sortedObjList):
-            print_warning("Sorted list does not represent"
-                          " original list.")
+            print_warning("Sorted list does not represent" " original list.")
             return objList
         for obj, sobj in zip(objList, sortedObjList):
             if obj != dict(sobj):
-                print_warning("Sorted list does not represent"
-                              " original list.")
+                print_warning(
+                    "Sorted list does not represent" " original list."
+                )
                 return objList
         return sortedObjList
 
@@ -124,11 +134,13 @@ def customSortDescriptorByKey(descriptor,
     for key in template:
         if key in descriptor:
             if type(descriptor[key]) is list:
-                sortedDesc[key] =\
-                    sortListedObjects(descriptor[key], template[key][0])
+                sortedDesc[key] = sortListedObjects(
+                    descriptor[key], template[key][0]
+                )
             elif type(descriptor[key]) is dict:
                 sortedDesc[key] = customSortDescriptorByKey(
-                    descriptor[key], template=json.dumps(template[key]))
+                    descriptor[key], template=json.dumps(template[key])
+                )
             else:
                 sortedDesc[key] = descriptor[key]
 
@@ -137,8 +149,9 @@ def customSortDescriptorByKey(descriptor,
         if key not in sortedDesc:
             sortedDesc[key] = descriptor[key]
     if sortedDesc != descriptor:
-        print_warning("Sorted descriptor does not represent"
-                      " original descriptor.")
+        print_warning(
+            "Sorted descriptor does not represent" " original descriptor."
+        )
         return descriptor
     return sortedDesc
 
@@ -148,13 +161,21 @@ def customSortInvocationByInput(invocation, descriptor):
     descriptor = loadJson(descriptor)
     # sort invoc according to input's order in descriptor
     sortedInvoc = OrderedDict()
-    sortedInvoc.update({key: invocation[key] for key in
-                        [inp['id'] for inp in descriptor['inputs']
-                            if descriptor['inputs'] is not None]
-                        if key in invocation})
+    sortedInvoc.update(
+        {
+            key: invocation[key]
+            for key in [
+                inp["id"]
+                for inp in descriptor["inputs"]
+                if descriptor["inputs"] is not None
+            ]
+            if key in invocation
+        }
+    )
     if sortedInvoc != invocation:
-        print_warning("Sorted invocation does not represent"
-                      " original invocation.")
+        print_warning(
+            "Sorted invocation does not represent" " original invocation."
+        )
         return invocation
     return sortedInvoc
 
@@ -163,16 +184,16 @@ def snakeCaseToCamelCase(id):
     words = id.split("_")
     for idx, word in enumerate(words[1:]):
         if word[0].islower():
-            words[idx+1] = word[0].upper() + word[1:]
+            words[idx + 1] = word[0].upper() + word[1:]
     return "".join(words)
 
 
 def camelCaseInputIds(descriptor):
     conversion_dict = {}
-    if 'inputs' in descriptor:
-        for inp in descriptor['inputs']:
-            camelCaseId = snakeCaseToCamelCase(inp['id'])
-            conversion_dict[inp['id']] = camelCaseId
+    if "inputs" in descriptor:
+        for inp in descriptor["inputs"]:
+            camelCaseId = snakeCaseToCamelCase(inp["id"])
+            conversion_dict[inp["id"]] = camelCaseId
 
     # Find all instances of old input ids
     # and replace them with camelCase ids
@@ -180,22 +201,22 @@ def camelCaseInputIds(descriptor):
     for k, v in conversion_dict.items():
         # Only replace ids surrounded by single/double quotes,
         # in case the the old input ids are used in other strings
-        plainTextDesc = plainTextDesc.replace(f"\"{k}\"",
-                                              f"\"{v}\"")
-        plainTextDesc = plainTextDesc.replace(f"\'{k}\'",
-                                              f"\'{v}\'")
+        plainTextDesc = plainTextDesc.replace(f'"{k}"', f'"{v}"')
+        plainTextDesc = plainTextDesc.replace(f"'{k}'", f"'{v}'")
     descriptor = json.loads(plainTextDesc)
     return descriptor
 
 
 def formatSphinxUsage(func, usage_str):
-    args = usage_str.replace("[", " ")\
-        .replace("]", " ")\
-        .replace("\n", "")\
+    args = (
+        usage_str.replace("[", " ")
+        .replace("]", " ")
+        .replace("\n", "")
         .split(func)[1:]
+    )
     args = "".join(args)
     args = args.split("  ")[0:]
     args = list(filter(lambda x: x != "", args))
-    args = [f"\"{arg.strip()}\"" for arg in args]
+    args = [f'"{arg.strip()}"' for arg in args]
     args = ", ".join(args)
     return f"[{args}]"

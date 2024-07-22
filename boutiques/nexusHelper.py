@@ -19,9 +19,11 @@ class NexusHelper:
         try:
             import nexussdk as nexus
         except ImportError:
-            raise_error(NexusError,
-                        "Cannot import nexussdk, "
-                        "consider upgrading to python 3.5 or higher")
+            raise_error(
+                NexusError,
+                "Cannot import nexussdk, "
+                "consider upgrading to python 3.5 or higher",
+            )
             return
 
         self.nexus = nexus
@@ -51,8 +53,10 @@ class NexusHelper:
             return json_creds.get(self.config_token_property_name())
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus credentials.")
-        prompt = ("Please enter your Nexus access token (it will be "
-                  "saved in {} for future use): ".format(self.config_file))
+        prompt = (
+            "Please enter your Nexus access token (it will be "
+            "saved in {} for future use): ".format(self.config_file)
+        )
         return self.prompt(prompt)
 
     def get_nexus_organization(self):
@@ -61,9 +65,12 @@ class NexusHelper:
             return json_creds.get("nexus-organization")
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus organization.")
-        prompt = ("Please enter the Nexus organization you want to publish to"
-                  " (it will be saved in {} for future use): "
-                  .format(self.config_file))
+        prompt = (
+            "Please enter the Nexus organization you want to publish to"
+            " (it will be saved in {} for future use): ".format(
+                self.config_file
+            )
+        )
         return self.prompt(prompt)
 
     def get_nexus_project(self):
@@ -72,9 +79,12 @@ class NexusHelper:
             return json_creds.get("nexus-project")
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus project.")
-        prompt = ("Please enter the Nexus project you want to publish to"
-                  " (it will be saved in {} for future use): "
-                  .format(self.config_file))
+        prompt = (
+            "Please enter the Nexus project you want to publish to"
+            " (it will be saved in {} for future use): ".format(
+                self.config_file
+            )
+        )
         return self.prompt(prompt)
 
     def save_nexus_inputs(self, access_token, org, project):
@@ -82,19 +92,23 @@ class NexusHelper:
         json_creds[self.config_token_property_name()] = access_token
         json_creds["nexus-organization"] = org
         json_creds["nexus-project"] = project
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, "w") as f:
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
         if self.verbose:
-            print_info("Nexus access token, organization and project"
-                       " saved in {}".format(self.config_file))
+            print_info(
+                "Nexus access token, organization and project"
+                " saved in {}".format(self.config_file)
+            )
 
     def get_nexus_endpoint(self):
         # change once nexus is setup
-        endpoint = "https://sandbox.bluebrainnexus.io/v1" if self.sandbox \
+        endpoint = (
+            "https://sandbox.bluebrainnexus.io/v1"
+            if self.sandbox
             else "https://sandbox.bluebrainnexus.io/v1"
+        )
         if self.verbose:
-            print_info("Using Nexus endpoint {}"
-                       .format(endpoint))
+            print_info(f"Using Nexus endpoint {endpoint}")
         return endpoint
 
     def config_token_property_name(self):
@@ -121,8 +135,7 @@ class NexusHelper:
         try:
             self.nexus.permissions.fetch()
         except ConnectionError as e:
-            raise_error(NexusError,
-                        "Cannot access Nexus endpoint", e.response)
+            raise_error(NexusError, "Cannot access Nexus endpoint", e.response)
         if self.verbose:
             print_info("Nexus endpoint is accessible")
 
@@ -134,19 +147,24 @@ class NexusHelper:
                 print_info("Authentication to Nexus successful")
         except HTTPError as e:
             if 404 == e.response.status_code:
-                raise_error(NexusError,
-                            "No project '{}' in organization '{}' "
-                            "in Nexus repository".format(project, org),
-                            e.response)
+                raise_error(
+                    NexusError,
+                    "No project '{}' in organization '{}' "
+                    "in Nexus repository".format(project, org),
+                    e.response,
+                )
             elif 401 == e.response.status_code:
-                raise_error(NexusError,
-                            "Cannot authenticate to Nexus API, check "
-                            "your access token", e.response)
+                raise_error(
+                    NexusError,
+                    "Cannot authenticate to Nexus API, check "
+                    "your access token",
+                    e.response,
+                )
             else:
                 raise_error(NexusError, "Something went wrong", e.response)
 
     def get_config_file(self):
-        return os.path.join(os.path.expanduser('~'), ".nexus")
+        return os.path.join(os.path.expanduser("~"), ".nexus")
 
     def prompt(self, prompt):
         try:

@@ -16,8 +16,8 @@ from boutiques.util.utils import LoadError
 
 def mock_get(*args, **kwargs):
     query = args[0].split("=")[1]
-    query = query[:query.find("&")]
-    query = query.replace("*", '')
+    query = query[: query.find("&")]
+    query = query.replace("*", "")
 
     mock_records = []
     # Return an arbitrary list of results
@@ -29,8 +29,11 @@ def mock_get(*args, **kwargs):
 class TestLogger(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
-        self.setup(os.path.join(os.path.dirname(bfile),
-                                "schema", "examples", "example1"))
+        self.setup(
+            os.path.join(
+                os.path.dirname(bfile), "schema", "examples", "example1"
+            )
+        )
 
     # Captures the stdout and stderr during test execution
     # and returns them as a tuple in readouterr()
@@ -41,13 +44,15 @@ class TestLogger(BaseTest):
     def test_raise_error(self):
         invocationStr = "invalid json string"
         with pytest.raises(LoadError) as e:
-            bosh.execute("launch",
-                         self.example1_descriptor,
-                         invocationStr,
-                         "--skip-data-collection")
-        self.assertIn("[ ERROR ]", str(e.getrepr(style='long')))
+            bosh.execute(
+                "launch",
+                self.example1_descriptor,
+                invocationStr,
+                "--skip-data-collection",
+            )
+        self.assertIn("[ ERROR ]", str(e.getrepr(style="long")))
 
-    @mock.patch('requests.get', side_effect=mock_get)
+    @mock.patch("requests.get", side_effect=mock_get)
     def test_print_info(self, mock_get):
         bosh.search("-v")
         out, err = self.capfd.readouterr()
@@ -56,19 +61,27 @@ class TestLogger(BaseTest):
 
     def test_print_warning(self):
         parser = ArgumentParser(description="my tool description")
-        parser.add_argument("--myarg", "-m", action="store",
-                            help="my help", dest="==SUPPRESS==")
-        creatorObj = bc.CreateDescriptor(parser,
-                                         execname='/path/to/myscript.py',
-                                         verbose=True,
-                                         tags={"purpose": "testing-creator",
-                                               "foo": "bar"})
+        parser.add_argument(
+            "--myarg",
+            "-m",
+            action="store",
+            help="my help",
+            dest="==SUPPRESS==",
+        )
+        creatorObj = bc.CreateDescriptor(
+            parser,
+            execname="/path/to/myscript.py",
+            verbose=True,
+            tags={"purpose": "testing-creator", "foo": "bar"},
+        )
         out, err = self.capfd.readouterr()
         self.assertIn("[ WARNING ]", out)
 
     def test_evaloutput(self):
-        query = bosh.evaluate(self.example1_descriptor,
-                              self.get_file_path("invocation.json"),
-                              "invalid-query")
+        query = bosh.evaluate(
+            self.example1_descriptor,
+            self.get_file_path("invocation.json"),
+            "invalid-query",
+        )
         out, err = self.capfd.readouterr()
         self.assertIn("[ ERROR ]", out)

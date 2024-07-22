@@ -14,10 +14,9 @@ class TestExample(BaseTest):
         self.setup("example")
 
     def test_example_complete(self):
-        descriptor = self.get_file_path('test_example_descriptor.json')
-        command = ("bosh example " + descriptor + " -c")
-        process = subprocess.Popen(command, shell=True,
-                                   stdout=subprocess.PIPE)
+        descriptor = self.get_file_path("test_example_descriptor.json")
+        command = "bosh example " + descriptor + " -c"
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = json.loads(process.stdout.read())
 
         self.assertTrue(("a1" in output and "b2" in output) or "a2" in output)
@@ -28,24 +27,29 @@ class TestExample(BaseTest):
         self.assertIn("d2", output)
 
     def test_example_required_only(self):
-        descriptor = self.get_file_path('test_example_descriptor.json')
-        command = ("bosh example " + descriptor)
-        process = subprocess.Popen(command, shell=True,
-                                   stdout=subprocess.PIPE)
+        descriptor = self.get_file_path("test_example_descriptor.json")
+        command = "bosh example " + descriptor
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = json.loads(process.stdout.read())
 
         self.assertDictEqual({"b1": "b1", "c2": "c2"}, output)
 
     def test_example_requires_group_complete_x10(self):
-        descriptor = self.get_file_path('test_docopt_valid.json')
+        descriptor = self.get_file_path("test_docopt_valid.json")
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor, None,
-                                 {"forcePathType": True,
-                                  "destroyTempScripts": True,
-                                  "changeUser": True,
-                                  "skipDataCollect": True,
-                                  "requireComplete": True,
-                                  "sandbox": False})
+
+        executor = LocalExecutor(
+            descriptor,
+            None,
+            {
+                "forcePathType": True,
+                "destroyTempScripts": True,
+                "changeUser": True,
+                "skipDataCollect": True,
+                "requireComplete": True,
+                "sandbox": False,
+            },
+        )
 
         # Can't create descriptors with mutex group but only one valid example
         # Bosh example is inherently random,

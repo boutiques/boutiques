@@ -8,13 +8,15 @@ from .prettyprint import PrettyPrinter
 from .publisher import Publisher
 from .validator import validate_descriptor
 
-__all__ = ['localExec',
-           'invocationSchemaHandler',
-           'creator',
-           'validator',
-           'bids',
-           'publisher',
-           'evaluate',
-           'example',
-           'prettyprint',
-           'bosh']
+__all__ = [
+    "localExec",
+    "invocationSchemaHandler",
+    "creator",
+    "validator",
+    "bids",
+    "publisher",
+    "evaluate",
+    "example",
+    "prettyprint",
+    "bosh",
+]

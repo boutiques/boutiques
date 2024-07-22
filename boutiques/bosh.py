@@ -29,10 +29,11 @@ from boutiques.validator import DescriptorValidationError
 
 def pprint(*params):
     parser = parser_bosh()
-    params = ('pprint',) + params
+    params = ("pprint",) + params
     results = parser.parse_args(params)
 
     from boutiques.prettyprint import PrettyPrinter
+
     desc = loadJson(results.descriptor, sandbox=results.sandbox)
     prettyclass = PrettyPrinter(desc)
     return prettyclass.docstring
@@ -40,38 +41,45 @@ def pprint(*params):
 
 def create(*params):
     parser = parser_bosh()
-    params = ('create',) + params
+    params = ("create",) + params
     results = parser.parse_args(params)
 
     from boutiques.creator import CreateDescriptor
-    new = CreateDescriptor(parser=None,
-                           docker_image=results.docker_image,
-                           use_singularity=results.use_singularity,
-                           camel_case=results.camel_case,
-                           cl_template=results.cl_template)
+
+    new = CreateDescriptor(
+        parser=None,
+        docker_image=results.docker_image,
+        use_singularity=results.use_singularity,
+        camel_case=results.camel_case,
+        cl_template=results.cl_template,
+    )
     new.save(results.descriptor)
     return None
 
 
 def validate(*params):
     parser = parser_bosh()
-    params = ('validate',) + params
+    params = ("validate",) + params
     results = parser.parse_args(params)
 
     from boutiques.validator import validate_descriptor
+
     descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
-    descriptor = validate_descriptor(descriptor,
-                                     descriptor_path=results.descriptor,
-                                     format_output=results.format,
-                                     sandbox=results.sandbox)
+    descriptor = validate_descriptor(
+        descriptor,
+        descriptor_path=results.descriptor,
+        format_output=results.format,
+        sandbox=results.sandbox,
+    )
     if results.bids:
         from boutiques.bids import validate_bids
+
         validate_bids(descriptor, valid=True)
 
 
 def execute(*params):
     parser = parser_bosh()
-    params = ('exec',) + params
+    params = ("exec",) + params
     try:
         # Try to parse input with argparse
         results, _ = parser.parse_known_args(params)
@@ -80,38 +88,43 @@ def execute(*params):
         raise_error(ExecutorError, "Incorrect usage of 'bosh exec'")
 
     # Validate mode is in params
-    if not hasattr(results, 'mode'):
-        parser.parse_known_args(params + ('--help',))
-        raise_error(ExecutorError,
-                    "Missing exec mode {launch, prepare, simulate}.")
+    if not hasattr(results, "mode"):
+        parser.parse_known_args(params + ("--help",))
+        raise_error(
+            ExecutorError, "Missing exec mode {launch, prepare, simulate}."
+        )
 
     elif results.mode == "launch":
         descriptor = results.descriptor
         inp = results.invocation
 
         # Validate invocation and descriptor
-        arguments = [descriptor, '-i', inp]
+        arguments = [descriptor, "-i", inp]
         if results.sandbox:
-            arguments.append('--sandbox')
+            arguments.append("--sandbox")
         valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor, inp,
-                                 {"forcePathType": True,
-                                  "debug": results.debug,
-                                  "changeUser": results.user,
-                                  "stream": results.stream,
-                                  "imagePath": results.imagepath,
-                                  "skipDataCollect":
-                                      results.skip_data_collection,
-                                  "forceDocker": results.force_docker,
-                                  "forceSingularity":
-                                      results.force_singularity,
-                                  "provenance": results.provenance,
-                                  "noContainer": results.no_container,
-                                  "sandbox": results.sandbox,
-                                  "noAutomounts": results.no_automounts})
+
+        executor = LocalExecutor(
+            descriptor,
+            inp,
+            {
+                "forcePathType": True,
+                "debug": results.debug,
+                "changeUser": results.user,
+                "stream": results.stream,
+                "imagePath": results.imagepath,
+                "skipDataCollect": results.skip_data_collection,
+                "forceDocker": results.force_docker,
+                "forceSingularity": results.force_singularity,
+                "provenance": results.provenance,
+                "noContainer": results.no_container,
+                "sandbox": results.sandbox,
+                "noAutomounts": results.no_automounts,
+            },
+        )
         # Execute it
         return executor.execute(results.volumes)
 
@@ -123,21 +136,27 @@ def execute(*params):
 
         arguments = [descriptor]
         if inp:
-            arguments.append('-i')
+            arguments.append("-i")
             arguments.append(inp)
         if results.sandbox:
-            arguments.append('--sandbox')
+            arguments.append("--sandbox")
         valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor, inp,
-                                 {"forcePathType": True,
-                                  "destroyTempScripts": True,
-                                  "changeUser": True,
-                                  "skipDataCollect": True,
-                                  "requireComplete": results.complete,
-                                  "sandbox": results.sandbox})
+
+        executor = LocalExecutor(
+            descriptor,
+            inp,
+            {
+                "forcePathType": True,
+                "destroyTempScripts": True,
+                "changeUser": True,
+                "skipDataCollect": True,
+                "requireComplete": results.complete,
+                "sandbox": results.sandbox,
+            },
+        )
         if not inp:
             # Add optional inputs with default-value to inputs_dict,
             # which is then populated with random params
@@ -145,9 +164,12 @@ def execute(*params):
             executor.generateRandomParams(generateCmdLineFromInDict=True)
 
         if results.json:
-            sout = [json.dumps(
-                customSortInvocationByInput(executor.in_dict, descriptor),
-                indent=4)]
+            sout = [
+                json.dumps(
+                    customSortInvocationByInput(executor.in_dict, descriptor),
+                    indent=4,
+                )
+            ]
             print(sout[0])
         else:
             executor.printCmdLine()
@@ -156,8 +178,17 @@ def execute(*params):
         # for consistency with execute
         # Adding hide to "container location" field since it's an invalid
         # value, can parse that to hide the summary print
-        return ExecutorOutput(os.linesep.join(sout), "",
-                              0, "", [], [], os.linesep.join(sout), "", "hide")
+        return ExecutorOutput(
+            os.linesep.join(sout),
+            "",
+            0,
+            "",
+            [],
+            [],
+            os.linesep.join(sout),
+            "",
+            "hide",
+        )
 
     elif results.mode == "prepare":
         descriptor = results.descriptor
@@ -165,37 +196,47 @@ def execute(*params):
         # Validate descriptor
         arguments = [descriptor]
         if results.sandbox:
-            arguments.append('--sandbox')
+            arguments.append("--sandbox")
         valid = invocation(*arguments)
 
         # Generate object that will perform the commands
         from boutiques.localExec import LocalExecutor
-        executor = LocalExecutor(descriptor, None,
-                                 {"forcePathType": True,
-                                  "debug": results.debug,
-                                  "stream": results.stream,
-                                  "imagePath": results.imagepath,
-                                  "skipDataCollect": True,
-                                  "sandbox": results.sandbox})
+
+        executor = LocalExecutor(
+            descriptor,
+            None,
+            {
+                "forcePathType": True,
+                "debug": results.debug,
+                "stream": results.stream,
+                "imagePath": results.imagepath,
+                "skipDataCollect": True,
+                "sandbox": results.sandbox,
+            },
+        )
         container_location = executor.prepare()[1]
         print("Container location: " + container_location)
 
         # Adding hide to "container location" field since it's an invalid
         # value, and we can parse that to hide the summary print
-        return ExecutorOutput(container_location, "",
-                              0, "", [], [], "", "", "hide")
+        return ExecutorOutput(
+            container_location, "", 0, "", [], [], "", "", "hide"
+        )
 
 
 def importer(*params):
     parser = parser_bosh()
-    params = ('import',) + params
+    params = ("import",) + params
     results = parser.parse_args(params)
 
     from boutiques.importer import Importer
-    importer = Importer(results.input_descriptor,
-                        results.output_descriptor,
-                        results.input_invocation,
-                        results.output_invocation)
+
+    importer = Importer(
+        results.input_descriptor,
+        results.output_descriptor,
+        results.input_invocation,
+        results.output_invocation,
+    )
     if results.type == "0.4":
         importer.upgrade_04()
     elif results.type == "bids":
@@ -212,7 +253,7 @@ def importer(*params):
 
 def exporter(*params):
     parser = parser_bosh()
-    params = ('export',) + params
+    params = ("export",) + params
     results = parser.parse_args(params)
 
     descriptor = results.descriptor
@@ -224,43 +265,49 @@ def exporter(*params):
     validate(*args)
 
     from boutiques.exporter import Exporter
-    exporter = Exporter(descriptor, results.identifier,
-                        sandbox=results.sandbox)
+
+    exporter = Exporter(
+        descriptor, results.identifier, sandbox=results.sandbox
+    )
     if results.type == "carmin":
         exporter.carmin(output)
 
 
 def publish(*params):
     parser = parser_bosh()
-    params = ('publish',) + params
+    params = ("publish",) + params
     results = parser.parse_args(params)
 
     from boutiques.publisher import Publisher
-    publisher = Publisher(results.boutiques_descriptor,
-                          results.zenodo_token,
-                          results.verbose,
-                          results.sandbox,
-                          results.no_int,
-                          results.replace,
-                          results.id)
+
+    publisher = Publisher(
+        results.boutiques_descriptor,
+        results.zenodo_token,
+        results.verbose,
+        results.sandbox,
+        results.no_int,
+        results.replace,
+        results.id,
+    )
     publisher.publish()
-    if hasattr(publisher, 'doi'):
+    if hasattr(publisher, "doi"):
         return publisher.doi
 
 
 def invocation(*params):
     parser = parser_bosh()
-    params = ('invocation',) + params
+    params = ("invocation",) + params
     results = parser.parse_args(params)
     arguments = [results.descriptor]
     if results.sandbox:
-        arguments.append('--sandbox')
+        arguments.append("--sandbox")
     validate(*arguments)
     descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
     if descriptor.get("invocation-schema"):
         invSchema = descriptor.get("invocation-schema")
     else:
         from boutiques.invocationSchemaHandler import generateInvocationSchema
+
         invSchema = generateInvocationSchema(descriptor)
         if results.write_schema:
             descriptor["invocation-schema"] = invSchema
@@ -268,34 +315,43 @@ def invocation(*params):
                 f.write(json.dumps(descriptor, indent=4))
     if results.invocation:
         from boutiques.invocationSchemaHandler import validateSchema
+
         data = addDefaultValues(descriptor, loadJson(results.invocation))
         validateSchema(invSchema, data)
 
 
 def evaluate(*params):
     parser = parser_bosh()
-    params = ('evaluate',) + params
+    params = ("evaluate",) + params
     results = parser.parse_args(params)
 
     # Generate object that will parse the invocation and descriptor
     from boutiques.localExec import LocalExecutor
-    executor = LocalExecutor(results.descriptor, results.invocation,
-                             {"forcePathType": True,
-                              "destroyTempScripts": True,
-                              "changeUser": True,
-                              "skipDataCollect": True,
-                              "sandbox": results.sandbox})
+
+    executor = LocalExecutor(
+        results.descriptor,
+        results.invocation,
+        {
+            "forcePathType": True,
+            "destroyTempScripts": True,
+            "changeUser": True,
+            "skipDataCollect": True,
+            "sandbox": results.sandbox,
+        },
+    )
 
     from boutiques.evaluate import evaluateEngine
+
     query_results = []
     for query in results.query:
         query_results += [evaluateEngine(executor, query)]
     return query_results[0] if len(query_results) == 1 else query_results
 
+
 @importCatcher()
 def test(*params):
     parser = parser_bosh()
-    params = ('test',) + params
+    params = ("test",) + params
     results = parser.parse_args(params)
 
     args = [results.descriptor]
@@ -308,15 +364,18 @@ def test(*params):
     # Extraction of all the invocations defined for the test-cases.
     descriptor = loadJson(results.descriptor, sandbox=results.sandbox)
 
-    if (not descriptor.get("tests")):
+    if not descriptor.get("tests"):
         # If no tests have been specified, we consider testing successful.
         return 0
 
     for test in descriptor["tests"]:
         invocation_JSON = test["invocation"]
 
-        testArgs = [results.descriptor, "--invocation",
-                    json.dumps(invocation_JSON)]
+        testArgs = [
+            results.descriptor,
+            "--invocation",
+            json.dumps(invocation_JSON),
+        ]
         if results.sandbox:
             testArgs.append("--sandbox")
         # Check if the invocation is valid.
@@ -328,59 +387,75 @@ def test(*params):
     if results.imagepath:
         test_args.extend(["--imagepath", results.imagepath])
     import pytest
+
     return pytest.main(args=test_args)
 
 
 def search(*params):
     parser = parser_bosh()
-    params = ('search',) + params
+    params = ("search",) + params
     results = parser.parse_args(params)
 
     from boutiques.searcher import Searcher
-    searcher = Searcher(results.query, results.verbose, results.sandbox,
-                        results.max, results.no_trunc, results.exact)
+
+    searcher = Searcher(
+        results.query,
+        results.verbose,
+        results.sandbox,
+        results.max,
+        results.no_trunc,
+        results.exact,
+    )
 
     return searcher.search()
 
 
 def example(*params):
     parser = parser_bosh()
-    params = ('example',) + params
+    params = ("example",) + params
     results = parser.parse_args(params)
 
     descriptor = results.descriptor
     arguments = [descriptor]
     if results.sandbox:
-        arguments.append('--sandbox')
+        arguments.append("--sandbox")
     valid = invocation(*arguments)
 
     # Generate object that will perform the commands
     from boutiques.localExec import LocalExecutor
-    executor = LocalExecutor(descriptor, None,
-                             {"forcePathType": True,
-                              "destroyTempScripts": True,
-                              "changeUser": True,
-                              "skipDataCollect": True,
-                              "requireComplete": results.complete,
-                              "sandbox": results.sandbox})
+
+    executor = LocalExecutor(
+        descriptor,
+        None,
+        {
+            "forcePathType": True,
+            "destroyTempScripts": True,
+            "changeUser": True,
+            "skipDataCollect": True,
+            "requireComplete": results.complete,
+            "sandbox": results.sandbox,
+        },
+    )
     executor.generateRandomParams()
     return json.dumps(
-        customSortInvocationByInput(executor.in_dict, descriptor), indent=4)
+        customSortInvocationByInput(executor.in_dict, descriptor), indent=4
+    )
 
 
 def pull(*params):
     parser = parser_bosh()
-    params = ('pull',) + params
+    params = ("pull",) + params
     results = parser.parse_args(params)
 
     from boutiques.puller import Puller
+
     puller = Puller(results.zids, results.verbose, results.sandbox)
     return puller.pull()
 
 
 def data(*params):
     parser = parser_bosh()
-    params = ('data',) + params
+    params = ("data",) + params
     try:
         # Try to parse input with argparse
         results, _ = parser.parse_known_args(params)
@@ -389,38 +464,54 @@ def data(*params):
         raise_error(DataHandlerError, "Incorrect usage of 'bosh data'")
 
     # Validate mode is in params
-    if not hasattr(results, 'mode'):
-        parser.parse_known_args(params + ('--help',))
-        raise_error(DataHandlerError,
-                    "Missing data mode {delete, inspect, publish}.")
+    if not hasattr(results, "mode"):
+        parser.parse_known_args(params + ("--help",))
+        raise_error(
+            DataHandlerError, "Missing data mode {delete, inspect, publish}."
+        )
     elif results.mode == "inspect":
         from boutiques.dataHandler import DataHandler
+
         dataHandler = DataHandler()
         return dataHandler.inspect(results.example, results.latest)
     elif results.mode == "publish":
         from boutiques.dataHandler import DataHandler
+
         dataHandler = DataHandler()
-        return dataHandler.publish(results.file, results.zenodo_token,
-                                   results.author, results.nexus_token,
-                                   results.nexus_org, results.nexus_project,
-                                   results.individually, results.sandbox,
-                                   results.no_int, results.verbose,
-                                   results.nexus)
+        return dataHandler.publish(
+            results.file,
+            results.zenodo_token,
+            results.author,
+            results.nexus_token,
+            results.nexus_org,
+            results.nexus_project,
+            results.individually,
+            results.sandbox,
+            results.no_int,
+            results.verbose,
+            results.nexus,
+        )
     elif results.mode == "delete":
         from boutiques.dataHandler import DataHandler
+
         dataHandler = DataHandler()
         return dataHandler.delete(results.file, results.no_int)
 
 
 def deprecate(*params):
     parser = parser_bosh()
-    params = ('deprecate',) + params
+    params = ("deprecate",) + params
     result = parser.parse_args(params)
 
     from boutiques.deprecate import deprecate
-    return deprecate(result.zid, by_zenodo_id=result.by,
-                     sandbox=result.sandbox, verbose=result.verbose,
-                     zenodo_token=result.zenodo_token)
+
+    return deprecate(
+        result.zid,
+        by_zenodo_id=result.by,
+        sandbox=result.sandbox,
+        verbose=result.verbose,
+        zenodo_token=result.zenodo_token,
+    )
 
 
 def bosh(args=None):
@@ -456,8 +547,9 @@ def bosh(args=None):
             out = execute(*params)
             # If executed through CLI, print 'out' and return exit_code
             # Otherwise, return out
-            return bosh_return(out, out.exit_code,
-                               hide=bool(out.container_location == 'hide'))
+            return bosh_return(
+                out, out.exit_code, hide=bool(out.container_location == "hide")
+            )
         elif func == "example":
             out = example(*params)
             return bosh_return(out)
@@ -484,8 +576,9 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "search":
             out = search(*params)
-            return bosh_return(out, formatted=tabulate(out, headers='keys',
-                                                       tablefmt='plain'))
+            return bosh_return(
+                out, formatted=tabulate(out, headers="keys", tablefmt="plain")
+            )
         elif func == "pull":
             out = pull(*params)
             return bosh_return(out, hide=True)
@@ -494,23 +587,25 @@ def bosh(args=None):
             return bosh_return(out)
         elif func == "version":
             from boutiques.__version__ import VERSION
+
             return bosh_return(VERSION)
         elif func == "deprecate":
             out = deprecate(*params)
             return bosh_return(out)
         else:
             print(parser_bosh().format_help())
-            raise_error(ExecutorError,
-                        f"Incorrect bosh mode \'{func}\'")
+            raise_error(ExecutorError, f"Incorrect bosh mode '{func}'")
 
-    except (ZenodoError,
-            NexusError,
-            DescriptorValidationError,
-            InvocationValidationError,
-            ValidationError,
-            ExportError,
-            ImportError,
-            ExecutorError) as e:
+    except (
+        ZenodoError,
+        NexusError,
+        DescriptorValidationError,
+        InvocationValidationError,
+        ValidationError,
+        ExportError,
+        ImportError,
+        ExecutorError,
+    ) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
@@ -521,8 +616,10 @@ def bosh(args=None):
         if runs_as_cli():
             print(e)
             return 99  # Note: this conflicts with tool error codes.
-        raise_error(BoutiquesError,
-                    "Unable to parse arguments resulting in SystemExit.")
+        raise_error(
+            BoutiquesError,
+            "Unable to parse arguments resulting in SystemExit.",
+        )
 
 
 class BoutiquesError(Exception):
@@ -532,8 +629,11 @@ class BoutiquesError(Exception):
 # This section is for documentation generation purposes
 bosh.__doc__ = parser_bosh().format_usage().replace("sphinx-build", "bosh")
 # retrieve subparsers from parser
-subparsers_actions = [a for a in parser_bosh()._actions
-                      if isinstance(a, argparse._SubParsersAction)]
+subparsers_actions = [
+    a
+    for a in parser_bosh()._actions
+    if isinstance(a, argparse._SubParsersAction)
+]
 for action in subparsers_actions:
     # get all subparsers and assign __doc__ to functions
     for func, subparser in action.choices.items():

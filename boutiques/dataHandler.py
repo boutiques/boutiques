@@ -14,10 +14,12 @@ class DataHandler:
     def __init__(self):
         self.cache_dir = getDataCacheDir()
         self.cache_files = os.listdir(self.cache_dir)
-        self.descriptor_files = [fl for fl in self.cache_files
-                                 if fl.split('_')[0] == "descriptor"]
-        self.record_files = [fl for fl in self.cache_files
-                             if fl not in self.descriptor_files]
+        self.descriptor_files = [
+            fl for fl in self.cache_files if fl.split("_")[0] == "descriptor"
+        ]
+        self.record_files = [
+            fl for fl in self.cache_files if fl not in self.descriptor_files
+        ]
 
     # Function to display the contents of the cache
     # Option to display an example file which displays an pre-made example file
@@ -37,7 +39,12 @@ class DataHandler:
                 print("No records in the cache at the moment.")
         elif self.latest:
             if len(self.record_files) > 0:
-                self.record_files.sort(key=lambda x: os.path.getmtime(os.path.join(self.cache_dir, x)), reverse=True)
+                self.record_files.sort(
+                    key=lambda x: os.path.getmtime(
+                        os.path.join(self.cache_dir, x)
+                    ),
+                    reverse=True,
+                )
                 filename = self.record_files[0]
                 file_path = os.path.join(self.cache_dir, filename)
                 self._display_file(file_path)
@@ -45,10 +52,16 @@ class DataHandler:
                 print("No records in the cache at the moment.")
         # Print information about files in cache
         else:
-            print("There are {} unpublished records in the cache"
-                  .format(len(self.record_files)))
-            print("There are {} unpublished descriptors in the cache"
-                  .format(len(self.descriptor_files)))
+            print(
+                "There are {} unpublished records in the cache".format(
+                    len(self.record_files)
+                )
+            )
+            print(
+                "There are {} unpublished descriptors in the cache".format(
+                    len(self.descriptor_files)
+                )
+            )
             for i in range(len(self.cache_files)):
                 print(self.cache_files[i])
 
@@ -62,10 +75,20 @@ class DataHandler:
     # Options allow to only publish a single file, publish files individually as
     # data sets or bulk publish all files in the cache as one data set (default)
     @importCatcher()
-    def publish(self, file, zenodo_token, author, nexus_token,
-                nexus_org, nexus_project,
-                individually=False, sandbox=False,
-                no_int=False, verbose=False, to_nexus=False):
+    def publish(
+        self,
+        file,
+        zenodo_token,
+        author,
+        nexus_token,
+        nexus_org,
+        nexus_project,
+        individually=False,
+        sandbox=False,
+        no_int=False,
+        verbose=False,
+        to_nexus=False,
+    ):
         self.filename = extractFileName(file)
         self.author = "Anonymous"
         if author is not None:
@@ -77,17 +100,23 @@ class DataHandler:
         self.to_nexus = to_nexus
         if not self.to_nexus:
             from boutiques.zenodoHelper import ZenodoHelper
+
             self.zenodo_access_token = zenodo_token
             self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
             self.zenodo_endpoint = self.zenodo_helper.zenodo_endpoint
-            self.zenodo_access_token = self.zenodo_helper \
-                .verify_zenodo_access_token(self.zenodo_access_token)
+            self.zenodo_access_token = (
+                self.zenodo_helper.verify_zenodo_access_token(
+                    self.zenodo_access_token
+                )
+            )
         else:
             self.nexus_helper = NexusHelper(sandbox, no_int, verbose)
             self.nexus_endpoint = self.nexus_helper.nexus_endpoint
-            self.nexus_access_token, self.nexus_org, self.nexus_project = \
+            self.nexus_access_token, self.nexus_org, self.nexus_project = (
                 self.nexus_helper.verify_nexus_input(
-                    nexus_token, nexus_org, nexus_project)
+                    nexus_token, nexus_org, nexus_project
+                )
+            )
 
         # Verify publishing
         if not self.no_int:
@@ -126,28 +155,35 @@ class DataHandler:
         # Publish to Nexus
         if self.to_nexus:
             for file in files_list:
-                self.nexus_helper.publish(self.nexus_org, self.nexus_project,
-                                          os.path.join(self.cache_dir, file))
+                self.nexus_helper.publish(
+                    self.nexus_org,
+                    self.nexus_project,
+                    os.path.join(self.cache_dir, file),
+                )
 
         # Publish to Zenodo
         else:
             # Create deposition
             deposition_id = self.zenodo_helper.zenodo_deposit(
-                self._create_metadata(records_dict), self.zenodo_access_token)
+                self._create_metadata(records_dict), self.zenodo_access_token
+            )
 
             # Upload all files in files_list to deposition
             for fil in records_dict.keys():
                 file_path = os.path.join(self.cache_dir, fil)
                 self.zenodo_helper.zenodo_upload_file(
-                    deposition_id, file_path,
+                    deposition_id,
+                    file_path,
                     zenodo_access_token=self.zenodo_access_token,
                     error_msg="Cannot upload record to Zenodo",
-                    verbose_msg="Record uploaded to Zenodo")
+                    verbose_msg="Record uploaded to Zenodo",
+                )
 
             # Publish deposition
             msg_obj = "Records" if self.bulk_publish else "Record"
-            doi = self.zenodo_helper.zenodo_publish(self.zenodo_access_token,
-                                                    deposition_id, msg_obj)
+            doi = self.zenodo_helper.zenodo_publish(
+                self.zenodo_access_token, deposition_id, msg_obj
+            )
             # Clear cache of published records
             if doi:
                 self._clean_cache(records_dict)
@@ -161,74 +197,90 @@ class DataHandler:
         for fl in files_list:
             fl_path = os.path.join(self.cache_dir, fl)
             fl_dict = loadJson(fl_path)
-            doi = fl_dict.get('summary').get('descriptor-doi')
+            doi = fl_dict.get("summary").get("descriptor-doi")
             # Descriptor is not publish, record contains link to file
             if doi.split("_")[0] == "descriptor":
                 desc_path = os.path.join(self.cache_dir, doi)
                 desc_dict = loadJson(desc_path)
                 # Descriptor is published, record needs to be updated
-                if desc_dict.get('doi') is not None:
-                    fl_dict['summary']['descriptor-doi'] = desc_dict['doi']
+                if desc_dict.get("doi") is not None:
+                    fl_dict["summary"]["descriptor-doi"] = desc_dict["doi"]
                     publishable_dict[fl] = fl_dict
                 # Descriptor isn't published, inform user with full prompt
                 else:
-                    print("Record {} cannot be published as its descriptor "
-                          "is not yet published. ".format(fl))
+                    print(
+                        "Record {} cannot be published as its descriptor "
+                        "is not yet published. ".format(fl)
+                    )
                     desc_to_publish.add(f"bosh publish {desc_path}")
             # Descriptor doi is stored correctly in record
             else:
                 publishable_dict[fl] = fl_dict
         # Prompt user to publish descriptors
         if len(desc_to_publish) != 0:
-            print("Some descriptors have not been published, they can be "
-                  "published with following commands:")
+            print(
+                "Some descriptors have not been published, they can be "
+                "published with following commands:"
+            )
             for prompt in desc_to_publish:
-                print("\t"+prompt)
+                print("\t" + prompt)
         return publishable_dict
 
     def _create_metadata(self, records_dict):
         url = "https://zenodo.org/record/{}"
         hash = hashlib.md5()
-        hash.update(str(time.time()).encode('utf-8'))
+        hash.update(str(time.time()).encode("utf-8"))
         identifier = hash.hexdigest()
         data = {
-            'metadata': {
-                'title': f'Boutiques-execution-{identifier[:6]}',
-                'upload_type': 'dataset',
-                'description': 'Boutiques execution data-set',
-                'creators': [{'name': self.author}]
+            "metadata": {
+                "title": f"Boutiques-execution-{identifier[:6]}",
+                "upload_type": "dataset",
+                "description": "Boutiques execution data-set",
+                "creators": [{"name": self.author}],
             }
         }
 
         # Get unique list of tool names and descriptors
-        unique_names = {v['summary']['name']
-                            for v in records_dict.values()}
-        unique_descriptors = {v['summary']['descriptor-doi']
-                                  for v in records_dict.values()}
+        unique_names = {v["summary"]["name"] for v in records_dict.values()}
+        unique_descriptors = {
+            v["summary"]["descriptor-doi"] for v in records_dict.values()
+        }
 
         # Add tool name(s) to keywords
-        data['metadata']['keywords'] = [v for v in unique_names]
-        data['metadata']['keywords'].insert(0, 'Boutiques')
+        data["metadata"]["keywords"] = [v for v in unique_names]
+        data["metadata"]["keywords"].insert(0, "Boutiques")
         # Add descriptor link(s) to related identifiers
-        data['metadata']['related_identifiers'] = \
-            [{'identifier': url.format(v.split('.')[2]),
-              'relation': 'hasPart'} for v in unique_descriptors]
+        data["metadata"]["related_identifiers"] = [
+            {"identifier": url.format(v.split(".")[2]), "relation": "hasPart"}
+            for v in unique_descriptors
+        ]
         return data
 
     def _get_publishing_prompt(self):
-        _destination = "Nexus in organization '{}' and project '{}'" \
-            .format(self.nexus_org, self.nexus_project) \
-            if self.to_nexus else "Zenodo"
+        _destination = (
+            "Nexus in organization '{}' and project '{}'".format(
+                self.nexus_org, self.nexus_project
+            )
+            if self.to_nexus
+            else "Zenodo"
+        )
         if self.filename is not None:
-            return ("The dataset {} will be published to {}, "
-                    "this cannot be undone. Are you sure? (Y/n) "
-                    .format(self.filename, _destination))
+            return (
+                "The dataset {} will be published to {}, "
+                "this cannot be undone. Are you sure? (Y/n) ".format(
+                    self.filename, _destination
+                )
+            )
         if self.individual:
-            return ("The records will be published to {} each as "
-                    "separate data-sets. This cannot be undone. Are you "
-                    "sure? (Y/n ". format(_destination))
-        return ("The records will be published to {} as a data-set. This "
-                "cannot be undone. Are you sure? (Y/n) ".format(_destination))
+            return (
+                "The records will be published to {} each as "
+                "separate data-sets. This cannot be undone. Are you "
+                "sure? (Y/n ".format(_destination)
+            )
+        return (
+            "The records will be published to {} as a data-set. This "
+            "cannot be undone. Are you sure? (Y/n) ".format(_destination)
+        )
 
     # Private function to remove published files and descriptors which no
     # longer have dependencies
@@ -236,11 +288,17 @@ class DataHandler:
         for record in records_dict.keys():
             self.delete(record, True)
         # List remaining records and collect descriptor-doi values
-        self.record_files = [fl for fl in os.listdir(self.cache_dir)
-                             if fl not in self.descriptor_files]
-        doi_list = [loadJson(os.path.join(self.cache_dir, fl))
-                    .get('summary').get('descriptor-doi')
-                    for fl in self.record_files]
+        self.record_files = [
+            fl
+            for fl in os.listdir(self.cache_dir)
+            if fl not in self.descriptor_files
+        ]
+        doi_list = [
+            loadJson(os.path.join(self.cache_dir, fl))
+            .get("summary")
+            .get("descriptor-doi")
+            for fl in self.record_files
+        ]
 
         # Check each descriptor in remaining records
         for descriptor in self.descriptor_files:
@@ -274,12 +332,13 @@ class DataHandler:
             # Remove file from cache
             file_path = os.path.join(self.cache_dir, file)
             os.remove(file_path)
-            print_info("File {} has been removed from the data cache"
-                       .format(file))
+            print_info(f"File {file} has been removed from the data cache")
         # Remove all files in the data cache
         else:
-            [os.remove(os.path.join(self.cache_dir, f))
-             for f in self.cache_files]
+            [
+                os.remove(os.path.join(self.cache_dir, f))
+                for f in self.cache_files
+            ]
             print_info("All files have been removed from the data cache")
 
     def _file_exists_in_cache(self, filename):
@@ -291,15 +350,20 @@ class DataHandler:
 
     def _get_delete_prompt(self):
         if self.filename is not None:
-            return ("The dataset {} will be deleted from the cache, "
-                    "this cannot be undone. Are you sure? (Y/n) "
-                    .format(self.filename))
-        return ("All records will be removed from the cache. This "
-                "cannot be undone. Are you sure? (Y/n) ")
+            return (
+                "The dataset {} will be deleted from the cache, "
+                "this cannot be undone. Are you sure? (Y/n) ".format(
+                    self.filename
+                )
+            )
+        return (
+            "All records will be removed from the cache. This "
+            "cannot be undone. Are you sure? (Y/n) "
+        )
 
 
 def getDataCacheDir():
-    cache_dir = os.path.join(os.path.expanduser('~'), ".cache", "boutiques")
+    cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "boutiques")
     data_cache_dir = os.path.join(cache_dir, "data")
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir, exist_ok=True)

@@ -15,8 +15,9 @@ from boutiques.tests.BaseTest import BaseTest
 
 def retrieve_data_record():
     data_collect_dict = {}
-    cache_dir = os.path.join(os.path.expanduser('~'),
-                             ".cache", "boutiques", "data")
+    cache_dir = os.path.join(
+        os.path.expanduser("~"), ".cache", "boutiques", "data"
+    )
     if os.path.exists(cache_dir):
         cache_fls = glob.glob(cache_dir + "/*")
         if cache_fls:
@@ -35,8 +36,9 @@ class TestDataCollection(BaseTest):
     def clean_up(self):
         yield
         # Clean up data collection files
-        cache_dir = os.path.join(os.path.expanduser('~'),
-                                 ".cache", "boutiques", "data")
+        cache_dir = os.path.join(
+            os.path.expanduser("~"), ".cache", "boutiques", "data"
+        )
         if os.path.exists(cache_dir):
             cache_fls = os.listdir(cache_dir)
             for fl in cache_fls:
@@ -46,18 +48,27 @@ class TestDataCollection(BaseTest):
                 if mtime > dt.datetime.now() - dt.timedelta(minutes=2):
                     os.remove(path)
 
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
     def test_data_collection(self):
-        invoc = os.path.join(os.path.dirname(bfile), "schema",
-                             "examples", "example1", "invocation.json")
-        bosh.execute("launch",
-                     self.example1_descriptor,
-                     invoc,
-                     "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_mount1")),
-                     "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_mount2")))
+        invoc = os.path.join(
+            os.path.dirname(bfile),
+            "schema",
+            "examples",
+            "example1",
+            "invocation.json",
+        )
+        bosh.execute(
+            "launch",
+            self.example1_descriptor,
+            invoc,
+            "-v",
+            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            "-v",
+            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+        )
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")
@@ -84,27 +95,37 @@ class TestDataCollection(BaseTest):
         logfile = output_files.get("logfile")
         self.assertEqual(logfile.get("file-name"), "log-4-coin;plop.txt")
 
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
     def test_skip_collection(self):
         # Register original size of cache directory for comparison
-        cache_dir = os.path.join(os.path.expanduser('~'),
-                                 ".cache", "boutiques", "data")
+        cache_dir = os.path.join(
+            os.path.expanduser("~"), ".cache", "boutiques", "data"
+        )
         original_size = 0
         if os.path.exists(cache_dir):
             cache_fls = os.listdir(cache_dir)
             original_size = len(cache_fls)
 
-        invoc = os.path.join(os.path.dirname(bfile), "schema",
-                             "examples", "example1", "invocation.json")
-        bosh.execute("launch",
-                     self.example1_descriptor,
-                     invoc,
-                     "--skip-data-collection",
-                     "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_mount1")),
-                     "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_mount2")))
+        invoc = os.path.join(
+            os.path.dirname(bfile),
+            "schema",
+            "examples",
+            "example1",
+            "invocation.json",
+        )
+        bosh.execute(
+            "launch",
+            self.example1_descriptor,
+            invoc,
+            "--skip-data-collection",
+            "-v",
+            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            "-v",
+            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+        )
 
         new_size = 0
         if os.path.exists(cache_dir):
@@ -112,32 +133,45 @@ class TestDataCollection(BaseTest):
             new_size = len(cache_fls)
         self.assertEqual(new_size, original_size)
 
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
-    @mock.patch('requests.get', return_value=mock_get())
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
+    @mock.patch("requests.get", return_value=mock_get())
     def test_read_doi_zenodo(self, mock_get):
-        invoc = os.path.join(os.path.dirname(bfile), "schema",
-                             "examples", "example1", "invocation.json")
-        bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id),
-                     invoc)
+        invoc = os.path.join(
+            os.path.dirname(bfile),
+            "schema",
+            "examples",
+            "example1",
+            "invocation.json",
+        )
+        bosh.execute(
+            "launch", "zenodo." + str(example_boutiques_tool.id), invoc
+        )
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")
         self.assertIsNotNone(summary)
-        self.assertEqual(summary.get("descriptor-doi"),
-                         "10.5281/zenodo." + str(example_boutiques_tool.id))
+        self.assertEqual(
+            summary.get("descriptor-doi"),
+            "10.5281/zenodo." + str(example_boutiques_tool.id),
+        )
 
     def test_directory_input_output(self):
         import shutil
+
         if os.path.exists(self.test_temp):
             shutil.rmtree(self.test_temp)
-        bosh.execute("launch",
-                     self.get_file_path("dir_input.json"),
-                     self.get_file_path("dir_invocation.json"),
-                     "-v", "{}:/test_mount1".format(
-                             self.get_file_path("example1_mount1")),
-                     "-v", "{}:/test_mount2".format(
-                             self.get_file_path("example1_mount2")))
+        bosh.execute(
+            "launch",
+            self.get_file_path("dir_input.json"),
+            self.get_file_path("dir_invocation.json"),
+            "-v",
+            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            "-v",
+            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+        )
         data_collect_dict = retrieve_data_record()
 
         public_in = data_collect_dict.get("public-invocation")
@@ -158,24 +192,34 @@ class TestDataCollection(BaseTest):
         self.assertIsNotNone(files)
         self.assertEqual(len(files), 2)
 
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
     def test_add_provenance(self):
         provenance = """{
             \"engine\": \"http://cbrain.ca\",
             \"dataset id\": \"1234\",
             \"cluster\": \"beluga\"
         }"""
-        invoc = os.path.join(os.path.dirname(bfile), "schema",
-                             "examples", "example1", "invocation.json")
-        bosh.execute("launch",
-                     self.example1_descriptor,
-                     invoc,
-                     "-v", "{}:/test_mount1".format(
-                        self.get_file_path("example1_mount1")),
-                     "-v", "{}:/test_mount2".format(
-                        self.get_file_path("example1_mount2")),
-                     "--provenance", provenance)
+        invoc = os.path.join(
+            os.path.dirname(bfile),
+            "schema",
+            "examples",
+            "example1",
+            "invocation.json",
+        )
+        bosh.execute(
+            "launch",
+            self.example1_descriptor,
+            invoc,
+            "-v",
+            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            "-v",
+            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            "--provenance",
+            provenance,
+        )
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")

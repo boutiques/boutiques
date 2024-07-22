@@ -17,8 +17,12 @@ class TestBosh(BaseTest):
         self.assertRaises(ExecutorError, bosh, ["exec", "prepare", "--help"])
         self.assertRaises(DataHandlerError, bosh, ["data", "--help"])
         self.assertRaises(DataHandlerError, bosh, ["data", "delete", "--help"])
-        self.assertRaises(DataHandlerError, bosh, ["data", "inspect", "--help"])
-        self.assertRaises(DataHandlerError, bosh, ["data", "publish", "--help"])
+        self.assertRaises(
+            DataHandlerError, bosh, ["data", "inspect", "--help"]
+        )
+        self.assertRaises(
+            DataHandlerError, bosh, ["data", "publish", "--help"]
+        )
         self.assertRaises(BoutiquesError, bosh, ["publish", "--help"])
         self.assertRaises(BoutiquesError, bosh, ["import", "--help"])
         self.assertRaises(BoutiquesError, bosh, ["validate", "--help"])

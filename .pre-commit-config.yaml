@@ -57,6 +57,10 @@ repos:
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
+        exclude: |
+            (?x)^(
+                boutiques/schema/examples/example1/exampleTool1_nonutf8.py
+            )$
 
 
 # Aplly black formatting to python code
@@ -74,3 +78,7 @@ repos:
     -   id: blacken-docs
         additional_dependencies:
         -   black==23.9.1
+        exclude: |
+            (?x)^(
+                boutiques/schema/examples/example1/exampleTool1_nonutf8.py
+            )$

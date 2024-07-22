@@ -5,14 +5,14 @@ from boutiques.util.utils import loadJson
 
 
 def function(descriptor):
-    '''
+    """
     Returns a function to invoke bosh.execute on a descriptor.
     args:
         descriptor: Zenodo id, file name, or JSON string representing a
                     descriptor.
         name: name of the function to create. Defaults to the tool name in the
               descriptor.
-    '''
+    """
 
     validate(descriptor)
     descriptor_json = loadJson(descriptor)
@@ -23,26 +23,25 @@ def function(descriptor):
         if len(args) > 0:
             mode = args[0]
         else:
-            mode = 'launch'
-        if mode not in ['launch', 'simulate']:
-            mode = 'launch'
+            mode = "launch"
+        if mode not in ["launch", "simulate"]:
+            mode = "launch"
         else:
             args = args[1:]
 
         # Call bosh execute
-        if mode == 'launch':
-            return execute(mode, descriptor,
-                           json.dumps(kwargs), *args)
+        if mode == "launch":
+            return execute(mode, descriptor, json.dumps(kwargs), *args)
         if len(kwargs) > 0:
-            return execute(mode, descriptor,
-                           '-i', json.dumps(kwargs), *args)
+            return execute(mode, descriptor, "-i", json.dumps(kwargs), *args)
         return execute(mode, descriptor, *args)
 
-    f.__name__ = str(descriptor_json['name'])
+    f.__name__ = str(descriptor_json["name"])
 
     # Documentation
     doc = []
-    doc.append(r'''Runs {} through its Boutiques interface.
+    doc.append(
+        r"""Runs {} through its Boutiques interface.
     *args:
         - mode: 'launch' or 'simulate'. Defaults to 'launch'.
         - other arguments: will be passed to bosh execute. Examples: '-s',
@@ -52,8 +51,11 @@ def function(descriptor):
         from input ids. Example: {}='some_value'. See complete
         list in descriptor help below.
 
-'''.format(f.__name__, f.__name__, descriptor_json['inputs'][0]['id']))
+""".format(
+            f.__name__, f.__name__, descriptor_json["inputs"][0]["id"]
+        )
+    )
     doc.append(pprint(descriptor))
-    f.__doc__ = ''.join(doc)
+    f.__doc__ = "".join(doc)
 
     return f
