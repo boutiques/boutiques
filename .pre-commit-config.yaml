@@ -42,3 +42,11 @@ repos:
     -   id: codespell
         args: [--toml, pyproject.toml]
         additional_dependencies: [tomli]
+
+
+# Sorts Python imports alphabetically and by section with `isort`.
+-   repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        args: [--profile, black, --settings-path, pyproject.toml]

@@ -3,6 +3,12 @@
 ignore-words-list = "nd,fo,minum,manum,assertIn"
 skip = ".git,*.pdf,*.svg,*.json"
 
+[tool.isort]
+combine_as_imports = true
+line_length = 79
+profile = "black"
+skip_gitignore = true
+
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --showlocals -s -vv"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
