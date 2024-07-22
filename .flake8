@@ -57,4 +57,4 @@ max_returns_amount = 30
 ;     # - docstrings rules that should not be applied to doc
 ; 	doc/*: D103, F401
 
-extend-ignore = B, D, D100, D101, D102, D103, E, F401, F405, F403, F841, F821, FS001, FS002
+extend-ignore = B005, B006, B007, B008, D100, D101, D102, D103, D104, D105, D200, D202, D205, D208, D400, D401, D404, D405, D407, D411, E501, E713, E721, F401, F405, F403, F841, F821, FS001, FS002
