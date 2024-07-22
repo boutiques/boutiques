@@ -44,6 +44,10 @@ all = [
     "requests",
     "mock"
 ]
+doc = [
+    "sphinx-rtd-theme",
+    "sphinx-argparse"
+]
 test = [
     "pytest>=6.0.0",
     "pytest-runner",

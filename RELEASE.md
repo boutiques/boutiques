@@ -1,8 +1,6 @@
 # Release process
 
-1.  Bump version number in `boutiques/__version__.py`
-
-2.  If schema was modified, re-generate `boutiques/schema/README.md` using [jsonschema2md](https://github.com/adobe/jsonschema2md)
+1.  If schema was modified, re-generate `boutiques/schema/README.md` using [jsonschema2md](https://github.com/adobe/jsonschema2md)
     ```bash
     git clone https://github.com/adobe/jsonschema2md.git
     cd jsonschema2md
@@ -12,7 +10,7 @@
     cp out/descriptor.schema.md ./boutiques/schema/README.md
     ```
 
-3.  If the `README.md` at the base of this repository was updated, update `./README.rst` using [pandoc](https://pandoc.org/)
+1.  If the `README.md` at the base of this repository was updated, update `./README.rst` using [pandoc](https://pandoc.org/)
     ```bash
     cp ./README.rst ./README_old.rst
     pandoc --from=markdown --to=rst --output=./README.rst README.md
@@ -21,21 +19,27 @@
     # rm ./README_old.rst
     ```
 
-4.  Merge `develop` in `master`
+1.  Merge `develop` in `master`
 
-5.  Create tag on GitHub, add release notes
+1.  Create X.Y.Z tag on GitHub, add release notes
 
-6.  Push to PyPi:
+1.  Get tags from github and checkout the last version:
+    ```bash
+    git pull --all
+    git checkout X.Y.Z
     ```
-    python setup.py bdist_wheel --universal
+
+1.  Push to PyPi:
+    ```bash
+    pip install build twine
+    python -m build
+    twine check dist/*
     twine upload dist/*
     ```
 
-7.  Install [Sphinx](https://www.sphinx-doc.org/en/master/usage/installation.html) for python 3
-
-8.  Generate Bosh API docs
-    ```
+1.  Generate Bosh API docs
+    ```bash
+    pip install ".[doc]"
     cd ./docs
-    pip install sphinx-rtd-theme sphinx-argparse
     python argparse_docs.py
     ```
