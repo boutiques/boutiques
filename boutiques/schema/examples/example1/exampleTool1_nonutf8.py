@@ -8,13 +8,13 @@ import sys
 
 def file_exists(parser, file_name):
     if not os.path.exists(file_name):
-        parser.error("File not found: %s" % file_name)
+        parser.error(f"File not found: {file_name}")
     return file_name
 
 
 def is_valid_enum_value(parser, value):
     if value not in ["val1", "val2", "val3"]:
-        parser.error("Invalid enum value: %s" % value)
+        parser.error(f"Invalid enum value: {value}")
     return value
 
 
@@ -100,7 +100,7 @@ def main(args=None):
             != "# This is a demo configuration file\nnumInput=4\nstrInput='coin;plop'"
         ):
             sys.stderr.write(
-                "error: invalid configuration file:\n %s\n" % config_string
+                f"error: invalid configuration file:\n {config_string}\n"
             )
             sys.exit(1)
 

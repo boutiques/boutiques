@@ -290,9 +290,9 @@ class ZenodoHelper:
             "/api/records/?q="
             "keywords:(/Boutiques/) AND "
             "keywords:(/schema.*/) AND keywords:(/version.*/)"
-            "%s"
+            f"{query_line}"
             "&file_type=json&type=software&"
-            "page=1&size=%s" % (query_line, 9999)
+            "page=1&size=9999"
         )
         r = requests.get(get_request)
         if r.status_code != 200:

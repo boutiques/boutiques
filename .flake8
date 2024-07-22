@@ -39,4 +39,4 @@ per-file-ignores =
     boutiques/schema/examples/example1/exampleTool1.py: E501
     boutiques/schema/examples/example1/exampleTool1_nonutf8.py: E501
 
-extend-ignore = B005, B006, B008, D100, D101, D102, D103, D105, FS001, FS002
+extend-ignore = B005, B006, B008, D100, D101, D102, D103, D105, FS002
