@@ -37,7 +37,7 @@ def fetch_tests(descriptor_input, paramsDict):
 
 # This function will be executed by pytest before the actual testing
 def pytest_generate_tests(metafunc):
-    descriptor_filename = metafunc.config.getoption("descriptor")[0]
+    filename = metafunc.config.getoption("descriptor")[0]
     additional_params = {"--skip-data-collection": None}
 
     if metafunc.config.option.imagepath is not None:
@@ -51,13 +51,13 @@ def pytest_generate_tests(metafunc):
     #        again from descriptor)
     #     . The invocation file needed for the test
     #     . Any additional options listed in conftest.pytest_addoption()
-    descriptor_name, tests = fetch_tests(descriptor_filename, additional_params)
+    descriptor_name, tests = fetch_tests(filename, additional_params)
 
     # Generate the test ids for each of the test cases.
     # An id is created by concatenaning the name of the descriptor
     # with the name of the test case.
     names = [
-        f"{op.basename(descriptor_filename)}_{params[1]['name'].replace(' ', '-')}"
+        f"{op.basename(filename)}_{params[1]['name'].replace(' ', '-')}"
         for params in tests
     ]
 

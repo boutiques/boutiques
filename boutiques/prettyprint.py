@@ -63,7 +63,10 @@ class PrettyPrinter:
 
     def descMetadata(self):
         # Gather main description and basic metadata
-        name = f"Tool name: {self.desc['name']} (ver: {self.desc.get('tool-version')})"
+        name = (
+            f"Tool name: {self.desc['name']} "
+            f"(ver: {self.desc.get('tool-version')})"
+        )
         description = f"Tool description: {self.desc['description']}"
         if self.desc.get("tags"):
             taglist = [

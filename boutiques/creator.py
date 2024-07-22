@@ -224,7 +224,8 @@ class CreateDescriptor:
             if any(adest == it["id"] for it in self.descriptor["inputs"]):
                 if kwargs.get("verbose"):
                     print_info(
-                        f"Duplicate: Argument won't be added multiple times ({adest})"
+                        "Duplicate: Argument won't be added multiple times "
+                        f"({adest})"
                     )
                 # If this action belongs to a subparser return a flag alongside
                 # the empty object, indicating it is not required

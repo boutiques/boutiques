@@ -1,5 +1,5 @@
 """
-BOUTIQUES COMMANDS
+BOUTIQUES COMMANDS.
 
 TOOL CREATION
 * create: create a Boutiques descriptor from scratch.
@@ -354,7 +354,10 @@ def add_subparser_execute(subparsers):
         "-u",
         "--user",
         action="store_true",
-        help=f"Runs the container as local user ({os.getenv('USER')}) instead of root.",
+        help=(
+            "Runs the container as local user "
+            f"({os.getenv('USER')}) instead of root."
+        ),
     )
     parser_exec_launch.add_argument(
         "-s",

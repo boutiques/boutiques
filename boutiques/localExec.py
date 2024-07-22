@@ -235,7 +235,7 @@ class LocalExecutor:
     # Attempt local execution of the command line
     # generated from the input values
     def execute(self, mount_strings):
-        """Runs the generated command line.
+        """Run the generated command line.
 
         The execute method runs the generated command line
         (from either generateRandomParams or readInput)
@@ -1572,7 +1572,8 @@ class LocalExecutor:
         if match:
             if self.debug:
                 print_info(
-                    f"Unpublished descriptor match found in data cache as {match}"
+                    "Unpublished descriptor match found in data cache as "
+                    f"{match}"
                 )
             return match
         # Write descriptor to data cache and save return filename

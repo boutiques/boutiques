@@ -41,7 +41,7 @@ class Importer:
         self.output_invocation = output_invocation
 
     def upgrade_04(self):
-        """Uprage from version 04
+        """Uprage from version 04.
 
          Differences between 0.4 and current (0.5):
            -schema version (obv)
@@ -833,7 +833,10 @@ class Docopt_Importer:
                     list_arg = Argument(list_name)
                     list_arg.parse(list_name)
                     self.all_desc_and_type[list_name] = {
-                        "desc": f"List of {self._getParamName(arg.children[0].name)}"
+                        "desc": (
+                            "List of "
+                            f"{self._getParamName(arg.children[0].name)}"
+                        )
                     }
                     self._addArgumentToDependencies(
                         list_arg, ancestors=ancestors, isList=True

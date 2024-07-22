@@ -6,13 +6,14 @@ from boutiques.util.utils import loadJson
 
 def function(descriptor):
     """
-    Returns a function to invoke bosh.execute on a descriptor.
+    Return a function to invoke bosh.execute on a descriptor.
 
-    args:
-        descriptor: Zenodo id, file name, or JSON string representing a
-                    descriptor.
-        name: name of the function to create. Defaults to the tool name in the
-              descriptor.
+    Parameters
+    ----------
+    descriptor: Zenodo id, file name, or JSON string representing a
+                descriptor.
+    name: name of the function to create. Defaults to the tool name in the
+            descriptor.
     """
     validate(descriptor)
     descriptor_json = loadJson(descriptor)

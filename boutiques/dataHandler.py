@@ -53,7 +53,8 @@ class DataHandler:
         # Print information about files in cache
         else:
             print(
-                f"There are {len(self.record_files)} unpublished records in the cache"
+                f"There are {len(self.record_files)} unpublished records "
+                "in the cache"
             )
             print(
                 "There are {} unpublished descriptors in the cache".format(
