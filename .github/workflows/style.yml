@@ -3,6 +3,9 @@ name: Style
 
 on:
     push:
+        branches:
+        -   master
+        -   develop
     pull_request:
 
 concurrency:
