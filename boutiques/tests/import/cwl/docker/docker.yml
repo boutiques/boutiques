@@ -1,3 +1,4 @@
+---
 src:
-  class: File
-  path: ./test_temp/hello.js
+    class: File
+    path: ./test_temp/hello.js
