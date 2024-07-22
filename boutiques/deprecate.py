@@ -34,9 +34,7 @@ def deprecate(
     if deprecated is not None:
         if isinstance(deprecated, str):
             print_info(
-                "Tool {} is already deprecated by {} ".format(
-                    zenodo_id, deprecated
-                )
+                f"Tool {zenodo_id} is already deprecated by {deprecated} "
             )
         if by_zenodo_id is not None:
             prompt = (

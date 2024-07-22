@@ -193,15 +193,12 @@ class Publisher:
                 "title": self.descriptor["name"],
                 "upload_type": "software",
                 "description": self.descriptor["description"]
-                or "Boutiques "
-                "descriptor for {}".format(self.descriptor["name"]),
+                or f"Boutiques descriptor for {self.descriptor['name']}",
                 "creators": [{"name": self.creator}],
                 "version": self.descriptor["tool-version"],
                 "keywords": [
                     "Boutiques",
-                    "schema-version:{}".format(
-                        self.descriptor["schema-version"]
-                    ),
+                    f"schema-version:{self.descriptor['schema-version']}",
                 ],
             }
         }

@@ -108,9 +108,7 @@ class ZenodoHelper:
         if not re.match(r"zenodo-[0-9]*\.json", basename):
             raise_error(
                 ZenodoError,
-                "This does not look like a valid file name: {}".format(
-                    filename
-                ),
+                f"This does not look like a valid file name: {filename}",
             )
         return basename.replace(".json", "").replace("-", ".")
 
@@ -186,7 +184,7 @@ class ZenodoHelper:
 
         r = requests.post(
             self.zenodo_endpoint
-            + "/api/deposit/depositions/%s/actions/newversion" % deposition_id,
+            + f"/api/deposit/depositions/{deposition_id}/actions/newversion",
             headers={"Authorization": f"Bearer {access_token}"},
         )
         if r.status_code == 403:
@@ -236,7 +234,7 @@ class ZenodoHelper:
         }
         r = requests.put(
             self.zenodo_endpoint
-            + "/api/deposit/depositions/%s" % new_deposition_id,
+            + f"/api/deposit/depositions/{new_deposition_id}",
             data=json.dumps(data),
             headers=headers,
         )
@@ -255,8 +253,7 @@ class ZenodoHelper:
             file_id = file["id"]
             r = requests.delete(
                 self.zenodo_endpoint
-                + "/api/deposit/depositions/%s/files/%s"
-                % (new_deposition_id, file_id),
+                + f"/api/deposit/depositions/{new_deposition_id}/files/{file_id}",
                 headers={"Authorization": f"Bearer {access_token}"},
             )
             if r.status_code != 204:
@@ -270,16 +267,14 @@ class ZenodoHelper:
 
         r = requests.post(
             self.zenodo_endpoint
-            + "/api/deposit/depositions/%s/actions/publish" % deposition_id,
+            + f"/api/deposit/depositions/{deposition_id}/actions/publish",
             headers={"Authorization": f"Bearer {access_token}"},
         )
         if r.status_code != 202:
             raise_error(ZenodoError, f"Cannot publish {msg_obj}", r)
         if self.verbose:
             print_info(
-                "{} published to Zenodo, doi is {}".format(
-                    msg_obj, r.json()["doi"]
-                ),
+                f"{msg_obj} published to Zenodo, doi is {r.json()['doi']}",
                 r,
             )
         return r.json()["doi"]
@@ -301,7 +296,7 @@ class ZenodoHelper:
         if r.status_code != 200:
             raise_error(ZenodoError, "Error searching Zenodo", r)
         if self.verbose:
-            print_info('Search successful for query "%s"' % query, r)
+            print_info(f'Search successful for query "{query}"', r)
             print_info(f"GET request: {get_request}")
         return r
 
@@ -323,7 +318,7 @@ class ZenodoHelper:
         )
         r = requests.post(
             self.zenodo_endpoint
-            + "/api/deposit/depositions/%s/files" % deposition_id,
+            + f"/api/deposit/depositions/{deposition_id}/files",
             headers={"Authorization": f"Bearer {zenodo_access_token}"},
             data={"filename": os.path.basename(file_path)},
             files={"file": open(file_path, "rb")},

@@ -224,8 +224,7 @@ class CreateDescriptor:
             if any(adest == it["id"] for it in self.descriptor["inputs"]):
                 if kwargs.get("verbose"):
                     print_info(
-                        "Duplicate: Argument won't be added multiple "
-                        "times ({})".format(adest)
+                        f"Duplicate: Argument won't be added multiple times ({adest})"
                     )
                 # If this action belongs to a subparser return a flag alongside
                 # the empty object, indicating it is not required
@@ -242,7 +241,7 @@ class CreateDescriptor:
                 "description": action.help,
                 "optional": kwargs.get("subaction") or not action.required,
                 "type": "String",
-                "value-key": "[{}]".format(adest.upper().strip("[]")),
+                "value-key": f"[{adest.upper().strip('[]')}]",
             }
 
             if action.type is not None:
@@ -274,9 +273,7 @@ class CreateDescriptor:
             if type(action) is argparse._StoreTrueAction:
                 newinput["type"] = "Flag"
 
-            self.descriptor["command-line"] += " [{}]".format(
-                adest.upper().strip("[]")
-            )
+            self.descriptor["command-line"] += f" [{adest.upper().strip('[]')}]"
             # If this action belongs to a subparser, return a flag along
             # with the object, indicating its required/not required status.
             if kwargs.get("subaction"):

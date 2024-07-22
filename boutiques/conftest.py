@@ -57,10 +57,7 @@ def pytest_generate_tests(metafunc):
     # An id is created by concatenaning the name of the descriptor
     # with the name of the test case.
     names = [
-        "{}_{}".format(
-            op.basename(descriptor_filename),
-            params[1]["name"].replace(" ", "-"),
-        )
+        f"{op.basename(descriptor_filename)}_{params[1]['name'].replace(' ', '-')}"
         for params in tests
     ]
 

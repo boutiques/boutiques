@@ -29,15 +29,13 @@ class Searcher:
                 terms = self.query.replace("/", ".").split(" ")
                 for t in terms:
                     uncased_term = [
-                        "[{}]".format(
-                            ch.upper() + ch.lower() if ch.isalpha() else ch
-                        )
+                        f"[{ch.upper() + ch.lower() if ch.isalpha() else ch}]"
                         for ch in t
                     ]
                     uncased_term = quote("".join(uncased_term))
-                    self.query_line += " AND (/.*%s.*/)" % uncased_term
+                    self.query_line += f" AND (/.*{uncased_term}.*/)"
             else:
-                self.query_line = " AND (/%s/)" % self.query.replace("/", ".")
+                self.query_line = f" AND (/{self.query.replace('/', '.')}/)"
         else:
             self.query = ""
             self.query_line = ""

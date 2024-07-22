@@ -71,9 +71,9 @@ class TestExample1(BaseTest):
             invoc,
             "--skip-data-collection",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
 
         # Make sure stdout and stderr are not printed on the fly
@@ -109,9 +109,9 @@ class TestExample1(BaseTest):
                 invoc,
                 "--skip-data-collection",
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4-coin;plop.txt"],
             2,
@@ -137,9 +137,9 @@ class TestExample1(BaseTest):
             invoc,
             "--skip-data-collection",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
 
         # Make sure stdout and stderr are printed on the fly for
@@ -172,9 +172,9 @@ class TestExample1(BaseTest):
                 invocationStr,
                 "--skip-data-collection",
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4-coin;plop.txt"],
             2,
@@ -200,9 +200,9 @@ class TestExample1(BaseTest):
                 "--debug",
                 invoc,
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
                 "--skip-data-collection",
             ),
             ["./test_temp/log-4-coin;plop.txt"],
@@ -230,9 +230,9 @@ class TestExample1(BaseTest):
                 invoc,
                 "--skip-data-collection",
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4-coin;plop.txt"],
             2,
@@ -260,9 +260,9 @@ class TestExample1(BaseTest):
                 "--debug",
                 "--skip-data-collection",
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4-coin;plop.txt"],
             2,
@@ -306,9 +306,9 @@ class TestExample1(BaseTest):
             invoc,
             "--skip-data-collection",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
 
         # Make sure stdout and stderr are not printed on the fly
@@ -344,9 +344,9 @@ class TestExample1(BaseTest):
                 invoc,
                 "--skip-data-collection",
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4-coin;plop.txt"],
             2,
@@ -447,9 +447,9 @@ class TestExample1(BaseTest):
                 self.get_file_path("invocation_sing.json"),
                 "--skip-data-collection",
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4.txt"],
             2,
@@ -468,9 +468,9 @@ class TestExample1(BaseTest):
                 "--debug",
                 self.get_file_path("invocation_sing.json"),
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4.txt"],
             2,
@@ -489,9 +489,9 @@ class TestExample1(BaseTest):
                 self.get_file_path("invocation_sing.json"),
                 "--skip-data-collection",
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             )
         self.assertIn(
             "Could not pull Singularity image", str(e.getrepr(style="long"))
@@ -509,9 +509,9 @@ class TestExample1(BaseTest):
             "--skip-data-collection",
             "--no-automounts",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
         self.assert_failed_return(
             be, 2, "File does not exist!", ["./test_temp/log-4-pwet.txt"], 1
@@ -527,9 +527,9 @@ class TestExample1(BaseTest):
             "--skip-data-collection",
             "--no-automounts",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
         command = " ".join(command)
         process = subprocess.Popen(
@@ -561,9 +561,9 @@ class TestExample1(BaseTest):
             self.get_file_path("example1_docker_nonutf8.json"),
             invoc,
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
 
         self.assert_successful_return(
@@ -592,9 +592,9 @@ class TestExample1(BaseTest):
                 "--debug",
                 invoc,
                 "-v",
-                "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
                 "-v",
-                "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
             ),
             ["./test_temp/log-4-coin;plop.txt"],
             2,
@@ -613,9 +613,9 @@ class TestExample1(BaseTest):
             "--skip-data-collection",
             "--force-singularity",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
 
         self.assert_successful_return(
@@ -640,9 +640,9 @@ class TestExample1(BaseTest):
             self.get_file_path("invocation_no_opts.json"),
             "--skip-data-collection",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
             "--force-singularity",
         )
 
@@ -669,9 +669,9 @@ class TestExample1(BaseTest):
             "--skip-data-collection",
             "--force-docker",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
 
         self.assert_successful_return(
@@ -703,9 +703,9 @@ class TestExample1(BaseTest):
             self.get_file_path("invocation_no_opts.json"),
             "--skip-data-collection",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
         self.assert_successful_return(
             ret,

@@ -81,9 +81,7 @@ def conditionalExpFormat(s):
     while idx < len(s):
         c = s[idx]
         if c in ["=", "!", "<", ">"]:
-            cleanedExpression += " {}{}".format(
-                c, "=" if s[idx + 1] == "=" else " "
-            )
+            cleanedExpression += f" {c}{'=' if s[idx + 1] == '=' else ' '}"
             idx += 1
         elif c in ["(", ")"]:
             cleanedExpression += f" {c} "

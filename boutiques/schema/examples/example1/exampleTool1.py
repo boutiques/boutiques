@@ -7,13 +7,13 @@ import sys
 
 def file_exists(parser, file_name):
     if not os.path.exists(file_name):
-        parser.error("File not found: %s" % file_name)
+        parser.error(f"File not found: {file_name}")
     return file_name
 
 
 def is_valid_enum_value(parser, value):
     if value not in ["val1", "val2", "val3"]:
-        parser.error("Invalid enum value: %s" % value)
+        parser.error(f"Invalid enum value: {value}")
     return value
 
 
@@ -60,7 +60,7 @@ def test_config_file(results):
                 != "# This is a demo configuration file\nnumInput=4\nstrInput='coin;plop'"
             ):
                 sys.stderr.write(
-                    "error: invalid configuration file:\n %s\n" % config_string
+                    f"error: invalid configuration file:\n {config_string}\n"
                 )
                 sys.exit(1)
 
@@ -69,8 +69,8 @@ def test_conditional_output_paths(results):
     if results.cond_out:
         path = f"{results.output_file}_default.txt"
         if results.string and results.number > 10:
-            path = "{}_{}_{}.txt".format(
-                results.output_file, results.string, results.number
+            path = (
+                f"{results.output_file}_{results.string}_{results.number}.txt"
             )
         elif results.string:
             path = f"{results.output_file}_{results.string}.txt"

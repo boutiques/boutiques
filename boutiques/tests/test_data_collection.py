@@ -65,9 +65,9 @@ class TestDataCollection(BaseTest):
             self.example1_descriptor,
             invoc,
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
         data_collect_dict = retrieve_data_record()
 
@@ -122,9 +122,9 @@ class TestDataCollection(BaseTest):
             invoc,
             "--skip-data-collection",
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
 
         new_size = 0
@@ -168,9 +168,9 @@ class TestDataCollection(BaseTest):
             self.get_file_path("dir_input.json"),
             self.get_file_path("dir_invocation.json"),
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
         )
         data_collect_dict = retrieve_data_record()
 
@@ -214,9 +214,9 @@ class TestDataCollection(BaseTest):
             self.example1_descriptor,
             invoc,
             "-v",
-            "{}:/test_mount1".format(self.get_file_path("example1_mount1")),
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
             "-v",
-            "{}:/test_mount2".format(self.get_file_path("example1_mount2")),
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
             "--provenance",
             provenance,
         )

@@ -25,9 +25,9 @@ def mock_get(query, exact, *args, include_version=True, **kwargs):
             mock_records.append(
                 MockZenodoRecord(
                     i,
-                    "Example Tool %s" % i,
+                    f"Example Tool {i}",
                     long_description,
-                    "exampleTool%s.json" % i,
+                    f"exampleTool{i}.json",
                     i,
                 )
             )

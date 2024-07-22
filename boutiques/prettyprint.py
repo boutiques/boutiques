@@ -63,20 +63,18 @@ class PrettyPrinter:
 
     def descMetadata(self):
         # Gather main description and basic metadata
-        name = "Tool name: {} (ver: {})".format(
-            self.desc["name"], self.desc.get("tool-version")
-        )
-        description = "Tool description: {}".format(self.desc["description"])
+        name = f"Tool name: {self.desc['name']} (ver: {self.desc.get('tool-version')})"
+        description = f"Tool description: {self.desc['description']}"
         if self.desc.get("tags"):
             taglist = [
                 (
                     f"{k}: {v}"
                     if not isinstance(v, list)
-                    else "{}: {}".format(k, ", ".join(v))
+                    else f"{k}: {', '.join(v)}"
                 )
                 for k, v in self.desc["tags"].items()
             ]
-            tags = "Tags: {}".format("; ".join(taglist))
+            tags = f"Tags: {'; '.join(taglist)}"
         else:
             tags = ""
 
@@ -88,7 +86,7 @@ class PrettyPrinter:
             "  " + self.desc["command-line"],
             subsequent_indent="  " + " " * cend,
         )
-        cline = "Command-line:\n{}".format("\n".join(cline))
+        cline = f"Command-line:\n{'\\n'.join(cline)}"
 
         # Initialize the tool description with the pieces we've collected so far
         self.helptext = "{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}" "".format(
@@ -110,8 +108,8 @@ class PrettyPrinter:
         config_info = "Config Files:"
         for output in outputs:
             required = "Optional" if output.get("optional") else "Required"
-            temp_info = "\n  Name: {} ({})".format(output["name"], required)
-            temp_info += "\n\tFormat: {}".format(output["path-template"])
+            temp_info = f"\n  Name: {output['name']} ({required})"
+            temp_info += f"\n\tFormat: {output['path-template']}"
 
             # Identifies input dependencies based on filename
             depids = [
@@ -120,16 +118,15 @@ class PrettyPrinter:
                 if inp in output["path-template"]
             ]
             if depids:
-                temp_info += "\n\tFilename depends on Input IDs: " "{}".format(
-                    ", ".join(depids)
+                temp_info += (
+                    f"\n\tFilename depends on Input IDs: {', '.join(depids)}"
                 )
 
             # Gets stripped extensions
             if output.get("path-template-stripped-extensions"):
                 exts = ", ".join(output["path-template-stripped-extensions"])
                 temp_info += (
-                    "\n\tStripped extensions (before substitution):"
-                    " {}".format(exts)
+                    f"\n\tStripped extensions (before substitution): {exts}"
                 )
 
             # If a config file, add the template
@@ -157,13 +154,11 @@ class PrettyPrinter:
             gtype += [0] if bool(group.get("mutually-exclusive")) else []
             gtype += [1] if bool(group.get("all-or-none")) else []
             gtype += [2] if bool(group.get("one-is-required")) else []
-            group_info += "\n\tName: {}".format(group["name"].title())
-            group_info += "\n\tType: {}\n".format(
-                ", ".join([gtypes[ind] for ind in gtype])
+            group_info += f"\n\tName: {group['name'].title()}"
+            group_info += (
+                f"\n\tType: {', '.join([gtypes[ind] for ind in gtype])}\n"
             )
-            group_info += "\tGroup Member IDs: " "{}".format(
-                ", ".join(group["members"])
-            )
+            group_info += f"\tGroup Member IDs: {', '.join(group['members'])}"
             group_info += "\n"
         self._addSegment(group_info)
 
@@ -276,21 +271,17 @@ class PrettyPrinter:
                         listlen = f"<= {malen}"
                     else:
                         listlen = "N/A"
-                    tmp_inp_descr += "List Length: {}" "\n" "".format(listlen)
+                    tmp_inp_descr += f"List Length: {listlen}\n"
 
                 # If it's a number, get min and max values and exclusivity and
                 # present it as a standard number range. Also identify if an Int
                 if inp.get("type") == "Number":
-                    tmp_inp_descr += "Integer: {}\n" "".format(
-                        bool(inp.get("integer"))
-                    )
+                    tmp_inp_descr += f"Integer: {bool(inp.get('integer'))}\n"
                     minum = inp.get("minimum") or "N/A"
                     manum = inp.get("maximum") or "N/A"
                     emi = "(" if inp.get("exclusive-minimum") else "["
                     ema = ")" if inp.get("exclusive-maximum") else "]"
-                    tmp_inp_descr += "Range: {}{}, {}{}\n".format(
-                        emi, minum, manum, ema
-                    )
+                    tmp_inp_descr += f"Range: {emi}{minum}, {manum}{ema}\n"
 
                 # If there are options, add this to the parser and the default
                 # to the description
@@ -298,18 +289,16 @@ class PrettyPrinter:
                     inp_kwargs["choices"] = inp["value-choices"]
                 if inp.get("default-value"):
                     inp_kwargs["default"] = inp["default-value"]
-                    tmp_inp_descr += "Default Value: {}\n" "".format(
-                        inp["default-value"]
-                    )
+                    tmp_inp_descr += f"Default Value: {inp['default-value']}\n"
 
                 # Show exclusivity with other inputs
                 if inp.get("disables-inputs"):
-                    tmp_inp_descr += "Disables: {}\n" "".format(
-                        ", ".join(inp["disables-inputs"])
+                    tmp_inp_descr += (
+                        f"Disables: {', '.join(inp['disables-inputs'])}\n"
                     )
                 if inp.get("requires-inputs"):
-                    tmp_inp_descr += "Requires: {}\n" "".format(
-                        ", ".join(inp["requires-inputs"])
+                    tmp_inp_descr += (
+                        f"Requires: {', '.join(inp['requires-inputs'])}\n"
                     )
 
                 # Show exclusivity of values with other inputs
@@ -327,13 +316,11 @@ class PrettyPrinter:
                             ]
                         ]
                     tmp_table = tabulate(tmp_table, headers=tmp_table_headers)
-                    tmp_inp_descr += "Value Dependency: \n {}\n" "".format(
-                        tmp_table
-                    )
+                    tmp_inp_descr += f"Value Dependency: \n {tmp_table}\n"
 
                 # Finally, add the actual description
                 if inp.get("description"):
-                    descr_text = "Description: {}".format(inp["description"])
+                    descr_text = f"Description: {inp['description']}"
                 else:
                     descr_text = ""
 
@@ -363,8 +350,8 @@ class PrettyPrinter:
                     if "_DUP" in parsed_flags[i]:
                         parsed_flags[i] = parsed_flags[i][0:-5]
                 if inp_args[0] in parsed_flags:
-                    inp_args[0] = "{}_DUP{}".format(
-                        inp_args[0], parsed_flags.count(inp_args[0])
+                    inp_args[0] = (
+                        f"{inp_args[0]}_DUP{parsed_flags.count(inp_args[0])}"
                     )
                 self.parser.add_argument(*inp_args, **inp_kwargs)
 

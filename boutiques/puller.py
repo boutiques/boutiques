@@ -64,7 +64,7 @@ class Puller:
         for entry in self.zenodo_entries:
             if os.path.isfile(entry["fname"]):
                 if self.verbose:
-                    print_info("Found cached file at %s" % entry["fname"])
+                    print_info(f"Found cached file at {entry['fname']}")
                 json_files.append(entry["fname"])
                 continue
 
@@ -77,7 +77,7 @@ class Puller:
             if not len(r.json()["hits"]["hits"]):
                 raise_error(
                     ZenodoError,
-                    'Descriptor "{}" ' "not found".format(entry["zid"]),
+                    f"Descriptor \"{entry['zid']}\" not found",
                 )
             for hit in r.json()["hits"]["hits"]:
                 file_path = hit["files"][0]["links"]["self"]
@@ -86,7 +86,7 @@ class Puller:
                     if not os.path.exists(self.cache_dir):
                         os.makedirs(self.cache_dir)
                     if self.verbose:
-                        print_info("Downloading descriptor %s" % file_name)
+                        print_info(f"Downloading descriptor {file_name}")
                     downloaded = urlretrieve(file_path, entry["fname"])
                     if self.verbose:
                         print_info("Downloaded descriptor to " + downloaded[0])

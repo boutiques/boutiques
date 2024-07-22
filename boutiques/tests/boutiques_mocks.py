@@ -88,7 +88,7 @@ def mock_zenodo_deposit(mock_zid):
 
 
 def mock_zenodo_publish(mock_zid):
-    mock_json = {"doi": "10.5281/zenodo.%s" % mock_zid}
+    mock_json = {"doi": f"10.5281/zenodo.{mock_zid}"}
     return MockHttpResponse(202, mock_json)
 
 
@@ -118,7 +118,7 @@ def mock_empty_function():
 
 def get_zenodo_record(record, include_version=True):
     record = {
-        "doi": "10.5281/zenodo.%s" % record.id,
+        "doi": f"10.5281/zenodo.{record.id}",
         "files": [{"links": {"self": record.filename}}],
         "id": record.id,
         "metadata": {
@@ -135,7 +135,7 @@ def get_zenodo_record(record, include_version=True):
                     }
                 ]
             },
-            "doi": "10.5281/zenodo.%s" % record.id,
+            "doi": f"10.5281/zenodo.{record.id}",
             "keywords": ["schema-version:0.5", "docker"],
             "title": record.title,
             "version": "0.0.1",

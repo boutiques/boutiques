@@ -296,9 +296,7 @@ class Importer:
                 cwl_type = cwl_type["items"]
                 bout_input["list"] = True
             if type(cwl_type) != str:
-                raise_error(
-                    ImportError, "Unknown type:" " {}".format(str(cwl_type))
-                )
+                raise_error(ImportError, f"Unknown type: {str(cwl_type)}")
             boutiques_type = boutiques_types[
                 cwl_type.replace("[]", "").replace("?", "")
             ]
@@ -596,7 +594,7 @@ class Importer:
             output_config_file = _getOutputConfigFileTemplate(configFileFormat)
             output_config_file["file-template"].append("{")
             for inp in descriptor["inputs"]:
-                input_entry = '"{}": "{}"'.format(inp["id"], inp["value-key"])
+                input_entry = f"\"{inp['id']}\": \"{inp['value-key']}\""
                 if inp != descriptor["inputs"][-1]:
                     input_entry += ","
                 output_config_file["file-template"].append(input_entry)
@@ -618,7 +616,7 @@ class Importer:
             output_config_file = _getOutputConfigFileTemplate(configFileFormat)
             for inp in descriptor["inputs"]:
                 output_config_file["file-template"].append(
-                    '"{}"="{}"'.format(inp["id"], inp["value-key"])
+                    f"\"{inp['id']}\"=\"{inp['value-key']}\""
                 )
 
             descriptor["output-files"].append(output_config_file)
@@ -637,7 +635,7 @@ class Importer:
             output_config_file = _getOutputConfigFileTemplate(configFileFormat)
             for inp in descriptor["inputs"]:
                 output_config_file["file-template"].append(
-                    '"{}": {}'.format(inp["id"], inp["value-key"])
+                    f"\"{inp['id']}\": {inp['value-key']}"
                 )
 
             descriptor["output-files"].append(output_config_file)
@@ -828,15 +826,13 @@ class Docopt_Importer:
                             option, ancestors=ancestors, optional=True
                         )
                 elif arg_type == "OneOrMore":
-                    list_name = "<list_of_{}>".format(
-                        self._getParamName(arg.children[0].name)
+                    list_name = (
+                        f"<list_of_{self._getParamName(arg.children[0].name)}>"
                     )
                     list_arg = Argument(list_name)
                     list_arg.parse(list_name)
                     self.all_desc_and_type[list_name] = {
-                        "desc": "List of {}".format(
-                            self._getParamName(arg.children[0].name)
-                        )
+                        "desc": f"List of {self._getParamName(arg.children[0].name)}"
                     }
                     self._addArgumentToDependencies(
                         list_arg, ancestors=ancestors, isList=True
@@ -977,13 +973,13 @@ class Docopt_Importer:
 
         pretty_names = [member["name"] for member in members]
         names = [arg.name for arg in arg.children[0].children]
-        gdesc = "Group key for mutex choices: {}".format(" and ".join(names))
+        gdesc = f"Group key for mutex choices: {' and '.join(names)}"
         for name in [name for name in names if name in self.all_desc_and_type]:
             gdesc = gdesc.replace(
                 name,
-                "{} ({})".format(name, self.all_desc_and_type[name]["desc"]),
+                f"{name} ({self.all_desc_and_type[name]['desc']})",
             )
-        gname = "<{}>".format("_".join(pretty_names))
+        gname = f"<{'_'.join(pretty_names)}>"
         grp_arg = Argument(gname)
         grp_arg.parse(gname)
         self.all_desc_and_type[gname] = {"desc": gdesc}
@@ -1063,7 +1059,7 @@ class Docopt_Importer:
             "optional": True,
             "value-key": f"[{param_name}]".upper(),
         }
-        self.descriptor["command-line"] += " {}".format(new_inp["value-key"])
+        self.descriptor["command-line"] += f" {new_inp['value-key']}"
 
         if requires != []:
             new_inp["requires-inputs"] = requires
@@ -1153,9 +1149,7 @@ class Docopt_Importer:
         unique_name = self._getUniqueId(pretty_name)
         new_group = {
             "id": pretty_name,
-            "name": "One is required group with members: {}".format(
-                ", ".join(OIR_ids)
-            ),
+            "name": f"One is required group with members: {', '.join(OIR_ids)}",
             "members": OIR_ids,
             "one-is-required": True,
             "mutually-exclusive": True,

@@ -22,7 +22,7 @@ def mock_get(*args, **kwargs):
     mock_records = []
     # Return an arbitrary list of results
     for i in range(0, 10):
-        mock_records.append(MockZenodoRecord(i, "Example Tool %s" % i))
+        mock_records.append(MockZenodoRecord(i, f"Example Tool {i}"))
     return mock_zenodo_search(mock_records)
 
 

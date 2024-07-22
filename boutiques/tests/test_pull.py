@@ -29,11 +29,11 @@ def mock_urlretrieve(*args, **kwargs):
     if str(example_boutiques_tool.id) in args[0]:
         json.dump(mock_zenodo_search([mock_record1]).mock_json, temp)
         temp.close()
-        return urlretrieve("file://%s" % temp.name, args[1])
+        return urlretrieve(f"file://{temp.name}", args[1])
     if "makeblastdb.json" in args[0]:
         json.dump(mock_zenodo_search([mock_record2]).mock_json, temp)
         temp.close()
-        return urlretrieve("file://%s" % temp.name, args[1])
+        return urlretrieve(f"file://{temp.name}", args[1])
     return urlretrieve(args[0], args[1])
 
 
@@ -98,7 +98,7 @@ class TestPull(BaseTest):
         with self.assertRaises(ZenodoError) as e:
             bosh(["pull", good1, bad1, good2])
         self.assertIn(
-            'Descriptor "{}" not found'.format(bad1.split(".")[1]),
+            f"Descriptor \"{bad1.split('.')[1]}\" not found",
             str(e.exception),
         )
 
@@ -114,6 +114,4 @@ class TestPull(BaseTest):
     def test_pull_not_found(self, mock_urlretrieve):
         with self.assertRaises(ZenodoError) as e:
             bosh(["pull", "zenodo.99999"])
-        self.assertIn(
-            'Descriptor "{}" not found'.format("99999"), str(e.exception)
-        )
+        self.assertIn('Descriptor "99999" not found', str(e.exception))

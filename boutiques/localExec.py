@@ -123,9 +123,7 @@ class FileDescription:
             self.optional = "Required"
 
     def __str__(self):
-        return "{} ({}, {})".format(
-            self.file_name, self.boutiques_name, self.optional
-        )
+        return f"{self.file_name} ({self.boutiques_name}, {self.optional})"
 
 
 class ExecutorError(Exception):
@@ -1544,9 +1542,7 @@ class LocalExecutor:
         file.close()
         if self.debug:
             print_info(
-                "Data capture from execution saved to cache as {}".format(
-                    filename
-                )
+                f"Data capture from execution saved to cache as {filename}"
             )
 
     # Local function handles case where descriptor is not published
@@ -1574,8 +1570,7 @@ class LocalExecutor:
         if match:
             if self.debug:
                 print_info(
-                    "Unpublished descriptor match found in data cache "
-                    "as {}".format(match)
+                    f"Unpublished descriptor match found in data cache as {match}"
                 )
             return match
         # Write descriptor to data cache and save return filename

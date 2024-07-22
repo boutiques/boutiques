@@ -354,8 +354,7 @@ def add_subparser_execute(subparsers):
         "-u",
         "--user",
         action="store_true",
-        help="Runs the container as local user ({})"
-        " instead of root.".format(os.getenv("USER")),
+        help=f"Runs the container as local user ({os.getenv('USER')}) instead of root.",
     )
     parser_exec_launch.add_argument(
         "-s",
