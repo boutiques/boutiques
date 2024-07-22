@@ -68,20 +68,20 @@ class TestLogger(BaseTest):
             help="my help",
             dest="==SUPPRESS==",
         )
-        creatorObj = bc.CreateDescriptor(
+        _ = bc.CreateDescriptor(
             parser,
             execname="/path/to/myscript.py",
             verbose=True,
             tags={"purpose": "testing-creator", "foo": "bar"},
         )
-        out, err = self.capfd.readouterr()
+        out, _ = self.capfd.readouterr()
         self.assertIn("[ WARNING ]", out)
 
     def test_evaloutput(self):
-        query = bosh.evaluate(
+        _ = bosh.evaluate(
             self.example1_descriptor,
             self.get_file_path("invocation.json"),
             "invalid-query",
         )
-        out, err = self.capfd.readouterr()
+        out, _ = self.capfd.readouterr()
         self.assertIn("[ ERROR ]", out)

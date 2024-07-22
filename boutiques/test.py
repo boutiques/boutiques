@@ -5,7 +5,7 @@ import boutiques as bosh
 
 
 def compute_md5(filename):
-    with open(filename, "rb") as fhandle:
+    with open(filename, "rb"):
         return hashlib.md5(open(filename, "rb").read()).hexdigest()
 
 

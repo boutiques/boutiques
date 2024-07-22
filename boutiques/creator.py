@@ -203,7 +203,7 @@ class CreateDescriptor:
                 actstring = str(type(action))
                 actstring = actstring.split("'")[1].split(".")[-1]
                 print_info(f"{actstring}: Adding")
-            actdict = vars(action)
+            _ = vars(action)
             if action.dest == "==SUPPRESS==":
                 adest = f"subparser_{self.sp_count}"
                 if kwargs.get("verbose"):
@@ -262,7 +262,7 @@ class CreateDescriptor:
                 try:
                     # Subparsers have choices in the form of OrderedDicts...
                     newinput["value-choices"] = list(action.choices.keys())
-                except AttributeError as e:
+                except AttributeError:
                     # ... but "choice" inputs have them in the form a list.
                     newinput["value-choices"] = action.choices
 

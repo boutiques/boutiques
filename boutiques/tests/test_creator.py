@@ -22,17 +22,17 @@ class TestCreator(BaseTest):
 
     def test_success_template(self):
         fil = "./test_temp/creator_output.json"
-        descriptor = bosh(["create", fil])
+        _ = bosh(["create", fil])
         self.assertIsNone(bosh(["validate", fil]))
 
     def test_success_docker(self):
         fil = "./test_temp/creator_output.json"
-        descriptor = bosh(["create", "-d", "mysql:latest", fil])
+        _ = bosh(["create", "-d", "mysql:latest", fil])
         self.assertIsNone(bosh(["validate", fil]))
 
     def test_success_docker_sing_import(self):
         fil = "./test_temp/creator_output.json"
-        descriptor = bosh(["create", "-d", "mysql:latest", "-u", fil])
+        _ = bosh(["create", "-d", "mysql:latest", "-u", fil])
         self.assertIsNone(bosh(["validate", fil]))
 
     @pytest.mark.skipif(

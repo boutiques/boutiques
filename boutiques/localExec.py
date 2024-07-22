@@ -40,11 +40,11 @@ class ExecutorOutput:
     ):
         try:
             self.stdout = stdout.decode("utf=8", "backslashreplace")
-        except AttributeError as e:
+        except AttributeError:
             self.stdout = stdout
         try:
             self.stderr = stderr.decode("utf=8", "backslashreplace")
-        except AttributeError as e:
+        except AttributeError:
             self.stderr = stderr
         self.exit_code = exit_code
         self.error_message = desc_err
@@ -248,7 +248,7 @@ class LocalExecutor:
         conType, conImage = con.get("type"), (
             con.get("image") if not self.noContainer else None
         )
-        conIndex = con.get("index")
+        _ = con.get("index")
         conOpts = con.get("container-opts")
         conIsPresent = conImage is not None
         # Export environment variables,
@@ -459,7 +459,7 @@ class LocalExecutor:
         output_files_dict = {}
         all_files = evaluateEngine(self, "output-files")
         required_files = evaluateEngine(self, "output-files/optional=False")
-        optional_files = evaluateEngine(self, "output-files/optional=True")
+        _ = evaluateEngine(self, "output-files/optional=True")
         for f in all_files.keys():
             file_name = all_files[f]
             fd = FileDescription(f, file_name, False)
@@ -1193,7 +1193,7 @@ class LocalExecutor:
         def escape_string(s):
             try:
                 from shlex import quote
-            except ImportError as e:
+            except ImportError:
                 from shlex import quote
             return quote(s)
 
