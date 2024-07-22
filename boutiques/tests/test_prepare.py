@@ -5,7 +5,6 @@ import subprocess
 from unittest import mock
 
 import pytest
-from boutiques_mocks import *
 
 import boutiques as bosh
 from boutiques.localExec import ExecutorError

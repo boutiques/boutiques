@@ -9,7 +9,7 @@ import simplejson as json
 from jsonschema import ValidationError
 from tabulate import tabulate
 
-from boutiques.boshParsers import *
+from boutiques.boshParsers import parser_bosh
 from boutiques.dataHandler import DataHandlerError
 from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
