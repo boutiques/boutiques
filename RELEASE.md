@@ -19,11 +19,11 @@
     # rm ./README_old.rst
     ```
 
-1.  Merge `develop` in `master`
+1.  Merge `develop` into `master`
 
 1.  Create X.Y.Z tag on GitHub, add release notes
 
-1.  Get tags from github and checkout the last version:
+1.  Get tags from GitHub and checkout the last version:
     ```bash
     git pull --all
     git checkout X.Y.Z
