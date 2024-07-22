@@ -8,6 +8,8 @@
 
 temp-*.localExec.boshjob.sh
 boutiques-example1-test.simg
+boutiques/tests/import/docopt/test_options_output.json
+boutiques/tests/import/docopt/test_valid_output.json
 test_temp/*
 
 # Byte-compiled / optimized / DLL files

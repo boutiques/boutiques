@@ -88,7 +88,8 @@ class PrettyPrinter:
             "  " + self.desc["command-line"],
             subsequent_indent="  " + " " * cend,
         )
-        cline = f"Command-line:\n{'\\n'.join(cline)}"
+        cline = "\\n".join(cline)
+        cline = f"Command-line:\n{cline}"
 
         # Initialize the tool description with the pieces we've collected so far
         self.helptext = "{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}" "".format(

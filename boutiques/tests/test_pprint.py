@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 
 import pytest
 
@@ -26,7 +27,10 @@ class TestPPrint(BaseTest):
         i_er_codes = prettystring.index("Error Codes")
         i_inp_grps = prettystring.index("Input Groups")
         i_pos_args = prettystring.index("positional arguments")
-        i_opt_args = prettystring.index("optional arguments")
+        if sys.version_info.minor < 10:
+            i_opt_args = prettystring.index("optional arguments")
+        else:
+            i_opt_args = prettystring.index("options")
         i_req_args = prettystring.index("required arguments")
         i_conf_fil = prettystring.index("Config Files")
         i_out_file = prettystring.index("Output Files")
@@ -45,13 +49,23 @@ class TestPPrint(BaseTest):
     def test_input_optionality_separation(self):
         fil = self.get_file_path("test_pretty_print.json")
         prettystring = bosh.pprint(fil)
-        inputs = prettystring.split("=" * 80)[6].split("arguments:")
-        positional_inputs = inputs[1]
-        optional_inputs = inputs[2]
-        required_inputs = inputs[3]
-        self.assertFalse("Optional: False" in positional_inputs)
-        self.assertFalse("Optional: False" in optional_inputs)
-        self.assertFalse("Optional: True" in required_inputs)
+        if sys.version_info.minor < 10:
+            inputs = prettystring.split("=" * 80)[6].split("arguments:")
+            positional_inputs = inputs[1]
+            optional_inputs = inputs[2]
+            required_inputs = inputs[3]
+            self.assertFalse("Optional: False" in positional_inputs)
+            self.assertFalse("Optional: False" in optional_inputs)
+            self.assertFalse("Optional: True" in required_inputs)
+        else:
+            inputs = prettystring.split("=" * 80)[6].split("arguments:")
+            positional_inputs = inputs[1]
+            required_inputs = inputs[2]
+            self.assertFalse("Optional: False" in positional_inputs)
+            self.assertFalse("Optional: True" in required_inputs)
+            inputs = prettystring.split("=" * 80)[6].split("options:")
+            optional_inputs = inputs[0]
+            self.assertFalse("Optional: False" in optional_inputs)
 
     def test_output_config_separation(self):
         fil = self.get_file_path("test_pretty_print.json")

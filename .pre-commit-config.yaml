@@ -18,6 +18,10 @@ repos:
     -   id: check-toml
     -   id: check-yaml
     -   id: end-of-file-fixer
+        exclude: |
+            (?x)^(
+                boutiques/tests/import/config/.*
+            )$
     -   id: mixed-line-ending
     -   id: trailing-whitespace
 
@@ -27,6 +31,10 @@ repos:
     hooks:
     -   id: yamlfmt
         args: [--mapping, '4', --sequence, '4', --offset, '0']
+        exclude: |
+            (?x)^(
+                boutiques/tests/import/config/.*
+            )$
 
 # Format TOML files
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
@@ -34,6 +42,10 @@ repos:
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
+        exclude: |
+            (?x)^(
+                boutiques/tests/import/config/.*
+            )$
 
 # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
