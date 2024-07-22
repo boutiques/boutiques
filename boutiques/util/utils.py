@@ -65,9 +65,7 @@ def loadJson(userInput, verbose=False, sandbox=False):
     if userInput.isdigit():
         raise_error(LoadError, e)
     try:
-        return OrderedDict(
-            json.loads(userInput, object_pairs_hook=OrderedDict)
-        )
+        return OrderedDict(json.loads(userInput, object_pairs_hook=OrderedDict))
     except ValueError:
         raise_error(LoadError, e)
 

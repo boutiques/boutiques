@@ -60,9 +60,7 @@ def validate_bids(descriptor, valid=False):
         errors += [msg_template]
     else:
         # Verify that the output shows up as an output
-        msg_template = (
-            "OutputError: OUTPUT_DIR is not represented as an output"
-        )
+        msg_template = "OutputError: OUTPUT_DIR is not represented as an output"
         if descriptor["output-files"][0]["path-template"] != "[OUTPUT_DIR]":
             errors += [msg_template]
 

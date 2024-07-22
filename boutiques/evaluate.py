@@ -44,9 +44,7 @@ def evaluateEngine(executor, query):
                 elif "groups" in layers:
                     query_result[obj["id"]] = {}
                     for mem in obj["members"]:
-                        query_result[obj["id"]][mem] = executor.in_dict.get(
-                            mem
-                        )
+                        query_result[obj["id"]][mem] = executor.in_dict.get(mem)
 
         return query_result
 

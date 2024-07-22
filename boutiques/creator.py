@@ -62,9 +62,7 @@ class CreateDescriptor:
     def save(self, filename):
         with open(filename, "w") as f:
             f.write(
-                json.dumps(
-                    customSortDescriptorByKey(self.descriptor), indent=4
-                )
+                json.dumps(customSortDescriptorByKey(self.descriptor), indent=4)
             )
 
     def createInvocation(self, arguments):
@@ -185,9 +183,7 @@ class CreateDescriptor:
                         inpts[act] += [tmpinput["id"]]
                         # If the input was required by the subparser, record it
                         if reqd:
-                            subparser["value-requires"][act] += [
-                                tmpinput["id"]
-                            ]
+                            subparser["value-requires"][act] += [tmpinput["id"]]
                         self.descriptor["inputs"] += [tmpinput]
 
             # Once all subparsers are processed, identify which inputs need to

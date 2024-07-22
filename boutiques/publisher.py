@@ -37,8 +37,7 @@ class Publisher:
         except IndexError:
             raise_error(
                 ZenodoError,
-                "Zenodo ID must be prefixed by "
-                "'zenodo', e.g. zenodo.123456",
+                "Zenodo ID must be prefixed by " "'zenodo', e.g. zenodo.123456",
             )
 
         # Validate and load descriptor

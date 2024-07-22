@@ -41,9 +41,7 @@ class Puller:
                 # the last thing after the split.
                 zid = zid.split("/")[-1]
                 newzid = zid.split(".", 1)[1]
-                newfname = os.path.join(
-                    self.cache_dir, f"zenodo-{newzid}.json"
-                )
+                newfname = os.path.join(self.cache_dir, f"zenodo-{newzid}.json")
                 self.zenodo_entries.append({"zid": newzid, "fname": newfname})
             except IndexError:
                 raise_error(

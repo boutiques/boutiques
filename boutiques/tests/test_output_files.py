@@ -26,9 +26,7 @@ class TestOutputFiles(BaseTest):
         # Validate descriptor with output-files containing both conditional
         # and fixed path-templates objects
         command = "bosh validate " + test_desc_path
-        validate = subprocess.Popen(
-            command, shell=True, stdout=subprocess.PIPE
-        )
+        validate = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         output = validate.stdout.read()
         self.assertEqual(b"OK\n", output)
 

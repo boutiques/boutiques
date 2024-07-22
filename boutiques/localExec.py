@@ -21,11 +21,7 @@ import boutiques
 from boutiques.dataHandler import getDataCacheDir
 from boutiques.evaluate import evaluateEngine
 from boutiques.logger import print_info, print_warning, raise_error
-from boutiques.util.utils import (
-    conditionalExpFormat,
-    extractFileName,
-    loadJson,
-)
+from boutiques.util.utils import conditionalExpFormat, extractFileName, loadJson
 
 
 class ExecutorOutput:
@@ -561,9 +557,7 @@ class LocalExecutor:
                 conName = op.basename(self.imagePath)
                 imageDir = op.normpath(op.dirname(self.imagePath))
             else:
-                conName = (
-                    conImage.replace("/", "-").replace(":", "-") + ".simg"
-                )
+                conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
                 imageDir = op.normpath("")
 
             # Check if container already exists
@@ -1003,9 +997,7 @@ class LocalExecutor:
                         continue
                     # Add random member if current requires mutex group
                     rndMember = rnd.choice(self.safeGrpGet(greq, "members"))
-                    toCheck.append(
-                        {i["id"]: i for i in self.inputs}[rndMember]
-                    )
+                    toCheck.append({i["id"]: i for i in self.inputs}[rndMember])
             return checked
 
         # Start actual dictionary filling part

@@ -1,5 +1,5 @@
 [tool.black]
-line-length = 79
+line-length = 80
 
 [tool.codespell]
 # nd, fo, minum, manum - some short imports/variables
@@ -8,7 +8,7 @@ skip = ".git,*.pdf,*.svg,*.json"
 
 [tool.isort]
 combine_as_imports = true
-line_length = 79
+line_length = 80
 profile = "black"
 skip_gitignore = true
 

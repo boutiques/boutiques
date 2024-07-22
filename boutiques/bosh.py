@@ -266,9 +266,7 @@ def exporter(*params):
 
     from boutiques.exporter import Exporter
 
-    exporter = Exporter(
-        descriptor, results.identifier, sandbox=results.sandbox
-    )
+    exporter = Exporter(descriptor, results.identifier, sandbox=results.sandbox)
     if results.type == "carmin":
         exporter.carmin(output)
 

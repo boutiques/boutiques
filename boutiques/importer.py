@@ -344,9 +344,7 @@ class Importer:
             for i in boutiques_inputs:
                 if i["id"] == input_id:
                     return i["value-key"]
-            raise_error(
-                ImportError, "Unresolved reference" " in glob: " + glob
-            )
+            raise_error(ImportError, "Unresolved reference" " in glob: " + glob)
 
         boutiques_outputs = []
         sorted_outputs = sorted(
@@ -612,9 +610,7 @@ class Importer:
             import toml
 
             tomlString = _getConfigFileString()
-            input_config = toml.loads(
-                tomlString, _dict=collections.OrderedDict
-            )
+            input_config = toml.loads(tomlString, _dict=collections.OrderedDict)
             imported_inputs = _getInputsFromConfigDict(input_config)
             descriptor["inputs"].extend(imported_inputs)
 
@@ -1097,9 +1093,7 @@ class Docopt_Importer:
 
     def _addMutexGroup(self, arg_names):
         # Add mutex group to descriptor
-        pretty_name = "_".join(
-            [self._getParamName(name) for name in arg_names]
-        )
+        pretty_name = "_".join([self._getParamName(name) for name in arg_names])
         unique_name = self._getUniqueId(pretty_name)
         new_group = {
             "id": pretty_name,

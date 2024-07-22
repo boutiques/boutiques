@@ -79,9 +79,7 @@ class TestCreator(BaseTest):
             action="store_true",
             help="the second sub option flag",
         )
-        sb1.add_argument(
-            "--suboptlistflag", "-l", nargs="+", help="listy flag"
-        )
+        sb1.add_argument("--suboptlistflag", "-l", nargs="+", help="listy flag")
 
         creatorObj = bc.CreateDescriptor(
             parser,
@@ -134,9 +132,7 @@ class TestCreator(BaseTest):
             for grp, camelGrp in zip(template["groups"], desc["groups"])
         ]:
             self.assertTrue(all([("_" in mbr) for mbr in mbrs]))
-            self.assertFalse(
-                all([("_" in camelMbr) for camelMbr in camelMbrs])
-            )
+            self.assertFalse(all([("_" in camelMbr) for camelMbr in camelMbrs]))
 
     def test_create_cl_template_from_descriptor(self):
         cl_template = self.get_file_path("expected_cl_template_create.json")

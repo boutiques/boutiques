@@ -241,9 +241,7 @@ class ZenodoHelper:
             headers=headers,
         )
         if r.status_code != 200:
-            raise_error(
-                ZenodoError, "Cannot update metadata of new version", r
-            )
+            raise_error(ZenodoError, "Cannot update metadata of new version", r)
         if self.verbose:
             print_info("Updated metadata of new version", r)
 

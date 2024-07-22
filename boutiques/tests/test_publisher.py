@@ -28,9 +28,7 @@ from boutiques.tests.BaseTest import BaseTest
 
 def mock_zenodo_deposit_updated(old_zid, new_zid):
     mock_json = {
-        "links": {
-            "latest_draft": "https://zenodo.org/api/record/%s" % new_zid
-        },
+        "links": {"latest_draft": "https://zenodo.org/api/record/%s" % new_zid},
         "files": [{"id": 1234}],
         "doi": "10.5072/zenodo.%s" % old_zid,
     }

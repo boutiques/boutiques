@@ -117,13 +117,9 @@ class TestEvaluate(BaseTest):
         desc = self.example1_descriptor
         invo = self.get_file_path("invocation.json")
         query = bosh.evaluate(desc, invo, "groups/")
-        expect = {
-            "an_example_group": {"num_input": None, "enum_input": "val1"}
-        }
+        expect = {"an_example_group": {"num_input": None, "enum_input": "val1"}}
         self.assertEqual(query, expect)
 
         query = bosh.evaluate(desc, invo, "groups/mutually-exclusive=True")
-        expect = {
-            "an_example_group": {"num_input": None, "enum_input": "val1"}
-        }
+        expect = {"an_example_group": {"num_input": None, "enum_input": "val1"}}
         self.assertEqual(query, expect)

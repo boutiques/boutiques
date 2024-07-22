@@ -117,9 +117,7 @@ class TestDataHandler(BaseTest):
         )
         self.assertTrue(
             os.path.isfile(
-                os.path.join(
-                    mock_get_data_cache(), "descriptor_tool2_123.json"
-                )
+                os.path.join(mock_get_data_cache(), "descriptor_tool2_123.json")
             )
         )
 

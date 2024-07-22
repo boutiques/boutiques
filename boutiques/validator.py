@@ -125,8 +125,7 @@ def validate_descriptor(descriptor, **kwargs):
                     return False
                 # Check elements neighbouring and/or keywords are valid words
                 if e.lower() in ["and", "or"] and (
-                    expElements[idx - 1]
-                    not in schema_types + ["True", "False"]
+                    expElements[idx - 1] not in schema_types + ["True", "False"]
                     or expElements[idx + 1]
                     not in schema_types + ["True", "False"]
                 ):
@@ -195,9 +194,7 @@ def validate_descriptor(descriptor, **kwargs):
                         errors += [msg_template.format(key)]
 
     # Verify that output files have unique path-templates
-    msg_template = (
-        'OutputError: "{0}" and "{1}" have the same ' "path-template"
-    )
+    msg_template = 'OutputError: "{0}" and "{1}" have the same ' "path-template"
     for ix, o1 in zip(outputGet("id"), outputGet("path-template")):
         for jx, o2 in zip(outputGet("id"), outputGet("path-template")):
             if o1 == o2 and jx != ix:
@@ -221,8 +218,7 @@ def validate_descriptor(descriptor, **kwargs):
             if "conditional-path-template" in o and not o["optional"]
         ]:
             out_keys = [
-                list(obj.keys())[0]
-                for obj in outF["conditional-path-template"]
+                list(obj.keys())[0] for obj in outF["conditional-path-template"]
             ]
             cond_outfiles_keys.extend(out_keys)
             if "default" not in out_keys:
@@ -360,9 +356,7 @@ def validate_descriptor(descriptor, **kwargs):
             msg_template = (
                 ' InputError: "{0}" cannot have negative min' " entries ({1})"
             )
-            errors += (
-                [msg_template.format(inp["id"], minn)] if minn < 0 else []
-            )
+            errors += [msg_template.format(inp["id"], minn)] if minn < 0 else []
 
             msg_template = (
                 ' InputError: "{0}" cannot have non-positive'
