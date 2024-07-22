@@ -13,7 +13,7 @@ def file_exists(parser, file_name):
 
 
 def is_valid_enum_value(parser, value):
-    if not value in ["val1", "val2", "val3"]:
+    if value not in ["val1", "val2", "val3"]:
         parser.error("Invalid enum value: %s" % value)
     return value
 
@@ -104,8 +104,8 @@ def main(args=None):
             )
             sys.exit(1)
 
-    sys.stdout.write("Ça c'est stdout")
-    sys.stderr.write("This is stdérr")
+    sys.stdout.write("ï¿½a c'est stdout")
+    sys.stderr.write("This is stdï¿½rr")
     with open(results.output_file, "w") as f:
         f.write("File content")
 

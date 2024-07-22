@@ -6,11 +6,9 @@ import os.path as op
 import re
 import subprocess
 import sys
-import tempfile
-from argparse import ArgumentParser
 
 import simplejson as json
-from jsonschema import ValidationError, validate
+from jsonschema import ValidationError
 
 from boutiques import __file__ as bfile
 from boutiques.logger import print_info, print_warning, raise_error

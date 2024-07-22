@@ -5,7 +5,6 @@ import os
 import os.path as op
 import re
 import sys
-from argparse import ArgumentParser
 from importlib.machinery import SourceFileLoader
 
 import simplejson as json
@@ -296,7 +295,7 @@ class Importer:
                     )
                 cwl_type = cwl_type["items"]
                 bout_input["list"] = True
-            if type(cwl_type) != str:
+            if not isinstance(cwl_type, str):
                 raise_error(ImportError, f"Unknown type: {str(cwl_type)}")
             boutiques_type = boutiques_types[
                 cwl_type.replace("[]", "").replace("?", "")

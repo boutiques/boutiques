@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-
-import os.path as op
 import re
-
-import simplejson
 
 from boutiques.logger import print_info, raise_error
 from boutiques.validator import DescriptorValidationError

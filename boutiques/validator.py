@@ -3,18 +3,13 @@
 import keyword
 import os.path as op
 import re
-from argparse import ArgumentParser
 
 import simplejson as json
 from jsonschema import ValidationError, validate
 
 from boutiques import __file__ as bfile
-from boutiques.logger import print_info, raise_error
-from boutiques.util.utils import (
-    conditionalExpFormat,
-    customSortDescriptorByKey,
-    loadJson,
-)
+from boutiques.logger import raise_error
+from boutiques.util.utils import conditionalExpFormat, customSortDescriptorByKey
 
 
 # An exception class specific to descriptors

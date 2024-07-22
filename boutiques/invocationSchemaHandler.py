@@ -3,9 +3,6 @@
 # A script for handling invocation schema generation and
 # validation for Boutiques application descriptors
 # Requires jsonschema 2.5
-
-import argparse
-import os
 import sys
 from functools import reduce
 

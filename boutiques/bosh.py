@@ -15,7 +15,7 @@ from boutiques.exporter import ExportError
 from boutiques.importer import ImportError
 from boutiques.invocationSchemaHandler import InvocationValidationError
 from boutiques.localExec import ExecutorError, ExecutorOutput, addDefaultValues
-from boutiques.logger import print_error, print_info, raise_error
+from boutiques.logger import print_info, raise_error
 from boutiques.nexusHelper import NexusError
 from boutiques.publisher import ZenodoError
 from boutiques.util.utils import (

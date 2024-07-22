@@ -1,7 +1,5 @@
-import glob
 import os
 import shutil
-import sys
 from unittest import TestCase
 
 import pytest

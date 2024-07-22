@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import uuid
-
 import simplejson as json
 
 from boutiques.logger import raise_error

@@ -2,14 +2,12 @@
 
 import os
 import subprocess
-import sys
 from unittest import mock
 
 import pytest
 from boutiques_mocks import *
 
 import boutiques as bosh
-from boutiques import __file__ as bfile
 from boutiques.localExec import ExecutorError
 from boutiques.tests.BaseTest import BaseTest
 

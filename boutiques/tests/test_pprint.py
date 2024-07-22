@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
-import os
-import os.path as op
 
 import pytest
-from six import string_types
 
 import boutiques as bosh
-from boutiques import __file__ as bfile
 from boutiques.tests.BaseTest import BaseTest
 
 

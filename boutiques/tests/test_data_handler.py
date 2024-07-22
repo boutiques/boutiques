@@ -2,14 +2,11 @@
 
 import os
 import shutil
-import sys
-from unittest import mock, skipIf
 
 import pytest
 from boutiques_mocks import *
 
 import boutiques
-from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
 from boutiques.nexusHelper import NexusError
 from boutiques.tests.BaseTest import BaseTest

@@ -29,7 +29,8 @@ max_returns_amount = 30
 --select = B,D,E,F,W,C90,CFQ
 
 per-file-ignores =
-	**/__init__.py: D104
+	**/__init__.py: D104, F401
+    boutiques/tests/test_prepare.py: F401
     boutiques/tests/import/docopt/naval_fate.py: D208
     boutiques/tests/import/docopt/docopt_script_invalid.py: D400
     boutiques/tests/import/docopt/docopt_script_options.py: D400
@@ -37,4 +38,4 @@ per-file-ignores =
     boutiques/schema/examples/example1/exampleTool1.py: E501
     boutiques/schema/examples/example1/exampleTool1_nonutf8.py: E501
 
-extend-ignore = B005, B006, B008, D100, D101, D102, D103, D105, E203, E713, E721, F401, F405, F403, F841, F821, FS001, FS002
+extend-ignore = B005, B006, B008, D100, D101, D102, D103, D105, F405, F403, F841, F821, FS001, FS002

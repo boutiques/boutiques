@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 from unittest import mock
-from urllib.request import urlopen, urlretrieve
+from urllib.request import urlretrieve
 
 from boutiques_mocks import (
     MockZenodoRecord,
