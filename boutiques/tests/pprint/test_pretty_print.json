@@ -168,10 +168,10 @@
     ],
     "schema-version": "0.5",
     "suggested-resources": {
-        "cpu-cores": 1, 
-        "ram": 2, 
+        "cpu-cores": 1,
+        "ram": 2,
         "walltime-estimate": 60
-    }, 
+    },
     "tags": {
         "domain": "testing",
         "foo": ["bar1", "bar2"],

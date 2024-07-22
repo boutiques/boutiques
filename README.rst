@@ -7,7 +7,7 @@ Boutiques
 -    :target: https://pypi.python.org/pypi/boutiques
 -.. image:: https://img.shields.io/pypi/pyversions/boutiques.svg
 -    :target: https://pypi.python.org/pypi/boutiques
--.. image:: https://travis-ci.org/boutiques/boutiques.svg?branch=develop 
+-.. image:: https://travis-ci.org/boutiques/boutiques.svg?branch=develop
 -    :target: https://travis-ci.org/boutiques/boutiques
 -.. image:: https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop
 -    :target: https://coveralls.io/github/boutiques/boutiques?branch=develop
