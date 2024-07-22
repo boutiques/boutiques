@@ -41,7 +41,8 @@ class Importer:
         self.output_invocation = output_invocation
 
     def upgrade_04(self):
-        """
+        """Uprage from version 04
+
          Differences between 0.4 and current (0.5):
            -schema version (obv)
            -singularity should now be represented same as docker

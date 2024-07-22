@@ -132,7 +132,8 @@ class ExecutorError(Exception):
 
 # Executor class
 class LocalExecutor:
-    """
+    """Represent a json descriptor of a tool.
+
     This class represents a json descriptor of a tool, and can execute
     various tasks related to it. It is constructed first via an
     input json descriptor file, which is held in the desc_dict field.
@@ -234,7 +235,8 @@ class LocalExecutor:
     # Attempt local execution of the command line
     # generated from the input values
     def execute(self, mount_strings):
-        """
+        """Runs the generated command line.
+
         The execute method runs the generated command line
         (from either generateRandomParams or readInput)
         If docker is specified, it will attempt to use it, instead
@@ -1090,12 +1092,12 @@ class LocalExecutor:
     # This fills the in_dict with random values, validates the input,
     # and generates the appropriate command line
     def generateRandomParams(self, generateCmdLineFromInDict=False):
-        """
+        """Fill the in_dict field with randomly generated values.
+
         The generateRandomParams method fills the in_dict field
         with randomly generated values following the schema.
         It then generates command line strings based on these values
         """
-
         self.cmd_line = []
         # Set in_dict with random values
         self._randomFillInDict()
@@ -1123,7 +1125,8 @@ class LocalExecutor:
 
     # Read in parameter input file or string
     def readInput(self, infile):
-        """
+        """Set the in_dict field of the executor.
+
         The readInput method sets the in_dict field of the executor
         object, based on a fixed input.
         It then generates a command line based on the input.
@@ -1133,7 +1136,6 @@ class LocalExecutor:
         stringInput: a boolean as to whether the method has
         been given a string or a file.
         """
-
         # Quick check that the descriptor has already been read in
         assert self.desc_dict is not None
         self.in_dict = loadJson(infile)

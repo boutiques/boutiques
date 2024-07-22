@@ -86,7 +86,8 @@ class ZenodoHelper:
         return r.json()
 
     def get_record_id_from_zid(self, zenodo_id):
-        """
+        """Get record from Zenodo ID.
+
         zenodo_id is in the form zenodo.1234567
         record id is 1234567
         """
