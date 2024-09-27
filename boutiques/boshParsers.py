@@ -83,6 +83,8 @@ def add_subparser_data(subparsers):
     parser_data_inspect.set_defaults(mode='inspect')
     parser_data_inspect.add_argument("-e", "--example", action="store_true",
                                      help="Display example data file contents.")
+    parser_data_inspect.add_argument("-l","--latest" , action="store_true",
+                                     help="Display latest data file contents.") 
 
     parser_data_publish = data_subparsers.add_parser(
         "publish", description="Publishes record(s) to a data set.")
