@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-from boutiques.bosh import bosh
-from boutiques.localExec import ExecutorError
-from boutiques.dataHandler import DataHandlerError
 from boutiques import BoutiquesError
+from boutiques.bosh import bosh
+from boutiques.dataHandler import DataHandlerError
+from boutiques.localExec import ExecutorError
 from boutiques.tests.BaseTest import BaseTest
 
 

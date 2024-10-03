@@ -22,9 +22,9 @@
     "description": "This property describes the tool or application",
     "inputs": [
         {
-            "id": "env_var", 
-            "name": "Environment Variable", 
-            "type": "File", 
+            "id": "env_var",
+            "name": "Environment Variable",
+            "type": "File",
             "value-key": "[INPUT]"
         }
     ],
