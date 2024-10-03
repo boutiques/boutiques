@@ -1,7 +1,88 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-vcs"]
+
+[project]
+authors = [
+    {name = "Tristan Glatard", email = "tristan.glatard@concordia.ca"},
+    {name = "Gregory Kiar", email = "gkiar07@gmail.com"}
+]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Operating System :: OS Independent",
+    "Natural Language :: English"
+]
+dependencies = [
+    "simplejson",
+    "termcolor",
+    "jsonschema",
+    "tabulate"
+]
+description = "Schema for describing bash command-line tools"
+# Version from setuptools_scm
+dynamic = ["version"]
+license = {text = "MIT"}
+name = "boutiques"
+readme = "README.rst"
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+all = [
+    "boutiques[test]",
+    "oyaml",
+    "toml",
+    "docopt",
+    "nexus-sdk",
+    "requests",
+    "mock"
+]
+doc = [
+    "sphinx-rtd-theme",
+    "sphinx-argparse"
+]
+test = [
+    "pytest>=6.0.0",
+    "pytest-runner",
+    "coveralls",
+    "coverage"
+]
+
+[project.scripts]
+bosh = "boutiques.bosh:bosh"
+
+[project.urls]
+Homepage = "http://github.com/boutiques/boutiques"
+
+[tool.black]
+line-length = 80
+
 [tool.codespell]
 # nd, fo, minum, manum - some short imports/variables
 ignore-words-list = "nd,fo,minum,manum,assertIn"
 skip = ".git,*.pdf,*.svg,*.json"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "boutiques/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["boutiques"]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.isort]
+combine_as_imports = true
+line_length = 80
+profile = "black"
+skip_gitignore = true
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --showlocals -s -vv"
