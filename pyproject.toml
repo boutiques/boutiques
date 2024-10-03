@@ -1,0 +1,20 @@
+[tool.black]
+line-length = 80
+
+[tool.codespell]
+# nd, fo, minum, manum - some short imports/variables
+ignore-words-list = "nd,fo,minum,manum,assertIn"
+skip = ".git,*.pdf,*.svg,*.json"
+
+[tool.isort]
+combine_as_imports = true
+line_length = 80
+profile = "black"
+skip_gitignore = true
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers --showlocals -s -vv"
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+junit_family = "xunit2"
+minversion = "6.0"
+xfail_strict = true

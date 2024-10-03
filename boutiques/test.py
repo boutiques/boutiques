@@ -1,12 +1,12 @@
-import os.path as op
-from boutiques import __file__ as bfile
-import boutiques as bosh
 import hashlib
+import os.path as op
+
+import boutiques as bosh
 
 
 def compute_md5(filename):
-    with open(filename, 'rb') as fhandle:
-        return hashlib.md5(open(filename, 'rb').read()).hexdigest()
+    with open(filename, "rb"):
+        return hashlib.md5(open(filename, "rb").read()).hexdigest()
 
 
 def test(descriptor, test, invocation, paramsDict):

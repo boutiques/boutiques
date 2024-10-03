@@ -15,7 +15,7 @@
         "description" : "The directory with the input dataset formatted according to the BIDS standard.",
         "value-key" : "[BIDS_DIR]",
         "optional" : false
-        
+
     }, {
         "id" : "output_dir_name",
         "name" : "Output directory name",
