@@ -38,7 +38,7 @@ def validate_bids(descriptor, valid=False):
         errors += [msg_template.format(", ".join(outtypes), ", ".join(ftypes))]
 
     # Verify that analysis levels is an enumerable with some
-    # subset of "paricipant", "session", and "group"
+    # subset of "participant", "session", and "group"
     choices = ["session", "participant", "group"]
     msg_template = " LevelError: \"{}\" is not a valid analysis level"
     alevels = [inp["value-choices"]

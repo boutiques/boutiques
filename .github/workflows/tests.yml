@@ -1,0 +1,76 @@
+---
+name: test
+
+on:
+    push:
+        branches:
+        -   master
+        -   develop
+    pull_request:
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+    # Force to use color
+env:
+    FORCE_COLOR: true
+
+jobs:
+    test:
+        name: Test with ${{ matrix.py }} on ${{ matrix.os }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                py: ['3.12', '3.11', '3.10', '3.9', '3.8']
+                os: [ubuntu-latest, macos-latest, windows-latest]
+
+        runs-on: ${{ matrix.os }}
+
+        steps:
+        -   name: Checkout
+            uses: actions/checkout@v3
+
+        -   name: Get apptainer
+            # apptainer only supported on linux
+            if: matrix.os == 'ubuntu-latest'
+            uses: eWaterCycle/setup-apptainer@v2
+            with:
+                apptainer-version: 1.3.0
+        -   name: Build docker and apptainer images
+            if: matrix.os  == 'ubuntu-latest'
+            run: make boutiques-example1-test.simg
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: ${{ matrix.py }}
+                allow-prereleases: false
+
+        -   name: Install dependencies
+            run: |
+                pip install tox
+                tox c
+
+        -   name: Run tests
+            run: tox run -e test
+
+        -   name: Coveralls Parallel
+            uses: coverallsapp/github-action@v2
+            with:
+                flag-name: run-${{ join(matrix.*, '-') }}
+                parallel: true
+
+    finish:
+        needs: test
+        if: ${{ always() }}
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Coveralls Finished
+            uses: coverallsapp/github-action@v2
+            with:
+                parallel-finished: true

@@ -8,6 +8,7 @@
 [![PyPI](https://img.shields.io/pypi/pyversions/boutiques.svg)](https://pypi.python.org/pypi/boutiques)
 [![Build Status](https://travis-ci.org/boutiques/boutiques.svg?branch=develop)](https://travis-ci.org/boutiques/boutiques)
 [![Coverage Status](https://coveralls.io/repos/github/boutiques/boutiques/badge.svg?branch=develop)](https://coveralls.io/github/boutiques/boutiques?branch=develop)
+[![test](https://github.com/boutiques/boutiques/actions/workflows/tests.yml/badge.svg)](https://github.com/boutiques/boutiques/actions/workflows/tests.yml)
 
 Boutiques is a cross-platform descriptive command-line framework for applications.
 

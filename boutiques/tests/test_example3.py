@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import subprocess
+
 from boutiques.tests.BaseTest import BaseTest
 from boutiques import __file__ as bfile
 import boutiques as bosh
@@ -16,6 +18,8 @@ class TestExample3(BaseTest):
     def test_example3_validate(self):
         self.assertIsNone(bosh.validate(self.get_file_path("example3.json")))
 
+    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
+                        reason="Docker not installed")
     def test_example3_exec(self):
         self.assert_successful_return(
             bosh.execute("launch",

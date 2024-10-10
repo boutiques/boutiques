@@ -1,0 +1,50 @@
+---
+name: Style
+
+on:
+    push:
+        branches:
+        -   master
+        -   develop
+    pull_request:
+        branches:
+        -   '*'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+    # Force to use color
+env:
+    FORCE_COLOR: true
+
+jobs:
+    style:
+        name: Check style
+        runs-on: ubuntu-latest
+
+        steps:
+        -   name: Checkout
+            uses: actions/checkout@v3
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.12'
+                allow-prereleases: false
+
+        -   name: Setup node
+            uses: actions/setup-node@v4
+            with:
+                node-version: 18
+
+        -   name: Install dependencies
+            run: |
+                pip install tox
+                npm install jsonlint -g
+
+        -   name: Run jsonlint
+            run: jsonlint boutiques/schema/descriptor.schema.json
+
+        -   name: Run style checks
+            run: tox
