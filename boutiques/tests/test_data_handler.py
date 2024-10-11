@@ -111,9 +111,7 @@ class TestDataHandler(BaseTest):
             ]
         )
         self.assertTrue(
-            os.path.isfile(
-                os.path.join(mock_get_data_cache(), "tool2_123.json")
-            )
+            os.path.isfile(os.path.join(mock_get_data_cache(), "tool2_123.json"))
         )
         self.assertTrue(
             os.path.isfile(
@@ -138,9 +136,7 @@ class TestDataHandler(BaseTest):
             os.path.isfile(os.path.join(mock_get_data_cache(), "tool3-123"))
         )
         self.assertFalse(
-            os.path.isfile(
-                os.path.join(mock_get_data_cache(), "descriptor-tool3-123")
-            )
+            os.path.isfile(os.path.join(mock_get_data_cache(), "descriptor-tool3-123"))
         )
 
     @mock.patch(
@@ -160,9 +156,7 @@ class TestDataHandler(BaseTest):
                 "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
             ]
         )
-        self.assertEqual(
-            len(os.listdir(os.path.join(mock_get_data_cache()))), 2
-        )
+        self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))), 2)
 
     @mock.patch(
         "boutiques.dataHandler.getDataCacheDir",
@@ -182,9 +176,7 @@ class TestDataHandler(BaseTest):
                 "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
             ]
         )
-        self.assertEqual(
-            len(os.listdir(os.path.join(mock_get_data_cache()))), 2
-        )
+        self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))), 2)
 
     @mock.patch(
         "boutiques.dataHandler.getDataCacheDir",

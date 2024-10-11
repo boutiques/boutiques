@@ -254,15 +254,12 @@ class LocalExecutor:
         envVars = {}
         if "environment-variables" in list(self.desc_dict.keys()):
             variables = [
-                (p["name"], p["value"])
-                for p in self.desc_dict["environment-variables"]
+                (p["name"], p["value"]) for p in self.desc_dict["environment-variables"]
             ]
             inputsByValKey = {inp["value-key"]: inp for inp in self.inputs}
             for envVarName, envVarValue in variables:
                 if envVarValue in inputsByValKey:
-                    envVarValue = self.in_dict[
-                        inputsByValKey[envVarValue]["id"]
-                    ]
+                    envVarValue = self.in_dict[inputsByValKey[envVarValue]["id"]]
                 os.environ[envVarName] = envVarValue
                 envVars[envVarName] = envVarValue
         # Container script constant name
@@ -601,9 +598,7 @@ class LocalExecutor:
             if self._singConExists(conName, imageDir):
                 conPath = op.abspath(op.join(imageDir, conName))
                 return conPath, f"Local ({conName})"
-            raise_error(
-                ExecutorError, "Unable to retrieve Singularity " "image."
-            )
+            raise_error(ExecutorError, "Unable to retrieve Singularity " "image.")
 
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName, imageDir):
@@ -654,9 +649,7 @@ class LocalExecutor:
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
-    def _chooseContainerTypeToUse(
-        self, conType, forceSing=False, forceDocker=False
-    ):
+    def _chooseContainerTypeToUse(self, conType, forceSing=False, forceDocker=False):
         if (
             conType == "docker" and not forceSing or forceDocker
         ) and self._isCommandInstalled("docker"):
@@ -758,8 +751,7 @@ class LocalExecutor:
                 + id
                 + "_"
                 + "".join(
-                    rnd.choice(string.digits + string.ascii_letters)
-                    for _ in range(nd)
+                    rnd.choice(string.digits + string.ascii_letters) for _ in range(nd)
                 )
             )
 
@@ -910,19 +902,8 @@ class LocalExecutor:
                         return False
             # Get the group that the target belongs to, if any
             g = self.assocGrp(targ["id"])
-            if (g is not None) and self.safeGrpGet(
-                g["id"], "mutually-exclusive"
-            ):
-                if (
-                    len(
-                        [
-                            x
-                            for x in g["members"]
-                            if x in list(self.in_dict.keys())
-                        ]
-                    )
-                    > 0
-                ):
+            if (g is not None) and self.safeGrpGet(g["id"], "mutually-exclusive"):
+                if len([x for x in g["members"] if x in list(self.in_dict.keys())]) > 0:
                     return False
             return True
 
@@ -938,11 +919,7 @@ class LocalExecutor:
                     # has been chosen
                     if (
                         req in [g["id"] for g in self.groups]
-                        and len(
-                            set(self.reqsOf(req)).intersection(
-                                set(self.in_dict)
-                            )
-                        )
+                        and len(set(self.reqsOf(req)).intersection(set(self.in_dict)))
                         == 1
                     ):
                         continue
@@ -975,9 +952,9 @@ class LocalExecutor:
                 if not isOrCanBeFilled(current):
                     return False
                 for mutreq in mutReqs(current):
-                    if not mutreq["id"] in [
-                        c["id"] for c in checked
-                    ] and mutreq["id"] not in [g["id"] for g in self.groups]:
+                    if not mutreq["id"] in [c["id"] for c in checked] and mutreq[
+                        "id"
+                    ] not in [g["id"] for g in self.groups]:
                         toCheck.append(mutreq)
                 for greq in [
                     g
@@ -1010,20 +987,14 @@ class LocalExecutor:
 
         # Fill in a random choice for each one-is-required group
         for grp in [
-            g
-            for g in self.groups
-            if self.safeGrpGet(g["id"], "one-is-required")
+            g for g in self.groups if self.safeGrpGet(g["id"], "one-is-required")
         ]:
             # Loop to choose an allowed value,
             # in case a previous choice disabled that one
             while True:
                 # Pick a random parameter
                 mbrId = rnd.choice(
-                    [
-                        mbr
-                        for mbr in grp["members"]
-                        if self.byId(mbr)["type"] != "Flag"
-                    ]
+                    [mbr for mbr in grp["members"] if self.byId(mbr)["type"] != "Flag"]
                 )
                 choice = self.byId(mbrId)
                 # see if it and its mutual requirements can be filled
@@ -1076,11 +1047,7 @@ class LocalExecutor:
                         if x.get("mutually-exclusive")
                     ]:
                         if (
-                            len(
-                                set.intersection(
-                                    set(mbs), set(self.in_dict.keys())
-                                )
-                            )
+                            len(set.intersection(set(mbs), set(self.in_dict.keys())))
                             > 1
                         ):
                             # Delete last in param
@@ -1219,9 +1186,7 @@ class LocalExecutor:
                         list_sep = " "
                     escaped_val = []
                     for x in val:
-                        escaped_val.append(
-                            escape_string(str(x)) if escape else str(x)
-                        )
+                        escaped_val.append(escape_string(str(x)) if escape else str(x))
                     val = list_sep.join(escaped_val)
                 elif escape:
                     val = escape_string(val)
@@ -1286,9 +1251,7 @@ class LocalExecutor:
             # (key=conditions, value=path)
             # Initialize file name with path template or existing value
             elif not isPathTemplate:
-                for templateObj in self.safeGet(
-                    outputId, "conditional-path-template"
-                ):
+                for templateObj in self.safeGet(outputId, "conditional-path-template"):
                     templateKey = list(templateObj.keys())[0]
                     condition = self._getCondPathTemplateExp(templateKey)
                     # If condition is true, set fileName
@@ -1410,9 +1373,7 @@ class LocalExecutor:
 
     # Print the command line result
     def printCmdLine(self):
-        print(
-            "Generated Command" + ("s" if len(self.cmd_line) > 1 else "") + ":"
-        )
+        print("Generated Command" + ("s" if len(self.cmd_line) > 1 else "") + ":")
         for cmd in self.cmd_line:
             print(cmd)
 
@@ -1468,9 +1429,7 @@ class LocalExecutor:
                 path = public_in_dict.get(id)
                 if path is not None:
                     if isinstance(path, list):
-                        public_in_dict[id] = [
-                            self._buildPublicFile(p) for p in path
-                        ]
+                        public_in_dict[id] = [self._buildPublicFile(p) for p in path]
                     else:
                         public_in_dict[id] = self._buildPublicFile(path)
 
@@ -1478,9 +1437,7 @@ class LocalExecutor:
 
     # Private method to generate public output object for data collection file
     # hashes are generated for each output file.
-    def _generatePublicOutput(
-        self, exec_output, out_files_dict, missing_files_dict
-    ):
+    def _generatePublicOutput(self, exec_output, out_files_dict, missing_files_dict):
         public_out_dict = {}
         public_out_dict["stdout"] = exec_output.stdout
         public_out_dict["stderr"] = exec_output.stderr
@@ -1508,9 +1465,7 @@ class LocalExecutor:
         if os.path.isdir(path):
             contents = os.listdir(path)
             # Recursive call to expand directory
-            files = [
-                self._buildPublicFile(os.path.join(path, x)) for x in contents
-            ]
+            files = [self._buildPublicFile(os.path.join(path, x)) for x in contents]
             return {"file-name": filename, "files": files}
         # Files are hashed
         else:
@@ -1541,9 +1496,7 @@ class LocalExecutor:
         file.write(content)
         file.close()
         if self.debug:
-            print_info(
-                f"Data capture from execution saved to cache as {filename}"
-            )
+            print_info(f"Data capture from execution saved to cache as {filename}")
 
     # Local function handles case where descriptor is not published
     # Checks if descriptor already saved to cache, if not then saves
@@ -1557,8 +1510,7 @@ class LocalExecutor:
         matching_files = [
             x
             for x in data_cache_files
-            if len(x.split("_")) > 1
-            and x.split("_")[1] is tool_name.replace(" ", "-")
+            if len(x.split("_")) > 1 and x.split("_")[1] is tool_name.replace(" ", "-")
         ]
         match = None
         for fl in matching_files:

@@ -56,8 +56,7 @@ class MockZenodoRecord:
 example_boutiques_tool = MockZenodoRecord(
     660699,
     "Example Boutiques Tool",
-    filename="https://sandbox.zenodo.org/"
-    "record/660699/files/example1_docker.json",
+    filename="https://sandbox.zenodo.org/" "record/660699/files/example1_docker.json",
 )
 
 

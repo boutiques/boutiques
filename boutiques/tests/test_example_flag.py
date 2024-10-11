@@ -37,6 +37,4 @@ class TestExampleFlag(BaseTest):
             self.get_file_path("i3.json"),
         )
 
-        self.assertEqual(
-            ret.shell_command.replace("  ", " ").strip(), "/bin/true -b"
-        )
+        self.assertEqual(ret.shell_command.replace("  ", " ").strip(), "/bin/true -b")

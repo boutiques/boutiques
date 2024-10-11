@@ -9,7 +9,7 @@ exclude =
 	docs/_build
 
 docstring-convention = numpy
-max-line-length = 80
+max-line-length = 88
 max_complexity = 100
 max_function_length = 650
 max_parameters_amount = 12

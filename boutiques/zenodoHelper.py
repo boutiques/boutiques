@@ -55,9 +55,7 @@ class ZenodoHelper:
 
     def get_zenodo_endpoint(self):
         endpoint = (
-            "https://sandbox.zenodo.org"
-            if self.sandbox
-            else "https://zenodo.org"
+            "https://sandbox.zenodo.org" if self.sandbox else "https://zenodo.org"
         )
         if self.verbose:
             print_info(f"Using Zenodo endpoint {endpoint}")
@@ -72,9 +70,7 @@ class ZenodoHelper:
             return True
         if r.status_code == 404:
             return False
-        raise_error(
-            ZenodoError, f"Cannot test existence of record {record_id}", r
-        )
+        raise_error(ZenodoError, f"Cannot test existence of record {record_id}", r)
 
     @importCatcher()
     def zenodo_get_record(self, zenodo_id):
@@ -94,9 +90,7 @@ class ZenodoHelper:
             raise_error(
                 ZenodoError,
                 "This does not look like a valid Zenodo ID: {}."
-                "Zenodo ids must be in the form zenodo.1234567".format(
-                    zenodo_id
-                ),
+                "Zenodo ids must be in the form zenodo.1234567".format(zenodo_id),
             )
         parts = zenodo_id.split(".")
         return parts[1]
@@ -177,9 +171,7 @@ class ZenodoHelper:
         return zid
 
     @importCatcher()
-    def zenodo_deposit_updated_version(
-        self, metadata, access_token, deposition_id
-    ):
+    def zenodo_deposit_updated_version(self, metadata, access_token, deposition_id):
         import requests
 
         r = requests.post(
@@ -208,9 +200,7 @@ class ZenodoHelper:
             print_info("Deposition of new version succeeded", r)
         new_url = r.json()["links"]["latest_draft"]
         new_zid = new_url.split("/")[-1]
-        self.zenodo_update_metadata(
-            new_zid, r.json()["doi"], metadata, access_token
-        )
+        self.zenodo_update_metadata(new_zid, r.json()["doi"], metadata, access_token)
         self.zenodo_delete_files(new_zid, r.json()["files"], access_token)
         return new_zid
 
@@ -233,8 +223,7 @@ class ZenodoHelper:
             "Authorization": f"Bearer {access_token}",
         }
         r = requests.put(
-            self.zenodo_endpoint
-            + f"/api/deposit/depositions/{new_deposition_id}",
+            self.zenodo_endpoint + f"/api/deposit/depositions/{new_deposition_id}",
             data=json.dumps(data),
             headers=headers,
         )
@@ -317,8 +306,7 @@ class ZenodoHelper:
             else zenodo_access_token
         )
         r = requests.post(
-            self.zenodo_endpoint
-            + f"/api/deposit/depositions/{deposition_id}/files",
+            self.zenodo_endpoint + f"/api/deposit/depositions/{deposition_id}/files",
             headers={"Authorization": f"Bearer {zenodo_access_token}"},
             data={"filename": os.path.basename(file_path)},
             files={"file": open(file_path, "rb")},

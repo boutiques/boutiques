@@ -14,9 +14,7 @@ class TestExample3(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
         self.setup(
-            os.path.join(
-                os.path.dirname(bfile), "schema", "examples", "example3"
-            )
+            os.path.join(os.path.dirname(bfile), "schema", "examples", "example3")
         )
 
     def test_example3_validate(self):

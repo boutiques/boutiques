@@ -21,8 +21,7 @@ class NexusHelper:
         except ImportError:
             raise_error(
                 NexusError,
-                "Cannot import nexussdk, "
-                "consider upgrading to python 3.5 or higher",
+                "Cannot import nexussdk, " "consider upgrading to python 3.5 or higher",
             )
             return
 
@@ -67,9 +66,7 @@ class NexusHelper:
             raise_error(NexusError, "Cannot find Nexus organization.")
         prompt = (
             "Please enter the Nexus organization you want to publish to"
-            " (it will be saved in {} for future use): ".format(
-                self.config_file
-            )
+            " (it will be saved in {} for future use): ".format(self.config_file)
         )
         return self.prompt(prompt)
 
@@ -81,9 +78,7 @@ class NexusHelper:
             raise_error(NexusError, "Cannot find Nexus project.")
         prompt = (
             "Please enter the Nexus project you want to publish to"
-            " (it will be saved in {} for future use): ".format(
-                self.config_file
-            )
+            " (it will be saved in {} for future use): ".format(self.config_file)
         )
         return self.prompt(prompt)
 
@@ -156,8 +151,7 @@ class NexusHelper:
             elif 401 == e.response.status_code:
                 raise_error(
                     NexusError,
-                    "Cannot authenticate to Nexus API, check "
-                    "your access token",
+                    "Cannot authenticate to Nexus API, check " "your access token",
                     e.response,
                 )
             else:

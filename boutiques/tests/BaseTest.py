@@ -13,9 +13,7 @@ from boutiques import __file__ as bfile
 class BaseTest(TestCase):
     dir = "."
     tests_dir = os.path.join(os.path.dirname(bfile), "tests")
-    test_temp = os.path.join(
-        os.path.split(os.path.split(bfile)[0])[0], "test_temp"
-    )
+    test_temp = os.path.join(os.path.split(os.path.split(bfile)[0])[0], "test_temp")
     example1_descriptor = os.path.join(
         os.path.dirname(bfile),
         "schema",
@@ -80,9 +78,7 @@ class BaseTest(TestCase):
                 required_files_len = len(required_files)
             self.assertEqual(len(ret.output_files), required_files_len)
             for required_file in required_files:
-                self.assertIn(
-                    required_file, [f.file_name for f in ret.output_files]
-                )
+                self.assertIn(required_file, [f.file_name for f in ret.output_files])
 
     def assert_failed_return(
         self,

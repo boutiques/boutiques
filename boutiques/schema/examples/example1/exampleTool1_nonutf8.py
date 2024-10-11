@@ -29,9 +29,7 @@ def main(args=None):
         type=lambda x: file_exists(parser, x),
         help="A config file with a number.",
     )
-    parser.add_argument(
-        "-i", "--string_input", nargs="+", help="One or more strings."
-    )
+    parser.add_argument("-i", "--string_input", nargs="+", help="One or more strings.")
     parser.add_argument(
         "-l", "--int_input", nargs="+", help="One or more ints.", type=int
     )
@@ -69,9 +67,7 @@ def main(args=None):
     results = parser.parse_args() if args is None else parser.parse_args(args)
 
     if results.number and results.enum_input:
-        sys.stderr.write(
-            "error: number and enum_input are mutually exclusive.\n"
-        )
+        sys.stderr.write("error: number and enum_input are mutually exclusive.\n")
         sys.exit(1)
 
     if (not results.number) and (not results.enum_input):

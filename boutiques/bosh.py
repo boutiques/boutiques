@@ -90,9 +90,7 @@ def execute(*params):
     # Validate mode is in params
     if not hasattr(results, "mode"):
         parser.parse_known_args(params + ("--help",))
-        raise_error(
-            ExecutorError, "Missing exec mode {launch, prepare, simulate}."
-        )
+        raise_error(ExecutorError, "Missing exec mode {launch, prepare, simulate}.")
 
     elif results.mode == "launch":
         descriptor = results.descriptor
@@ -219,9 +217,7 @@ def execute(*params):
 
         # Adding hide to "container location" field since it's an invalid
         # value, and we can parse that to hide the summary print
-        return ExecutorOutput(
-            container_location, "", 0, "", [], [], "", "", "hide"
-        )
+        return ExecutorOutput(container_location, "", 0, "", [], [], "", "", "hide")
 
 
 def importer(*params):
@@ -464,9 +460,7 @@ def data(*params):
     # Validate mode is in params
     if not hasattr(results, "mode"):
         parser.parse_known_args(params + ("--help",))
-        raise_error(
-            DataHandlerError, "Missing data mode {delete, inspect, publish}."
-        )
+        raise_error(DataHandlerError, "Missing data mode {delete, inspect, publish}.")
     elif results.mode == "inspect":
         from boutiques.dataHandler import DataHandler
 
@@ -628,9 +622,7 @@ class BoutiquesError(Exception):
 bosh.__doc__ = parser_bosh().format_usage().replace("sphinx-build", "bosh")
 # retrieve subparsers from parser
 subparsers_actions = [
-    a
-    for a in parser_bosh()._actions
-    if isinstance(a, argparse._SubParsersAction)
+    a for a in parser_bosh()._actions if isinstance(a, argparse._SubParsersAction)
 ]
 for action in subparsers_actions:
     # get all subparsers and assign __doc__ to functions

@@ -103,13 +103,9 @@ class TestPrepare(BaseTest):
                 "prepare",
                 self.get_file_path("example1_sing_crash_pull.json"),
                 "--imagepath",
-                os.path.join(
-                    os.path.expanduser("~"), "boutiques-example1-latest.simg"
-                ),
+                os.path.join(os.path.expanduser("~"), "boutiques-example1-latest.simg"),
             )
-        self.assertIn(
-            "Could not pull Singularity image", str(e.getrepr(style="long"))
-        )
+        self.assertIn("Could not pull Singularity image", str(e.getrepr(style="long")))
 
     @mock.patch("os.mkdir", side_effect=mock_mkdir())
     @mock.patch(
@@ -134,9 +130,7 @@ class TestPrepare(BaseTest):
             "prepare",
             self.get_file_path("example1_sing.json"),
             "--imagepath",
-            os.path.join(
-                os.path.expanduser("~"), "boutiques-example1-test.simg"
-            ),
+            os.path.join(os.path.expanduser("~"), "boutiques-example1-test.simg"),
         )
         self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
@@ -155,9 +149,7 @@ class TestPrepare(BaseTest):
                 "prepare",
                 self.get_file_path("example1_sing.json"),
                 "--imagepath",
-                os.path.join(
-                    os.path.expanduser("~"), "boutiques-example1-test.simg"
-                ),
+                os.path.join(os.path.expanduser("~"), "boutiques-example1-test.simg"),
             )
         self.assertIn(
             "Unable to retrieve Singularity image",
@@ -174,9 +166,7 @@ class TestPrepare(BaseTest):
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
     )
-    def test_prepare_sing_timeout_success(
-        self, mock_mkdir, mock_sleep, mock_exists
-    ):
+    def test_prepare_sing_timeout_success(self, mock_mkdir, mock_sleep, mock_exists):
         # Specify path for image that does not exist.
         # Mock that another process has the lockdir and this one
         # times out while waiting, but image was created by the
@@ -185,9 +175,7 @@ class TestPrepare(BaseTest):
             "prepare",
             self.get_file_path("example1_sing.json"),
             "--imagepath",
-            os.path.join(
-                os.path.expanduser("~"), "boutiques-example1-test.simg"
-            ),
+            os.path.join(os.path.expanduser("~"), "boutiques-example1-test.simg"),
         )
         self.assertIn("Local (boutiques-example1-test.simg)", ret.stdout)
 
@@ -207,9 +195,7 @@ class TestPrepare(BaseTest):
             "prepare",
             self.get_file_path("example1_sing_crash_pull.json"),
             "--imagepath",
-            os.path.join(
-                os.path.expanduser("~"), "boutiques-example1-test.simg"
-            ),
+            os.path.join(os.path.expanduser("~"), "boutiques-example1-test.simg"),
         )
         self.assertIn(
             "Pulled from " "docker://boutiques/example1crashcrashcrash:test",
@@ -219,6 +205,4 @@ class TestPrepare(BaseTest):
     def test_prepare_no_container(self):
         self.setup("exec")
         ret = bosh.execute("prepare", self.get_file_path("no_container.json"))
-        self.assertIn(
-            "Descriptor does not specify a container image.", ret.stdout
-        )
+        self.assertIn("Descriptor does not specify a container image.", ret.stdout)

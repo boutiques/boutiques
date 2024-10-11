@@ -19,9 +19,7 @@ def is_valid_enum_value(parser, value):
 
 def test_mutex_group(results):
     if results.number and results.enum_input:
-        sys.stderr.write(
-            "error: number and enum_input are mutually exclusive.\n"
-        )
+        sys.stderr.write("error: number and enum_input are mutually exclusive.\n")
         sys.exit(1)
 
 
@@ -69,9 +67,7 @@ def test_conditional_output_paths(results):
     if results.cond_out:
         path = f"{results.output_file}_default.txt"
         if results.string and results.number > 10:
-            path = (
-                f"{results.output_file}_{results.string}_{results.number}.txt"
-            )
+            path = f"{results.output_file}_{results.string}_{results.number}.txt"
         elif results.string:
             path = f"{results.output_file}_{results.string}.txt"
 
@@ -98,9 +94,7 @@ def main(args=None):
         type=lambda x: file_exists(parser, x),
         help="A config file with a number.",
     )
-    parser.add_argument(
-        "-i", "--string_input", nargs="+", help="One or more strings."
-    )
+    parser.add_argument("-i", "--string_input", nargs="+", help="One or more strings.")
     parser.add_argument(
         "-l", "--int_input", nargs="+", help="One or more ints.", type=int
     )

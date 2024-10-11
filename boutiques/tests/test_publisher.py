@@ -94,8 +94,7 @@ class TestPublisher(BaseTest):
                 "-y",
                 "-v",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
             ]
         )
         self.assertTrue(doi)
@@ -115,16 +114,13 @@ class TestPublisher(BaseTest):
                     "-y",
                     "-v",
                     "--zenodo-token",
-                    "hAaW2wSBZMskxpfigTYHcuDrC"
-                    "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                 ]
             )
         self.assertTrue("Descriptor already has a DOI" in str(e.exception))
 
         # Test publication of an updated version of the same descriptor
-        example1_desc_updated = self.get_file_path(
-            "example1_docker_updated.json"
-        )
+        example1_desc_updated = self.get_file_path("example1_docker_updated.json")
         temp_descriptor_updated = tempfile.NamedTemporaryFile(suffix=".json")
         shutil.copyfile(example1_desc_updated, temp_descriptor_updated.name)
 
@@ -137,8 +133,7 @@ class TestPublisher(BaseTest):
                 "-y",
                 "-v",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
             ]
         )
         self.assertTrue(new_doi)
@@ -211,8 +206,7 @@ class TestPublisher(BaseTest):
                 "-y",
                 "-v",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                 "--id",
                 "zenodo.1234567",
             ]
@@ -245,9 +239,7 @@ class TestPublisher(BaseTest):
                     "this_is_a_wrong_id",
                 ]
             )
-        self.assertTrue(
-            "Zenodo ID must be prefixed by 'zenodo'" in str(e.exception)
-        )
+        self.assertTrue("Zenodo ID must be prefixed by 'zenodo'" in str(e.exception))
 
         # Publish a descriptor that doesn't have an author
         good_desc = op.join(self.tests_dir, "invocation", "good.json")
@@ -267,9 +259,7 @@ class TestPublisher(BaseTest):
                     "i8i2hnN8r",
                 ]
             )
-        self.assertTrue(
-            "Tool must have an author to be published." in str(e.exception)
-        )
+        self.assertTrue("Tool must have an author to be published." in str(e.exception))
 
         # Publish a descriptor that doesn't have a container image
         good_desc = op.join(self.tests_dir, "exec", "no_container.json")
@@ -290,8 +280,7 @@ class TestPublisher(BaseTest):
                 ]
             )
         self.assertTrue(
-            "Tool must have a container image to be published."
-            in str(e.exception)
+            "Tool must have a container image to be published." in str(e.exception)
         )
 
         # Update a descriptor that doesn't have a DOI
@@ -311,8 +300,7 @@ class TestPublisher(BaseTest):
                     "-y",
                     "-v",
                     "--zenodo-token",
-                    "hAaW2wSBZMskxpfigTYHcuDrC"
-                    "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                     "--replace",
                 ]
             )
@@ -349,8 +337,7 @@ class TestPublisher(BaseTest):
                 "-y",
                 "-v",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                 "--replace",
             ]
         )
@@ -391,9 +378,7 @@ class TestPublisher(BaseTest):
     @mock.patch("requests.post", side_effect=mock_post_publish_then_update())
     @mock.patch("requests.put", return_value=mock_zenodo_test_api())
     @mock.patch("requests.delete", return_value=mock_zenodo_delete_files())
-    def test_publication_toolname_forwardslash(
-        self, mock_post, mock_put, mock_delete
-    ):
+    def test_publication_toolname_forwardslash(self, mock_post, mock_put, mock_delete):
         test_desc = self.get_file_path("test_forward_slash_toolName.json")
         with open(test_desc) as fhandle:
             descriptor = json.load(fhandle, object_pairs_hook=OrderedDict)
@@ -407,8 +392,7 @@ class TestPublisher(BaseTest):
                 "-y",
                 "-v",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
             ]
         )
 

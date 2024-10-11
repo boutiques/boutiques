@@ -44,9 +44,7 @@ def mock_get(query, exact, *args, include_version=True, **kwargs):
 class TestSearch(BaseTest):
     @mock.patch(
         "requests.get",
-        side_effect=lambda *args, **kwargs: mock_get(
-            "", False, *args, **kwargs
-        ),
+        side_effect=lambda *args, **kwargs: mock_get("", False, *args, **kwargs),
     )
     def test_search_all(self, mymockget):
         results = bosh(["search"])
@@ -84,9 +82,7 @@ class TestSearch(BaseTest):
 
     @mock.patch(
         "requests.get",
-        side_effect=lambda *args, **kwargs: mock_get(
-            "", False, *args, **kwargs
-        ),
+        side_effect=lambda *args, **kwargs: mock_get("", False, *args, **kwargs),
     )
     def test_search_verbose(self, mymockget):
         results = bosh(["search", "-v"])

@@ -41,9 +41,7 @@ class TestTest(BaseTest):
         return_value=mock_zenodo_search([example_boutiques_tool]),
     )
     def test_test_good_from_zenodo(self, mock_get):
-        self.assertFalse(
-            bosh(["test", "zenodo." + str(example_boutiques_tool.id)])
-        )
+        self.assertFalse(bosh(["test", "zenodo." + str(example_boutiques_tool.id)]))
 
     def test_test_invalid(self):
         with self.assertRaises(ValidationError) as context:

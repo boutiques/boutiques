@@ -15,9 +15,7 @@ from boutiques.tests.BaseTest import BaseTest
 
 def retrieve_data_record():
     data_collect_dict = {}
-    cache_dir = os.path.join(
-        os.path.expanduser("~"), ".cache", "boutiques", "data"
-    )
+    cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "boutiques", "data")
     if os.path.exists(cache_dir):
         cache_fls = glob.glob(cache_dir + "/*")
         if cache_fls:
@@ -36,9 +34,7 @@ class TestDataCollection(BaseTest):
     def clean_up(self):
         yield
         # Clean up data collection files
-        cache_dir = os.path.join(
-            os.path.expanduser("~"), ".cache", "boutiques", "data"
-        )
+        cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "boutiques", "data")
         if os.path.exists(cache_dir):
             cache_fls = os.listdir(cache_dir)
             for fl in cache_fls:
@@ -101,9 +97,7 @@ class TestDataCollection(BaseTest):
     )
     def test_skip_collection(self):
         # Register original size of cache directory for comparison
-        cache_dir = os.path.join(
-            os.path.expanduser("~"), ".cache", "boutiques", "data"
-        )
+        cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "boutiques", "data")
         original_size = 0
         if os.path.exists(cache_dir):
             cache_fls = os.listdir(cache_dir)
@@ -146,9 +140,7 @@ class TestDataCollection(BaseTest):
             "example1",
             "invocation.json",
         )
-        bosh.execute(
-            "launch", "zenodo." + str(example_boutiques_tool.id), invoc
-        )
+        bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id), invoc)
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")

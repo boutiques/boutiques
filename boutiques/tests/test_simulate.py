@@ -26,9 +26,7 @@ class TestSimulate(BaseTest):
         self.setup("simulate")
 
     def test_success(self):
-        self.assertFalse(
-            bosh.execute("simulate", self.example1_descriptor).exit_code
-        )
+        self.assertFalse(bosh.execute("simulate", self.example1_descriptor).exit_code)
 
         self.assertFalse(
             bosh.execute(
@@ -66,15 +64,11 @@ class TestSimulate(BaseTest):
         test_json = json.loads(desc_json)
         del test_json["groups"]
         # Have to tweak flag_input because it disables number_input
-        target_input = [
-            i for i in test_json["inputs"] if i["id"] == "flag_input"
-        ][0]
+        target_input = [i for i in test_json["inputs"] if i["id"] == "flag_input"][0]
         del target_input["disables-inputs"]
 
         # Make number_input mandatory
-        target_input = [
-            i for i in test_json["inputs"] if i["id"] == "num_input"
-        ][0]
+        target_input = [i for i in test_json["inputs"] if i["id"] == "num_input"][0]
         target_input["optional"] = False
         target_input["exclusive-minimum"] = False
 
@@ -213,9 +207,7 @@ class TestSimulate(BaseTest):
         self.assertEqual(noInvoc, wInvoc)
 
     def test_consistency_withAndWithout_invoc_withConfigFile(self):
-        descriptor = self.get_file_path(
-            "test_simulate_consistency_configFile.json"
-        )
+        descriptor = self.get_file_path("test_simulate_consistency_configFile.json")
         invoc = "tmpInvoc.json"
         config = "tmpConfig.toml"
         wInvocCommand = (

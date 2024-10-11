@@ -35,9 +35,7 @@ def validate_descriptor(descriptor, **kwargs):
         schema = json.load(fhandle)
 
     # Load input types according to the schema
-    schema_types = schema["properties"]["inputs"]["items"]["properties"][
-        "type"
-    ]["enum"]
+    schema_types = schema["properties"]["inputs"]["items"]["properties"]["type"]["enum"]
     allowed_keywords = ["and", "or", "false", "true"]
     allowed_comparators = ["==", "!=", "<", ">", "<=", ">="]
 
@@ -52,9 +50,7 @@ def validate_descriptor(descriptor, **kwargs):
     def safeGet(desc, sec, targ):
         if desc.get(sec):
             return [
-                item.get(targ)
-                for item in desc[sec]
-                if list(item.keys()).count(targ)
+                item.get(targ) for item in desc[sec] if list(item.keys()).count(targ)
             ]
         return []
 
@@ -126,8 +122,7 @@ def validate_descriptor(descriptor, **kwargs):
                 # Check elements neighbouring and/or keywords are valid words
                 if e.lower() in ["and", "or"] and (
                     expElements[idx - 1] not in schema_types + ["True", "False"]
-                    or expElements[idx + 1]
-                    not in schema_types + ["True", "False"]
+                    or expElements[idx + 1] not in schema_types + ["True", "False"]
                 ):
                     return False
         return True
@@ -235,8 +230,7 @@ def validate_descriptor(descriptor, **kwargs):
         # Verify output key contains variables that correspond to input IDs
         # or is 'default'
         msg_template = (
-            'OutputError: "{0}" contains non-python keyword and '
-            'non-ID string: "{1}"'
+            'OutputError: "{0}" contains non-python keyword and ' 'non-ID string: "{1}"'
         )
         for templateKey in cond_outfiles_keys:
             splitExp = conditionalExpFormat(templateKey).split()
@@ -267,9 +261,7 @@ def validate_descriptor(descriptor, **kwargs):
             for s in [
                 s
                 for s in enumerate(splitExp)
-                if not keyword.iskeyword(s[1])
-                and s[1].isalnum()
-                and not s[1].isdigit()
+                if not keyword.iskeyword(s[1]) and s[1].isalnum() and not s[1].isdigit()
             ]:
                 if s[1] in [i["id"] for i in descriptor["inputs"]]:
                     splitExp[s[0]] = inById(s[1])["type"]
@@ -304,8 +296,7 @@ def validate_descriptor(descriptor, **kwargs):
         # Verify number-type inputs min/max are sensible
         elif inp["type"] == "Number":
             msg_template = (
-                ' InputError: "{0}" cannot have greater'
-                " min ({1}) than max ({2})"
+                ' InputError: "{0}" cannot have greater' " min ({1}) than max ({2})"
             )
             minn = inp["minimum"] if "minimum" in inp.keys() else -float("Inf")
             maxx = inp["maximum"] if "maximum" in inp.keys() else float("Inf")
@@ -316,17 +307,14 @@ def validate_descriptor(descriptor, **kwargs):
 
         # Verify enum-type inputs (at least 1 option, default in set)
         elif "value-choices" in inp.keys():
-            msg_template = (
-                ' InputError: "{0}" must have at least' " one value choice"
-            )
+            msg_template = ' InputError: "{0}" must have at least' " one value choice"
             if len(inp["value-choices"]) < 1:
                 errors += [msg_template.format(inp["id"])]
             else:
                 errors += []
 
             msg_template = (
-                ' InputError: "{0}" cannot have default'
-                " value outside its choices"
+                ' InputError: "{0}" cannot have default' " value outside its choices"
             )
             if "default-value" in inp.keys():
                 if not isinstance(inp["default-value"], list):
@@ -359,8 +347,7 @@ def validate_descriptor(descriptor, **kwargs):
             errors += [msg_template.format(inp["id"], minn)] if minn < 0 else []
 
             msg_template = (
-                ' InputError: "{0}" cannot have non-positive'
-                " max entries ({1})"
+                ' InputError: "{0}" cannot have non-positive' " max entries ({1})"
             )
             if maxx <= 0:
                 errors += [msg_template.format(inp["id"], maxx)]
@@ -423,13 +410,9 @@ def validate_descriptor(descriptor, **kwargs):
 
         if "value-choices" in inp.keys():
             # Verify not value not requiring and disabling input
-            if (
-                "value-requires" in inp.keys()
-                and "value-disables" in inp.keys()
-            ):
+            if "value-requires" in inp.keys() and "value-disables" in inp.keys():
                 msg_template = (
-                    ' InputError: "{0}" choice "{1}" requires'
-                    ' and disables "{2}"'
+                    ' InputError: "{0}" choice "{1}" requires' ' and disables "{2}"'
                 )
                 errors += [
                     msg_template.format(inp["id"], choice, ids1)
@@ -449,9 +432,7 @@ def validate_descriptor(descriptor, **kwargs):
                         errors += [msg_template.format(inp["id"], param)]
 
                     # Verify all required or disabled IDs are valid
-                    msg_template = (
-                        ' InputError: "{0}" {1} id "{2}" not' " found"
-                    )
+                    msg_template = ' InputError: "{0}" {1} id "{2}" not' " found"
                     errors += [
                         msg_template.format(inp["id"], param, ids)
                         for ids in inp[param].values()
@@ -589,14 +570,10 @@ def validate_descriptor(descriptor, **kwargs):
 
             tests_names.append(test["name"])
             if "output-files" in test["assertions"].keys():
-                test_output_ids = safeGet(
-                    test["assertions"], "output-files", "id"
-                )
+                test_output_ids = safeGet(test["assertions"], "output-files", "id")
 
                 # Verify if output reference ids are valid
-                msg_template = (
-                    'TestError: "{0}" output id' ' not found, in test "{1}"'
-                )
+                msg_template = 'TestError: "{0}" output id' ' not found, in test "{1}"'
                 errors += [
                     msg_template.format(output_id, test["name"])
                     for output_id in test_output_ids

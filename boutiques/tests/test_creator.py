@@ -50,12 +50,8 @@ class TestCreator(BaseTest):
 
     def test_success_argparser(self):
         parser = ArgumentParser(description="my tool description")
-        parser.add_argument(
-            "myarg1", action="store", help="my help 1", type=list
-        )
-        parser.add_argument(
-            "myarg2", action="store", help="my help 2", type=int
-        )
+        parser.add_argument("myarg1", action="store", help="my help 1", type=list)
+        parser.add_argument("myarg2", action="store", help="my help 2", type=int)
         parser.add_argument("--myarg3", "-m", action="store", help="my help 3")
         subparser = parser.add_subparsers(
             help="the choices you will make", dest="mysubparser"
@@ -112,9 +108,7 @@ class TestCreator(BaseTest):
         self.assertIsNone(bosh(["invocation", fil, "-i", invof]))
 
     def test_success_template_camel_case(self):
-        template = op.join(
-            op.split(self.tests_dir)[0], "templates", "basic.json"
-        )
+        template = op.join(op.split(self.tests_dir)[0], "templates", "basic.json")
         fil = "./test_temp/creator_output.json"
         bosh(["create", fil, "--camel-case"])
         self.assertIsNone(bosh(["validate", fil]))

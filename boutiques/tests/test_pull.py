@@ -73,9 +73,7 @@ class TestPull(BaseTest):
                 )
             )
         )
-        self.assertTrue(
-            os.path.exists(os.path.join(cache_dir, "zenodo-2587160.json"))
-        )
+        self.assertTrue(os.path.exists(os.path.join(cache_dir, "zenodo-2587160.json")))
         self.assertEqual(len(results), 2, results)
 
     @mock.patch("boutiques.puller.urlretrieve", side_effect=mock_urlretrieve)
@@ -106,9 +104,7 @@ class TestPull(BaseTest):
     def test_pull_missing_prefix(self, mock_urlretrieve):
         with self.assertRaises(ZenodoError) as e:
             bosh(["pull", str(example_boutiques_tool.id)])
-        self.assertIn(
-            "Zenodo ID must be prefixed by 'zenodo'", str(e.exception)
-        )
+        self.assertIn("Zenodo ID must be prefixed by 'zenodo'", str(e.exception))
 
     @mock.patch("boutiques.puller.urlretrieve", side_effect=mock_urlretrieve)
     def test_pull_not_found(self, mock_urlretrieve):

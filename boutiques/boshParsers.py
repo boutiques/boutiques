@@ -58,8 +58,7 @@ def add_subparser_create(subparsers):
         "--use-singularity",
         "-u",
         action="store_true",
-        help="When --docker-image is used. Specify to "
-        "use singularity to run it.",
+        help="When --docker-image is used. Specify to " "use singularity to run it.",
     )
     parser_create.add_argument(
         "--cl-template",
@@ -241,8 +240,7 @@ def add_subparser_deprecate(subparsers):
 def add_subparser_evaluate(subparsers):
     parser_evaluate = subparsers.add_parser(
         "evaluate",
-        description="Evaluates parameter values for a"
-        " descriptor and invocation",
+        description="Evaluates parameter values for a" " descriptor and invocation",
     )
     parser_evaluate.set_defaults(function="evaluate")
     parser_evaluate.add_argument(
@@ -271,8 +269,7 @@ def add_subparser_evaluate(subparsers):
     parser_evaluate.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
 
 
@@ -297,15 +294,12 @@ def add_subparser_example(subparsers):
     parser_example.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
 
 
 def add_subparser_execute(subparsers):
-    parser_exec = subparsers.add_parser(
-        "exec", description="Boutiques local executor"
-    )
+    parser_exec = subparsers.add_parser("exec", description="Boutiques local executor")
     parser_exec.set_defaults(function="exec")
     exec_subparsers = parser_exec.add_subparsers(
         help="Mode of operation to use. Launch: takes a "
@@ -389,14 +383,12 @@ def add_subparser_execute(subparsers):
     parser_exec_launch.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
     parser_exec_launch.add_argument(
         "--no-automounts",
         action="store_true",
-        help="Disable automatic mount of all input files "
-        "present in the invocation",
+        help="Disable automatic mount of all input files " "present in the invocation",
     )
     force_group = parser_exec_launch.add_mutually_exclusive_group()
     force_group.add_argument(
@@ -446,8 +438,7 @@ def add_subparser_execute(subparsers):
     parser_exec_prepare.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
 
     parser_exec_simulate = exec_subparsers.add_parser(
@@ -481,8 +472,7 @@ def add_subparser_execute(subparsers):
     parser_exec_simulate.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
 
 
@@ -495,17 +485,14 @@ def add_subparser_export(subparsers):
     parser_export.add_argument(
         "type", help="Type of export we are performing.", choices=["carmin"]
     )
-    parser_export.add_argument(
-        "descriptor", help="Boutiques descriptor to export."
-    )
+    parser_export.add_argument("descriptor", help="Boutiques descriptor to export.")
     parser_export.add_argument(
         "--identifier", help="Identifier to use in" "CARMIN export."
     )
     parser_export.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
     parser_export.add_argument(
         "output",
@@ -586,8 +573,7 @@ def add_subparser_invocation(subparsers):
     parser_invocation.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
 
 
@@ -603,8 +589,7 @@ def add_subparser_pprint(subparsers):
     parser_pprint.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
 
 
@@ -727,8 +712,7 @@ def add_subparser_search(subparsers):
         "--max",
         action="store",
         type=int,
-        help="Specify the maximum number of results "
-        "to be returned. Default is 10.",
+        help="Specify the maximum number of results " "to be returned. Default is 10.",
     )
     parser_search.add_argument(
         "-nt",
@@ -747,8 +731,7 @@ def add_subparser_search(subparsers):
 def add_subparser_test(subparsers):
     parser_test = subparsers.add_parser(
         "test",
-        description="Perform all the tests defined within"
-        " the given descriptor",
+        description="Perform all the tests defined within" " the given descriptor",
     )
     parser_test.set_defaults(function="test")
     parser_test.add_argument(
@@ -760,8 +743,7 @@ def add_subparser_test(subparsers):
     parser_test.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
     parser_test.add_argument(
         "--imagepath",
@@ -797,8 +779,7 @@ def add_subparser_validate(subparsers):
     parser_validate.add_argument(
         "--sandbox",
         action="store_true",
-        help="Get descriptor from Zenodo's sandbox instead of "
-        "production server.",
+        help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
 
 
@@ -810,9 +791,7 @@ def add_subparser_version(subparsers):
 
 
 def parser_bosh():
-    parser = ArgumentParser(
-        add_help=False, formatter_class=RawTextHelpFormatter
-    )
+    parser = ArgumentParser(add_help=False, formatter_class=RawTextHelpFormatter)
     parser.add_argument(
         "--help",
         "-h",

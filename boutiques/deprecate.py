@@ -25,17 +25,13 @@ def deprecate(
     # Get the descriptor and Zenodo id
     puller = Puller([zenodo_id], verbose=verbose, sandbox=sandbox)
     descriptor_fname = puller.pull()[0]
-    descriptor_json = loadJson(
-        descriptor_fname, sandbox=sandbox, verbose=verbose
-    )
+    descriptor_json = loadJson(descriptor_fname, sandbox=sandbox, verbose=verbose)
 
     # Return if tool is already deprecated
     deprecated = descriptor_json.get("deprecated-by-doi")
     if deprecated is not None:
         if isinstance(deprecated, str):
-            print_info(
-                f"Tool {zenodo_id} is already deprecated by {deprecated} "
-            )
+            print_info(f"Tool {zenodo_id} is already deprecated by {deprecated} ")
         if by_zenodo_id is not None:
             prompt = (
                 "Tool {} will be deprecated by {}, "
@@ -55,15 +51,13 @@ def deprecate(
     # Return if tool has a newer version
     record = zhelper.zenodo_get_record(record_id)
     if not record["metadata"]["relations"]["version"][0]["is_last"]:
-        new_version = record["metadata"]["relations"]["version"][0][
-            "last_child"
-        ]["pid_value"]
+        new_version = record["metadata"]["relations"]["version"][0]["last_child"][
+            "pid_value"
+        ]
         raise_error(
             DeprecateError,
             "Tool {} has a newer version "
-            "(zenodo.{}), it cannot be deprecated.".format(
-                zenodo_id, new_version
-            ),
+            "(zenodo.{}), it cannot be deprecated.".format(zenodo_id, new_version),
         )
         return
 

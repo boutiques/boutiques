@@ -19,21 +19,15 @@ class TestBIDS(BaseTest):
 
     def test_bids_bad1(self):
         fil = self.get_file_path("bids_bad1.json")
-        self.assertRaises(
-            DescriptorValidationError, bosh, ["validate", fil, "-b"]
-        )
+        self.assertRaises(DescriptorValidationError, bosh, ["validate", fil, "-b"])
 
     def test_bids_bad2(self):
         fil = self.get_file_path("bids_bad2.json")
-        self.assertRaises(
-            DescriptorValidationError, bosh, ["validate", fil, "-b"]
-        )
+        self.assertRaises(DescriptorValidationError, bosh, ["validate", fil, "-b"])
 
     def test_bids_invalid(self):
         import simplejson as json
 
         fil = self.get_file_path("bids_bad2.json")
         descriptor = json.load(open(fil))
-        self.assertRaises(
-            DescriptorValidationError, validate_bids, descriptor, False
-        )
+        self.assertRaises(DescriptorValidationError, validate_bids, descriptor, False)

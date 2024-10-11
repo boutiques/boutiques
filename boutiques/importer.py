@@ -90,9 +90,9 @@ class Importer:
                     descriptor["container-image"]["image"] = img[1]
                     descriptor["container-image"]["index"] = img[0] + "://"
                 del descriptor["container-image"]["url"]
-            elif "docker" == descriptor["container-image"][
-                "type"
-            ] and descriptor["container-image"].get("index"):
+            elif "docker" == descriptor["container-image"]["type"] and descriptor[
+                "container-image"
+            ].get("index"):
                 url = descriptor["container-image"]["index"].split("://")[-1]
                 descriptor["container-image"]["index"] = url
 
@@ -103,9 +103,7 @@ class Importer:
             del descriptor["walltime-estimate"]
 
         with open(self.output_descriptor, "w") as fhandle:
-            fhandle.write(
-                json.dumps(customSortDescriptorByKey(descriptor), indent=4)
-            )
+            fhandle.write(json.dumps(customSortDescriptorByKey(descriptor), indent=4))
         validate_descriptor(loadJson(self.output_descriptor))
 
     def get_entry_point(self, input_descriptor):
@@ -130,8 +128,7 @@ class Importer:
                     entrypoint_values = json.loads(entrypoint_values)
                     # Adding single quotes around list items with spaces therein
                     entrypoint_values = [
-                        ev if " " not in ev else f"'{ev}'"
-                        for ev in entrypoint_values
+                        ev if " " not in ev else f"'{ev}'" for ev in entrypoint_values
                     ]
                     return " ".join(entrypoint_values)
 
@@ -173,22 +170,16 @@ class Importer:
             errors.append("No entrypoint found in container.")
 
         if len(errors):
-            raise_error(
-                ValidationError, "Invalid descriptor:\n" + "\n".join(errors)
-            )
+            raise_error(ValidationError, "Invalid descriptor:\n" + "\n".join(errors))
 
         template_string = template_string.replace("@@APP_NAME@@", app_name)
         template_string = template_string.replace("@@VERSION@@", version)
         template_string = template_string.replace("@@GIT_REPO_URL@@", git_repo)
-        template_string = template_string.replace(
-            "@@DOCKER_ENTRYPOINT@@", entrypoint
-        )
+        template_string = template_string.replace("@@DOCKER_ENTRYPOINT@@", entrypoint)
         template_string = template_string.replace(
             "@@CONTAINER_IMAGE@@", container_image
         )
-        template_string = template_string.replace(
-            "@@ANALYSIS_TYPES@@", analysis_types
-        )
+        template_string = template_string.replace("@@ANALYSIS_TYPES@@", analysis_types)
 
         with open(self.output_descriptor, "w") as f:
             f.write(template_string)
@@ -199,9 +190,7 @@ class Importer:
 
         # Read the CWL descriptor
         with open(self.input_descriptor) as f:
-            cwl_desc = json.loads(
-                json.dumps(yaml.load(f, Loader=yaml.FullLoader))
-            )
+            cwl_desc = json.loads(json.dumps(yaml.load(f, Loader=yaml.FullLoader)))
 
         # validate yaml descriptor?
 
@@ -264,10 +253,7 @@ class Importer:
             else:
                 bout_input["name"] = cwl_input
             value_key = f"[{cwl_input.upper()}]"
-            if (
-                type(cwl_in_obj) is dict
-                and cwl_in_obj.get("inputBinding") is not None
-            ):
+            if type(cwl_in_obj) is dict and cwl_in_obj.get("inputBinding") is not None:
                 command_line += " " + value_key
             bout_input["value-key"] = value_key
 
@@ -282,9 +268,7 @@ class Importer:
                         ImportError,
                         "Only 1-level nested "
                         "types of type"
-                        " 'array' are supported (CWL input: {})".format(
-                            cwl_input
-                        ),
+                        " 'array' are supported (CWL input: {})".format(cwl_input),
                     )
                 if cwl_type.get("inputBinding") is not None:
                     raise_error(
@@ -356,14 +340,10 @@ class Importer:
                 bout_output["name"] = cwl_desc["outputs"][cwl_output]["name"]
             else:
                 bout_output["name"] = cwl_output
-            cwl_out_binding = cwl_desc["outputs"][cwl_output].get(
-                "outputBinding"
-            )
+            cwl_out_binding = cwl_desc["outputs"][cwl_output].get("outputBinding")
             if cwl_out_binding and cwl_out_binding.get("glob"):
                 glob = cwl_out_binding["glob"]
-                bout_output["path-template"] = resolve_glob(
-                    glob, boutiques_inputs
-                )
+                bout_output["path-template"] = resolve_glob(glob, boutiques_inputs)
                 cwl_out_obj = cwl_desc["outputs"][cwl_output]
                 if type(cwl_out_obj.get("type")) is dict:
                     if (
@@ -392,9 +372,7 @@ class Importer:
         # Mandatory boutiques fields
         bout_desc["command-line"] = command_line
         if cwl_desc.get("doc"):
-            bout_desc["description"] = cwl_desc.get("doc").replace(
-                os.linesep, ""
-            )
+            bout_desc["description"] = cwl_desc.get("doc").replace(os.linesep, "")
         else:
             bout_desc["description"] = "Tool imported from CWL."
         bout_desc["inputs"] = boutiques_inputs
@@ -498,9 +476,7 @@ class Importer:
                     indent=4,
                 )
             )
-        boutiques.invocation(
-            self.output_descriptor, "-i", self.output_invocation
-        )
+        boutiques.invocation(self.output_descriptor, "-i", self.output_invocation)
 
     def import_config(self):
         def _getConfigFileString():
@@ -543,9 +519,7 @@ class Importer:
                     elementProperties["optional"] = True
                 elif all([p["type"] == "Number" for p in props]):
                     elementProperties["type"] = "Number"
-                    elementProperties["integer"] = all(
-                        [p["integer"] for p in props]
-                    )
+                    elementProperties["integer"] = all([p["integer"] for p in props])
                 elif all([p["type"] == "File" for p in props]):
                     elementProperties["type"] = "File"
                 else:
@@ -659,9 +633,7 @@ class Importer:
         descriptor["command-line"] = "tool [CONFIG_FILE]"
 
         with open(self.output_descriptor, "w+") as output:
-            output.write(
-                json.dumps(customSortDescriptorByKey(descriptor), indent=4)
-            )
+            output.write(json.dumps(customSortDescriptorByKey(descriptor), indent=4))
 
 
 class Docopt_Importer:
@@ -708,9 +680,7 @@ class Docopt_Importer:
 
             for options_shortcut in self.pattern.flat(AnyOptions):
                 doc_options = parse_defaults(docopt_str)
-                options_shortcut.children = list(
-                    set(doc_options) - pattern_options
-                )
+                options_shortcut.children = list(set(doc_options) - pattern_options)
             matched, left, collected = self.pattern.fix().match(argv)
         except Exception:
             os.remove(base_descriptor)
@@ -730,12 +700,8 @@ class Docopt_Importer:
             self.docopt_str.replace(
                 "".join(self._parse_section("usage:", self.docopt_str)), ""
             )
-            .replace(
-                "".join(self._parse_section("arguments:", self.docopt_str)), ""
-            )
-            .replace(
-                "".join(self._parse_section("options:", self.docopt_str)), ""
-            )
+            .replace("".join(self._parse_section("arguments:", self.docopt_str)), "")
+            .replace("".join(self._parse_section("options:", self.docopt_str)), "")
             .replace("\n\n", "\n")
             .strip()
         )
@@ -768,19 +734,14 @@ class Docopt_Importer:
                 # Add desc and type to all_desc_and_type
                 # key is initial id/name
                 self.all_desc_and_type[arg.name] = {
-                    "desc": arg_segs[-1]
-                    .replace("\n", " ")
-                    .replace("  ", "")
-                    .strip()
+                    "desc": arg_segs[-1].replace("\n", " ").replace("  ", "").strip()
                 }
                 if (
                     hasattr(arg, "value")
                     and arg.value is not None
                     and arg.value is not False
                 ):
-                    self.all_desc_and_type[arg.name][
-                        "default-value"
-                    ] = arg.value
+                    self.all_desc_and_type[arg.name]["default-value"] = arg.value
                 if type(arg) is Option and arg.argcount > 0:
                     for typ in [
                         seg
@@ -826,9 +787,7 @@ class Docopt_Importer:
                             option, ancestors=ancestors, optional=True
                         )
                 elif arg_type == "OneOrMore":
-                    list_name = (
-                        f"<list_of_{self._getParamName(arg.children[0].name)}>"
-                    )
+                    list_name = f"<list_of_{self._getParamName(arg.children[0].name)}>"
                     list_arg = Argument(list_name)
                     list_arg.parse(list_name)
                     self.all_desc_and_type[list_name] = {
@@ -852,9 +811,7 @@ class Docopt_Importer:
                 elif arg_type == "Required" and fchild_type == "Either":
                     # Mutex choices group, add group to dependencies tree
                     # add choices args to group
-                    ancestors = self._addGroupArgumentToDependencies(
-                        arg, ancestors
-                    )
+                    ancestors = self._addGroupArgumentToDependencies(arg, ancestors)
             elif arg_type == "Command":
                 self._addArgumentToDependencies(arg, ancestors=ancestors)
                 ancestors.append(arg.name)
@@ -862,14 +819,10 @@ class Docopt_Importer:
                 self._addArgumentToDependencies(arg, ancestors=ancestors)
                 ancestors.append(arg.name)
             elif arg_type == "Option":
-                self._addArgumentToDependencies(
-                    arg, ancestors=ancestors, optional=True
-                )
+                self._addArgumentToDependencies(arg, ancestors=ancestors, optional=True)
                 ancestors.append(arg.name)
             else:
-                raise_error(
-                    ImportError, f"Non implemented docopt arg.type: {arg_type}"
-                )
+                raise_error(ImportError, f"Non implemented docopt arg.type: {arg_type}")
 
     def _addArgumentToDependencies(
         self, node, ancestors=None, isList=False, optional=False, members=[]
@@ -877,18 +830,14 @@ class Docopt_Importer:
         # Add arg to dependency tree, establish hierarchy (parent/children)
         # by using ancestry of node
         p_node = self._getDependencyParentNode(ancestors)
-        argAdded = self._generateDependencyArgument(
-            node, isList, optional, members
-        )
+        argAdded = self._generateDependencyArgument(node, isList, optional, members)
 
         if ancestors == [] and node.name not in self.dependencies:
             self.dependencies[node.name] = argAdded
         elif ancestors != [] and p_node is not None:
             argAdded["parent"] = p_node
             if node.name in p_node["children"]:
-                p_node["children"][node.name]["children"].update(
-                    argAdded["children"]
-                )
+                p_node["children"][node.name]["children"].update(argAdded["children"])
             else:
                 p_node["children"][node.name] = argAdded
 
@@ -939,9 +888,7 @@ class Docopt_Importer:
         if node.name in self.all_desc_and_type:
             if "type" in self.all_desc_and_type[node.name]:
                 new_arg["type"] = (
-                    self._getStrippedName(
-                        self.all_desc_and_type[node.name]["type"]
-                    )
+                    self._getStrippedName(self.all_desc_and_type[node.name]["type"])
                     if self.all_desc_and_type[node.name]["type"]
                     in {"File", "Flag", "Number", "String"}
                     or self.all_desc_and_type[node.name]["type"][1:-1]
@@ -967,9 +914,7 @@ class Docopt_Importer:
         # group_arg contains members as dependency arguments
         options = arg.children[0].children
         p_node = self._getDependencyParentNode(ancestors)
-        members = [
-            self._generateDependencyArgument(option) for option in options
-        ]
+        members = [self._generateDependencyArgument(option) for option in options]
 
         pretty_names = [member["name"] for member in members]
         names = [arg.name for arg in arg.children[0].children]
@@ -1005,9 +950,7 @@ class Docopt_Importer:
                 self._addInputOrMutexGroupToDescriptor(
                     node[name], requires, addInputWithLineage=True
                 )
-                self.addInputsRecursive(
-                    node[name]["children"], [node[name]["name"]]
-                )
+                self.addInputsRecursive(node[name]["children"], [node[name]["name"]])
                 if not node[name]["optional"]:
                     mutex_names.append(node[name]["name"])
             if len(mutex_names) > 1:
@@ -1015,9 +958,7 @@ class Docopt_Importer:
                 if node[args_ids[0]]["parent"]:
                     # add mutex group to parent node's requires-inputs
                     p_name = node[args_ids[0]]["parent"]["name"]
-                    inputs = {
-                        inp["id"]: inp for inp in self.descriptor["inputs"]
-                    }
+                    inputs = {inp["id"]: inp for inp in self.descriptor["inputs"]}
                     if "requires-inputs" in inputs[p_name]:
                         inputs[p_name]["requires-inputs"].append(mtxgrp_name)
                     else:
@@ -1030,18 +971,12 @@ class Docopt_Importer:
             # Add mutex inputs and mutex group if arg is group_arg
             for mutex_member in node["mutex_members"]:
                 self._addInput(mutex_member, requires)
-            self._addMutexGroup(
-                [member["name"] for member in node["mutex_members"]]
-            )
+            self._addMutexGroup([member["name"] for member in node["mutex_members"]])
         else:
             self._addInput(
                 node,
                 requires
-                + (
-                    self._getLineageChildren(node, [])
-                    if addInputWithLineage
-                    else []
-                ),
+                + (self._getLineageChildren(node, []) if addInputWithLineage else []),
                 isList=node["isList"] if "isList" in node else False,
             )
 
@@ -1125,16 +1060,12 @@ class Docopt_Importer:
         # Change optionality of inputs to false,
         # only applies to single root input and its single lineage descendants
         if len(self.dependencies) == 1:
-            single_childs = [
-                self.dependencies[next(iter(self.dependencies))]["name"]
-            ]
+            single_childs = [self.dependencies[next(iter(self.dependencies))]["name"]]
             single_childs += self._getLineageChildren(
                 self.dependencies[next(iter(self.dependencies))]
             )
             for required_inp in [
-                inp
-                for inp in self.descriptor["inputs"]
-                if inp["id"] in single_childs
+                inp for inp in self.descriptor["inputs"] if inp["id"] in single_childs
             ]:
                 required_inp["optional"] = False
 
@@ -1142,9 +1073,7 @@ class Docopt_Importer:
         # Create OIR group with root inputs
         OIR_ids = []
         for root_inp in self.dependencies:
-            OIR_ids.append(
-                self.dependencies[root_inp]["name"].replace("-", "_")
-            )
+            OIR_ids.append(self.dependencies[root_inp]["name"].replace("-", "_"))
         pretty_name = "_".join(OIR_ids)
         unique_name = self._getUniqueId(pretty_name)
         new_group = {
@@ -1163,10 +1092,7 @@ class Docopt_Importer:
         # Recursively gets all the single lineage descendants names of
         # a dependency tree node
         child_keys = list(node["children"].keys())
-        if (
-            len(child_keys) == 1
-            and not node["children"][child_keys[0]]["optional"]
-        ):
+        if len(child_keys) == 1 and not node["children"][child_keys[0]]["optional"]:
             descendants.append(node["children"][child_keys[0]]["name"])
             self._getLineageChildren(
                 node["children"][child_keys[0]], descendants=descendants
@@ -1182,8 +1108,7 @@ class Docopt_Importer:
                     if self.dependencies[root]["id"] == ancestor:
                         last_node = self.dependencies[root]
             elif ancestor in [
-                last_node["children"][key]["id"]
-                for key in last_node["children"]
+                last_node["children"][key]["id"] for key in last_node["children"]
             ]:
                 last_node = last_node["children"][
                     [
@@ -1199,10 +1124,7 @@ class Docopt_Importer:
         # Generate, store and return a unique_id for inputs/groups
         # will store generated id and original id for reference
         id_count = 1
-        while (
-            name + ("_" + str(id_count) if id_count > 1 else "")
-            in self.unique_ids
-        ):
+        while name + ("_" + str(id_count) if id_count > 1 else "") in self.unique_ids:
             id_count += 1
         new_unique_id = name + ("_" + str(id_count) if id_count > 1 else "")
         self.unique_ids.append(new_unique_id)

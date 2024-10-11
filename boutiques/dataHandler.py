@@ -40,9 +40,7 @@ class DataHandler:
         elif self.latest:
             if len(self.record_files) > 0:
                 self.record_files.sort(
-                    key=lambda x: os.path.getmtime(
-                        os.path.join(self.cache_dir, x)
-                    ),
+                    key=lambda x: os.path.getmtime(os.path.join(self.cache_dir, x)),
                     reverse=True,
                 )
                 filename = self.record_files[0]
@@ -102,10 +100,8 @@ class DataHandler:
             self.zenodo_access_token = zenodo_token
             self.zenodo_helper = ZenodoHelper(sandbox, no_int, verbose)
             self.zenodo_endpoint = self.zenodo_helper.zenodo_endpoint
-            self.zenodo_access_token = (
-                self.zenodo_helper.verify_zenodo_access_token(
-                    self.zenodo_access_token
-                )
+            self.zenodo_access_token = self.zenodo_helper.verify_zenodo_access_token(
+                self.zenodo_access_token
             )
         else:
             self.nexus_helper = NexusHelper(sandbox, no_int, verbose)
@@ -287,9 +283,7 @@ class DataHandler:
             self.delete(record, True)
         # List remaining records and collect descriptor-doi values
         self.record_files = [
-            fl
-            for fl in os.listdir(self.cache_dir)
-            if fl not in self.descriptor_files
+            fl for fl in os.listdir(self.cache_dir) if fl not in self.descriptor_files
         ]
         doi_list = [
             loadJson(os.path.join(self.cache_dir, fl))
@@ -333,10 +327,7 @@ class DataHandler:
             print_info(f"File {file} has been removed from the data cache")
         # Remove all files in the data cache
         else:
-            [
-                os.remove(os.path.join(self.cache_dir, f))
-                for f in self.cache_files
-            ]
+            [os.remove(os.path.join(self.cache_dir, f)) for f in self.cache_files]
             print_info("All files have been removed from the data cache")
 
     def _file_exists_in_cache(self, filename):
@@ -350,9 +341,7 @@ class DataHandler:
         if self.filename is not None:
             return (
                 "The dataset {} will be deleted from the cache, "
-                "this cannot be undone. Are you sure? (Y/n) ".format(
-                    self.filename
-                )
+                "this cannot be undone. Are you sure? (Y/n) ".format(self.filename)
             )
         return (
             "All records will be removed from the cache. This "

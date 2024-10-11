@@ -67,11 +67,7 @@ class PrettyPrinter:
         description = f"Tool description: {self.desc['description']}"
         if self.desc.get("tags"):
             taglist = [
-                (
-                    f"{k}: {v}"
-                    if not isinstance(v, list)
-                    else f"{k}: {', '.join(v)}"
-                )
+                (f"{k}: {v}" if not isinstance(v, list) else f"{k}: {', '.join(v)}")
                 for k, v in self.desc["tags"].items()
             ]
             tags = f"Tags: {'; '.join(taglist)}"
@@ -119,16 +115,12 @@ class PrettyPrinter:
                 if inp in output["path-template"]
             ]
             if depids:
-                temp_info += (
-                    f"\n\tFilename depends on Input IDs: {', '.join(depids)}"
-                )
+                temp_info += f"\n\tFilename depends on Input IDs: {', '.join(depids)}"
 
             # Gets stripped extensions
             if output.get("path-template-stripped-extensions"):
                 exts = ", ".join(output["path-template-stripped-extensions"])
-                temp_info += (
-                    f"\n\tStripped extensions (before substitution): {exts}"
-                )
+                temp_info += f"\n\tStripped extensions (before substitution): {exts}"
 
             # If a config file, add the template
             if output.get("file-template"):
@@ -140,9 +132,7 @@ class PrettyPrinter:
                 output_info += temp_info
 
         self.epilog = (
-            f"\n\n{self.sep}\n\n{config_info}"
-            if config_info != "Config Files:"
-            else ""
+            f"\n\n{self.sep}\n\n{config_info}" if config_info != "Config Files:" else ""
         )
         self.epilog += f"\n\n{self.sep}\n\n{output_info}"
 
@@ -156,9 +146,7 @@ class PrettyPrinter:
             gtype += [1] if bool(group.get("all-or-none")) else []
             gtype += [2] if bool(group.get("one-is-required")) else []
             group_info += f"\n\tName: {group['name'].title()}"
-            group_info += (
-                f"\n\tType: {', '.join([gtypes[ind] for ind in gtype])}\n"
-            )
+            group_info += f"\n\tType: {', '.join([gtypes[ind] for ind in gtype])}\n"
             group_info += f"\tGroup Member IDs: {', '.join(group['members'])}"
             group_info += "\n"
         self._addSegment(group_info)
@@ -294,13 +282,9 @@ class PrettyPrinter:
 
                 # Show exclusivity with other inputs
                 if inp.get("disables-inputs"):
-                    tmp_inp_descr += (
-                        f"Disables: {', '.join(inp['disables-inputs'])}\n"
-                    )
+                    tmp_inp_descr += f"Disables: {', '.join(inp['disables-inputs'])}\n"
                 if inp.get("requires-inputs"):
-                    tmp_inp_descr += (
-                        f"Requires: {', '.join(inp['requires-inputs'])}\n"
-                    )
+                    tmp_inp_descr += f"Requires: {', '.join(inp['requires-inputs'])}\n"
 
                 # Show exclusivity of values with other inputs
                 if inp.get("value-disables") and inp.get("value-requires"):
@@ -351,9 +335,7 @@ class PrettyPrinter:
                     if "_DUP" in parsed_flags[i]:
                         parsed_flags[i] = parsed_flags[i][0:-5]
                 if inp_args[0] in parsed_flags:
-                    inp_args[0] = (
-                        f"{inp_args[0]}_DUP{parsed_flags.count(inp_args[0])}"
-                    )
+                    inp_args[0] = f"{inp_args[0]}_DUP{parsed_flags.count(inp_args[0])}"
                 self.parser.add_argument(*inp_args, **inp_kwargs)
 
     def _addSegment(self, segment):

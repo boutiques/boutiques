@@ -23,9 +23,7 @@ def fetch_tests(descriptor_input, paramsDict):
 
         # We first extract the invocation and put it inside a temporary file.
         invocation_JSON = json.dumps(test["invocation"])
-        temp_invocation_JSON = tempfile.NamedTemporaryFile(
-            suffix=".json", delete=False
-        )
+        temp_invocation_JSON = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
         temp_invocation_JSON.write(invocation_JSON.encode())
         temp_invocation_JSON.seek(0)
 
@@ -61,6 +59,4 @@ def pytest_generate_tests(metafunc):
         for params in tests
     ]
 
-    metafunc.parametrize(
-        "descriptor, test, invocation, paramsDict", tests, ids=names
-    )
+    metafunc.parametrize("descriptor, test, invocation, paramsDict", tests, ids=names)

@@ -39,9 +39,7 @@ class TestOutputFiles(BaseTest):
             template_desc_json = json.load(base_desc)
 
         test_json = {
-            k: template_desc_json[k]
-            for k in template_desc_json
-            if k != "output-files"
+            k: template_desc_json[k] for k in template_desc_json if k != "output-files"
         }
         output_list = template_desc_json["output-files"]
 
@@ -52,9 +50,7 @@ class TestOutputFiles(BaseTest):
         with open(test_desc_path, "w+") as test_desc:
             test_desc.write(json.dumps(test_json))
         command = "bosh validate " + test_desc_path
-        validate_only_PT = subprocess.Popen(
-            command, shell=True, stdout=subprocess.PIPE
-        )
+        validate_only_PT = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         process_output = validate_only_PT.stdout.read()
         self.assertEqual(b"OK\n", process_output)
 
@@ -91,9 +87,7 @@ class TestOutputFiles(BaseTest):
             template_desc_json = json.load(base_desc)
 
         test_json = {
-            k: template_desc_json[k]
-            for k in template_desc_json
-            if k != "output-files"
+            k: template_desc_json[k] for k in template_desc_json if k != "output-files"
         }
         output_list = template_desc_json["output-files"]
 
@@ -146,9 +140,7 @@ class TestOutputFiles(BaseTest):
             template_desc_json = json.load(base_desc)
 
         test_json = {
-            k: template_desc_json[k]
-            for k in template_desc_json
-            if k != "output-files"
+            k: template_desc_json[k] for k in template_desc_json if k != "output-files"
         }
         output_list = template_desc_json["output-files"]
 
@@ -173,9 +165,7 @@ class TestOutputFiles(BaseTest):
         )
 
     def test_conditional_path_template_comparison_types(self):
-        test_desc_path = self.get_file_path(
-            "test_cond_output_invalid_types.json"
-        )
+        test_desc_path = self.get_file_path("test_cond_output_invalid_types.json")
 
         command = "bosh validate " + test_desc_path
         validate_wrong_ID = subprocess.Popen(
@@ -183,8 +173,7 @@ class TestOutputFiles(BaseTest):
         )
         process_output = validate_wrong_ID.stdout.read()
         self.assertIn(
-            '"opt1 and (opt2 > "10.00")" contains '
-            "invalid conditional expression.",
+            '"opt1 and (opt2 > "10.00")" contains ' "invalid conditional expression.",
             process_output.decode(),
         )
         self.assertIn(

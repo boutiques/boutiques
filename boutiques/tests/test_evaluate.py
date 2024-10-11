@@ -15,9 +15,7 @@ class TestEvaluate(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
         self.setup(
-            os.path.join(
-                os.path.dirname(bfile), "schema", "examples", "example1"
-            )
+            os.path.join(os.path.dirname(bfile), "schema", "examples", "example1")
         )
 
     def test_evaloutput(self):

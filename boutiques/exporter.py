@@ -72,13 +72,9 @@ class Exporter:
         carmin_desc["canExecute"] = True
         carmin_desc["parameters"] = []
         for inp in descriptor.get("inputs"):
-            carmin_desc["parameters"].append(
-                self.convert_input_or_output(inp, False)
-            )
+            carmin_desc["parameters"].append(self.convert_input_or_output(inp, False))
         for output in descriptor.get("output-files"):
-            carmin_desc["parameters"].append(
-                self.convert_input_or_output(output, True)
-            )
+            carmin_desc["parameters"].append(self.convert_input_or_output(output, True))
         carmin_desc["properties"] = {}
         carmin_desc["properties"]["boutiques"] = True
         if descriptor.get("tags"):

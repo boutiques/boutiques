@@ -13,9 +13,7 @@ class TestExample2(BaseTest):
     @pytest.fixture(autouse=True)
     def set_test_dir(self):
         self.setup(
-            os.path.join(
-                os.path.dirname(bfile), "schema", "examples", "example2"
-            )
+            os.path.join(os.path.dirname(bfile), "schema", "examples", "example2")
         )
 
     def test_example2_validate(self):
@@ -56,7 +54,5 @@ class TestExample2(BaseTest):
 
     def test_example2_no_exec_random(self):
         self.assertFalse(
-            bosh.execute(
-                "simulate", self.get_file_path("example2.json")
-            ).exit_code
+            bosh.execute("simulate", self.get_file_path("example2.json")).exit_code
         )

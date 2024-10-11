@@ -93,10 +93,8 @@ class Publisher:
         self.config_file = os.path.join(os.path.expanduser("~"), ".boutiques")
 
         # Fix Zenodo access token
-        self.zenodo_access_token = (
-            self.zenodo_helper.verify_zenodo_access_token(
-                self.zenodo_access_token
-            )
+        self.zenodo_access_token = self.zenodo_helper.verify_zenodo_access_token(
+            self.zenodo_access_token
         )
 
         # Set Zenodo endpoint
@@ -125,9 +123,7 @@ class Publisher:
                 self.sandbox,
                 exact_match=True,
             )
-            r = self.zenodo_helper.zenodo_search(
-                searcher.query, searcher.query_line
-            )
+            r = self.zenodo_helper.zenodo_search(searcher.query, searcher.query_line)
 
             publish_update = False
             for hit in r.json()["hits"]["hits"]:

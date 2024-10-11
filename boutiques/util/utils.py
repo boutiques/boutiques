@@ -54,9 +54,7 @@ def loadJson(userInput, verbose=False, sandbox=False):
         json_file = puller.pull()[0]
     if json_file is not None:
         with open(json_file) as f:
-            return OrderedDict(
-                json.loads(f.read(), object_pairs_hook=OrderedDict)
-            )
+            return OrderedDict(json.loads(f.read(), object_pairs_hook=OrderedDict))
     # JSON file not found, so try to parse JSON object
     e = (
         "Cannot parse input {}: file not found, "
@@ -117,9 +115,7 @@ def customSortDescriptorByKey(
             return objList
         for obj, sobj in zip(objList, sortedObjList):
             if obj != dict(sobj):
-                print_warning(
-                    "Sorted list does not represent" " original list."
-                )
+                print_warning("Sorted list does not represent" " original list.")
                 return objList
         return sortedObjList
 
@@ -130,9 +126,7 @@ def customSortDescriptorByKey(
     for key in template:
         if key in descriptor:
             if type(descriptor[key]) is list:
-                sortedDesc[key] = sortListedObjects(
-                    descriptor[key], template[key][0]
-                )
+                sortedDesc[key] = sortListedObjects(descriptor[key], template[key][0])
             elif type(descriptor[key]) is dict:
                 sortedDesc[key] = customSortDescriptorByKey(
                     descriptor[key], template=json.dumps(template[key])
@@ -145,9 +139,7 @@ def customSortDescriptorByKey(
         if key not in sortedDesc:
             sortedDesc[key] = descriptor[key]
     if sortedDesc != descriptor:
-        print_warning(
-            "Sorted descriptor does not represent" " original descriptor."
-        )
+        print_warning("Sorted descriptor does not represent" " original descriptor.")
         return descriptor
     return sortedDesc
 
@@ -169,9 +161,7 @@ def customSortInvocationByInput(invocation, descriptor):
         }
     )
     if sortedInvoc != invocation:
-        print_warning(
-            "Sorted invocation does not represent" " original invocation."
-        )
+        print_warning("Sorted invocation does not represent" " original invocation.")
         return invocation
     return sortedInvoc
 
@@ -205,10 +195,7 @@ def camelCaseInputIds(descriptor):
 
 def formatSphinxUsage(func, usage_str):
     args = (
-        usage_str.replace("[", " ")
-        .replace("]", " ")
-        .replace("\n", "")
-        .split(func)[1:]
+        usage_str.replace("[", " ").replace("]", " ").replace("\n", "").split(func)[1:]
     )
     args = "".join(args)
     args = args.split("  ")[0:]

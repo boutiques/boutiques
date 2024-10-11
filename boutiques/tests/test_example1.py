@@ -26,9 +26,9 @@ class TestExample1(BaseTest):
     def clean_up(self):
         fls = os.listdir("./")
         for fl in fls:
-            if (
-                fl.startswith("log") or fl.startswith("config")
-            ) and fl.endswith(".txt"):
+            if (fl.startswith("log") or fl.startswith("config")) and fl.endswith(
+                ".txt"
+            ):
                 os.remove(fl)
 
     # Captures the stdout and stderr during test execution
@@ -274,9 +274,7 @@ class TestExample1(BaseTest):
         reason="Docker not installed",
     )
     def test_example1_exec_docker_json_string_invalid(self):
-        invocationStr = open(
-            self.get_file_path("invocation_invalid.json")
-        ).read()
+        invocationStr = open(self.get_file_path("invocation_invalid.json")).read()
         with pytest.raises(LoadError) as e:
             bosh.execute(
                 "launch",
@@ -420,9 +418,7 @@ class TestExample1(BaseTest):
             config_num=4,
             enum_input="val1",
         )
-        self.assert_successful_return(
-            ret, aditional_assertions=self.assert_only_stdout
-        )
+        self.assert_successful_return(ret, aditional_assertions=self.assert_only_stdout)
 
     @pytest.mark.skipif(
         subprocess.Popen("type docker", shell=True).wait(),
@@ -493,9 +489,7 @@ class TestExample1(BaseTest):
                 "-v",
                 f"{self.get_file_path('example1_mount2')}:/test_mount2",
             )
-        self.assertIn(
-            "Could not pull Singularity image", str(e.getrepr(style="long"))
-        )
+        self.assertIn("Could not pull Singularity image", str(e.getrepr(style="long")))
 
     @pytest.mark.skipif(
         subprocess.Popen("type docker", shell=True).wait(),
@@ -624,9 +618,7 @@ class TestExample1(BaseTest):
             2,
             self.assert_reflected_output,
         )
-        self.assertIn(
-            "Local (boutiques-example1-test.simg)", ret.container_location
-        )
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
 
     @pytest.mark.skipif(
@@ -652,9 +644,7 @@ class TestExample1(BaseTest):
             2,
             self.assert_reflected_output,
         )
-        self.assertIn(
-            "Local (boutiques-example1-test.simg)", ret.container_location
-        )
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
 
     @pytest.mark.skipif(
@@ -694,9 +684,7 @@ class TestExample1(BaseTest):
         "boutiques.localExec.LocalExecutor._isCommandInstalled",
         side_effect=docker_not_installed,
     )
-    def test_example1_exec_docker_not_installed(
-        self, mock_docker_not_installed
-    ):
+    def test_example1_exec_docker_not_installed(self, mock_docker_not_installed):
         ret = bosh.execute(
             "launch",
             self.example1_descriptor,
@@ -713,9 +701,7 @@ class TestExample1(BaseTest):
             2,
             self.assert_reflected_output,
         )
-        self.assertIn(
-            "Local (boutiques-example1-test.simg)", ret.container_location
-        )
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
 
     @pytest.mark.skipif(
@@ -736,9 +722,7 @@ class TestExample1(BaseTest):
             "./test_temp/TEST.one.three.two_out1.txt" " (out1, Required)",
             outFileList,
         )
-        self.assertIn(
-            "./test_temp/TEST_string1.txt (out2, Required)", outFileList
-        )
+        self.assertIn("./test_temp/TEST_string1.txt (out2, Required)", outFileList)
         self.assertEqual([], ex.missing_files)
 
     @pytest.mark.skipif(
@@ -767,9 +751,7 @@ class TestExample1(BaseTest):
             "--skip-data-collection",
         )
 
-        self.assertIn(
-            "Local (boutiques-example1-test.simg)", ret.container_location
-        )
+        self.assertIn("Local (boutiques-example1-test.simg)", ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
 
     @pytest.mark.skipif(

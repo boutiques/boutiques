@@ -61,9 +61,7 @@ class CreateDescriptor:
 
     def save(self, filename):
         with open(filename, "w") as f:
-            f.write(
-                json.dumps(customSortDescriptorByKey(self.descriptor), indent=4)
-            )
+            f.write(json.dumps(customSortDescriptorByKey(self.descriptor), indent=4))
 
     def createInvocation(self, arguments):
         argdict = vars(arguments)
@@ -155,9 +153,7 @@ class CreateDescriptor:
         # Case 2: input is a subparser
         # Desired outcome: we add the subparser and options, and an input for
         # each of the subparser options
-        elif type(action) is argparse._SubParsersAction and not kwargs.get(
-            "addParser"
-        ):
+        elif type(action) is argparse._SubParsersAction and not kwargs.get("addParser"):
             if kwargs.get("verbose"):
                 print_info("_SubParsersAction: Interpreting & Adding")
 
@@ -173,9 +169,7 @@ class CreateDescriptor:
                 for subact in action.choices[act]._actions:
 
                     # Process the action, and record its "required" status
-                    tmpinput, reqd = self.parseAction(
-                        subact, subaction=True, **kwargs
-                    )
+                    tmpinput, reqd = self.parseAction(subact, subaction=True, **kwargs)
 
                     # If it's not empty, add it to an inputs dictionaryi, and
                     # add the input to the descriptor.

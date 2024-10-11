@@ -100,8 +100,7 @@ class TestDeprecate(BaseTest):
                 "zenodo.12345",
                 "zenodo." + str(example_boutiques_tool.id),
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
             ]
         )
         self.assertTrue(new_doi)
@@ -113,8 +112,7 @@ class TestDeprecate(BaseTest):
                 "--verbose",
                 "zenodo." + str(example_boutiques_tool.id),
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC"
-                "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
             ]
         )
         self.assertTrue(new_doi)
@@ -129,8 +127,7 @@ class TestDeprecate(BaseTest):
                     "zenodo.00000",
                     "zenodo." + str(example_boutiques_tool.id),
                     "--zenodo-token",
-                    "hAaW2wSBZMskxpfigTYHcuDrC"
-                    "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                 ]
             )
         self.assertTrue("Tool does not exist" in str(e.exception))
@@ -154,10 +151,7 @@ class TestDeprecate(BaseTest):
                     "--verbose",
                     "zenodo.22222",
                     "--zenodo-token",
-                    "hAaW2wSBZMskxpfigTYHcuDrC"
-                    "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
                 ]
             )
-        self.assertTrue(
-            "Tool zenodo.22222 has a newer version" in str(e.exception)
-        )
+        self.assertTrue("Tool zenodo.22222 has a newer version" in str(e.exception))

@@ -102,25 +102,17 @@ def generateInvocationSchema(toolDesc, oname=None, validateWrtMetaSchema=True):
             return {"required": [m]}
 
     if len(g1r) > 0:
-        schema["allOf"] = [
-            {"anyOf": list(map(reqMember, g["members"]))} for g in g1r
-        ]
+        schema["allOf"] = [{"anyOf": list(map(reqMember, g["members"]))} for g in g1r]
 
     # Handle requires and disables-inputs/mutex constraints
     def handleDisablesRequires(h, inval):
         i, h = RMap(inval), RMap(h)
         id, grps = i["id"], {g["id"]: g for g in groups}
-        reqs = (
-            [req for req in i["requires-inputs"]]
-            if "requires-inputs" in i
-            else []
-        )
+        reqs = [req for req in i["requires-inputs"]] if "requires-inputs" in i else []
         disbs = i["disables-inputs"] or []
         # Mutex group members added to disablees list
         mutex_group_members = [
-            g
-            for g in groups
-            if "mutually-exclusive" in g and (id in g["members"])
+            g for g in groups if "mutually-exclusive" in g and (id in g["members"])
         ]
         for g in mutex_group_members:
             for m in [m for m in g["members"] if not m == id]:

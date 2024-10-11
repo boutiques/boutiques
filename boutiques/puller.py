@@ -46,17 +46,14 @@ class Puller:
             except IndexError:
                 raise_error(
                     ZenodoError,
-                    "Zenodo ID must be prefixed by "
-                    "'zenodo', e.g. zenodo.123456",
+                    "Zenodo ID must be prefixed by " "'zenodo', e.g. zenodo.123456",
                 )
         self.verbose = verbose
         self.sandbox = sandbox
         if self.verbose:
             for zid in discarded_zids:
                 print_info(f"Discarded duplicate id {zid}")
-        self.zenodo_helper = ZenodoHelper(
-            sandbox=self.sandbox, verbose=self.verbose
-        )
+        self.zenodo_helper = ZenodoHelper(sandbox=self.sandbox, verbose=self.verbose)
 
     def pull(self):
         # return cached file if it exists
@@ -71,9 +68,7 @@ class Puller:
             searcher = Searcher(
                 entry["zid"], self.verbose, self.sandbox, exact_match=True
             )
-            r = self.zenodo_helper.zenodo_search(
-                searcher.query, searcher.query_line
-            )
+            r = self.zenodo_helper.zenodo_search(searcher.query, searcher.query_line)
             if not len(r.json()["hits"]["hits"]):
                 raise_error(
                     ZenodoError,

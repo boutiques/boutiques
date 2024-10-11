@@ -47,9 +47,7 @@ class Searcher:
         self.sandbox = sandbox
         self.no_trunc = no_trunc
         self.max_results = max_results
-        self.zenodo_helper = ZenodoHelper(
-            sandbox=self.sandbox, verbose=self.verbose
-        )
+        self.zenodo_helper = ZenodoHelper(sandbox=self.sandbox, verbose=self.verbose)
 
         # Display top 10 results by default
         if max_results is None:
@@ -61,9 +59,7 @@ class Searcher:
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = (
-            "https://sandbox.zenodo.org"
-            if self.sandbox
-            else "https://zenodo.org"
+            "https://sandbox.zenodo.org" if self.sandbox else "https://zenodo.org"
         )
         if self.verbose:
             print_info(f"Using Zenodo endpoint {self.zenodo_endpoint}")
@@ -89,21 +85,12 @@ class Searcher:
         print_info(
             "Showing %d of %d result(s)%s"
             % (
-                (
-                    num_results
-                    if num_results < self.max_results
-                    else self.max_results
-                ),
-                (
-                    total_results
-                    if self.verbose
-                    else total_results - total_deprecated
-                ),
+                (num_results if num_results < self.max_results else self.max_results),
+                (total_results if self.verbose else total_results - total_deprecated),
                 (
                     "."
                     if self.verbose
-                    else ", excluding %d deprecated result(s)."
-                    % total_deprecated
+                    else ", excluding %d deprecated result(s)." % total_deprecated
                 ),
             )
         )
@@ -128,9 +115,7 @@ class Searcher:
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
             results_list.append(result_dict)
-        results_list = sorted(
-            results_list, key=itemgetter("DOWNLOADS"), reverse=True
-        )
+        results_list = sorted(results_list, key=itemgetter("DOWNLOADS"), reverse=True)
         # Truncate the list according to the desired maximum number of results
         return results_list[: self.max_results]
 
@@ -165,15 +150,11 @@ class Searcher:
             if sys.stdout.encoding.lower != "UTF-8":
                 for k, v in list(result_dict.items()):
                     if isinstance(v, str):
-                        result_dict[k] = v.encode(
-                            "ascii", "xmlcharrefreplace"
-                        ).decode()
+                        result_dict[k] = v.encode("ascii", "xmlcharrefreplace").decode()
             if not self.no_trunc:
                 result_dict = self.truncate(result_dict, 40)
             results_list.append(result_dict)
-        results_list = sorted(
-            results_list, key=itemgetter("DOWNLOADS"), reverse=True
-        )
+        results_list = sorted(results_list, key=itemgetter("DOWNLOADS"), reverse=True)
         # Truncate the list according to the desired maximum number of results
         return results_list[: self.max_results]
 
@@ -201,9 +182,7 @@ class Searcher:
         for keyword in keywords:
             if keyword.split(":")[0] == "schema-version":
                 keyword_data["schema-version"] = keyword.split(":")[1]
-            elif (
-                keyword.lower() == "docker" or keyword.lower() == "singularity"
-            ):
+            elif keyword.lower() == "docker" or keyword.lower() == "singularity":
                 keyword_data["container-type"] = keyword
             else:
                 keyword_data["other"].append(keyword)
