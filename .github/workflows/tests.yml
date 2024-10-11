@@ -53,15 +53,11 @@ jobs:
 
         -   name: Install dependencies
             run: |
-                pip install --upgrade setuptools
-                pip install pytest pytest-runner coveralls
-                pip install .[all]
-                pip freeze
+                pip install tox
+                tox c
 
         -   name: Run tests
-            run: |
-                coverage run --source boutiques setup.py pytest
-                coverage report -m
+            run: tox run -e test
 
         -   name: Coveralls Parallel
             uses: coverallsapp/github-action@v2
