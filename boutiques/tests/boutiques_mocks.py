@@ -11,8 +11,12 @@ class MockHttpResponse:
     def json(self):
         return self.mock_json
 
+
 ZENODO_RECORD = 116301
-ZENODO_FILE = f"https://sandbox.zenodo.org/records/{ZENODO_RECORD}/files/example1_docker.json"
+ZENODO_FILE = (
+    f"https://sandbox.zenodo.org/records/{ZENODO_RECORD}/files/example1_docker.json"
+)
+
 
 class MockZenodoRecord:
     def __init__(
