@@ -53,7 +53,7 @@ class TestPrepare(BaseTest):
     )
     def test_prepare_docker(self):
         ret = bosh.execute("prepare", self.example1_descriptor)
-        self.assertIn("Local copy", ret.stdout)
+        self.assertIn("Pulled from Docker", ret.stdout)
 
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
