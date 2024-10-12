@@ -4,11 +4,7 @@ import tempfile
 from unittest import mock
 from urllib.request import urlopen, urlretrieve
 
-from boutiques_mocks import (
-    MockZenodoRecord,
-    example_boutiques_tool,
-    mock_zenodo_search,
-)
+from boutiques_mocks import MockZenodoRecord, example_boutiques_tool, mock_zenodo_search
 
 from boutiques.bosh import bosh
 from boutiques.puller import ZenodoError

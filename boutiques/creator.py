@@ -14,11 +14,7 @@ from jsonschema import ValidationError, validate
 
 from boutiques import __file__ as bfile
 from boutiques.logger import print_info, print_warning, raise_error
-from boutiques.util.utils import (
-    camelCaseInputIds,
-    customSortDescriptorByKey,
-    loadJson,
-)
+from boutiques.util.utils import camelCaseInputIds, customSortDescriptorByKey, loadJson
 
 
 # An exception class specific to creating descriptors.
