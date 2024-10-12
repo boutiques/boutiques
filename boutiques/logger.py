@@ -3,23 +3,21 @@
 
 def raise_error(error_class, message, r=None):
     if r is not None:
-        raise error_class("[ ERROR ({1}) ] {0}"
-                          .format(message, r.status_code))
+        raise error_class(f"[ ERROR ({r.status_code}) ] {message}")
     else:
-        raise error_class("[ ERROR ] {0}"
-                          .format(message))
+        raise error_class(f"[ ERROR ] {message}")
 
 
 def print_info(message, r=None):
     if r is not None:
-        print("[ INFO ({1}) ] {0}".format(message, r.status_code))
+        print(f"[ INFO ({r.status_code}) ] {message}")
     else:
-        print("[ INFO ] {0}".format(message))
+        print(f"[ INFO ] {message}")
 
 
 def print_warning(message):
-    print("[ WARNING ] {0}".format(message))
+    print(f"[ WARNING ] {message}")
 
 
 def print_error(message):
-    print("[ ERROR ] {0}".format(message))
+    print(f"[ ERROR ] {message}")

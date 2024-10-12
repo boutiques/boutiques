@@ -1,4 +1,4 @@
-'''
+"""
 Sample Docopt script for bosh import testing
 
 Usage:
@@ -25,4 +25,4 @@ Options:
   --d5=<dummy>    non-supported type
   --desc1         desc1 d3$c&p+0s ~!@#$%^&*()_+=-
   --desc2         desc2 descriptions
-'''
+"""

@@ -2,12 +2,15 @@
 
 import os
 import os.path as op
-from boutiques import __file__ as bfile
-from six import string_types
-import boutiques as bosh
-from boutiques.tests.BaseTest import BaseTest
-import pytest
 import sys
+
+import pytest
+from six import string_types
+
+import boutiques as bosh
+from boutiques import __file__ as bfile
+from boutiques.tests.BaseTest import BaseTest
+
 
 class TestPPrint(BaseTest):
     @pytest.fixture(autouse=True)
@@ -15,12 +18,12 @@ class TestPPrint(BaseTest):
         self.setup("pprint")
 
     def test_doesntcrash(self):
-        fil = self.get_file_path('test_pretty_print.json')
+        fil = self.get_file_path("test_pretty_print.json")
         prettystring = bosh.pprint(fil)
-        self.assertIsInstance(prettystring, string_types)
+        self.assertIsInstance(prettystring, (str,))
 
     def test_categories_and_order(self):
-        fil = self.get_file_path('test_pretty_print.json')
+        fil = self.get_file_path("test_pretty_print.json")
         prettystring = bosh.pprint(fil)
         i_tl_descs = prettystring.index("Tool name")
         i_con_info = prettystring.index("Container Information")
@@ -48,7 +51,7 @@ class TestPPrint(BaseTest):
         self.assertTrue(i_conf_fil < i_out_file)
 
     def test_input_optionality_separation(self):
-        fil = self.get_file_path('test_pretty_print.json')
+        fil = self.get_file_path("test_pretty_print.json")
         prettystring = bosh.pprint(fil)
         if sys.version_info.minor < 10:
             inputs = prettystring.split("=" * 80)[6].split("arguments:")
@@ -68,9 +71,8 @@ class TestPPrint(BaseTest):
             optional_inputs = inputs[0]
             self.assertFalse("Optional: False" in optional_inputs)
 
-
     def test_output_config_separation(self):
-        fil = self.get_file_path('test_pretty_print.json')
+        fil = self.get_file_path("test_pretty_print.json")
         prettystring = bosh.pprint(fil)
         categories = prettystring.split("=" * 80)
         configs = categories[7]
@@ -81,7 +83,7 @@ class TestPPrint(BaseTest):
         self.assertFalse("Template:" in outputs)
 
     def test_duplcate_flags(self):
-        fil = self.get_file_path('good_dupFlags.json')
+        fil = self.get_file_path("good_dupFlags.json")
         prettystring = bosh.pprint(fil)
         self.assertIn("-duplicate", prettystring)
         self.assertIn("-duplicate_DUP1", prettystring)

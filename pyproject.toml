@@ -62,7 +62,7 @@ bosh = "boutiques.bosh:bosh"
 Homepage = "http://github.com/boutiques/boutiques"
 
 [tool.black]
-line-length = 80
+line-length = 88
 
 [tool.codespell]
 # nd, fo, minum, manum - some short imports/variables
@@ -80,7 +80,7 @@ source = "vcs"
 
 [tool.isort]
 combine_as_imports = true
-line_length = 80
+line_length = 88
 profile = "black"
 skip_gitignore = true
 

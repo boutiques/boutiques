@@ -1,24 +1,25 @@
 #!/usr/bin/env python
 
-import subprocess
-
-from boutiques import bosh
-from jsonschema.exceptions import ValidationError
 import os
 import os.path as op
-from os.path import join as opj
-import pytest
-from boutiques.importer import ImportError
-import boutiques
+import subprocess
 import tarfile
+from os.path import join as opj
+
+import pytest
 import simplejson as json
-from boutiques.util.utils import loadJson
+from jsonschema.exceptions import ValidationError
+
+import boutiques
+from boutiques import bosh
+from boutiques.importer import ImportError
 from boutiques.tests.BaseTest import BaseTest
+from boutiques.util.utils import loadJson
 
 
 class TestImport(BaseTest):
 
-    @pytest.fixture(scope='session', autouse=True)
+    @pytest.fixture(scope="session", autouse=True)
     def clean_up(self):
         yield
         remove_list = ["user-image.simg", "example.conf", "stdout.txt"]
@@ -34,16 +35,20 @@ class TestImport(BaseTest):
         if op.isfile(outfile):
             os.remove(outfile)
         self.assertFalse(bosh(["import", "bids", outfile, bids_app]))
-        self.assertEqual(open(outfile).read().strip(),
-                         open(opj(bids_app, ref_name)).read().strip())
+        self.assertEqual(
+            open(outfile).read().strip(),
+            open(opj(bids_app, ref_name)).read().strip(),
+        )
         self.assertFalse(bosh(["validate", outfile, "-b"]))
 
     def test_import_bids_bad(self):
         self.setup("bids")
         bids_app = self.get_file_path("example_bad")
-        self.assertRaises(ValidationError, bosh, ["import", "bids",
-                                                  "test-import.json",
-                                                  bids_app])
+        self.assertRaises(
+            ValidationError,
+            bosh,
+            ["import", "bids", "test-import.json", bids_app],
+        )
 
     def test_upgrade_04(self):
         self.setup("import")
@@ -53,11 +58,15 @@ class TestImport(BaseTest):
         ref_file_p2 = self.get_file_path("test-import-04-ref-python2.json")
         if op.isfile(fout):
             os.remove(fout)
-        self.assertFalse(bosh(["import", "0.4",  fout, fin]))
+        self.assertFalse(bosh(["import", "0.4", fout, fin]))
         result = json.loads(open(fout).read().strip())
-        self.assertIn(result,
-                      [json.loads(open(ref_file).read().strip()),
-                       json.loads(open(ref_file_p2).read().strip())])
+        self.assertIn(
+            result,
+            [
+                json.loads(open(ref_file).read().strip()),
+                json.loads(open(ref_file_p2).read().strip()),
+            ],
+        )
         os.remove(fout)
 
     def test_upgrade_04_json_obj(self):
@@ -68,47 +77,55 @@ class TestImport(BaseTest):
         ref_file_p2 = self.get_file_path("test-import-04-ref-python2.json")
         if op.isfile(fout):
             os.remove(fout)
-        self.assertFalse(bosh(["import", "0.4",  fout, fin]))
+        self.assertFalse(bosh(["import", "0.4", fout, fin]))
         result = json.loads(open(fout).read().strip())
-        self.assertIn(result,
-                      [json.loads(open(ref_file).read().strip()),
-                       json.loads(open(ref_file_p2).read().strip())])
+        self.assertIn(
+            result,
+            [
+                json.loads(open(ref_file).read().strip()),
+                json.loads(open(ref_file_p2).read().strip()),
+            ],
+        )
         os.remove(fout)
 
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
     def test_import_cwl_valid(self):
         self.setup("import/cwl/")
         ex_dir = self.get_file_path("")
         # These ones are supposed to crash
-        bad_dirs = ["1st-workflow",  # workflow
-                    "record",  # complex type
-                    "array-inputs",  # input bindings specific to array element
-                    "expression",  # Javascript expression
-                    "nestedworkflows"  # workflow
-                    ]
+        bad_dirs = [
+            "1st-workflow",  # workflow
+            "record",  # complex type
+            "array-inputs",  # input bindings specific to array element
+            "expression",  # Javascript expression
+            "nestedworkflows",  # workflow
+        ]
         for d in os.listdir(ex_dir):
             if d == "README.md":
                 continue
-            cwl_descriptor = op.abspath(opj(ex_dir, d, d+".cwl"))
-            cwl_invocation = op.abspath(opj(ex_dir, d, d+".yml"))
-            assert(os.path.isfile(cwl_descriptor))
+            cwl_descriptor = op.abspath(opj(ex_dir, d, d + ".cwl"))
+            cwl_invocation = op.abspath(opj(ex_dir, d, d + ".yml"))
+            assert os.path.isfile(cwl_descriptor)
             out_desc = "./test_temp/cwl_out.json"
             out_inv = "./test_temp/cwl_inv_out.json"
             run = False
             if os.path.isfile(cwl_invocation):
-                args = ["import",
-                        "cwl",
-                        out_desc,
-                        cwl_descriptor,
-                        "-i", cwl_invocation,
-                        "-o", out_inv]
+                args = [
+                    "import",
+                    "cwl",
+                    out_desc,
+                    cwl_descriptor,
+                    "-i",
+                    cwl_invocation,
+                    "-o",
+                    out_inv,
+                ]
                 run = True
             else:
-                args = ["import",
-                        "cwl",
-                        out_desc,
-                        cwl_descriptor]
+                args = ["import", "cwl", out_desc, cwl_descriptor]
             if d in bad_dirs:
                 with pytest.raises(ImportError):
                     bosh(args)
@@ -116,25 +133,22 @@ class TestImport(BaseTest):
                 self.assertFalse(bosh(args), cwl_descriptor)
                 if run:
                     # write files required by cwl tools
-                    with open('./test_temp/hello.js', 'w') as f:
+                    with open("./test_temp/hello.js", "w") as f:
                         f.write("'hello'")
-                    with open('./test_temp/goodbye.txt', 'w') as f:
+                    with open("./test_temp/goodbye.txt", "w") as f:
                         f.write("goodbye")
                     # closing required for Python 2.6...
-                    with tarfile.open('./test_temp/hello.tar',
-                                      'w') as tar:
-                        tar.add('./test_temp/goodbye.txt')
+                    with tarfile.open("./test_temp/hello.tar", "w") as tar:
+                        tar.add("./test_temp/goodbye.txt")
                     ret = boutiques.execute(
-                            "launch",
-                            out_desc,
-                            out_inv,
-                            "--skip-data-collection"
-                          )
-                    self.assertFalse(ret.exit_code,
-                                     cwl_descriptor)
+                        "launch", out_desc, out_inv, "--skip-data-collection"
+                    )
+                    self.assertFalse(ret.exit_code, cwl_descriptor)
 
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
     def test_docopt_import_valid(self):
         self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("docopt_script_valid.py")
@@ -149,8 +163,10 @@ class TestImport(BaseTest):
 
         os.remove(output_descriptor)
 
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
     def test_docopt_import_valid_options(self):
         self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("docopt_script_options.py")
@@ -174,8 +190,10 @@ class TestImport(BaseTest):
 
         with pytest.raises(ImportError, match="Invalid docopt script"):
             bosh(args)
-            self.fail("Did not raise ImportError or" +
-                      " message did not match Invalid docopt script")
+            self.fail(
+                "Did not raise ImportError or"
+                + " message did not match Invalid docopt script"
+            )
 
         if op.isfile(output_descriptor):
             self.fail("Output file should not exist")
@@ -189,28 +207,53 @@ class TestImport(BaseTest):
         bosh(import_args)
 
         test_invocation = self.get_file_path("nf_invoc_new.json")
-        launch_args = ["exec", "simulate", output_descriptor,
-                       "-i", test_invocation]
+        launch_args = [
+            "exec",
+            "simulate",
+            output_descriptor,
+            "-i",
+            test_invocation,
+        ]
         bosh(launch_args)
 
         test_invocation = self.get_file_path("nf_invoc_move.json")
-        launch_args = ["exec", "simulate", output_descriptor,
-                       "-i", test_invocation]
+        launch_args = [
+            "exec",
+            "simulate",
+            output_descriptor,
+            "-i",
+            test_invocation,
+        ]
         bosh(launch_args)
 
         test_invocation = self.get_file_path("nf_invoc_shoot.json")
-        launch_args = ["exec", "simulate", output_descriptor,
-                       "-i", test_invocation]
+        launch_args = [
+            "exec",
+            "simulate",
+            output_descriptor,
+            "-i",
+            test_invocation,
+        ]
         bosh(launch_args)
 
         test_invocation = self.get_file_path("nf_invoc_mine.json")
-        launch_args = ["exec", "simulate", output_descriptor,
-                       "-i", test_invocation]
+        launch_args = [
+            "exec",
+            "simulate",
+            output_descriptor,
+            "-i",
+            test_invocation,
+        ]
         bosh(launch_args)
 
         test_invocation = self.get_file_path("nf_invoc_help.json")
-        launch_args = ["exec", "simulate", output_descriptor,
-                       "-i", test_invocation]
+        launch_args = [
+            "exec",
+            "simulate",
+            output_descriptor,
+            "-i",
+            test_invocation,
+        ]
         bosh(launch_args)
 
         os.remove(output_descriptor)
@@ -230,22 +273,26 @@ class TestImport(BaseTest):
         self.assertEqual(expected_desc, result_desc)
 
         # Groups are needed in template but causes tests to fail
-        del result_desc['groups']
+        del result_desc["groups"]
         # Tests the generated descriptor by running it with a test invocation
         test_invoc = self.get_file_path("test_config_import_invoc.json")
-        simulate_args = ["exec", "simulate", json.dumps(result_desc),
-                         "-i", test_invoc]
+        simulate_args = [
+            "exec",
+            "simulate",
+            json.dumps(result_desc),
+            "-i",
+            test_invoc,
+        ]
 
-        expected_cml = ("tool config.json")
+        expected_cml = "tool config.json"
         result_cml = bosh(simulate_args).shell_command
 
-        with open(self.get_file_path("expected_config.json"), "r") as c:
+        with open(self.get_file_path("expected_config.json")) as c:
             expect_sim_out = c.readlines()
-        if op.exists(result_desc['output-files'][0]['path-template']):
-            with open(result_desc['output-files']
-                      [0]['path-template'], "r") as r:
+        if op.exists(result_desc["output-files"][0]["path-template"]):
+            with open(result_desc["output-files"][0]["path-template"]) as r:
                 result_sim_out = r.readlines()
-            os.remove(result_desc['output-files'][0]['path-template'])
+            os.remove(result_desc["output-files"][0]["path-template"])
 
         # Validate by comparing generated command-line output
         # Validate by comparing generated simulated config file
@@ -267,22 +314,26 @@ class TestImport(BaseTest):
         self.assertEqual(expected_desc, result_desc)
 
         # Groups are needed in template but causes tests to fail
-        del result_desc['groups']
+        del result_desc["groups"]
         # Tests the generated descriptor by running it with a test invocation
         test_invoc = self.get_file_path("test_config_import_invoc.json")
-        simulate_args = ["exec", "simulate", json.dumps(result_desc),
-                         "-i", test_invoc]
+        simulate_args = [
+            "exec",
+            "simulate",
+            json.dumps(result_desc),
+            "-i",
+            test_invoc,
+        ]
 
-        expected_cml = ("tool config.toml")
+        expected_cml = "tool config.toml"
         result_cml = bosh(simulate_args).shell_command
 
-        with open(self.get_file_path("expected_config.toml"), "r") as c:
+        with open(self.get_file_path("expected_config.toml")) as c:
             expect_sim_out = c.readlines()
-        if op.exists(result_desc['output-files'][0]['path-template']):
-            with open(result_desc['output-files']
-                      [0]['path-template'], "r") as r:
+        if op.exists(result_desc["output-files"][0]["path-template"]):
+            with open(result_desc["output-files"][0]["path-template"]) as r:
                 result_sim_out = r.readlines()
-            os.remove(result_desc['output-files'][0]['path-template'])
+            os.remove(result_desc["output-files"][0]["path-template"])
 
         # Validate by comparing generated command-line output
         # Validate by comparing generated simulated config file
@@ -304,22 +355,26 @@ class TestImport(BaseTest):
         self.assertEqual(expected_desc, result_desc)
 
         # Groups are needed in template but causes tests to fail
-        del result_desc['groups']
+        del result_desc["groups"]
         # Tests the generated descriptor by running it with a test invocation
         test_invoc = self.get_file_path("test_config_import_invoc.json")
-        simulate_args = ["exec", "simulate", json.dumps(result_desc),
-                         "-i", test_invoc]
+        simulate_args = [
+            "exec",
+            "simulate",
+            json.dumps(result_desc),
+            "-i",
+            test_invoc,
+        ]
 
-        expected_cml = ("tool config.yml")
+        expected_cml = "tool config.yml"
         result_cml = bosh(simulate_args).shell_command
 
-        with open(self.get_file_path("expected_config.yml"), "r") as c:
+        with open(self.get_file_path("expected_config.yml")) as c:
             expect_sim_out = c.readlines()
-        if op.exists(result_desc['output-files'][0]['path-template']):
-            with open(result_desc['output-files']
-                      [0]['path-template'], "r") as r:
+        if op.exists(result_desc["output-files"][0]["path-template"]):
+            with open(result_desc["output-files"][0]["path-template"]) as r:
                 result_sim_out = r.readlines()
-            os.remove(result_desc['output-files'][0]['path-template'])
+            os.remove(result_desc["output-files"][0]["path-template"])
 
         # Validate by comparing generated command-line output
         # Validate by comparing generated simulated config file

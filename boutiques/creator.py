@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 
-import tempfile
 import argparse
-import sys
 import os
-import re
-import simplejson as json
 import os.path as op
-from jsonschema import validate, ValidationError
-from argparse import ArgumentParser
-from boutiques import __file__ as bfile
-from boutiques.logger import raise_error, print_info, print_warning
-from boutiques.util.utils import loadJson
-from boutiques.util.utils import customSortDescriptorByKey, camelCaseInputIds
+import re
 import subprocess
+import sys
+import tempfile
+from argparse import ArgumentParser
+
+import simplejson as json
+from jsonschema import ValidationError, validate
+
+from boutiques import __file__ as bfile
+from boutiques.logger import print_info, print_warning, raise_error
+from boutiques.util.utils import camelCaseInputIds, customSortDescriptorByKey, loadJson
 
 
 # An exception class specific to creating descriptors.
@@ -21,16 +22,18 @@ class CreatorError(ValidationError):
     pass
 
 
-class CreateDescriptor(object):
+class CreateDescriptor:
     def __init__(self, parser=None, **kwargs):
         template = op.join(op.split(bfile)[0], "templates", "basic.json")
         with open(template) as f:
             self.descriptor = json.load(f)
 
-        if(kwargs.get('docker_image')):
-            self.parse_docker(self.descriptor,
-                              kwargs.get('docker_image'),
-                              kwargs.get('use_singularity'))
+        if kwargs.get("docker_image"):
+            self.parse_docker(
+                self.descriptor,
+                kwargs.get("docker_image"),
+                kwargs.get("use_singularity"),
+            )
 
         self.sp_count = 0
         if parser is not None:
@@ -45,17 +48,16 @@ class CreateDescriptor(object):
                 raise_error(CreatorError, "Invalid argument parser")
             self.parseParser(**kwargs)
 
-        self.camelCase = kwargs.get('camel_case')
+        self.camelCase = kwargs.get("camel_case")
         if self.camelCase:
             self.descriptor = camelCaseInputIds(self.descriptor)
 
-        if kwargs.get('cl_template'):
-            self.generateInputsFromTemplate(kwargs.get('cl_template'))
+        if kwargs.get("cl_template"):
+            self.generateInputsFromTemplate(kwargs.get("cl_template"))
 
     def save(self, filename):
         with open(filename, "w") as f:
-            f.write(json.dumps(
-                customSortDescriptorByKey(self.descriptor), indent=4))
+            f.write(json.dumps(customSortDescriptorByKey(self.descriptor), indent=4))
 
     def createInvocation(self, arguments):
         argdict = vars(arguments)
@@ -67,14 +69,14 @@ class CreateDescriptor(object):
 
         # Basic image config
         if use_singularity:
-            cont_image['type'] = 'singularity'
-            cont_image['index'] = 'docker://'
-            cont_image['image'] = docker_image_name
+            cont_image["type"] = "singularity"
+            cont_image["index"] = "docker://"
+            cont_image["image"] = docker_image_name
         else:
-            cont_image['type'] = 'docker'
-            cont_image['image'] = docker_image_name
+            cont_image["type"] = "docker"
+            cont_image["image"] = docker_image_name
 
-        descriptor['container-image'] = cont_image
+        descriptor["container-image"] = cont_image
 
         # If Docker isn't installed, that's all we can do!
         if subprocess.Popen("type docker", shell=True).wait():
@@ -82,41 +84,48 @@ class CreateDescriptor(object):
 
         # If Docker is here, let's fetch metadata from the image
         # Properties found in the image metadata
-        ((stdout, stderr),
-         returncode) = self.executor("docker pull "+docker_image_name)
+        ((stdout, stderr), returncode) = self.executor(
+            "docker pull " + docker_image_name
+        )
         if returncode:
-            raise_error(CreatorError, "Cannot pull Docker image {0}: {1} "
-                        "{2} {3}".format(docker_image_name, stdout,
-                                         os.linesep, stderr))
-        ((stdout, stderr),
-         returncode) = self.executor("docker inspect "+docker_image_name)
+            raise_error(
+                CreatorError,
+                "Cannot pull Docker image {}: {} "
+                "{} {}".format(docker_image_name, stdout, os.linesep, stderr),
+            )
+        ((stdout, stderr), returncode) = self.executor(
+            "docker inspect " + docker_image_name
+        )
         if returncode:
-            raise_error(CreatorError, "Cannot inspect Docker image {0}: {1} "
-                        "{2} {3}".format(docker_image_name, stdout,
-                                         os.linesep, stderr))
+            raise_error(
+                CreatorError,
+                "Cannot inspect Docker image {}: {} "
+                "{} {}".format(docker_image_name, stdout, os.linesep, stderr),
+            )
         image_attrs = json.loads(stdout.decode("utf-8"))[0]
-        if (image_attrs.get('ContainerConfig')):
-            container_config = image_attrs['ContainerConfig']
-            entrypoint = container_config.get('Entrypoint')
+        if image_attrs.get("ContainerConfig"):
+            container_config = image_attrs["ContainerConfig"]
+            entrypoint = container_config.get("Entrypoint")
             if entrypoint:
-                cont_image['entrypoint'] = True
-                tokens = descriptor['command-line'].split(" ")
+                cont_image["entrypoint"] = True
+                tokens = descriptor["command-line"].split(" ")
                 # Replace the first token in the command line template,
                 # presumably the executable, by the entry point
-                descriptor['command-line'] = (" ".join(entrypoint +
-                                              tokens[1:])
-                                              )
-                descriptor['name'] = entrypoint[0]
-            workingDir = container_config.get('WorkingDir')
+                descriptor["command-line"] = " ".join(entrypoint + tokens[1:])
+                descriptor["name"] = entrypoint[0]
+            workingDir = container_config.get("WorkingDir")
             if workingDir:
-                raise_error(CreatorError, "The container image has a working "
-                            "dir, this is currently not supported.")
-        if image_attrs.get('Author'):
-            descriptor['author'] = image_attrs.get('Author')
-        if image_attrs.get('RepoTags'):
-            descriptor['tool-version'] = " ".join(image_attrs.get('RepoTags'))
-        if image_attrs.get('Comment'):
-            descriptor['description'] = image_attrs.get('Comment')
+                raise_error(
+                    CreatorError,
+                    "The container image has a working "
+                    "dir, this is currently not supported.",
+                )
+        if image_attrs.get("Author"):
+            descriptor["author"] = image_attrs.get("Author")
+        if image_attrs.get("RepoTags"):
+            descriptor["tool-version"] = " ".join(image_attrs.get("RepoTags"))
+        if image_attrs.get("Comment"):
+            descriptor["description"] = image_attrs.get("Comment")
 
     def parseParser(self, **kwargs):
         self.descriptor["command-line"] = kwargs.get("execname")
@@ -140,8 +149,7 @@ class CreateDescriptor(object):
         # Case 2: input is a subparser
         # Desired outcome: we add the subparser and options, and an input for
         # each of the subparser options
-        elif (type(action) is argparse._SubParsersAction and
-              not kwargs.get("addParser")):
+        elif type(action) is argparse._SubParsersAction and not kwargs.get("addParser"):
             if kwargs.get("verbose"):
                 print_info("_SubParsersAction: Interpreting & Adding")
 
@@ -157,8 +165,7 @@ class CreateDescriptor(object):
                 for subact in action.choices[act]._actions:
 
                     # Process the action, and record its "required" status
-                    tmpinput, reqd = self.parseAction(subact, subaction=True,
-                                                      **kwargs)
+                    tmpinput, reqd = self.parseAction(subact, subaction=True, **kwargs)
 
                     # If it's not empty, add it to an inputs dictionaryi, and
                     # add the input to the descriptor.
@@ -171,16 +178,14 @@ class CreateDescriptor(object):
 
             # Once all subparsers are processed, identify which inputs need to
             # be disabled by which subparsers.
-            inpt_ids = set([inp
-                            for iact in inpts
-                            for inp in inpts[iact]])
+            inpt_ids = {inp for iact in inpts for inp in inpts[iact]}
             subparser["value-disables"] = {}
             for act in subparser["value-choices"]:
                 # Add all IDs created by the subparser that do not also belong
                 # to the current selection to the disabled list.
-                subparser["value-disables"][act] = [ckey
-                                                    for ckey in inpt_ids
-                                                    if ckey not in inpts[act]]
+                subparser["value-disables"][act] = [
+                    ckey for ckey in inpt_ids if ckey not in inpts[act]
+                ]
             return subparser
 
         # Case 3: input is a regular input
@@ -189,16 +194,18 @@ class CreateDescriptor(object):
             if kwargs.get("verbose"):
                 actstring = str(type(action))
                 actstring = actstring.split("'")[1].split(".")[-1]
-                print_info("{0}: Adding".format(actstring))
+                print_info(f"{actstring}: Adding")
             actdict = vars(action)
             if action.dest == "==SUPPRESS==":
-                adest = "subparser_{0}".format(self.sp_count)
+                adest = f"subparser_{self.sp_count}"
                 if kwargs.get("verbose"):
-                    print_warning("Subparser has no destination set, "
-                                  "invocation parsing may not work as "
-                                  "expected. This can be fixed by adding "
-                                  "\"dest='mysubparser'\" to subparser "
-                                  "creation.")
+                    print_warning(
+                        "Subparser has no destination set, "
+                        "invocation parsing may not work as "
+                        "expected. This can be fixed by adding "
+                        "\"dest='mysubparser'\" to subparser "
+                        "creation."
+                    )
                 self.sp_count += 1
             else:
                 adest = action.dest
@@ -206,8 +213,9 @@ class CreateDescriptor(object):
             # If an input already exists with this ID, don't re-add it
             if any(adest == it["id"] for it in self.descriptor["inputs"]):
                 if kwargs.get("verbose"):
-                    print_info("Duplicate: Argument won't be added multiple "
-                               "times ({0})".format(adest))
+                    print_info(
+                        f"Duplicate: Argument won't be added multiple times ({adest})"
+                    )
                 # If this action belongs to a subparser return a flag alongside
                 # the empty object, indicating it is not required
                 if kwargs.get("subaction"):
@@ -223,7 +231,7 @@ class CreateDescriptor(object):
                 "description": action.help,
                 "optional": kwargs.get("subaction") or not action.required,
                 "type": "String",
-                "value-key": "[{0}]".format(adest.upper().strip("[]"))
+                "value-key": f"[{adest.upper().strip('[]')}]",
             }
 
             if action.type is not None:
@@ -233,8 +241,9 @@ class CreateDescriptor(object):
                     newinput["list"] = True
 
             if action.nargs is not None:
-                if ((isinstance(action.nargs, str) and action.nargs == "+")
-                   or (isinstance(action.nargs, int) and action.nargs > 1)):
+                if (isinstance(action.nargs, str) and action.nargs == "+") or (
+                    isinstance(action.nargs, int) and action.nargs > 1
+                ):
                     newinput["list"] = True
 
             if action.default:
@@ -254,8 +263,7 @@ class CreateDescriptor(object):
             if type(action) is argparse._StoreTrueAction:
                 newinput["type"] = "Flag"
 
-            self.descriptor["command-line"] += " [{0}]".format(
-                                                    adest.upper().strip("[]"))
+            self.descriptor["command-line"] += f" [{adest.upper().strip('[]')}]"
             # If this action belongs to a subparser, return a flag along
             # with the object, indicating its required/not required status.
             if kwargs.get("subaction"):
@@ -264,14 +272,17 @@ class CreateDescriptor(object):
 
     def executor(self, command):
         try:
-            process = subprocess.Popen(command, shell=True,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+            process = subprocess.Popen(
+                command,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
         except OSError as e:
-            sys.stderr.write('OS Error during attempted execution!')
+            sys.stderr.write("OS Error during attempted execution!")
             raise e
         except ValueError as e:
-            sys.stderr.write('Input Value Error during attempted execution!')
+            sys.stderr.write("Input Value Error during attempted execution!")
             raise e
         else:
             return process.communicate(), process.returncode
@@ -280,30 +291,32 @@ class CreateDescriptor(object):
         def _createIdFromValueKey(vk):
             vk = re.sub(r"\[(\w+)\]", r"\1", vk).lower()
             vk_words = vk.split("_")
-            return vk_words[0] + ''.join(x.title() for x in vk_words[1:])
+            return vk_words[0] + "".join(x.title() for x in vk_words[1:])
 
         def _createNameFromId(id):
             name = [c for c in id]
             for idx, c in enumerate(name):
                 if not c.isalnum():
-                    name[idx] = ' '
+                    name[idx] = " "
                 if c.isupper():
-                    name[idx] = ' ' + c.lower()
+                    name[idx] = " " + c.lower()
             # Join char list into string and concatenate white spaces
-            return " ".join(''.join(name).split()).title()
+            return " ".join("".join(name).split()).title()
 
         if os.path.isfile(cl_template):
             template_descriptor = loadJson(cl_template)
-            cl_template = template_descriptor['command-line']
+            cl_template = template_descriptor["command-line"]
 
-        self.descriptor['command-line'] = cl_template
+        self.descriptor["command-line"] = cl_template
         # Clear descriptor inputs and repopulate
-        self.descriptor['inputs'] = []
+        self.descriptor["inputs"] = []
         for vk in re.findall(r"\[\w+\]", cl_template):
             generated_id = _createIdFromValueKey(vk)
-            self.descriptor['inputs'].append({
-                'name': _createNameFromId(generated_id),
-                'id': generated_id,
-                'type': "String",
-                'value-key': vk
-            })
+            self.descriptor["inputs"].append(
+                {
+                    "name": _createNameFromId(generated_id),
+                    "id": generated_id,
+                    "type": "String",
+                    "value-key": vk,
+                }
+            )

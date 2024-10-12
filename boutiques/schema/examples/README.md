@@ -15,7 +15,7 @@ Many tests in `./boutiques/tests/` use this tool to validate Boutiques features.
       This tool is written in Python for simplicity, but can be any tool with a CLI.
 
 *   example1_docker.json
-      
+
       Descriptor to describe the tool to be executed by Boutiques.
 
 *   invocation.json
