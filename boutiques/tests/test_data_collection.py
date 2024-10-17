@@ -223,7 +223,7 @@ class TestDataCollection(BaseTest):
         self.assertEqual(public_in.get("enum_input"), "val1")
         file_input = public_in.get("file_input")
         self.assertIsNotNone(file_input)
-        self.assertEqual(file_input.get("file-name"), "setup.py")
+        self.assertEqual(file_input.get("file-name"), "pyproject.toml")
         self.assertIsNotNone(file_input.get("md5sum"))
         public_out = data_collect_dict.get("public-output")
         self.assertIsNotNone(public_out)

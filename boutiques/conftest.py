@@ -1,9 +1,9 @@
 import os.path as op
+import subprocess
 import tempfile
 
 import pytest
 import simplejson as json
-import subprocess
 
 from boutiques.util.utils import loadJson
 
@@ -62,6 +62,7 @@ def pytest_generate_tests(metafunc):
     ]
 
     metafunc.parametrize("descriptor, test, invocation, paramsDict", tests, ids=names)
+
 
 ############
 # Fixtures #
