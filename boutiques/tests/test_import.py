@@ -18,7 +18,6 @@ from boutiques.util.utils import loadJson
 
 
 class TestImport(BaseTest):
-
     @pytest.fixture(scope="session", autouse=True)
     def clean_up(self):
         yield
@@ -145,10 +144,7 @@ class TestImport(BaseTest):
                     )
                     self.assertFalse(ret.exit_code, cwl_descriptor)
 
-    @pytest.mark.skipif(
-        subprocess.Popen("type docker", shell=True).wait(),
-        reason="Docker not installed",
-    )
+    @pytest.mark.usefixtures("skip_if_no_apptainer")
     def test_docopt_import_valid(self):
         self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("docopt_script_valid.py")
@@ -163,10 +159,7 @@ class TestImport(BaseTest):
 
         os.remove(output_descriptor)
 
-    @pytest.mark.skipif(
-        subprocess.Popen("type docker", shell=True).wait(),
-        reason="Docker not installed",
-    )
+    @pytest.mark.usefixtures("skip_if_no_apptainer")
     def test_docopt_import_valid_options(self):
         self.setup("import/docopt/")
         pydocopt_input = self.get_file_path("docopt_script_options.py")

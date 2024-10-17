@@ -201,8 +201,8 @@
             "invocation": {
                     "str_input_list" : [ "fo '; echo FAIL", "bar" ],
                     "str_input" : "coin;plop",
-                    "file_input" : "./setup.py",
-                    "file_list_input": ["./setup.py", "./requirements.txt"],
+                    "file_input" : "./pyproject.toml",
+                    "file_list_input": ["./pyproject.toml", "./requirements.txt"],
                     "list_int_input": [1, 2, 3],
                     "config_num" : 4,
                     "enum_input" : "val1"

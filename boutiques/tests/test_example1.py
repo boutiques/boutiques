@@ -667,7 +667,7 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             ret, ["./test_temp/log-4.txt"], 2, self.assert_reflected_output
         )
-        self.assertIn("Local copy", ret.container_location)
+        self.assertIn("Pulled from Docker", ret.container_location)
         self.assertIn("docker run", ret.container_command)
 
     def docker_not_installed(command):
