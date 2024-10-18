@@ -741,6 +741,18 @@ class TestExample1(BaseTest):
 
         self.assertIn("./test_temp/test_path.d", ex.stdout)
 
+    @pytest.mark.usefixtures("skip_if_no_docker")
+    def test_missing_mount_location(self):
+        from boutiques.localExec import ExecutorError
+
+        with pytest.raises(ExecutorError):
+            bosh.execute(
+                "launch",
+                self.get_file_path("example1_envVars_from_inputs.json"),
+                self.get_file_path("test_input_env_var_invoc.json"),
+                "--skip-data-collection",
+            )
+
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
