@@ -3,7 +3,10 @@
     "container-image": {
         "image": "boutiques/example1:test",
         "type": "docker",
-        "container-opts": ["-e", "HOME=$PWD"]
+        "container-opts": [
+            "-e",
+            "HOME=$PWD"
+        ]
     },
     "description": "This property describes the tool or application",
     "environment-variables": [
@@ -173,7 +176,7 @@
             "invocation": {
                 "config_num": 4,
                 "enum_input": "val1",
-                "file_input": "./setup.py",
+                "file_input": "./pyproject.toml",
                 "list_int_input": [
                     1,
                     2,
@@ -194,7 +197,7 @@
             "invocation": {
                 "config_num": 4,
                 "enum_input": "val1",
-                "file_input": "./setup.py",
+                "file_input": "./pyproject.toml",
                 "list_int_input": [
                     1,
                     2,
@@ -222,7 +225,7 @@
             "invocation": {
                 "config_num": 4,
                 "enum_input": "val1",
-                "file_input": "./setup.py",
+                "file_input": "./pyproject.toml",
                 "list_int_input": [
                     1,
                     2,

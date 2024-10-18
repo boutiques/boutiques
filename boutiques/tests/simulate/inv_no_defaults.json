@@ -1,6 +1,10 @@
 {
-    "file_input" : "./setup.py",
-    "list_int_input": [1, 2, 3],
-    "config_num" : 4,
-    "enum_input" : "val1"
+    "file_input": "./pyproject.toml",
+    "list_int_input": [
+        1,
+        2,
+        3
+    ],
+    "config_num": 4,
+    "enum_input": "val1"
 }

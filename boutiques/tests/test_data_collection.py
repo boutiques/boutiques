@@ -140,7 +140,15 @@ class TestDataCollection(BaseTest):
             "example1",
             "invocation.json",
         )
-        bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id), invoc)
+        bosh.execute(
+            "launch",
+            "zenodo." + str(example_boutiques_tool.id),
+            invoc,
+            "-v",
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
+            "-v",
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
+        )
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")

@@ -1,5 +1,5 @@
 {
-    "input": "./setup.py",
+    "input": "./pyproject.toml",
     "num1": 10,
     "str1": "string1",
     "output_file": "./test_temp/TEST.one.three.two",
