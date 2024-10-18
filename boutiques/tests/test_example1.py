@@ -2,9 +2,9 @@
 
 import os
 import subprocess
+from pathlib import Path
 from shutil import copy2
 from unittest import mock
-from pathlib import Path
 
 import pytest
 import simplejson as json
