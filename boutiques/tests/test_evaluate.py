@@ -85,7 +85,7 @@ class TestEvaluate(BaseTest):
             "str_input": "coin;plop",
             "config_num": 4,
             "num_input": None,
-            "file_input": "./setup.py",
+            "file_input": "./pyproject.toml",
             "file_list_input": ["/test_mount1", "/test_mount2"],
             "enum_input": "val1",
             "list_int_input": [1, 2, 3],

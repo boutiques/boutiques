@@ -4,6 +4,7 @@ import os
 import subprocess
 from shutil import copy2
 from unittest import mock
+from pathlib import Path
 
 import pytest
 import simplejson as json
@@ -362,8 +363,8 @@ class TestExample1(BaseTest):
         ret = example_tool(
             str_input_list=["a", "b", "c"],
             str_input="coin;plop",
-            file_input="./setup.py",
-            file_list_input=["./setup.py", "requirements.txt"],
+            file_input="./pyproject.toml",
+            file_list_input=["./pyproject.toml", "requirements.txt"],
             list_int_input=[1, 2, 3],
             config_num=4,
             enum_input="val1",
@@ -387,8 +388,8 @@ class TestExample1(BaseTest):
             "launch",
             str_input_list=["a", "b", "c"],
             str_input="coin;plop",
-            file_input="./setup.py",
-            file_list_input=["./setup.py", "requirements.txt"],
+            file_input="./pyproject.toml",
+            file_list_input=["./pyproject.toml", "requirements.txt"],
             list_int_input=[1, 2, 3],
             config_num=4,
             enum_input="val1",
@@ -412,8 +413,8 @@ class TestExample1(BaseTest):
             "simulate",
             str_input_list=["a", "b", "c"],
             str_input="coin;plop",
-            file_input="./setup.py",
-            file_list_input=["./setup.py", "requirements.txt"],
+            file_input="./pyproject.toml",
+            file_list_input=["./pyproject.toml", "requirements.txt"],
             list_int_input=[1, 2, 3],
             config_num=4,
             enum_input="val1",
@@ -667,7 +668,7 @@ class TestExample1(BaseTest):
         self.assert_successful_return(
             ret, ["./test_temp/log-4.txt"], 2, self.assert_reflected_output
         )
-        self.assertIn("Local copy", ret.container_location)
+        self.assertIn("Pulled from Docker", ret.container_location)
         self.assertIn("docker run", ret.container_command)
 
     def docker_not_installed(command):
@@ -730,6 +731,7 @@ class TestExample1(BaseTest):
         reason="Docker not installed",
     )
     def test_example1_environment_variables_from_invoc(self):
+        Path(self.test_temp, "test_path.d").touch()
         ex = bosh.execute(
             "launch",
             self.get_file_path("example1_envVars_from_inputs.json"),
@@ -738,6 +740,18 @@ class TestExample1(BaseTest):
         )
 
         self.assertIn("./test_temp/test_path.d", ex.stdout)
+
+    @pytest.mark.usefixtures("skip_if_no_docker")
+    def test_missing_mount_location(self):
+        from boutiques.localExec import ExecutorError
+
+        with pytest.raises(ExecutorError):
+            bosh.execute(
+                "launch",
+                self.get_file_path("example1_envVars_from_inputs.json"),
+                self.get_file_path("test_input_env_var_invoc.json"),
+                "--skip-data-collection",
+            )
 
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),

@@ -1,6 +1,8 @@
 import os.path as op
+import subprocess
 import tempfile
 
+import pytest
 import simplejson as json
 
 from boutiques.util.utils import loadJson
@@ -60,3 +62,18 @@ def pytest_generate_tests(metafunc):
     ]
 
     metafunc.parametrize("descriptor, test, invocation, paramsDict", tests, ids=names)
+
+
+############
+# Fixtures #
+############
+@pytest.fixture
+def skip_if_no_apptainer():
+    if subprocess.Popen("type apptainer", shell=True).wait():
+        pytest.skip("Apptainer not installed")
+
+
+@pytest.fixture
+def skip_if_no_docker():
+    if subprocess.Popen("type docker", shell=True).wait():
+        pytest.skip("Docker not installed")

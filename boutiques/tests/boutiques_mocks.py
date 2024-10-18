@@ -12,6 +12,12 @@ class MockHttpResponse:
         return self.mock_json
 
 
+ZENODO_RECORD = 119318
+ZENODO_FILE = (
+    f"https://sandbox.zenodo.org/records/{ZENODO_RECORD}/files/example1_docker.json"
+)
+
+
 class MockZenodoRecord:
     def __init__(
         self,
@@ -33,11 +39,10 @@ class MockZenodoRecord:
 
     def reset(
         self,
-        id=660699,
+        id=ZENODO_RECORD,
         title="Example Boutiques Tool",
         description="",
-        filename="https://sandbox.zenodo.org/record/660699/files/"
-        "example1_docker.json",
+        filename=ZENODO_FILE,
         downloads=1,
         keywords=[],
         is_last_version=True,
@@ -54,9 +59,9 @@ class MockZenodoRecord:
 # Mock object representing the current version of Example Boutiques Tool
 # on Zenodo
 example_boutiques_tool = MockZenodoRecord(
-    660699,
+    ZENODO_RECORD,
     "Example Boutiques Tool",
-    filename="https://sandbox.zenodo.org/" "record/660699/files/example1_docker.json",
+    filename=ZENODO_FILE,
 )
 
 
@@ -64,10 +69,9 @@ def mock_get():
     return mock_zenodo_search(
         [
             MockZenodoRecord(
-                660699,
+                ZENODO_RECORD,
                 "Example Boutiques Tool",
-                filename="https://sandbox.zenodo.org/"
-                "record/660699/files/example1_docker.json",
+                filename=ZENODO_FILE,
             )
         ]
     )
