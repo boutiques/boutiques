@@ -381,7 +381,7 @@ class LocalExecutor:
 
                 # normalize paths and add file under same absolute path
                 mount_inputs = [
-                    abs_path + ":" + Path(launchDir, m).resolve().as_posix()
+                    makePathAbsolute(m) + ":" + Path(launchDir, m).resolve().as_posix()
                     for m in mount_inputs
                 ]
                 mount_strings.extend(mount_inputs)
