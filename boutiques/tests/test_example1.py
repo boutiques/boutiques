@@ -774,19 +774,19 @@ class TestExample1(BaseTest):
     )
     def test_example1_autoMount_input_files(self):
         base_path = self.get_file_path("automount")
-        test_invoc = self.get_file_path("test_automount_invoc.json")
         # Test files must be created outside of [...]/tools/python/
         # because it is mounted by default
         test_dir = os.path.split(os.path.split(bfile)[0])[0]
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        copy2(os.path.join(test_invoc), test_dir)
+        # copy2(os.path.join(test_invoc), test_dir)
         invoc_dict = {
             "file": "./file1.txt",
             "file_list": ["./file2.txt", "./file3.txt"],
         }
         # Create test invoc based on absolute test_dir path
+        test_invoc = self.get_file_path("test_automount_invoc.json")
         with open(test_invoc, "w+") as invoc:
             invoc.write(json.dumps(invoc_dict))
 
@@ -798,12 +798,12 @@ class TestExample1(BaseTest):
         )
 
         try:
-            self.assertIn("Hello, World!", ex.stdout)
+            self.assertIn("Hello, World!", ex.stdout.replace("\n", ""))
         finally:
             os.remove(os.path.join(test_dir, "file1.txt"))
             os.remove(os.path.join(test_dir, "file2.txt"))
             os.remove(os.path.join(test_dir, "file3.txt"))
-            os.remove(os.path.join(test_dir, "test_automount_invoc.json"))
+            os.remove(test_invoc)
 
     @pytest.mark.skipif(
         subprocess.Popen("type docker", shell=True).wait(),
