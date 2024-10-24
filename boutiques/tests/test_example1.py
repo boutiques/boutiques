@@ -781,6 +781,7 @@ class TestExample1(BaseTest):
         copy2(os.path.join(base_path, "file1.txt"), test_dir)
         copy2(os.path.join(base_path, "file2.txt"), test_dir)
         copy2(os.path.join(base_path, "file3.txt"), test_dir)
+        copy2(os.path.join(test_invoc), test_dir)
         invoc_dict = {
             "file": "./file1.txt",
             "file_list": ["./file2.txt", "./file3.txt"],
@@ -802,7 +803,7 @@ class TestExample1(BaseTest):
             os.remove(os.path.join(test_dir, "file1.txt"))
             os.remove(os.path.join(test_dir, "file2.txt"))
             os.remove(os.path.join(test_dir, "file3.txt"))
-            os.remove(test_invoc)
+            os.remove(os.path.join(test_dir, "test_automount_invoc.json"))
 
     @pytest.mark.skipif(
         subprocess.Popen("type docker", shell=True).wait(),
