@@ -18,7 +18,7 @@ assignees: ''
  the information needed to reproduce the bug (descriptors, inputs, etc) -->
 
 ## Environment (optional)
-<!--- Information about the execution environment, in particular: Python version, Docker/Singularity version
+<!--- Information about the execution environment, in particular: Python version, Docker/Singularity/Apptainer version
  if relevant -->
 
 ## Context (optional)

@@ -241,7 +241,7 @@ class LocalExecutor(object):
                 os.environ[envVarName] = envVarValue
                 envVars[envVarName] = envVarValue
         # Container script constant name
-        # Note that docker/singularity cannot do a local volume
+        # Note that docker/singularity/apptainer cannot do a local volume
         # mount of files starting with a '.', hence this one does not
         millitime = int(time.time()*1000)
         dsname = ('temp-' +
@@ -256,11 +256,12 @@ class LocalExecutor(object):
             conTypeToUse = \
                 self._chooseContainerTypeToUse(conType,
                                                self.forceSingularity,
-                                               self.forceDocker)
+                                               self.forceDocker,
+                                               self.forceApptainer)
             # Pull the container
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
-            # Get the supported shell by the docker or singularity
+            # Get the supported shell by the docker or singularity/apptainer
             cmdString = "#!{}".format(self.shell)
             if self.shell == "/bin/sh":
                 cmdString += " -l"
@@ -378,14 +379,14 @@ class LocalExecutor(object):
                                      ' -w ' + launchDir + ' ' +
                                      conOptsString +
                                      str(conImage) + ' ' + dsname)
-            elif conTypeToUse == 'singularity':
+            elif conTypeToUse in ['singularity', 'apptainer']:
                 envString = ""
                 if envVars:
                     for (key, val) in list(envVars.items()):
                         envString += "SINGULARITYENV_{0}='{1}' ".format(key,
                                                                         val)
                 singularity_mounts = '-B ' + ' -B '.join(mount_strings)
-                container_command = (envString + 'singularity exec '
+                container_command = (envString + f'{conTypeToUse} exec '
                                      '--cleanenv ' +
                                      singularity_mounts +
                                      ' -W ' + launchDir + ' ' +
@@ -453,7 +454,7 @@ class LocalExecutor(object):
         return executor_output
 
     # Looks for the container image locally and pulls it if not found
-    # Returns a tuple containing the container filename (for Singularity)
+    # Returns a tuple containing the container filename (for Singularity/Apptainer)
     # and the container location (local or pulled)
     def prepare(self, conTypeToUse=None):
         con = self.con
@@ -477,9 +478,9 @@ class LocalExecutor(object):
                 container_location = "Pulled from Docker"
             return (conName, container_location)
 
-        elif conTypeToUse == 'singularity':
+        elif conTypeToUse in ['singularity', 'apptainer']:
             if conType == 'docker':
-                # We're running a Docker image in Singularity
+                # We're running a Docker image in Singularity/Apptainer
                 conIndex = "docker://" + (conIndex if
                                           (conIndex is not None and
                                            conIndex != "" and
@@ -533,7 +534,7 @@ class LocalExecutor(object):
                         # Container still does not exist, so pull it
                         else:
                             conPath, container_location = self._pullSingImage(
-                                conName, conIndex, conImage, imageDir, lockDir)
+                                conName, conIndex, conImage, imageDir, lockDir, conTypeToUse)
                         return conPath, container_location
                     finally:
                         self._cleanUpAfterSingPull(lockDir)
@@ -542,15 +543,15 @@ class LocalExecutor(object):
             if self._singConExists(conName, imageDir):
                 conPath = op.abspath(op.join(imageDir, conName))
                 return conPath, "Local ({0})".format(conName)
-            raise_error(ExecutorError, "Unable to retrieve Singularity "
+            raise_error(ExecutorError, "Unable to retrieve Singularity/Apptainer "
                         "image.")
 
-    # Private method that checks if a Singularity image exists locally
+    # Private method that checks if a Singularity/Apptainer image exists locally
     def _singConExists(self, conName, imageDir):
         return conName in os.listdir(imageDir)
 
-    # Private method that pulls a Singularity image
-    def _pullSingImage(self, conName, conIndex, conImage, imageDir, lockDir):
+    # Private method that pulls a Singularity/Apptainer image
+    def _pullSingImage(self, conName, conIndex, conImage, imageDir, lockDir, conTypeToUse):
         # Give the file a temporary name while it's building
         conNameTmp = conName + ".tmp"
         # Set the pull directory to the specified imagePath
@@ -563,12 +564,12 @@ class LocalExecutor(object):
                               "image path)").format(conName,
                                                     conIndex,
                                                     conImage)
-        # Pull the singularity image
-        sing_command = "singularity pull --name " + pull_loc
+        # Pull the singularity/apptainer image
+        sing_command = f"{conTypeToUse} pull --name " + pull_loc
         (stdout, stderr), return_code = self._localExecute(
                                                 sing_command)
         if return_code:
-            message = ("Could not pull Singularity"
+            message = ("Could not pull Singularity/Apptainer"
                        " image: " + os.linesep + " * Pull command: " +
                        sing_command + os.linesep + " * Error: " +
                        stderr.decode("utf-8"))
@@ -588,19 +589,24 @@ class LocalExecutor(object):
         return not subprocess.Popen("{} --version".format(command),
                                     shell=True).wait()
 
-    # Chooses whether to use Docker or Singularity based on the
-    # descriptor, executor options and if Docker is installed.
+    # Chooses whether to use Docker, Singularity or Apptainer based on the
+    # descriptor, executor options and if Docker, Singularity or Apptainer is installed.
     def _chooseContainerTypeToUse(self, conType, forceSing=False,
-                                  forceDocker=False):
+                                  forceDocker=False, forceApptainer=False):
         if ((conType == 'docker' and not forceSing or forceDocker) and
            self._isCommandInstalled('docker')):
             return "docker"
 
-        if self._isCommandInstalled('singularity'):
+        if ((conType == 'singularity' and not forceDocker or forceSing) and
+           self._isCommandInstalled('singularity')):
             return "singularity"
 
+        if ((conType == 'apptainer' and not forceDocker or forceApptainer) and
+           self._isCommandInstalled('apptainer')):
+            return "apptainer"
+
         raise_error(ExecutorError, ("Could not find any container engine. " +
-                                    "Make sure that Docker or Singularity " +
+                                    "Make sure that Docker, Singularity or Apptainer " +
                                     "is installed."))
 
     # Private method that attempts to locally execute the given

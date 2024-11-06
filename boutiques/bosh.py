@@ -43,6 +43,7 @@ def create(*params):
     new = CreateDescriptor(parser=None,
                            docker_image=results.docker_image,
                            use_singularity=results.use_singularity,
+                           use_apptainer=results.use_apptainer,
                            camel_case=results.camel_case,
                            cl_template=results.cl_template)
     new.save(results.descriptor)
@@ -104,6 +105,7 @@ def execute(*params):
                                   "forceDocker": results.force_docker,
                                   "forceSingularity":
                                       results.force_singularity,
+                                  "forceApptainer": results.force_apptainer,  # New parameter
                                   "provenance": results.provenance,
                                   "noContainer": results.no_container,
                                   "sandbox": results.sandbox,

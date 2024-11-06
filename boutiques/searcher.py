@@ -160,7 +160,8 @@ class Searcher():
             if keyword.split(":")[0] == "schema-version":
                 keyword_data["schema-version"] = keyword.split(":")[1]
             elif (keyword.lower() == "docker" or
-                  keyword.lower() == "singularity"):
+                  keyword.lower() == "singularity" or
+                  keyword.lower() == "apptainer"):
                 keyword_data["container-type"] = keyword
             else:
                 keyword_data["other"].append(keyword)

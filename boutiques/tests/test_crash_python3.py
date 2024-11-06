@@ -20,4 +20,4 @@ class TestCrashPython3(BaseTest):
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         stdout = process.stdout.read().decode("utf-8").strip()
-        self.assertIn("Could not pull Singularity image", stdout)
+        self.assertIn("Could not pull Singularity/Apptainer image", stdout)

@@ -33,7 +33,7 @@ class Importer():
         """
          Differences between 0.4 and current (0.5):
            -schema version (obv)
-           -singularity should now be represented same as docker
+           -singularity and apptainer should now be represented same as docker
            -walltime should be part of suggested_resources structure
 
         I.e.
@@ -68,17 +68,13 @@ class Importer():
         descriptor["schema-version"] = "0.5"
 
         if "container-image" in descriptor.keys():
-            if "singularity" == descriptor["container-image"]["type"]:
-                url = descriptor["container-image"]["url"]
+            if descriptor["container-image"]["type"] in ["singularity", "apptainer"]:
+                url = descriptor["container-image"].get("url", "")
                 img = url.split("://")
-                if len(img) == 1:
-                    descriptor["container-image"]["image"] = img[0]
-                elif len(img) == 2:
-                    descriptor["container-image"]["image"] = img[1]
-                    descriptor["container-image"]["index"] = img[0] + "://"
+                descriptor["container-image"]["image"] = img[1] if len(img) == 2 else img[0]
+                descriptor["container-image"]["index"] = img[0] + "://" if len(img) == 2 else ""
                 del descriptor["container-image"]["url"]
-            elif ("docker" == descriptor["container-image"]["type"] and
-                  descriptor["container-image"].get("index")):
+            elif descriptor["container-image"]["type"] == "docker" and descriptor["container-image"].get("index"):
                 url = descriptor["container-image"]["index"].split("://")[-1]
                 descriptor["container-image"]["index"] = url
 

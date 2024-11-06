@@ -48,6 +48,9 @@ def add_subparser_create(subparsers):
     parser_create.add_argument("--use-singularity", '-u', action="store_true",
                                help="When --docker-image is used. Specify to "
                                "use singularity to run it.")
+    parser_create.add_argument("--use-apptainer", '-a', action="store_true",
+                               help="When --docker-image is used. Specify to "
+                               "use apptainer to run it.")
     parser_create.add_argument(
         "--cl-template", action="store",
         help="Command-line template used to generate"
@@ -227,7 +230,7 @@ def add_subparser_execute(subparsers):
         "and launches the tool. Simulate: shows sample "
         "command-lines based on the provided descriptor"
         " based on provided or randomly generated inputs. "
-        "Prepare: pulls the Docker or Singularity container "
+        "Prepare: pulls the Docker, Singularity, or Apptainer container "
         "image for a given descriptor. ")
 
     parser_exec_launch = exec_subparsers.add_parser(
@@ -267,7 +270,7 @@ def add_subparser_execute(subparsers):
         help="Streams stdout and stderr in real time "
         "during execution.")
     parser_exec_launch.add_argument(
-        "--imagepath", action="store", help="Path to Singularity image. "
+        "--imagepath", action="store", help="Path to Singularity or Apptainer image. "
         "If not specified, will use current directory.")
     parser_exec_launch.add_argument(
         "--skip-data-collection",
@@ -297,12 +300,15 @@ def add_subparser_execute(subparsers):
         "present in the invocation")
     force_group = parser_exec_launch.add_mutually_exclusive_group()
     force_group.add_argument("--force-docker", action="store_true",
-                             help="Tries to run Singularity images with "
+                             help="Tries to run Singularity or Apptainer images with "
                              "Docker. This only works if the image is on"
                              "Docker Hub, i.e. has index docker://")
     force_group.add_argument("--force-singularity", action="store_true",
                              help="Tries to run Docker images with "
                              "Singularity.")
+    force_group.add_argument("--force-apptainer", action="store_true",
+                             help="Tries to run Docker images with "
+                             "Apptainer.")
 
     parser_exec_prepare = exec_subparsers.add_parser(
         "prepare",
@@ -324,7 +330,7 @@ def add_subparser_execute(subparsers):
         help="Streams stdout and stderr in real time "
         "during execution.")
     parser_exec_prepare.add_argument(
-        "--imagepath", action="store", help="Path to Singularity image. "
+        "--imagepath", action="store", help="Path to Singularity or Apptainer image. "
         "If not specified, will use current directory.")
     parser_exec_prepare.add_argument(
         "--sandbox",
@@ -553,7 +559,7 @@ def add_subparser_test(subparsers):
         help="Get descriptor from Zenodo's sandbox instead of "
         "production server.")
     parser_test.add_argument("--imagepath", action="store",
-                             help="Path to Singularity image. "
+                             help="Path to Singularity or Apptainer image. "
                              "If not specified, will use current directory.")
 
 

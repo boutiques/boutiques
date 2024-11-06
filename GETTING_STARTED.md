@@ -8,9 +8,10 @@ This guide will help you set up your local environment for coding and testing Bo
 -   **Git**. If you don't have Git, instructions to install it are [here](https://git-scm.com/download/linux).
 -   **Python**. Boutiques supports any version >= 3.5.
 -   **pip**. Most versions of Python will come with it, but in case you don't have it, instructions to install it are [here](https://pip.pypa.io/en/stable/installing/).
--   **Docker or Singularity**. Depending on the tools you plan to work with and where they are installed, you'll want to have either Docker or Singularity installed (ideally both).
+-   **Docker, Singularity, or Apptainer**. Depending on the tools you plan to work with and where they are installed, you'll want to have either Docker, Singularity, or Apptainer installed (ideally all three).
   -   To install Docker, follow the  [instructions](https://docs.docker.com/install/overview/) to install Docker CE.
   -   To install Singularity, follow the [instructions](https://singularity.lbl.gov/install-linux) to download the latest stable release of Singularity.
+  -   To install Apptainer, follow the [instructions](https://apptainer.org/docs/admin/main/installation.html) to download the latest stable release of Apptainer.
 -   **Root (sudo) access**. If your system doesn't already have all of the above installed, you'll need root permission to install new programs.
 
 ## 1.   Clone the boutiques repository
@@ -46,7 +47,7 @@ From within your virtual environment in the base directory:
 
 ## 4.   Build the container images needed for testing
 
--   Certain test cases involve example descriptors that use a Docker or Singularity container image. These images are not available on DockerHub or SingularityHub and must be built locally.
+-   Certain test cases involve example descriptors that use a Docker, Singularity, or Apptainer container image. These images are not available on DockerHub, SingularityHub, or ApptainerHub and must be built locally.
 -   From the base directory, build the example Docker image with the following command:
   -   Note: skip the following step if you do not have Docker installed.
   -   `docker build -t boutiques/example1:test ./boutiques/schema/examples/example1`
@@ -56,7 +57,11 @@ From within your virtual environment in the base directory:
   -   `IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)`
   -   `mv ${IMGNAME} ./boutiques-example1-test.simg`
   -   Your directory should now contain a ~70MB file called `boutiques_example1_test.simg`.
- 
+-   Once the Docker image is built, convert it to an Apptainer image. Again, from within the base directory:
+  -   Note: skip the following steps if you do not have Apptainer installed.
+  -   `apptainer build boutiques_example1_test.sif docker-daemon://boutiques/example1:test`
+  -   Your directory should now contain a ~70MB file called `boutiques_example1_test.sif`.
+
 ## 5.   Try it out!
 
 -   Run `pytest` in the base directory to run all tests

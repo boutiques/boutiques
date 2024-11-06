@@ -91,7 +91,7 @@
             },{
                 "oneOf": [{
                     "properties": {
-                        "type": { "enum": ["docker", "singularity"] },
+                        "type": { "enum": ["docker", "singularity", "apptainer"] },
                         "image": {
                             "id": "http://github.com/boutiques/boutiques-schema/container/image",
                             "minLength": 1,

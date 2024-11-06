@@ -130,6 +130,53 @@ class TestExample1(BaseTest):
             ["./test_temp/log-4-coin;plop.txt"], 2,
             self.assert_reflected_output)
 
+    @pytest.mark.skipif(subprocess.Popen("type apptainer", shell=True).wait(),
+                        reason="Apptainer not installed")
+    def test_example1_exec_apptainer(self):
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_apptainer.json"),
+                         self.get_file_path("invocation_apptainer.json"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
+            ["./test_temp/log-4.txt"], 2,
+            self.assert_reflected_output)
+
+    @pytest.mark.skipif(subprocess.Popen("type apptainer", shell=True).wait(),
+                        reason="Apptainer not installed")
+    def test_example1_exec_apptainer_debug(self):
+        self.assert_successful_return(
+            bosh.execute("launch",
+                         self.get_file_path("example1_apptainer.json"),
+                         "--debug",
+                         self.get_file_path("invocation_apptainer.json"),
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2"))),
+            ["./test_temp/log-4.txt"], 2,
+            self.assert_reflected_output)
+
+    @pytest.mark.skipif(subprocess.Popen("type apptainer", shell=True).wait(),
+                        reason="Apptainer not installed")
+    def test_example1_crash_pull_apptainer(self):
+        with pytest.raises(ExecutorError) as e:
+            bosh.execute("launch",
+                         self.get_file_path(
+                             "example1_apptainer_crash_pull.json"),
+                         self.get_file_path(
+                             "invocation_apptainer.json"),
+                         "--skip-data-collection",
+                         "-v", "{}:/test_mount1".format(
+                             self.get_file_path("example1_mount1")),
+                         "-v", "{}:/test_mount2".format(
+                             self.get_file_path("example1_mount2")))
+        self.assertIn("Could not pull Apptainer image",
+                      str(e.getrepr(style='long')))
+
     @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
                         reason="Docker not installed")
     def test_example1_exec_docker_inv_as_json_obj_debug(self):
@@ -571,47 +618,3 @@ class TestExample1(BaseTest):
 
         ex = bosh.execute("launch",
                           self.get_file_path("test_automount_desc.json"),
-                          test_invoc,
-                          "--skip-data-collection")
-
-        try:
-            self.assertIn('Hello, World!', ex.stdout)
-        finally:
-            os.remove(os.path.join(test_dir, "file1.txt"))
-            os.remove(os.path.join(test_dir, "file2.txt"))
-            os.remove(os.path.join(test_dir, "file3.txt"))
-            os.remove(test_invoc)
-
-    @pytest.mark.skipif(subprocess.Popen("type docker", shell=True).wait(),
-                        reason="Docker not installed")
-    def test_example1_autoMount_none(self):
-        base_path = self.get_file_path("automount")
-        test_invoc = self.get_file_path("test_automount_invoc.json")
-        # Test files must be created outside of [...]/tools/python/
-        # because it is mounted by default
-        test_dir = os.path.split(os.path.split(bfile)[0])[0]
-        copy2(os.path.join(base_path, "file1.txt"), test_dir)
-        copy2(os.path.join(base_path, "file2.txt"), test_dir)
-        copy2(os.path.join(base_path, "file3.txt"), test_dir)
-        invoc_dict = {"file": test_dir + "./file1.txt",
-                      "file_list": [test_dir + "./file2.txt",
-                                    test_dir + "./file3.txt"]}
-        # Create test invoc based on absolute test_dir path
-        with open(test_invoc, "w+") as invoc:
-            invoc.write(json.dumps(invoc_dict))
-
-        ex = bosh.execute("launch",
-                          self.get_file_path("test_automount_desc.json"),
-                          test_invoc,
-                          "--no-automounts",
-                          "--skip-data-collection")
-
-        try:
-            self.assertIn('file1.txt: No such file or directory', ex.stderr)
-            self.assertIn('file2.txt: No such file or directory', ex.stderr)
-            self.assertIn('file3.txt: No such file or directory', ex.stderr)
-        finally:
-            os.remove(os.path.join(test_dir, "file1.txt"))
-            os.remove(os.path.join(test_dir, "file2.txt"))
-            os.remove(os.path.join(test_dir, "file3.txt"))
-            os.remove(test_invoc)

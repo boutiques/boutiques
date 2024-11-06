@@ -166,6 +166,13 @@ class TestPrepare(BaseTest):
                       "docker://boutiques/example1crashcrashcrash:test",
                       ret.stdout)
 
+    @pytest.mark.skipif(subprocess.Popen("type apptainer", shell=True).wait(),
+                        reason="Apptainer not installed")
+    def test_prepare_apptainer(self):
+        ret = bosh.execute("prepare",
+                           self.get_file_path("example1_sing.json"))
+        self.assertIn("Local (boutiques-example1-test.sif)", ret.stdout)
+
     def test_prepare_no_container(self):
         self.setup("exec")
         ret = bosh.execute("prepare", self.get_file_path("no_container.json"))

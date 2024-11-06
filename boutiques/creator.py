@@ -28,9 +28,10 @@ class CreateDescriptor(object):
             self.descriptor = json.load(f)
 
         if(kwargs.get('docker_image')):
-            self.parse_docker(self.descriptor,
-                              kwargs.get('docker_image'),
-                              kwargs.get('use_singularity'))
+            self.parse_container(self.descriptor,
+                                 kwargs.get('docker_image'),
+                                 kwargs.get('use_singularity'),
+                                 kwargs.get('use_apptainer'))
 
         self.sp_count = 0
         if parser is not None:
@@ -62,17 +63,21 @@ class CreateDescriptor(object):
         argdict = {k: v for k, v in argdict.items() if v is not None}
         return argdict
 
-    def parse_docker(self, descriptor, docker_image_name, use_singularity):
+    def parse_container(self, descriptor, container_image_name, use_singularity, use_apptainer):
         cont_image = {}
 
         # Basic image config
         if use_singularity:
             cont_image['type'] = 'singularity'
             cont_image['index'] = 'docker://'
-            cont_image['image'] = docker_image_name
+            cont_image['image'] = container_image_name
+        elif use_apptainer:
+            cont_image['type'] = 'apptainer'
+            cont_image['index'] = 'docker://'
+            cont_image['image'] = container_image_name
         else:
             cont_image['type'] = 'docker'
-            cont_image['image'] = docker_image_name
+            cont_image['image'] = container_image_name
 
         descriptor['container-image'] = cont_image
 
@@ -83,17 +88,17 @@ class CreateDescriptor(object):
         # If Docker is here, let's fetch metadata from the image
         # Properties found in the image metadata
         ((stdout, stderr),
-         returncode) = self.executor("docker pull "+docker_image_name)
+         returncode) = self.executor("docker pull "+container_image_name)
         if returncode:
             raise_error(CreatorError, "Cannot pull Docker image {0}: {1} "
-                        "{2} {3}".format(docker_image_name, stdout,
-                                         os.linesep, stderr))
+                        "{2} {3}".format(container_image_name, stdout,
+                                           os.linesep, stderr))
         ((stdout, stderr),
-         returncode) = self.executor("docker inspect "+docker_image_name)
+         returncode) = self.executor("docker inspect "+container_image_name)
         if returncode:
             raise_error(CreatorError, "Cannot inspect Docker image {0}: {1} "
-                        "{2} {3}".format(docker_image_name, stdout,
-                                         os.linesep, stderr))
+                        "{2} {3}".format(container_image_name, stdout,
+                                           os.linesep, stderr))
         image_attrs = json.loads(stdout.decode("utf-8"))[0]
         if (image_attrs.get('ContainerConfig')):
             container_config = image_attrs['ContainerConfig']
