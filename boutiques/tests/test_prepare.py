@@ -8,6 +8,7 @@ import boutiques as bosh
 from boutiques.localExec import ExecutorError
 import mock
 import sys
+import shutil
 from boutiques_mocks import *
 from boutiques.tests.BaseTest import BaseTest
 
@@ -166,8 +167,8 @@ class TestPrepare(BaseTest):
                       "docker://boutiques/example1crashcrashcrash:test",
                       ret.stdout)
 
-    @pytest.mark.skipif(subprocess.Popen("type apptainer", shell=True).wait(),
-                        reason="Apptainer not installed")
+    @pytest.mark.skipif(not shutil.which("apptainer"), reason="Apptainer not found")
+
     def test_prepare_apptainer(self):
         ret = bosh.execute("prepare",
                            self.get_file_path("example1_sing.json"))
