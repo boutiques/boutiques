@@ -131,9 +131,8 @@ class ZenodoHelper:
 
         r = requests.get(
             self.zenodo_endpoint + "/api/deposit/depositions",
-            params={"access_token": access_token},
         )
-        if r.status_code != 200:
+        if r.status_code != 401:
             raise_error(
                 ZenodoError, f"Cannot access Zenodo at {self.zenodo_endpoint}", r
             )
