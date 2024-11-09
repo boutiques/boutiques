@@ -16,7 +16,7 @@ from boutiques.tests.boutiques_mocks import (
 )
 from boutiques.util.utils import loadJson
 
-ZENODO_SANDBOX_TOKEN = os.environ.get("ZENODO_SANDBOX_TOKEN")
+ZENODO_SANDBOX_TOKEN = "fake-token-123"
 
 
 def mock_get(*args, **kwargs):

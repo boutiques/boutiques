@@ -26,7 +26,7 @@ from boutiques.tests.boutiques_mocks import (
     mock_zenodo_upload_descriptor,
 )
 
-ZENODO_SANDBOX_TOKEN = os.environ.get("ZENODO_SANDBOX_TOKEN")
+ZENODO_SANDBOX_TOKEN = "fake-token-123"
 
 
 def mock_zenodo_deposit_updated(old_zid, new_zid):

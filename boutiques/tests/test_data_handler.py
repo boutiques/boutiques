@@ -22,7 +22,7 @@ from boutiques.tests.boutiques_mocks import (
     mock_post_publish_single,
 )
 
-ZENODO_SANDBOX_TOKEN = os.environ.get("ZENODO_SANDBOX_TOKEN")
+ZENODO_SANDBOX_TOKEN = "fake-token-123"
 
 
 class TestDataHandler(BaseTest):
