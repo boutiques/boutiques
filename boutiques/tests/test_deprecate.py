@@ -28,7 +28,7 @@ def mock_get(*args, **kwargs):
     # Records command
     if command == "records":
         assert len(split) >= 6
-        record_id = split[10] if len(split) > 6 else split[5]
+        record_id = split[12] if len(split) > 6 else split[5]
         if record_id == "00000":
             # Inexistent tool
             return MockHttpResponse(404)
@@ -138,8 +138,7 @@ class TestDeprecate(BaseTest):
             zenodo_id="zenodo.11111",
             sandbox=True,
             verbose=True,
-            zenodo_token="hAaW2wSBZMskxpfigTYHcuDrC"
-            "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+            zenodo_token=ZENODO_SANDBOX_TOKEN,
             download_function=mock_download_deprecated,
         )
         self.assertTrue(new_doi)
