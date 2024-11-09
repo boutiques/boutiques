@@ -376,7 +376,9 @@ class TestPublisher(BaseTest):
     @mock.patch("requests.post", side_effect=mock_post_publish_then_update())
     @mock.patch("requests.put", return_value=mock_zenodo_test_api())
     @mock.patch("requests.delete", return_value=mock_zenodo_delete_files())
-    def test_publication_toolname_forwardslash(self, mock_get, mock_post, mock_put, mock_delete):
+    def test_publication_toolname_forwardslash(
+        self, mock_get, mock_post, mock_put, mock_delete
+    ):
         test_desc = self.get_file_path("test_forward_slash_toolName.json")
         with open(test_desc) as fhandle:
             descriptor = json.load(fhandle, object_pairs_hook=OrderedDict)
