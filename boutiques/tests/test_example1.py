@@ -432,6 +432,7 @@ class TestExample1(BaseTest):
         ret = example_tool("simulate")
         self.assertIn("exampleTool1.py -c", ret.stdout)
 
+    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
@@ -453,6 +454,7 @@ class TestExample1(BaseTest):
             self.assert_reflected_output,
         )
 
+    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
@@ -596,6 +598,7 @@ class TestExample1(BaseTest):
             self.assert_reflected_output_nonutf8,
         )
 
+    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
@@ -622,6 +625,7 @@ class TestExample1(BaseTest):
         self.assertIn("Local (boutiques-example1-test.simg)", ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
 
+    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
@@ -677,6 +681,7 @@ class TestExample1(BaseTest):
         else:
             return True
 
+    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
