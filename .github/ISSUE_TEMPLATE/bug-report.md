@@ -10,11 +10,11 @@ assignees: ''
 <!--- Provide a general summary of the issue in the title above -->
 
 ## Expected Behavior
-<!--- Tell us what should happen. Add an example with all 
+<!--- Tell us what should happen. Add an example with all
  the information needed to reproduce the bug (descriptors, inputs, etc) -->
 
 ## Current Behavior
-<!--- Tell us what happens instead of the expected behavior. Add an example with all 
+<!--- Tell us what happens instead of the expected behavior. Add an example with all
  the information needed to reproduce the bug (descriptors, inputs, etc) -->
 
 ## Environment (optional)

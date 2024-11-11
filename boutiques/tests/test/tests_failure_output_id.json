@@ -268,7 +268,7 @@
             "invocation": {
                 "config_num": 4,
                 "enum_input": "val1",
-                "file_input": "./setup.py",
+                "file_input": "./pyproject.toml",
                 "list_int_input": [
                     1,
                     2,

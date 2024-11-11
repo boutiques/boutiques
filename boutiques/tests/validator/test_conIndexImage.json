@@ -1,5 +1,5 @@
 {
-    "command-line": "echo [INPUT] > ./test_temp/file.txt", 
+    "command-line": "echo [INPUT] > ./test_temp/file.txt",
     "description": "a tool with no container image",
     "container-image": {
         "type": "docker",
@@ -8,21 +8,21 @@
     },
     "inputs": [
         {
-            "id": "param", 
-            "name": "param", 
-            "type": "String", 
+            "id": "param",
+            "name": "param",
+            "type": "String",
             "value-key": "[INPUT]"
         }
     ],
-    "name": "test_container_index", 
+    "name": "test_container_index",
     "output-files": [
         {
-            "id": "output_file", 
-            "name": "output file", 
+            "id": "output_file",
+            "name": "output file",
             "path-template": "./test_temp/file.txt"
         }
-    ], 
-    "schema-version": "0.5", 
+    ],
+    "schema-version": "0.5",
     "tool-version": "0.1",
     "author": "tester"
 }

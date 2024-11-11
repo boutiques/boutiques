@@ -1,4 +1,4 @@
 {
-    "str_input" : [ "foo", "bar" ]
+    "str_input" : [ "foo", "bar" ],
+    "file_input": "./test_temp/FileValue.txt"
 }
-

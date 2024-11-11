@@ -1,22 +1,26 @@
-# -*- coding: utf-8 -*-
-import os
-import sys
-import pytest
-from unittest import TestCase
-from boutiques import __file__ as bfile
-from boutiques_mocks import example_boutiques_tool
 import glob
+import os
 import shutil
+import sys
+from unittest import TestCase
+
+import pytest
+from boutiques_mocks import example_boutiques_tool
+
+from boutiques import __file__ as bfile
 
 
 class BaseTest(TestCase):
     dir = "."
     tests_dir = os.path.join(os.path.dirname(bfile), "tests")
-    test_temp = os.path.join(os.path.split(os.path.split(bfile)[0])[0],
-                             "test_temp")
-    example1_descriptor = os.path.join(os.path.dirname(bfile), "schema",
-                                       "examples", "example1",
-                                       "example1_docker.json")
+    test_temp = os.path.join(os.path.split(os.path.split(bfile)[0])[0], "test_temp")
+    example1_descriptor = os.path.join(
+        os.path.dirname(bfile),
+        "schema",
+        "examples",
+        "example1",
+        "example1_docker.json",
+    )
 
     @pytest.fixture(autouse=True)
     def clean_test_temp(self):
@@ -35,11 +39,7 @@ class BaseTest(TestCase):
         self.dir = dir
 
     def get_file_path(self, file):
-        return os.path.join(
-            os.path.join(
-                self.tests_dir,
-                self.dir),
-            file)
+        return os.path.join(os.path.join(self.tests_dir, self.dir), file)
 
     def assert_nothing(self, ret):
         pass
@@ -61,11 +61,12 @@ class BaseTest(TestCase):
         self.assertEqual(ret.stderr, "")
 
     def assert_successful_return(
-            self,
-            ret,
-            required_files=None,
-            required_files_len=0,
-            aditional_assertions=assert_nothing):
+        self,
+        ret,
+        required_files=None,
+        required_files_len=0,
+        aditional_assertions=assert_nothing,
+    ):
 
         aditional_assertions(ret)
 
@@ -75,17 +76,18 @@ class BaseTest(TestCase):
         if required_files is not None:
             if len(required_files) > required_files_len:
                 required_files_len = len(required_files)
-            self.assertEqual(len(ret.output_files),
-                             required_files_len)
+            self.assertEqual(len(ret.output_files), required_files_len)
             for required_file in required_files:
-                self.assertIn(required_file,
-                              [f.file_name for f in ret.output_files])
+                self.assertIn(required_file, [f.file_name for f in ret.output_files])
 
-    def assert_failed_return(self,
-                             ret,
-                             exit_code, error_message,
-                             missing_files=[],
-                             missing_file_len=0):
+    def assert_failed_return(
+        self,
+        ret,
+        exit_code,
+        error_message,
+        missing_files=[],
+        missing_file_len=0,
+    ):
 
         if len(missing_files) > missing_file_len:
             missing_file_len = len(missing_files)
@@ -94,5 +96,4 @@ class BaseTest(TestCase):
         self.assertEqual(ret.exit_code, exit_code)
         self.assertEqual(len(ret.missing_files), missing_file_len)
         for missing in missing_files:
-            self.assertIn(missing,
-                          [f.file_name for f in ret.missing_files])
+            self.assertIn(missing, [f.file_name for f in ret.missing_files])

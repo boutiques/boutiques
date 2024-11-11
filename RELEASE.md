@@ -23,7 +23,7 @@
 
 4.  Merge `develop` in `master`
 
-5.  Create tag on GitHub, add release notes 
+5.  Create tag on GitHub, add release notes
 
 6.  Push to PyPi:
     ```

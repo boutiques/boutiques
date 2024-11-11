@@ -1,33 +1,43 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import re
-import simplejson as json
-import random as rnd
-import string
-import math
-import random
-import subprocess
-import time
 import datetime
 import hashlib
-import boutiques
+import math
+import os
 import os.path as op
+import random
+import random as rnd
+import re
+import string
+import subprocess
+import sys
+import time
 from glob import glob
+from pathlib import Path
+
+import simplejson as json
 from termcolor import colored
-from boutiques.evaluate import evaluateEngine
-from boutiques.logger import raise_error, print_info, print_warning
+
+import boutiques
 from boutiques.dataHandler import getDataCacheDir
-from boutiques.util.utils import extractFileName, loadJson, conditionalExpFormat
+from boutiques.evaluate import evaluateEngine
+from boutiques.logger import print_info, print_warning, raise_error
+from boutiques.util.utils import conditionalExpFormat, extractFileName, loadJson
 
 
-class ExecutorOutput():
-
-    def __init__(self, stdout, stderr, exit_code, desc_err,
-                 output_files, missing_files, shell_command,
-                 container_command,
-                 container_location):
+class ExecutorOutput:
+    def __init__(
+        self,
+        stdout,
+        stderr,
+        exit_code,
+        desc_err,
+        output_files,
+        missing_files,
+        shell_command,
+        container_command,
+        container_location,
+    ):
         try:
             self.stdout = stdout.decode("utf=8", "backslashreplace")
         except AttributeError as e:
@@ -45,64 +55,73 @@ class ExecutorOutput():
         self.container_location = container_location
 
     def __str__(self):
-
         formatted_output_files = ""
         for f in self.output_files:
             if formatted_output_files != "":
                 formatted_output_files += os.linesep
-            formatted_output_files += ("\t- "+str(f))
+            formatted_output_files += "\t- " + str(f)
 
         formatted_missing_files = ""
         for f in self.missing_files:
             if formatted_missing_files != "":
                 formatted_missing_files += os.linesep
-            formatted_missing_files += ("\t- "+str(f))
+            formatted_missing_files += "\t- " + str(f)
 
         def title(s):
-            return colored(s + os.linesep, 'green')
+            return colored(s + os.linesep, "green")
 
-        out = (title("Shell command") +
-               "{0}" + os.linesep +
-               title("Container location") +
-               "{1}" + os.linesep +
-               title("Container command") +
-               "{2}" + os.linesep +
-               title("Exit code") +
-               "{3}" + os.linesep +
-               (title("Std out") +
-                "{4}" + os.linesep if self.stdout else "") +
-               (title("Std err") +
-                colored("{5}", 'red') + os.linesep if self.stderr else "") +
-               title("Error message") +
-               colored("{6}", 'red') + os.linesep +
-               title("Output files") +
-               "{7}" + os.linesep +
-               title("Missing files") +
-               colored("{8}", 'red') +
-               os.linesep).format(self.shell_command,
-                                  self.container_location,
-                                  self.container_command,
-                                  self.exit_code,
-                                  self.stdout,
-                                  self.stderr,
-                                  self.error_message,
-                                  formatted_output_files,
-                                  formatted_missing_files)
+        out = (
+            title("Shell command")
+            + "{0}"
+            + os.linesep
+            + title("Container location")
+            + "{1}"
+            + os.linesep
+            + title("Container command")
+            + "{2}"
+            + os.linesep
+            + title("Exit code")
+            + "{3}"
+            + os.linesep
+            + (title("Std out") + "{4}" + os.linesep if self.stdout else "")
+            + (
+                title("Std err") + colored("{5}", "red") + os.linesep
+                if self.stderr
+                else ""
+            )
+            + title("Error message")
+            + colored("{6}", "red")
+            + os.linesep
+            + title("Output files")
+            + "{7}"
+            + os.linesep
+            + title("Missing files")
+            + colored("{8}", "red")
+            + os.linesep
+        ).format(
+            self.shell_command,
+            self.container_location,
+            self.container_command,
+            self.exit_code,
+            self.stdout,
+            self.stderr,
+            self.error_message,
+            formatted_output_files,
+            formatted_missing_files,
+        )
         return out
 
 
-class FileDescription():
-
+class FileDescription:
     def __init__(self, boutiques_name, file_name, optional):
         self.boutiques_name = boutiques_name
         self.file_name = file_name
-        self.optional = 'Optional'
+        self.optional = "Optional"
         if not optional:
-            self.optional = 'Required'
+            self.optional = "Required"
 
     def __str__(self):
-        return "{0} ({1}, {2})".format(self.file_name, self.boutiques_name,
-                                       self.optional)
+        return f"{self.file_name} ({self.boutiques_name}, {self.optional})"
 
 
 class ExecutorError(Exception):
@@ -110,7 +129,7 @@ class ExecutorError(Exception):
 
 
 # Executor class
-class LocalExecutor(object):
+class LocalExecutor:
     """
     This class represents a json descriptor of a tool, and can execute
     various tasks related to it. It is constructed first via an
@@ -137,8 +156,8 @@ class LocalExecutor(object):
         self._rkit = self._replaceKeysInTemplate  # Abbrev. for readability
 
         # Initial parameters
-        self.desc_path = desc    # Save descriptor path
-        self.errs = []        # Empty errors holder
+        self.desc_path = desc  # Save descriptor path
+        self.errs = []  # Empty errors holder
         self.invocation = invocation
 
         # Extra Options
@@ -161,17 +180,17 @@ class LocalExecutor(object):
 
         # Helpers Functions
         # The set of input parameters from the json descriptor
-        self.inputs = self.desc_dict['inputs']  # Struct: [{id:}..,{id:}]
+        self.inputs = self.desc_dict["inputs"]  # Struct: [{id:}..,{id:}]
         # The set of output parameters from the json descriptor
-        self.outputs = self.desc_dict.get('output-files') or []
+        self.outputs = self.desc_dict.get("output-files") or []
         # The set of parameter groups, according to the json descriptor
-        self.groups = self.desc_dict.get('groups') or []
+        self.groups = self.desc_dict.get("groups") or []
 
         # Container-image Options
-        self.con = self.desc_dict.get('container-image')
+        self.con = self.desc_dict.get("container-image")
         self.launchDir = None
         if self.con is not None:
-            self.con.get('working-directory')
+            self.con.get("working-directory")
 
         # Generate the command line
         if self.invocation:
@@ -179,11 +198,11 @@ class LocalExecutor(object):
 
     # Retrieves the parameter corresponding to the given id
     def byId(self, n):
-        return [v for v in self.inputs+self.outputs if v['id'] == n][0]
+        return [v for v in self.inputs + self.outputs if v["id"] == n][0]
 
     # Retrieves the group corresponding to the given id
     def byGid(self, g):
-        return [v for v in self.groups if v['id'] == g][0]
+        return [v for v in self.groups if v["id"] == g][0]
 
     # Retrieves the value of a field of an input
     # from the descriptor. Returns None if not present.
@@ -206,62 +225,67 @@ class LocalExecutor(object):
 
     # Returns the required inputs of a given input id, or the empty string
     def reqsOf(self, t):
-        if t in [g['id'] for g in self.groups]:
+        if t in [g["id"] for g in self.groups]:
             return self.safeGrpGet(t, "members") or []
         return self.safeGet(t, "requires-inputs") or []
 
     # Attempt local execution of the command line
     # generated from the input values
     def execute(self, mount_strings):
-        '''
+        """
         The execute method runs the generated command line
         (from either generateRandomParams or readInput)
         If docker is specified, it will attempt to use it, instead
         of local execution.
         After execution, it checks for output file existence.
-        '''
+        """
         command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
-        conType, conImage = con.get('type'),\
-            con.get('image') if not self.noContainer else None
+        conType, conImage = (
+            con.get("type"),
+            (con.get("image") if not self.noContainer else None),
+        )
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
-        conIsPresent = (conImage is not None)
+        conIsPresent = conImage is not None
         # Export environment variables,
         #  if they are specified in the descriptor
         envVars = {}
-        if 'environment-variables' in list(self.desc_dict.keys()):
-            variables = [(p['name'], p['value']) for p in
-                         self.desc_dict['environment-variables']]
-            inputsByValKey = {inp['value-key']: inp for inp in self.inputs}
-            for (envVarName, envVarValue) in variables:
+        if "environment-variables" in list(self.desc_dict.keys()):
+            variables = [
+                (p["name"], p["value"]) for p in self.desc_dict["environment-variables"]
+            ]
+            inputsByValKey = {inp["value-key"]: inp for inp in self.inputs}
+            for envVarName, envVarValue in variables:
                 if envVarValue in inputsByValKey:
-                    envVarValue =\
-                        self.in_dict[inputsByValKey[envVarValue]['id']]
+                    envVarValue = self.in_dict[inputsByValKey[envVarValue]["id"]]
                 os.environ[envVarName] = envVarValue
                 envVars[envVarName] = envVarValue
         # Container script constant name
         # Note that docker/singularity cannot do a local volume
         # mount of files starting with a '.', hence this one does not
-        millitime = int(time.time()*1000)
-        dsname = ('temp-' +
-                  str(random.SystemRandom().randint(0, int(millitime))) +
-                  "-" + str(millitime) + '.localExec.boshjob.sh')
+        millitime = int(time.time() * 1000)
+        dsname = (
+            "temp-"
+            + str(random.SystemRandom().randint(0, int(millitime)))
+            + "-"
+            + str(millitime)
+            + ".localExec.boshjob.sh"
+        )
         dsname = op.realpath(dsname)
         # If container is present, alter the command template accordingly
         container_location = ""
         container_command = ""
         if conIsPresent:
             # Figure out which container type to use
-            conTypeToUse = \
-                self._chooseContainerTypeToUse(conType,
-                                               self.forceSingularity,
-                                               self.forceDocker)
+            conTypeToUse = self._chooseContainerTypeToUse(
+                conType, self.forceSingularity, self.forceDocker
+            )
             # Pull the container
             (conPath, container_location) = self.prepare(conTypeToUse)
             # Generate command script
             # Get the supported shell by the docker or singularity
-            cmdString = "#!{}".format(self.shell)
+            cmdString = f"#!{self.shell}"
             if self.shell == "/bin/sh":
                 cmdString += " -l"
             cmdString += os.linesep + str(command)
@@ -272,12 +296,12 @@ class LocalExecutor(object):
             # Prepare extra environment variables
             envString = ""
             if envVars:
-                for (key, val) in list(envVars.items()):
-                    envString += "SINGULARITYENV_{0}='{1}' ".format(key, val)
+                for key, val in list(envVars.items()):
+                    envString += f"SINGULARITYENV_{key}='{val}' "
             # Change launch (working) directory if desired
             launchDir = self.launchDir
             if launchDir is None:
-                launchDir = op.realpath('./')
+                launchDir = op.realpath("./")
             launchDir = op.realpath(launchDir)
             # Get the container options
             conOptsString = ""
@@ -288,7 +312,7 @@ class LocalExecutor(object):
                     print_warning("Ignoring incompatible container options.")
                 else:
                     for opt in conOpts:
-                        conOptsString += opt + ' '
+                        conOptsString += opt + " "
             # Run it in docker
             # Note: on Windows, users must give path following
             #       this format (compatible with docker): /c/a/windows/path
@@ -331,66 +355,99 @@ class LocalExecutor(object):
                 # Extend list of mounts with all files in invocation
                 mount_inputs = []
                 existing_mounts = [m.split(":")[1] for m in mount_strings]
-                for file_input in [i for i in self.inputs if
-                                   i['type'].lower() == 'file']:
-                    if file_input['id'] in self.in_dict:
-                        if 'list' in file_input and file_input['list']:
-                            mount_inputs.extend(self.in_dict[file_input['id']])
+                for file_input in [
+                    i for i in self.inputs if i["type"].lower() == "file"
+                ]:
+                    if file_input["id"] in self.in_dict:
+                        if "list" in file_input and file_input["list"]:
+                            mount_inputs.extend(self.in_dict[file_input["id"]])
                         else:
-                            mount_inputs.append(self.in_dict[file_input['id']])
-                # Prevent duplicate mounts, normalize paths
-                # and add file under same absolute path
-                mount_inputs = [makePathAbsolute(m) + ':'
-                                + os.path.join(launchDir, m)
-                                for m in mount_inputs
-                                if m not in existing_mounts]
+                            mount_inputs.append(self.in_dict[file_input["id"]])
+
+                # Prevent duplicate mounts,
+                mount_inputs = [m for m in mount_inputs if m not in existing_mounts]
+
+                # Ensure the mount location exist
+                missing_mounts = []
+                for m in mount_inputs:
+                    abs_path = makePathAbsolute(m)
+                    if not Path(abs_path).exists():
+                        missing_mounts.append(abs_path)
+                if missing_mounts:
+                    raise_error(
+                        ExecutorError,
+                        f"Missing local mount location: {missing_mounts}",
+                    )
+
+                # normalize paths and add file under same absolute path
+                mount_inputs = [
+                    makePathAbsolute(m) + ":" + Path(launchDir, m).resolve().as_posix()
+                    for m in mount_inputs
+                ]
                 mount_strings.extend(mount_inputs)
                 return mount_strings
 
             launchDir = normalizePath(launchDir)
             dsname = normalizePath(dsname)
 
-            mount_strings = [makePathAbsolute(m.split(":")[0]) + ":"
-                             + m.split(":")[1] for m in mount_strings]
-            mount_strings.append(makePathAbsolute('./') + ':' + launchDir)
+            mount_strings = [
+                makePathAbsolute(m.split(":")[0]) + ":" + m.split(":")[1]
+                for m in mount_strings
+            ]
+            mount_strings.append(makePathAbsolute("./") + ":" + launchDir)
 
             if not self.noAutomounts:
                 mount_strings = addAutomounts(mount_strings, launchDir)
 
-            if conTypeToUse == 'docker':
+            if conTypeToUse == "docker":
                 envString = " "
                 if envVars:
-                    for (key, val) in list(envVars.items()):
-                        envString += " -e {0}='{1}' ".format(key, val)
+                    for key, val in list(envVars.items()):
+                        envString += f" -e {key}='{val}' "
                 # export mounts to docker string
                 docker_mounts = " -v ".join(m for m in mount_strings)
                 # If --changeUser was desired, provides the current user id
                 # and its group id as the user and group to be used instead
                 # of the default root within the container.
-                userchange = ''
+                userchange = ""
                 if self.changeUser:
-                    userchange = ' -u $(id -u):$(id -g)'
+                    userchange = " -u $(id -u):$(id -g)"
 
-                container_command = ('docker run' + userchange +
-                                     ' --entrypoint=' + self.shell +
-                                     ' --rm' + envString +
-                                     ' -v ' + docker_mounts +
-                                     ' -w ' + launchDir + ' ' +
-                                     conOptsString +
-                                     str(conImage) + ' ' + dsname)
-            elif conTypeToUse == 'singularity':
+                container_command = (
+                    "docker run"
+                    + userchange
+                    + " --entrypoint="
+                    + self.shell
+                    + " --rm"
+                    + envString
+                    + " -v "
+                    + docker_mounts
+                    + " -w "
+                    + launchDir
+                    + " "
+                    + conOptsString
+                    + str(conImage)
+                    + " "
+                    + dsname
+                )
+            elif conTypeToUse == "singularity":
                 envString = ""
                 if envVars:
-                    for (key, val) in list(envVars.items()):
-                        envString += "SINGULARITYENV_{0}='{1}' ".format(key,
-                                                                        val)
-                singularity_mounts = '-B ' + ' -B '.join(mount_strings)
-                container_command = (envString + 'singularity exec '
-                                     '--cleanenv ' +
-                                     singularity_mounts +
-                                     ' -W ' + launchDir + ' ' +
-                                     conOptsString +
-                                     str(conPath) + ' ' + dsname)
+                    for key, val in list(envVars.items()):
+                        envString += f"SINGULARITYENV_{key}='{val}' "
+                singularity_mounts = "-B " + " -B ".join(mount_strings)
+                container_command = (
+                    envString + "singularity exec "
+                    "--cleanenv "
+                    + singularity_mounts
+                    + " -W "
+                    + launchDir
+                    + " "
+                    + conOptsString
+                    + str(conPath)
+                    + " "
+                    + dsname
+                )
             (stdout, stderr), exit_code = self._localExecute(container_command)
         # Otherwise, just run command locally
         else:
@@ -425,28 +482,30 @@ class LocalExecutor(object):
                     missing_files_dict[f] = file_name
 
         # Set error messages
-        desc_err = ''
-        if 'error-codes' in list(self.desc_dict.keys()):
-            for err_elem in self.desc_dict['error-codes']:
-                if err_elem['code'] == exit_code:
-                    desc_err = err_elem['description']
+        desc_err = ""
+        if "error-codes" in list(self.desc_dict.keys()):
+            for err_elem in self.desc_dict["error-codes"]:
+                if err_elem["code"] == exit_code:
+                    desc_err = err_elem["description"]
                     break
 
-        executor_output = ExecutorOutput(stdout,
-                                         stderr,
-                                         exit_code,
-                                         desc_err,
-                                         output_files,
-                                         missing_files,
-                                         command,
-                                         container_command,
-                                         container_location)
+        executor_output = ExecutorOutput(
+            stdout,
+            stderr,
+            exit_code,
+            desc_err,
+            output_files,
+            missing_files,
+            command,
+            container_command,
+            container_location,
+        )
 
         if not self.skipDataCollect:
             # Generate public output
-            self.public_out = self._generatePublicOutput(executor_output,
-                                                         output_files_dict,
-                                                         missing_files_dict)
+            self.public_out = self._generatePublicOutput(
+                executor_output, output_files_dict, missing_files_dict
+            )
             # Write data collection to file
             self._saveDataCaptureToCache()
 
@@ -460,7 +519,10 @@ class LocalExecutor(object):
         if con is None:
             return ("", "Descriptor does not specify a container image.")
 
-        conType, conImage = con.get('type'), con.get('image'),
+        conType, conImage = (
+            con.get("type"),
+            con.get("image"),
+        )
         conIndex = con.get("index")
 
         # If container is present, alter the command template accordingly
@@ -469,7 +531,7 @@ class LocalExecutor(object):
         if conTypeToUse is None:
             conTypeToUse = self._chooseContainerTypeToUse(conType)
 
-        if conTypeToUse == 'docker':
+        if conTypeToUse == "docker":
             # Pull the docker image
             if self._localExecute("docker pull " + str(conImage))[1]:
                 container_location = "Local copy"
@@ -477,13 +539,18 @@ class LocalExecutor(object):
                 container_location = "Pulled from Docker"
             return (conName, container_location)
 
-        elif conTypeToUse == 'singularity':
-            if conType == 'docker':
+        elif conTypeToUse == "singularity":
+            if conType == "docker":
                 # We're running a Docker image in Singularity
-                conIndex = "docker://" + (conIndex if
-                                          (conIndex is not None and
-                                           conIndex != "" and
-                                           conIndex != "docker://") else "")
+                conIndex = "docker://" + (
+                    conIndex
+                    if (
+                        conIndex is not None
+                        and conIndex != ""
+                        and conIndex != "docker://"
+                    )
+                    else ""
+                )
 
             # If present, assign index in conImage to conIndex
             if re.search(r"^[a-zA-Z0-9]+://", conImage) is not None:
@@ -504,7 +571,7 @@ class LocalExecutor(object):
             # Check if container already exists
             if self._singConExists(conName, imageDir):
                 conPath = op.abspath(op.join(imageDir, conName))
-                return conPath, "Local ({0})".format(conName)
+                return conPath, f"Local ({conName})"
 
             # Container does not exist, try to pull it
             if self.imagePath:
@@ -520,20 +587,22 @@ class LocalExecutor(object):
                 try:
                     os.mkdir(lockDir)
                 except OSError:
-                    print_info("Another process seems to be pulling the "
-                               "image ({} exists), sleeping 5 seconds"
-                               .format(lockDir))
+                    print_info(
+                        "Another process seems to be pulling the "
+                        "image ({} exists), sleeping 5 seconds".format(lockDir)
+                    )
                     time.sleep(5)
                 else:
                     try:
                         # Check if container was created while waiting
                         if self._singConExists(conName, imageDir):
                             conPath = op.abspath(op.join(imageDir, conName))
-                            container_location = "Local ({0})".format(conName)
+                            container_location = f"Local ({conName})"
                         # Container still does not exist, so pull it
                         else:
                             conPath, container_location = self._pullSingImage(
-                                conName, conIndex, conImage, imageDir, lockDir)
+                                conName, conIndex, conImage, imageDir, lockDir
+                            )
                         return conPath, container_location
                     finally:
                         self._cleanUpAfterSingPull(lockDir)
@@ -541,9 +610,8 @@ class LocalExecutor(object):
             # raise an error
             if self._singConExists(conName, imageDir):
                 conPath = op.abspath(op.join(imageDir, conName))
-                return conPath, "Local ({0})".format(conName)
-            raise_error(ExecutorError, "Unable to retrieve Singularity "
-                        "image.")
+                return conPath, f"Local ({conName})"
+            raise_error(ExecutorError, "Unable to retrieve Singularity " "image.")
 
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName, imageDir):
@@ -556,22 +624,27 @@ class LocalExecutor(object):
         # Set the pull directory to the specified imagePath
         if self.imagePath:
             os.environ["SINGULARITY_PULLFOLDER"] = imageDir
-        pull_loc = "\"{0}\" {1}{2}".format(conNameTmp, conIndex, conImage)
-        container_location = ("Pulled from {1}{2} ({0} not found "
-                              "in current working "
-                              "directory or specified "
-                              "image path)").format(conName,
-                                                    conIndex,
-                                                    conImage)
+        pull_loc = f'"{conNameTmp}" {conIndex}{conImage}'
+        container_location = (
+            "Pulled from {1}{2} ({0} not found "
+            "in current working "
+            "directory or specified "
+            "image path)"
+        ).format(conName, conIndex, conImage)
         # Pull the singularity image
         sing_command = "singularity pull --name " + pull_loc
-        (stdout, stderr), return_code = self._localExecute(
-                                                sing_command)
+        (stdout, stderr), return_code = self._localExecute(sing_command)
         if return_code:
-            message = ("Could not pull Singularity"
-                       " image: " + os.linesep + " * Pull command: " +
-                       sing_command + os.linesep + " * Error: " +
-                       stderr.decode("utf-8"))
+            message = (
+                "Could not pull Singularity"
+                " image: "
+                + os.linesep
+                + " * Pull command: "
+                + sing_command
+                + os.linesep
+                + " * Error: "
+                + stderr.decode("utf-8")
+            )
             raise_error(ExecutorError, message)
         os.rename(op.join(imageDir, conNameTmp), op.join(imageDir, conName))
         conPath = op.abspath(op.join(imageDir, conName))
@@ -585,23 +658,27 @@ class LocalExecutor(object):
             del os.environ["SINGULARITY_PULLFOLDER"]
 
     def _isCommandInstalled(self, command):
-        return not subprocess.Popen("{} --version".format(command),
-                                    shell=True).wait()
+        return not subprocess.Popen(f"{command} --version", shell=True).wait()
 
     # Chooses whether to use Docker or Singularity based on the
     # descriptor, executor options and if Docker is installed.
-    def _chooseContainerTypeToUse(self, conType, forceSing=False,
-                                  forceDocker=False):
-        if ((conType == 'docker' and not forceSing or forceDocker) and
-           self._isCommandInstalled('docker')):
+    def _chooseContainerTypeToUse(self, conType, forceSing=False, forceDocker=False):
+        if (
+            conType == "docker" and not forceSing or forceDocker
+        ) and self._isCommandInstalled("docker"):
             return "docker"
 
-        if self._isCommandInstalled('singularity'):
+        if self._isCommandInstalled("singularity"):
             return "singularity"
 
-        raise_error(ExecutorError, ("Could not find any container engine. " +
-                                    "Make sure that Docker or Singularity " +
-                                    "is installed."))
+        raise_error(
+            ExecutorError,
+            (
+                "Could not find any container engine. "
+                + "Make sure that Docker or Singularity "
+                + "is installed."
+            ),
+        )
 
     # Private method that attempts to locally execute the given
     # command. Returns the exit code.
@@ -609,22 +686,28 @@ class LocalExecutor(object):
         # Note: invokes the command through the shell
         # (potential injection dangers)
         if self.debug:
-            print_info("Running: {0}".format(command))
+            print_info(f"Running: {command}")
         try:
             if self.stream:
-                process = subprocess.Popen(command, shell=True,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.STDOUT)
+                process = subprocess.Popen(
+                    command,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
             else:
-                process = subprocess.Popen(command, shell=True,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.PIPE)
+                process = subprocess.Popen(
+                    command,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
 
         except OSError as e:
-            sys.stderr.write('OS Error during attempted execution!')
+            sys.stderr.write("OS Error during attempted execution!")
             raise e
         except ValueError as e:
-            sys.stderr.write('Input Value Error during attempted execution!')
+            sys.stderr.write("Input Value Error during attempted execution!")
             raise e
 
         if not self.stream:
@@ -634,7 +717,7 @@ class LocalExecutor(object):
             if process.poll() is not None:
                 break
             outLine = process.stdout.readline().decode()
-            if outLine != '':
+            if outLine != "":
                 sys.stdout.write(outLine)
         # Return (stdout, stderr) as (None, None) since it was already
         # printed in real time
@@ -658,23 +741,32 @@ class LocalExecutor(object):
         # epsilon = an upper bound on the relative error due to
         # rounding for the chosen number of decimals, making sure
         # excluded values aren't rounded to by accident.
-        epsilon = 1.0/(10**number_decimals)
+        epsilon = 1.0 / (10**number_decimals)
 
         def randDigs():
             # Generate random string of digits
-            return ''.join(rnd.choice(string.digits)
-                           for _ in range(nd))
+            return "".join(rnd.choice(string.digits) for _ in range(nd))
 
         def randFile(id):
-            return ('f_' + id + '_' + randDigs() +
-                    rnd.choice(['.csv', '.tex', '.j',
-                                '.cpp', '.m', '.mnc',
-                                '.nii.gz', '']))
+            return (
+                "f_"
+                + id
+                + "_"
+                + randDigs()
+                + rnd.choice(
+                    [".csv", ".tex", ".j", ".cpp", ".m", ".mnc", ".nii.gz", ""]
+                )
+            )
 
         def randStr(id):
-            return 'str_' + id + '_' + ''.join(rnd.choice(string.digits +
-                                               string.ascii_letters)
-                                               for _ in range(nd))
+            return (
+                "str_"
+                + id
+                + "_"
+                + "".join(
+                    rnd.choice(string.digits + string.ascii_letters) for _ in range(nd)
+                )
+            )
 
         # A function for generating a number type parameter input
         # p is a dictionary object corresponding to a parameter
@@ -684,16 +776,17 @@ class LocalExecutor(object):
         #            if p had "integer": true, "minimum": 7,
         # "maximum": 9, the output would be an int in [7,9]
         def randNum(p):
-            param_id, defaultMin, defaultMax = p['id'], -50, 50
+            param_id, defaultMin, defaultMax = p["id"], -50, 50
             # Check if the input parameter should be an int
-            isInt = self.safeGet(param_id, 'integer')
+            isInt = self.safeGet(param_id, "integer")
 
             def roundTowardsZero(x):
                 return int(math.copysign(1, x) * int(abs(x)))
+
             # Assign random values to min and max,
             # unless they have been specified
-            minv = self.safeGet(param_id, 'minimum')
-            maxv = self.safeGet(param_id, 'maximum')
+            minv = self.safeGet(param_id, "minimum")
+            maxv = self.safeGet(param_id, "maximum")
             if minv is None and maxv is None:
                 minv, maxv = defaultMin, defaultMax
             elif minv is None and not (maxv is None):
@@ -706,62 +799,82 @@ class LocalExecutor(object):
             else:
                 minv, maxv = float(minv), float(maxv)
             # Apply exclusive boundary constraints, if any
-            if self.safeGet(param_id, 'exclusive-minimum'):
+            if self.safeGet(param_id, "exclusive-minimum"):
                 minv += 1 if isInt else epsilon
-            if self.safeGet(param_id, 'exclusive-maximum'):
+            if self.safeGet(param_id, "exclusive-maximum"):
                 maxv -= 1 if isInt else epsilon
             # Returns a random int or a random float, depending on the type of p
-            return (rnd.randint(minv, maxv)
-                    if isInt else round(rnd.uniform(minv, maxv),
-                                        number_decimals))
+            return (
+                rnd.randint(minv, maxv)
+                if isInt
+                else round(rnd.uniform(minv, maxv), number_decimals)
+            )
 
         # Generate a random parameter value based on the input
         # type (where prm \in self.inputs)
         def paramSingle(prm):
-            if self.safeGet(prm['id'], 'value-choices'):
-                return rnd.choice(self.safeGet(prm['id'], 'value-choices'))
-            if prm['type'] == 'String':
-                return randStr(prm['id'])
-            if prm['type'] == 'Number':
+            if self.safeGet(prm["id"], "value-choices"):
+                return rnd.choice(self.safeGet(prm["id"], "value-choices"))
+            if prm["type"] == "String":
+                return randStr(prm["id"])
+            if prm["type"] == "Number":
                 return randNum(prm)
             # Since a flag can't be False, it's either there or not,
             # there's no point in setting it to False.
-            if prm['type'] == 'Flag':
+            if prm["type"] == "Flag":
                 return True
-            if prm['type'] == 'File':
-                return randFile(prm['id'])
+            if prm["type"] == "File":
+                return randFile(prm["id"])
 
         # For this function, given prm (a parameter description),
         # a parameter value is generated
         # If prm is a list, a sequence of outputs is generated;
         # otherwise, a single value is returned
         def makeParam(prm):
-            mn = self.safeGet(prm['id'], 'min-list-entries') or 2
-            mx = self.safeGet(prm['id'], 'max-list-entries') or nl
-            isList = self.safeGet(prm['id'], 'list') or False
-            return [paramSingle(prm) for _ in
-                    range(rnd.randint(mn, mx))] if isList else paramSingle(prm)
+            mn = self.safeGet(prm["id"], "min-list-entries") or 2
+            mx = self.safeGet(prm["id"], "max-list-entries") or nl
+            isList = self.safeGet(prm["id"], "list") or False
+            return (
+                [paramSingle(prm) for _ in range(rnd.randint(mn, mx))]
+                if isList
+                else paramSingle(prm)
+            )
 
         # Returns a list of the ids of parameters that
         # disable the input parameter
         def disablersOf(inParam):
-            return [disabler[0] for disabler in
-                    [disabler for disabler in
-                     [(prm['id'], self.safeGet(prm['id'],
-                                               'disables-inputs') or [])
-                      for prm in self.inputs] if inParam['id'] in disabler[1]]]
+            return [
+                disabler[0]
+                for disabler in [
+                    disabler
+                    for disabler in [
+                        (
+                            prm["id"],
+                            self.safeGet(prm["id"], "disables-inputs") or [],
+                        )
+                        for prm in self.inputs
+                    ]
+                    if inParam["id"] in disabler[1]
+                ]
+            ]
 
         # Returns the list of mutually requiring parameters of the target
         def mutReqs(targetParam):
-            return [self.byId(mutualReq[0]) for mutualReq in
-                    [possibleMutReq for possibleMutReq in
-                     [(reqOfTarg, self.reqsOf(reqOfTarg)) for reqOfTarg in
-                         self.reqsOf(targetParam['id'])]
-                     if targetParam['id'] in possibleMutReq[1]]]
+            return [
+                self.byId(mutualReq[0])
+                for mutualReq in [
+                    possibleMutReq
+                    for possibleMutReq in [
+                        (reqOfTarg, self.reqsOf(reqOfTarg))
+                        for reqOfTarg in self.reqsOf(targetParam["id"])
+                    ]
+                    if targetParam["id"] in possibleMutReq[1]
+                ]
+            ]
 
         def getAllBranchedReqs(targ, reqs):
-            for r in [r for r in self.reqsOf(targ['id']) if r not in reqs]:
-                if r in [g['id'] for g in self.groups]:
+            for r in [r for r in self.reqsOf(targ["id"]) if r not in reqs]:
+                if r in [g["id"] for g in self.groups]:
                     for gReq in self.reqsOf(r):
                         if gReq not in reqs:
                             reqs.append(gReq)
@@ -775,19 +888,19 @@ class LocalExecutor(object):
         # value or is allowed to have one
         def isOrCanBeFilled(targ):
             # If it is already filled in, report so
-            if targ['id'] in list(self.in_dict.keys()):
+            if targ["id"] in list(self.in_dict.keys()):
                 return True
             # If a disabler or a disabled target is already active,
             # it cannot be filled
-            for d in disablersOf(targ) + (self.safeGet(
-                                                 targ['id'],
-                                                 'disables-inputs') or []):
+            for d in disablersOf(targ) + (
+                self.safeGet(targ["id"], "disables-inputs") or []
+            ):
                 if d in list(self.in_dict.keys()):
                     return False
             # If it is in a mutex group with one target already chosen,
             # it cannot be filled
-            for r in self.reqsOf(targ['id']):
-                if r in [g['id'] for g in self.groups]:
+            for r in self.reqsOf(targ["id"]):
+                if r in [g["id"] for g in self.groups]:
                     grpCanBeFilled = False
                     for gReq in self.reqsOf(r):
                         if isOrCanBeFilled(self.byId(gReq)):
@@ -798,14 +911,12 @@ class LocalExecutor(object):
                         return False
                 elif r not in self.in_dict:  # If a requirement is not present
                     # and it is not mutually required
-                    if targ['id'] not in getAllBranchedReqs(targ, []):
+                    if targ["id"] not in getAllBranchedReqs(targ, []):
                         return False
             # Get the group that the target belongs to, if any
-            g = self.assocGrp(targ['id'])
-            if (g is not None) and self.safeGrpGet(g['id'],
-                                                   'mutually-exclusive'):
-                if len([x for x in g['members']
-                        if x in list(self.in_dict.keys())]) > 0:
+            g = self.assocGrp(targ["id"])
+            if (g is not None) and self.safeGrpGet(g["id"], "mutually-exclusive"):
+                if len([x for x in g["members"] if x in list(self.in_dict.keys())]) > 0:
                     return False
             return True
 
@@ -815,18 +926,20 @@ class LocalExecutor(object):
         # (Added after requires-inputs: group was implemented)
         def groupMemberCanBeAdded(targ):
             # if target is a group member
-            if targ['id'] in [m for g in self.groups for m in g['members']]:
-                for req in self.reqsOf(targ['id']):
+            if targ["id"] in [m for g in self.groups for m in g["members"]]:
+                for req in self.reqsOf(targ["id"]):
                     # If targ requires group input and one of required members
                     # has been chosen
-                    if req in [g['id'] for g in self.groups] and\
-                       len(set(self.reqsOf(req))
-                       .intersection(set(self.in_dict))) == 1:
+                    if (
+                        req in [g["id"] for g in self.groups]
+                        and len(set(self.reqsOf(req)).intersection(set(self.in_dict)))
+                        == 1
+                    ):
                         continue
                     elif req not in self.in_dict:
                         return False
                 return True
-            elif set(self.reqsOf(targ['id'])).issubset(set(self.in_dict)):
+            elif set(self.reqsOf(targ["id"])).issubset(set(self.in_dict)):
                 return True
             return False
 
@@ -852,12 +965,16 @@ class LocalExecutor(object):
                 if not isOrCanBeFilled(current):
                     return False
                 for mutreq in mutReqs(current):
-                    if not mutreq['id'] in [c['id'] for c in checked] and\
-                       mutreq['id'] not in [g['id'] for g in self.groups]:
+                    if not mutreq["id"] in [c["id"] for c in checked] and mutreq[
+                        "id"
+                    ] not in [g["id"] for g in self.groups]:
                         toCheck.append(mutreq)
-                for greq in [g for g in self.reqsOf(current['id']) if
-                             g in [grp['id'] for grp in self.groups] and
-                             self.safeGrpGet(g, "mutually-exclusive")]:
+                for greq in [
+                    g
+                    for g in self.reqsOf(current["id"])
+                    if g in [grp["id"] for grp in self.groups]
+                    and self.safeGrpGet(g, "mutually-exclusive")
+                ]:
                     # Check if one of the members is already added
                     # and don't add random member
                     memberFilled = False
@@ -868,25 +985,30 @@ class LocalExecutor(object):
                         continue
                     # Add random member if current requires mutex group
                     rndMember = rnd.choice(self.safeGrpGet(greq, "members"))
-                    toCheck.append({i['id']: i for i in self.inputs}[rndMember])
+                    toCheck.append({i["id"]: i for i in self.inputs}[rndMember])
             return checked
 
         # Start actual dictionary filling part
         # Clear the dictionary
-        self.in_dict = self.in_dict if hasattr(self, 'in_dict') and\
-            self.in_dict is not None else {}
-        for params in [r for r in self.inputs if not r.get('optional')]:
-            self.in_dict[params['id']] = makeParam(params)
+        self.in_dict = (
+            self.in_dict
+            if hasattr(self, "in_dict") and self.in_dict is not None
+            else {}
+        )
+        for params in [r for r in self.inputs if not r.get("optional")]:
+            self.in_dict[params["id"]] = makeParam(params)
 
         # Fill in a random choice for each one-is-required group
-        for grp in [g for g in self.groups
-                    if self.safeGrpGet(g['id'], 'one-is-required')]:
+        for grp in [
+            g for g in self.groups if self.safeGrpGet(g["id"], "one-is-required")
+        ]:
             # Loop to choose an allowed value,
             # in case a previous choice disabled that one
             while True:
                 # Pick a random parameter
-                mbrId = rnd.choice([mbr for mbr in grp['members'] if
-                                   self.byId(mbr)['type'] != 'Flag'])
+                mbrId = rnd.choice(
+                    [mbr for mbr in grp["members"] if self.byId(mbr)["type"] != "Flag"]
+                )
                 choice = self.byId(mbrId)
                 # see if it and its mutual requirements can be filled
                 res = checkMutualRequirements(choice)
@@ -894,18 +1016,21 @@ class LocalExecutor(object):
                     # Try again if the chosen group member is not permissible
                     continue
                 for r in res:
-                    self.in_dict[r['id']] = makeParam(r)
+                    self.in_dict[r["id"]] = makeParam(r)
                 break  # If we were allowed to add a parameter, we can stop
 
         if self.requireComplete:
             # Fill in all possible optional inputs
-            opts = [p for p in self.inputs if
-                    self.safeGet(p['id'], 'optional') in [None, True]]
+            opts = [
+                p
+                for p in self.inputs
+                if self.safeGet(p["id"], "optional") in [None, True]
+            ]
             # Loop a random number of times, each time
             #  attempting to fill a random parameter
             for option in opts:
                 # If it is already filled in, continue
-                if option['id'] in list(self.in_dict.keys()):
+                if option["id"] in list(self.in_dict.keys()):
                     continue
                 # If it is a prohibited option, continue
                 # (isFilled case handled above)
@@ -927,25 +1052,29 @@ class LocalExecutor(object):
                     continue
                 # Fill in the target(s) otherwise
                 for r in result:
-                    self.in_dict[r['id']] = makeParam(r)
+                    self.in_dict[r["id"]] = makeParam(r)
                     # Check for mutex between in_dict and last in param
-                    for group, mbs in [(x, x["members"]) for x in self.groups
-                                       if x.get('mutually-exclusive')]:
-                        if len(set.intersection(set(mbs),
-                                                set(self.in_dict.keys()))) > 1:
+                    for group, mbs in [
+                        (x, x["members"])
+                        for x in self.groups
+                        if x.get("mutually-exclusive")
+                    ]:
+                        if (
+                            len(set.intersection(set(mbs), set(self.in_dict.keys())))
+                            > 1
+                        ):
                             # Delete last in param
-                            del self.in_dict[r['id']]
+                            del self.in_dict[r["id"]]
 
     # Function to generate random parameter values
     # This fills the in_dict with random values, validates the input,
     # and generates the appropriate command line
     def generateRandomParams(self, generateCmdLineFromInDict=False):
-
-        '''
+        """
         The generateRandomParams method fills the in_dict field
         with randomly generated values following the schema.
         It then generates command line strings based on these values
-        '''
+        """
 
         self.cmd_line = []
         # Set in_dict with random values
@@ -962,8 +1091,9 @@ class LocalExecutor(object):
         # If an error occurs, print out the problems already
         # encountered before blowing up
         except Exception as e:  # Avoid BaseExceptions like SystemExit
-            sys.stderr.write("An error occurred in validation\n"
-                             "Previously saved issues\n")
+            sys.stderr.write(
+                "An error occurred in validation\n" "Previously saved issues\n"
+            )
             for err in self.errs:
                 sys.stderr.write("\t" + str(err) + "\n")
             raise e  # Pass on (throw) the caught exception
@@ -973,8 +1103,7 @@ class LocalExecutor(object):
 
     # Read in parameter input file or string
     def readInput(self, infile):
-
-        '''
+        """
         The readInput method sets the in_dict field of the executor
         object, based on a fixed input.
         It then generates a command line based on the input.
@@ -983,7 +1112,7 @@ class LocalExecutor(object):
         the command-line string (from -s).
         stringInput: a boolean as to whether the method has
         been given a string or a file.
-        '''
+        """
 
         # Quick check that the descriptor has already been read in
         assert self.desc_dict is not None
@@ -1007,8 +1136,9 @@ class LocalExecutor(object):
                 args.append("--sandbox")
             boutiques.invocation(*args)
         except Exception:  # Avoid catching BaseExceptions like SystemExit
-            sys.stderr.write("An error occurred in validation\n"
-                             "Previously saved issues\n")
+            sys.stderr.write(
+                "An error occurred in validation\n" "Previously saved issues\n"
+            )
             for err in self.errs:
                 # Write any errors we found
                 sys.stderr.write("\t" + str(err) + "\n")
@@ -1028,76 +1158,87 @@ class LocalExecutor(object):
     # * before being substituted, the values will be:
     #     * stripped from all the strings in stripped_extensions
     #     * escaped for special characters
-    def _replaceKeysInTemplate(self, template,
-                               use_flags=False, unfound_keys="remove",
-                               stripped_extensions=[], is_output=False,
-                               escape_special_chars=True):
-
+    def _replaceKeysInTemplate(
+        self,
+        template,
+        use_flags=False,
+        unfound_keys="remove",
+        stripped_extensions=[],
+        is_output=False,
+        escape_special_chars=True,
+    ):
         def escape_string(s):
             try:
                 from shlex import quote
             except ImportError as e:
-                from pipes import quote
+                from shlex import quote
             return quote(s)
 
         # Concatenate input and output dictionaries
         in_out_dict = dict(self.in_dict)
         in_out_dict.update(self.out_dict)
         # Go through all the keys
-        for param_id in [x['id'] for x in self.inputs + self.outputs]:
-            escape = (escape_special_chars and
-                      (self.safeGet(param_id, 'type') == 'String' or
-                       self.safeGet(param_id, 'type') == 'File') or
-                      param_id in self.out_dict.keys())
-            clk = self.safeGet(param_id, 'value-key')
+        for param_id in [x["id"] for x in self.inputs + self.outputs]:
+            escape = (
+                escape_special_chars
+                and (
+                    self.safeGet(param_id, "type") == "String"
+                    or self.safeGet(param_id, "type") == "File"
+                )
+                or param_id in self.out_dict.keys()
+            )
+            clk = self.safeGet(param_id, "value-key")
             if clk is None:
                 continue
             if param_id in list(in_out_dict.keys()):  # param has a value
                 val = in_out_dict[param_id]
                 if type(val) is list:
-                    list_sep = self.safeGet(param_id, 'list-separator')
+                    list_sep = self.safeGet(param_id, "list-separator")
                     if list_sep is None:
-                        list_sep = ' '
+                        list_sep = " "
                     escaped_val = []
                     for x in val:
-                        escaped_val.append(escape_string(str(x)) if
-                                           escape else str(x))
+                        escaped_val.append(escape_string(str(x)) if escape else str(x))
                     val = list_sep.join(escaped_val)
                 elif escape:
                     val = escape_string(val)
                 # Add flags and separator if necessary
-                flag = self.safeGet(param_id, 'command-line-flag')
-                if (use_flags and flag is not None):
-                    sep = self.safeGet(param_id,
-                                       'command-line-flag-separator')
+                flag = self.safeGet(param_id, "command-line-flag")
+                if use_flags and flag is not None:
+                    sep = self.safeGet(param_id, "command-line-flag-separator")
                     if sep is None:
-                        sep = ' '
+                        sep = " "
                     # special case for flag-type inputs
-                    if self.safeGet(param_id, 'type') == 'Flag':
-                        val = '' if val is False else flag
+                    if self.safeGet(param_id, "type") == "Flag":
+                        val = "" if val is False else flag
                     else:
                         val = flag + sep + str(val)
                 # Remove file extensions from input value
-                if (self.safeGet(param_id, 'type') == 'File' or
-                        self.safeGet(param_id, 'type') == 'String'):
+                if (
+                    self.safeGet(param_id, "type") == "File"
+                    or self.safeGet(param_id, "type") == "String"
+                ):
                     for extension in stripped_extensions:
-                        val = val.replace(extension, '')
+                        val = val.replace(extension, "")
                     # Remove path if a) a file, b) not the first item in the
                     # template; for output files specifically
-                    if (self.safeGet(param_id, 'type') == 'File' and
-                       template.find(clk) > 0 and is_output):
+                    if (
+                        self.safeGet(param_id, "type") == "File"
+                        and template.find(clk) > 0
+                        and is_output
+                    ):
                         val = op.basename(val)
                 # Here val can be a number so we need to cast it
                 if val is not None and val != "":
                     template = template.replace(clk, str(val))
                 else:
-                    template = template.replace(' ' + clk, str(val))
+                    template = template.replace(" " + clk, str(val))
             else:  # param has no value
                 if unfound_keys == "remove":
-                    if (' ' + clk) in template:
-                        template = template.replace(' ' + clk, '')
+                    if (" " + clk) in template:
+                        template = template.replace(" " + clk, "")
                     else:
-                        template = template.replace(clk, '')
+                        template = template.replace(clk, "")
                 elif unfound_keys == "clear":
                     if clk in template:
                         return ""
@@ -1106,23 +1247,23 @@ class LocalExecutor(object):
     # Private method to generate output file names.
     # Output file names will be put in self.out_dict.
     def _generateOutputFileNames(self):
-        if not hasattr(self, 'out_dict'):
+        if not hasattr(self, "out_dict"):
             # a dictionary that will contain the output file names
             self.out_dict = {}
-        for outputId, isPathTemplate in [(x['id'], 'path-template' in x)
-                                         for x in self.outputs]:
+        for outputId, isPathTemplate in [
+            (x["id"], "path-template" in x) for x in self.outputs
+        ]:
             if isPathTemplate:
                 if outputId in list(self.out_dict.keys()):
                     outputFileName = self.out_dict[outputId]
                 else:
-                    outputFileName = self.safeGet(outputId, 'path-template')
+                    outputFileName = self.safeGet(outputId, "path-template")
 
             # if 'conditional-path-template' in outputItem
             # (key=conditions, value=path)
             # Initialize file name with path template or existing value
             elif not isPathTemplate:
-                for templateObj in self.safeGet(outputId,
-                                                'conditional-path-template'):
+                for templateObj in self.safeGet(outputId, "conditional-path-template"):
                     templateKey = list(templateObj.keys())[0]
                     condition = self._getCondPathTemplateExp(templateKey)
                     # If condition is true, set fileName
@@ -1135,22 +1276,24 @@ class LocalExecutor(object):
                         break
 
             stripped_extensions = self.safeGet(
-                                        outputId,
-                                        "path-template-stripped-extensions")
+                outputId, "path-template-stripped-extensions"
+            )
             if stripped_extensions is None:
                 stripped_extensions = []
             se = stripped_extensions  # Renaming variable to save space
             # We keep the unfound keys because they will be
             # substituted in a second call to the method in case
             # they are output keys
-            outputFileName = self._rkit(outputFileName,
-                                        use_flags=False,
-                                        unfound_keys="keep",
-                                        stripped_extensions=se,
-                                        is_output=True,
-                                        escape_special_chars=False)
+            outputFileName = self._rkit(
+                outputFileName,
+                use_flags=False,
+                unfound_keys="keep",
+                stripped_extensions=se,
+                is_output=True,
+                escape_special_chars=False,
+            )
 
-            if self.safeGet(outputId, 'uses-absolute-path'):
+            if self.safeGet(outputId, "uses-absolute-path"):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
 
@@ -1158,16 +1301,16 @@ class LocalExecutor(object):
         splitExp = conditionalExpFormat(templateKey).split()
         parsedExp = []
         for word in [word.strip() for word in splitExp if len(word) > 0]:
-            all_ids = [i['id'] for i in (self.inputs + self.outputs)]
+            all_ids = [i["id"] for i in (self.inputs + self.outputs)]
             # Substitute boolean expression key by its value
             in_out_dict = self.in_dict.copy()
             in_out_dict.update(self.out_dict)
             if word in in_out_dict:
-                value = "{0}".format(in_out_dict[word])
+                value = f"{in_out_dict[word]}"
                 if value.replace(".", "").replace("-", "").isdigit():
                     parsedExp.append(in_out_dict[word])
                 else:
-                    parsedExp.append("\"{0}\"".format(value))
+                    parsedExp.append(f'"{value}"')
             # Boolean expression key is not chosen (optional input),
             # therefore expression is false
             elif word in all_ids:
@@ -1176,18 +1319,18 @@ class LocalExecutor(object):
             # Word is an expression char, just append it
             else:
                 parsedExp.append(word)
-        return " ".join("{0}".format(w) for w in parsedExp)
+        return " ".join(f"{w}" for w in parsedExp)
 
     # Private method to write configuration files
     # Configuration files are output files that have a file-template
     def _writeConfigurationFiles(self):
-        for outputId in [x['id'] for x in self.outputs]:
-            fileTemplate = self.safeGet(outputId, 'file-template')
+        for outputId in [x["id"] for x in self.outputs]:
+            fileTemplate = self.safeGet(outputId, "file-template")
             if fileTemplate is None:
                 continue  # this is not a configuration file
             stripped_extensions = self.safeGet(
-                                        outputId,
-                                        "path-template-stripped-extensions")
+                outputId, "path-template-stripped-extensions"
+            )
             if stripped_extensions is None:
                 stripped_extensions = []
             se = stripped_extensions  # Renaming variable to save space
@@ -1196,19 +1339,23 @@ class LocalExecutor(object):
             # (undefined optional params)
             newTemplate = []
             for line in fileTemplate:
-                newTemplate.append(self._rkit(line,
-                                              use_flags=False,
-                                              unfound_keys="clear",
-                                              stripped_extensions=se,
-                                              is_output=False,
-                                              escape_special_chars=True))
+                newTemplate.append(
+                    self._rkit(
+                        line,
+                        use_flags=False,
+                        unfound_keys="clear",
+                        stripped_extensions=se,
+                        is_output=False,
+                        escape_special_chars=True,
+                    )
+                )
             template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
             dirs = os.path.dirname(fileName)
             if dirs and not os.path.exists(dirs):
                 os.makedirs(dirs)
-            with open(fileName, 'w+') as fil:
+            with open(fileName, "w+") as fil:
                 fil.write(template)
 
     # Private method to build the actual command line by substitution,
@@ -1222,19 +1369,23 @@ class LocalExecutor(object):
         # Write configuration files
         self._writeConfigurationFiles()
         # Get the command line template
-        template = self.desc_dict['command-line']
+        template = self.desc_dict["command-line"]
         # Substitute every given value into the template
         # (incl. flags, flag-seps, ...)
-        template = self._rkit(template, use_flags=True, unfound_keys="remove",
-                              stripped_extensions=[], is_output=False,
-                              escape_special_chars=True)
+        template = self._rkit(
+            template,
+            use_flags=True,
+            unfound_keys="remove",
+            stripped_extensions=[],
+            is_output=False,
+            escape_special_chars=True,
+        )
         # Return substituted command line
         return template
 
     # Print the command line result
     def printCmdLine(self):
-        print("Generated Command" +
-              ('s' if len(self.cmd_line) > 1 else '') + ':')
+        print("Generated Command" + ("s" if len(self.cmd_line) > 1 else "") + ":")
         for cmd in self.cmd_line:
             print(cmd)
 
@@ -1242,8 +1393,8 @@ class LocalExecutor(object):
     # collection file containing the tool name and descriptor DOI
     def _generateSummary(self, desc):
         summary = {}
-        summary['name'] = self.desc_dict['name']
-        summary['descriptor-doi'] = self._findDOI(desc)
+        summary["name"] = self.desc_dict["name"]
+        summary["descriptor-doi"] = self._findDOI(desc)
         return summary
 
     # Private method to attempt to find descriptor DOI
@@ -1255,24 +1406,24 @@ class LocalExecutor(object):
         if userIn.startswith(doi_prefix):
             return userIn
         elif userIn.split(".")[0].lower() == "zenodo":
-            return doi_prefix+userIn
+            return doi_prefix + userIn
         # File cases
         if os.path.isfile(userIn):
             # Most recent DOI in file if user is publisher
             # Include check to ensure descriptor is unmodified
-            if self.desc_dict.get('doi') is not None:
+            if self.desc_dict.get("doi") is not None:
                 # Popping the DOI allows it to match published version.
                 # In a match, we'll re-add the DOI
-                doi = self.desc_dict.pop('doi')
+                doi = self.desc_dict.pop("doi")
                 if loadJson(doi) == self.desc_dict:
-                    self.desc_dict['doi'] = doi
+                    self.desc_dict["doi"] = doi
                     return doi
             # DOI in filename if descriptor pulled from Zenodo
             # Include check to ensure descriptor is as published
             elif os.path.basename(userIn).split("-")[0].lower() == "zenodo":
                 doi = os.path.basename(userIn).split(".")[0].replace("-", ".")
                 if loadJson(doi) == self.desc_dict:
-                    return doi_prefix+doi
+                    return doi_prefix + doi
         # No DOI found, save descriptor to cache and return filename
         return self._saveDescriptorToCache()
 
@@ -1285,13 +1436,12 @@ class LocalExecutor(object):
         # Replace file type inputs with object containing
         # input file hash and filename
         for x in self.inputs:
-            if x.get('type') == "File":
-                id = x.get('id')
+            if x.get("type") == "File":
+                id = x.get("id")
                 path = public_in_dict.get(id)
                 if path is not None:
                     if isinstance(path, list):
-                        public_in_dict[id] = [self._buildPublicFile(p)
-                                              for p in path]
+                        public_in_dict[id] = [self._buildPublicFile(p) for p in path]
                     else:
                         public_in_dict[id] = self._buildPublicFile(path)
 
@@ -1299,23 +1449,22 @@ class LocalExecutor(object):
 
     # Private method to generate public output object for data collection file
     # hashes are generated for each output file.
-    def _generatePublicOutput(self,
-                              exec_output,
-                              out_files_dict,
-                              missing_files_dict):
+    def _generatePublicOutput(self, exec_output, out_files_dict, missing_files_dict):
         public_out_dict = {}
-        public_out_dict['stdout'] = exec_output.stdout
-        public_out_dict['stderr'] = exec_output.stderr
-        public_out_dict['exit-code'] = exec_output.exit_code
-        public_out_dict['error-message'] = exec_output.error_message
-        public_out_dict['shell-command'] = exec_output.shell_command
-        public_out_dict['missing-files'] = missing_files_dict
+        public_out_dict["stdout"] = exec_output.stdout
+        public_out_dict["stderr"] = exec_output.stderr
+        public_out_dict["exit-code"] = exec_output.exit_code
+        public_out_dict["error-message"] = exec_output.error_message
+        public_out_dict["shell-command"] = exec_output.shell_command
+        public_out_dict["missing-files"] = missing_files_dict
 
         # Iterate through output files to generate output objects
         # and generate objects with hash of files
-        out_files_dict = {id: self._buildPublicFile(filename)
-                          for id, filename in out_files_dict.items()}
-        public_out_dict['output-files'] = out_files_dict
+        out_files_dict = {
+            id: self._buildPublicFile(filename)
+            for id, filename in out_files_dict.items()
+        }
+        public_out_dict["output-files"] = out_files_dict
         return public_out_dict
 
     # Private method to recursively explore directory and hash all files
@@ -1323,56 +1472,58 @@ class LocalExecutor(object):
         filename = extractFileName(path)
         # If path is not found, report it
         if not os.path.exists(path):
-            return {'file-name': filename, 'not_found': True}
+            return {"file-name": filename, "not_found": True}
         # Directories are expanded recursively
         if os.path.isdir(path):
             contents = os.listdir(path)
             # Recursive call to expand directory
-            files = [self._buildPublicFile(os.path.join(path, x))
-                     for x in contents]
-            return {'file-name': filename, 'files': files}
+            files = [self._buildPublicFile(os.path.join(path, x)) for x in contents]
+            return {"file-name": filename, "files": files}
         # Files are hashed
         else:
             md5sum = computeMD5(path)
-            return {'file-name': filename, 'md5sum': md5sum}
+            return {"file-name": filename, "md5sum": md5sum}
 
     # Private method to publish data collection objects to file
     # summary, publicInput an publicOutput are combined and
     # written to a file in .cache
     def _saveDataCaptureToCache(self):
         date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
-        tool_name = self.summary['name'].replace(' ', '-')
-        self.summary['date-time'] = date_time
+        tool_name = self.summary["name"].replace(" ", "-")
+        self.summary["date-time"] = date_time
         # Combine three modules plus provenance in master dictionary
-        data_dict = {'summary': self.summary,
-                     'public-invocation': self.public_in,
-                     'public-output': self.public_out,
-                     'additional-information': self.provenance}
+        data_dict = {
+            "summary": self.summary,
+            "public-invocation": self.public_in,
+            "public-output": self.public_out,
+            "additional-information": self.provenance,
+        }
         # Convert dictionary to Json string
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file
         data_cache_dir = getDataCacheDir()
-        filename = "{0}_{1}.json".format(tool_name, date_time)
+        filename = f"{tool_name}_{date_time}.json"
         file_path = os.path.join(data_cache_dir, filename)
-        file = open(file_path, 'w+')
+        file = open(file_path, "w+")
         file.write(content)
         file.close()
         if self.debug:
-            print_info("Data capture from execution saved to cache as {}"
-                       .format(filename))
+            print_info(f"Data capture from execution saved to cache as {filename}")
 
     # Local function handles case where descriptor is not published
     # Checks if descriptor already saved to cache, if not then saves
     # copy for future publication
     def _saveDescriptorToCache(self):
-        tool_name = self.desc_dict.get('name').replace(' ', '-')
+        tool_name = self.desc_dict.get("name").replace(" ", "-")
         data_cache_dir = getDataCacheDir()
         data_cache_files = os.listdir(data_cache_dir)
         # Filter for descriptors in cache with the same tool name to check
         # if descriptor already in cache
-        matching_files = [x for x in data_cache_files
-                          if len(x.split("_")) > 1 and
-                          x.split("_")[1] is tool_name.replace(' ', '-')]
+        matching_files = [
+            x
+            for x in data_cache_files
+            if len(x.split("_")) > 1 and x.split("_")[1] is tool_name.replace(" ", "-")
+        ]
         match = None
         for fl in matching_files:
             path = os.path.join(data_cache_dir, fl)
@@ -1382,31 +1533,33 @@ class LocalExecutor(object):
                 break
         if match:
             if self.debug:
-                print_info("Unpublished descriptor match found in data cache "
-                           "as {}".format(match))
+                print_info(
+                    f"Unpublished descriptor match found in data cache as {match}"
+                )
             return match
         # Write descriptor to data cache and save return filename
         content = json.dumps(self.desc_dict, indent=4)
         date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
-        filename = "descriptor_{0}_{1}.json".format(tool_name, date_time)
+        filename = f"descriptor_{tool_name}_{date_time}.json"
         path = os.path.join(data_cache_dir, filename)
-        file = open(path, 'w+')
+        file = open(path, "w+")
         file.write(content)
         file.close()
         if self.debug:
-            print_info("Descriptor from execution saved to cache for future "
-                       "publishing as {}".format(filename))
+            print_info(
+                "Descriptor from execution saved to cache for future "
+                "publishing as {}".format(filename)
+            )
         return filename
 
 
 # Adds default values to input dictionary
 # for parameters whose values were not given
 def addDefaultValues(desc_dict, in_dict):
-    inputs = desc_dict['inputs']
-    for in_param in [s for s in inputs
-                     if s.get("default-value") is not None]:
-        if in_dict.get(in_param['id']) is None:
-            in_dict[in_param['id']] = in_param.get("default-value")
+    inputs = desc_dict["inputs"]
+    for in_param in [s for s in inputs if s.get("default-value") is not None]:
+        if in_dict.get(in_param["id"]) is None:
+            in_dict[in_param["id"]] = in_param.get("default-value")
     return in_dict
 
 

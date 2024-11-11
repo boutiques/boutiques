@@ -1,9 +1,18 @@
 {
-    "str_input" : [ "fo ; echo FAIL", "bar" ],
-    "file_input" : "./setup.py",
-    "file_list_input" : ["/test_mount1","/test_mount2"],
-    "list_int_input": [1, 2, 3],
-    "config_num" : 4,
-    "enum_input" : "val1"
+    "str_input": [
+        "fo ; echo FAIL",
+        "bar"
+    ],
+    "file_input": "./pyproject.toml",
+    "file_list_input": [
+        "/test_mount1",
+        "/test_mount2"
+    ],
+    "list_int_input": [
+        1,
+        2,
+        3
+    ],
+    "config_num": 4,
+    "enum_input": "val1"
 }
-

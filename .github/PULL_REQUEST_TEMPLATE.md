@@ -25,11 +25,10 @@ assignees: ''
 
 ## New behaviour
 <!--- Tell us what will happen when the PR is merged -->
- 
+
 #### Does this introduce a major change?
 - [ ] Yes
 - [ ] No
 
 ## Implementation Detail
 <!--- Provide a detailed description of the change or addition you are proposing -->
-

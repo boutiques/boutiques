@@ -16,7 +16,7 @@ This guide will help you set up your local environment for coding and testing Bo
 ## 1.   Clone the boutiques repository
 
 -   Fork the [Boutiques repository](https://github.com/boutiques/boutiques).
--   Clone your fork locally: 
+-   Clone your fork locally:
     -   `git clone https://github.com/<YOUR-GITHUB-USERNAME>/boutiques.git`
     -   Or, if you installed your SSH keys on GitHub:  `git@github.com:boutiques/boutiques.git`
 
@@ -38,9 +38,9 @@ From within your virtual environment in the base directory:
 -   Install pytest, pytest-runner and pycodestyle: `pip install pytest pytest-runner pycodestyle`
   -   pytest is a unit testing framework for Python.
   -   pycodestyle checks if your code conforms to Python style conventions.
--   Install jsonlint: `npm install jsonlint -g` 
+-   Install jsonlint: `npm install jsonlint -g`
   -   In case you don't have Node installed, instructions to install it are [here](https://www.npmjs.com/get-npm).
-  -   jsonlint is a tool to validate JSON files. 
+  -   jsonlint is a tool to validate JSON files.
 -   Install Boutiques: `pip install -e .`
 -   Note that pytest, pycodestyle and jsonlint are all used by Travis CI, but it's best practice to test and validate your code locally before pushing it!
 
@@ -56,7 +56,7 @@ From within your virtual environment in the base directory:
   -   `IMGNAME=$(ls $HOME/boutiques_example1_test*.simg)`
   -   `mv ${IMGNAME} ./boutiques-example1-test.simg`
   -   Your directory should now contain a ~70MB file called `boutiques_example1_test.simg`.
- 
+
 ## 5.   Try it out!
 
 -   Run `pytest` in the base directory to run all tests
