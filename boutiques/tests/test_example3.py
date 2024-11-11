@@ -2,6 +2,7 @@
 
 import os
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -25,6 +26,7 @@ class TestExample3(BaseTest):
         reason="Docker not installed",
     )
     def test_example3_exec(self):
+        Path(self.test_temp, "FileValue.txt").touch()
         self.assert_successful_return(
             bosh.execute(
                 "launch",

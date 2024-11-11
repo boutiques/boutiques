@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 from glob import glob
+from pathlib import Path
 
 import simplejson as json
 from termcolor import colored
@@ -25,7 +26,6 @@ from boutiques.util.utils import conditionalExpFormat, extractFileName, loadJson
 
 
 class ExecutorOutput:
-
     def __init__(
         self,
         stdout,
@@ -55,7 +55,6 @@ class ExecutorOutput:
         self.container_location = container_location
 
     def __str__(self):
-
         formatted_output_files = ""
         for f in self.output_files:
             if formatted_output_files != "":
@@ -114,7 +113,6 @@ class ExecutorOutput:
 
 
 class FileDescription:
-
     def __init__(self, boutiques_name, file_name, optional):
         self.boutiques_name = boutiques_name
         self.file_name = file_name
@@ -243,8 +241,9 @@ class LocalExecutor:
         """
         command, exit_code, con = self.cmd_line[0], None, self.con or {}
         # Check for Container image
-        conType, conImage = con.get("type"), (
-            con.get("image") if not self.noContainer else None
+        conType, conImage = (
+            con.get("type"),
+            (con.get("image") if not self.noContainer else None),
         )
         conIndex = con.get("index")
         conOpts = con.get("container-opts")
@@ -364,12 +363,26 @@ class LocalExecutor:
                             mount_inputs.extend(self.in_dict[file_input["id"]])
                         else:
                             mount_inputs.append(self.in_dict[file_input["id"]])
-                # Prevent duplicate mounts, normalize paths
-                # and add file under same absolute path
+
+                # Prevent duplicate mounts,
+                mount_inputs = [m for m in mount_inputs if m not in existing_mounts]
+
+                # Ensure the mount location exist
+                missing_mounts = []
+                for m in mount_inputs:
+                    abs_path = makePathAbsolute(m)
+                    if not Path(abs_path).exists():
+                        missing_mounts.append(abs_path)
+                if missing_mounts:
+                    raise_error(
+                        ExecutorError,
+                        f"Missing local mount location: {missing_mounts}",
+                    )
+
+                # normalize paths and add file under same absolute path
                 mount_inputs = [
-                    makePathAbsolute(m) + ":" + os.path.join(launchDir, m)
+                    makePathAbsolute(m) + ":" + Path(launchDir, m).resolve().as_posix()
                     for m in mount_inputs
-                    if m not in existing_mounts
                 ]
                 mount_strings.extend(mount_inputs)
                 return mount_strings
@@ -1154,7 +1167,6 @@ class LocalExecutor:
         is_output=False,
         escape_special_chars=True,
     ):
-
         def escape_string(s):
             try:
                 from shlex import quote

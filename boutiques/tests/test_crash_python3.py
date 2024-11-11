@@ -12,6 +12,7 @@ class TestCrashPython3(BaseTest):
     def set_test_dir(self):
         self.setup("crash_python3")
 
+    @pytest.mark.usefixtures("skip_if_no_apptainer")
     def test_no_container(self):
         command = "bosh exec launch --skip-data-collection " "{} {}".format(
             self.get_file_path("crash3.json"),

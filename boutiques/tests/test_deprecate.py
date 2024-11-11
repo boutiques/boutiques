@@ -2,7 +2,11 @@ import json
 import os
 from unittest import mock
 
-from boutiques_mocks import (
+from boutiques import __file__ as bfile
+from boutiques.bosh import bosh
+from boutiques.deprecate import DeprecateError, deprecate
+from boutiques.tests.BaseTest import BaseTest
+from boutiques.tests.boutiques_mocks import (
     MockHttpResponse,
     example_boutiques_tool,
     get_zenodo_record,
@@ -10,12 +14,9 @@ from boutiques_mocks import (
     mock_zenodo_search,
     mock_zenodo_test_api,
 )
-
-from boutiques import __file__ as bfile
-from boutiques.bosh import bosh
-from boutiques.deprecate import DeprecateError, deprecate
-from boutiques.tests.BaseTest import BaseTest
 from boutiques.util.utils import loadJson
+
+ZENODO_SANDBOX_TOKEN = "fake-token-123"
 
 
 def mock_get(*args, **kwargs):
@@ -27,7 +28,7 @@ def mock_get(*args, **kwargs):
     # Records command
     if command == "records":
         assert len(split) >= 6
-        record_id = split[10] if len(split) > 6 else split[5]
+        record_id = split[12] if len(split) > 6 else split[5]
         if record_id == "00000":
             # Inexistent tool
             return MockHttpResponse(404)
@@ -100,7 +101,7 @@ class TestDeprecate(BaseTest):
                 "zenodo.12345",
                 "zenodo." + str(example_boutiques_tool.id),
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                ZENODO_SANDBOX_TOKEN,
             ]
         )
         self.assertTrue(new_doi)
@@ -112,7 +113,7 @@ class TestDeprecate(BaseTest):
                 "--verbose",
                 "zenodo." + str(example_boutiques_tool.id),
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                ZENODO_SANDBOX_TOKEN,
             ]
         )
         self.assertTrue(new_doi)
@@ -127,7 +128,7 @@ class TestDeprecate(BaseTest):
                     "zenodo.00000",
                     "zenodo." + str(example_boutiques_tool.id),
                     "--zenodo-token",
-                    "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    ZENODO_SANDBOX_TOKEN,
                 ]
             )
         self.assertTrue("Tool does not exist" in str(e.exception))
@@ -137,8 +138,7 @@ class TestDeprecate(BaseTest):
             zenodo_id="zenodo.11111",
             sandbox=True,
             verbose=True,
-            zenodo_token="hAaW2wSBZMskxpfigTYHcuDrC"
-            "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+            zenodo_token=ZENODO_SANDBOX_TOKEN,
             download_function=mock_download_deprecated,
         )
         self.assertTrue(new_doi)
@@ -151,7 +151,7 @@ class TestDeprecate(BaseTest):
                     "--verbose",
                     "zenodo.22222",
                     "--zenodo-token",
-                    "hAaW2wSBZMskxpfigTYHcuDrC" "PWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                    ZENODO_SANDBOX_TOKEN,
                 ]
             )
         self.assertTrue("Tool zenodo.22222 has a newer version" in str(e.exception))

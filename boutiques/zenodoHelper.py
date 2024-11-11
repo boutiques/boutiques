@@ -131,16 +131,17 @@ class ZenodoHelper:
 
         r = requests.get(
             self.zenodo_endpoint + "/api/deposit/depositions",
-            headers={"Authorization": f"Bearer {access_token}"},
         )
-        if r.status_code != 200:
-            raise_error(ZenodoError, "Cannot access Zenodo", r)
+        if r.status_code != 401:
+            raise_error(
+                ZenodoError, f"Cannot access Zenodo at {self.zenodo_endpoint}", r
+            )
         if self.verbose:
             print_info("Zenodo is accessible", r)
 
         r = requests.get(
             self.zenodo_endpoint + "/api/deposit/depositions",
-            headers={"Authorization": f"Bearer {access_token}"},
+            params={"access_token": access_token},
         )
         message = "Cannot authenticate to Zenodo API, check your access token"
         if r.status_code != 200:

@@ -2,17 +2,27 @@
 
 import os
 import shutil
-import sys
-from unittest import mock, skipIf
+from unittest import mock
 
 import pytest
-from boutiques_mocks import *
 
 import boutiques
-from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
 from boutiques.nexusHelper import NexusError
 from boutiques.tests.BaseTest import BaseTest
+from boutiques.tests.boutiques_mocks import (
+    mock_empty_function,
+    mock_get_data_cache,
+    mock_get_data_cache_file,
+    mock_get_empty_nexus_credentials,
+    mock_get_invalid_nexus_endpoint,
+    mock_get_publish_bulk,
+    mock_get_publish_single,
+    mock_post_publish_bulk,
+    mock_post_publish_single,
+)
+
+ZENODO_SANDBOX_TOKEN = "fake-token-123"
 
 
 class TestDataHandler(BaseTest):
@@ -90,7 +100,7 @@ class TestDataHandler(BaseTest):
                 "-y",
                 "--sandbox",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                ZENODO_SANDBOX_TOKEN,
             ]
         )
         self.assertFalse(
@@ -107,7 +117,7 @@ class TestDataHandler(BaseTest):
                 "-y",
                 "--sandbox",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                ZENODO_SANDBOX_TOKEN,
             ]
         )
         self.assertTrue(
@@ -129,7 +139,7 @@ class TestDataHandler(BaseTest):
                 "-y",
                 "--sandbox",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                ZENODO_SANDBOX_TOKEN,
             ]
         )
         self.assertFalse(
@@ -153,7 +163,7 @@ class TestDataHandler(BaseTest):
                 "-y",
                 "--sandbox",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                ZENODO_SANDBOX_TOKEN,
             ]
         )
         self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))), 2)
@@ -173,7 +183,7 @@ class TestDataHandler(BaseTest):
                 "--individual",
                 "--sandbox",
                 "--zenodo-token",
-                "hAaW2wSBZMskxpfigTYHcuDrCPWr2VeQZgBLErKbfF5RdrKhzzJi8i2hnN8r",
+                ZENODO_SANDBOX_TOKEN,
             ]
         )
         self.assertEqual(len(os.listdir(os.path.join(mock_get_data_cache()))), 2)

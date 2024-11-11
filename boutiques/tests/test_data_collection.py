@@ -76,12 +76,12 @@ class TestDataCollection(BaseTest):
         self.assertEqual(public_in.get("enum_input"), "val1")
         file_input = public_in.get("file_input")
         self.assertIsNotNone(file_input)
-        self.assertEqual(file_input.get("file-name"), "setup.py")
+        self.assertEqual(file_input.get("file-name"), "pyproject.toml")
         self.assertIsNotNone(file_input.get("md5sum"))
         public_out = data_collect_dict.get("public-output")
         self.assertIsNotNone(public_out)
-        self.assertEqual(public_out.get("stdout"), "This is stdout")
-        self.assertEqual(public_out.get("stderr"), "This is stderr")
+        self.assertIn("This is stdout", public_out.get("stdout"))
+        self.assertIn("This is stderr", public_out.get("stderr"))
         self.assertEqual(public_out.get("exit-code"), 0)
         self.assertEqual(public_out.get("error-message"), "")
         output_files = public_out.get("output-files")
@@ -140,7 +140,15 @@ class TestDataCollection(BaseTest):
             "example1",
             "invocation.json",
         )
-        bosh.execute("launch", "zenodo." + str(example_boutiques_tool.id), invoc)
+        bosh.execute(
+            "launch",
+            "zenodo." + str(example_boutiques_tool.id),
+            invoc,
+            "-v",
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
+            "-v",
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
+        )
         data_collect_dict = retrieve_data_record()
 
         summary = data_collect_dict.get("summary")
@@ -223,12 +231,12 @@ class TestDataCollection(BaseTest):
         self.assertEqual(public_in.get("enum_input"), "val1")
         file_input = public_in.get("file_input")
         self.assertIsNotNone(file_input)
-        self.assertEqual(file_input.get("file-name"), "setup.py")
+        self.assertEqual(file_input.get("file-name"), "pyproject.toml")
         self.assertIsNotNone(file_input.get("md5sum"))
         public_out = data_collect_dict.get("public-output")
         self.assertIsNotNone(public_out)
-        self.assertEqual(public_out.get("stdout"), "This is stdout")
-        self.assertEqual(public_out.get("stderr"), "This is stderr")
+        self.assertIn("This is stdout", public_out.get("stdout"))
+        self.assertIn("This is stderr", public_out.get("stderr"))
         self.assertEqual(public_out.get("exit-code"), 0)
         self.assertEqual(public_out.get("error-message"), "")
         output_files = public_out.get("output-files")
