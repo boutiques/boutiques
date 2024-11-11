@@ -144,6 +144,7 @@ class TestImport(BaseTest):
                     )
                     self.assertFalse(ret.exit_code, cwl_descriptor)
 
+    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.usefixtures("skip_if_no_apptainer")
     def test_docopt_import_valid(self):
         self.setup("import/docopt/")
@@ -159,6 +160,7 @@ class TestImport(BaseTest):
 
         os.remove(output_descriptor)
 
+    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.usefixtures("skip_if_no_apptainer")
     def test_docopt_import_valid_options(self):
         self.setup("import/docopt/")
