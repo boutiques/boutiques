@@ -201,30 +201,22 @@ class ZenodoHelper:
             print_info("Deposition of new version succeeded", r)
         new_url = r.json()["links"]["latest_draft"]
         new_zid = new_url.split("/")[-1]
-        self.zenodo_update_metadata(new_zid, r.json()["doi"], metadata, access_token)
+        self.zenodo_update_metadata(new_zid, metadata, access_token)
         self.zenodo_delete_files(new_zid, r.json()["files"], access_token)
         return new_zid
 
     @importCatcher()
-    def zenodo_update_metadata(
-        self, new_deposition_id, old_doi, metadata, access_token
-    ):
+    def zenodo_update_metadata(self, new_deposition_id, metadata, access_token):
         import requests
 
         data = metadata
-
-        # Add the new DOI to the metadata
-        old_doi_split = old_doi.split(".")
-        old_doi_split[-1] = new_deposition_id
-        new_doi = ".".join(old_doi_split)
-        data["metadata"]["doi"] = new_doi
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}",
         }
         r = requests.put(
-            self.zenodo_endpoint + f"/api/deposit/depositions/{new_deposition_id}",
+            self.zenodo_endpoint + "/api/deposit/depositions/%s" % new_deposition_id,
             data=json.dumps(data),
             headers=headers,
         )
