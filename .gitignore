@@ -38,7 +38,6 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # hatcling packaging
 _version.py
