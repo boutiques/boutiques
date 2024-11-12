@@ -5,7 +5,7 @@
     "command-line": "output.sh [INPUT_FILE] [OUTPUT_FILE]",
     "schema-version": "0.5",
     "container-image": {
-	"type": "docker",
+	"type": "docker"
 	"image": "boutiques/examples"
     },
     "inputs": [{
