@@ -207,8 +207,7 @@
                 "str_input": "coin;plop",
                 "file_input": "./pyproject.toml",
                 "file_list_input": [
-                    "./pyproject.toml",
-                    "./requirements.txt"
+                    "./pyproject.toml"
                 ],
                 "list_int_input": [
                     1,
