@@ -27,7 +27,7 @@
 
 6.  Push to PyPi:
     ```
-    python setup.py bdist_wheel --universal
+    hatch build
     twine upload dist/*
     ```
 
