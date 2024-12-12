@@ -6,7 +6,6 @@ on:
         branches:
         -   master
         -   develop
-        -   fix-ci
     pull_request:
 
     # Allows you to run this workflow manually from the Actions tab
@@ -54,24 +53,14 @@ jobs:
 
         -   name: Install dependencies
             run: |
-                pip install tox
-                tox c
+                pip install -U pip
+                pip install .[all]
 
         -   name: Run tests
-            run: tox run -e test
+            run: |
+                python -m pytest --cov=boutiques --cov-report=xml
 
-        -   name: Coveralls Parallel
-            uses: coverallsapp/github-action@v2
+        -   name: Upload coverage reports to Codecov
+            uses: codecov/codecov-action@v5
             with:
-                flag-name: run-${{ join(matrix.*, '-') }}
-                parallel: true
-
-    finish:
-        needs: test
-        if: ${{ always() }}
-        runs-on: ubuntu-latest
-        steps:
-        -   name: Coveralls Finished
-            uses: coverallsapp/github-action@v2
-            with:
-                parallel-finished: true
+                token: ${{ secrets.CODECOV_TOKEN }}
