@@ -50,9 +50,8 @@ doc = [
 ]
 test = [
     "pytest>=6.0.0",
-    "pytest-runner",
-    "coveralls",
-    "coverage"
+    "pytest-cov",
+    "pytest-runner"
 ]
 
 [project.scripts]
