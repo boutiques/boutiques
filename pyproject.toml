@@ -50,9 +50,8 @@ doc = [
 ]
 test = [
     "pytest>=6.0.0",
-    "pytest-runner",
-    "coveralls",
-    "coverage"
+    "pytest-cov",
+    "pytest-runner"
 ]
 
 [project.scripts]
@@ -69,14 +68,11 @@ line-length = 88
 ignore-words-list = "nd,fo,minum,manum,assertIn"
 skip = ".git,*.pdf,*.svg,*.json"
 
-[tool.hatch.build.hooks.vcs]
-version-file = "boutiques/_version.py"
-
 [tool.hatch.build.targets.wheel]
 packages = ["boutiques"]
 
 [tool.hatch.version]
-source = "vcs"
+path = "boutiques/__version__.py"
 
 [tool.isort]
 combine_as_imports = true
