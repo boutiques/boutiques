@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-import sys
 from pathlib import Path
 from shutil import copy2
 from unittest import mock
