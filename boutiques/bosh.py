@@ -535,7 +535,7 @@ def bosh(args=None):
         elif func == "validate":
             out = validate(*params)
             return bosh_return(out)
-        elif func == "exec":
+        elif func in ["exec", "execute"]:
             out = execute(*params)
             # If executed through CLI, print 'out' and return exit_code
             # Otherwise, return out
