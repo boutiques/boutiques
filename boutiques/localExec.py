@@ -465,21 +465,22 @@ class LocalExecutor:
         missing_files_dict = {}
         output_files = []
         output_files_dict = {}
-        all_files = evaluateEngine(self, "output-files")
-        required_files = evaluateEngine(self, "output-files/optional=False")
-        optional_files = evaluateEngine(self, "output-files/optional=True")
-        for f in all_files.keys():
-            file_name = all_files[f]
-            fd = FileDescription(f, file_name, False)
-            f_glob = glob(file_name)
-            if f_glob:
-                fd.file_name = f_glob[0]
-                output_files.append(fd)
-                output_files_dict[f] = f_glob[0]
-            else:  # file does not exist
-                if f in required_files.keys():
-                    missing_files.append(fd)
-                    missing_files_dict[f] = file_name
+        if "output-files" in list(self.desc_dict.keys()):
+            all_files = evaluateEngine(self, "output-files")
+            required_files = evaluateEngine(self, "output-files/optional=False")
+            optional_files = evaluateEngine(self, "output-files/optional=True")
+            for f in all_files.keys():
+                file_name = all_files[f]
+                fd = FileDescription(f, file_name, False)
+                f_glob = glob(file_name)
+                if f_glob:
+                    fd.file_name = f_glob[0]
+                    output_files.append(fd)
+                    output_files_dict[f] = f_glob[0]
+                else:  # file does not exist
+                    if f in required_files.keys():
+                        missing_files.append(fd)
+                        missing_files_dict[f] = file_name
 
         # Set error messages
         desc_err = ""
