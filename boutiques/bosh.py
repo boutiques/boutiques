@@ -124,7 +124,7 @@ def execute(*params):
             },
         )
         # Execute it
-        return executor.execute(results.volumes)
+        return executor.execute(results.volumes, results.container_opts)
 
     elif results.mode == "simulate":
         descriptor = results.descriptor
