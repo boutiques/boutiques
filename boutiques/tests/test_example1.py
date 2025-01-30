@@ -881,3 +881,4 @@ class TestExample1(BaseTest):
         )
 
         self.assertIn(container_opts, ret.container_command)
+        self.assertIn(extra_container_opts, ret.container_command)
