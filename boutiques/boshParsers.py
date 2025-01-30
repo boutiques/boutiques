@@ -339,6 +339,12 @@ def add_subparser_execute(subparsers):
         "container directory /b.",
     )
     parser_exec_launch.add_argument(
+        "--container-opts",
+        action="append",
+        type=str,
+        help="Options to pass to the container runtime. Overrides the descriptor's container options.",
+    )
+    parser_exec_launch.add_argument(
         "-x",
         "--debug",
         action="store_true",

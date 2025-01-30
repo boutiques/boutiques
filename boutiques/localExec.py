@@ -231,7 +231,7 @@ class LocalExecutor:
 
     # Attempt local execution of the command line
     # generated from the input values
-    def execute(self, mount_strings):
+    def execute(self, mount_strings, conOpts=None):
         """
         The execute method runs the generated command line
         (from either generateRandomParams or readInput)
@@ -246,7 +246,7 @@ class LocalExecutor:
             (con.get("image") if not self.noContainer else None),
         )
         conIndex = con.get("index")
-        conOpts = con.get("container-opts")
+        conOpts = conOpts or con.get("container-opts")
         conIsPresent = conImage is not None
         # Export environment variables,
         #  if they are specified in the descriptor
