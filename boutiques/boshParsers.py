@@ -403,6 +403,11 @@ def add_subparser_execute(subparsers):
         action="store_true",
         help="Tries to run Docker images with " "Singularity.",
     )
+    force_group.add_argument(
+        "--force-apptainer",
+        action="store_true",
+        help="Tries to run Docker images with " "Apptainer.",
+    )
 
     parser_exec_prepare = exec_subparsers.add_parser(
         "prepare",

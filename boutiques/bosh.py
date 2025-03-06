@@ -117,6 +117,7 @@ def execute(*params):
                 "skipDataCollect": results.skip_data_collection,
                 "forceDocker": results.force_docker,
                 "forceSingularity": results.force_singularity,
+                "forceApptainer": results.force_apptainer,
                 "provenance": results.provenance,
                 "noContainer": results.no_container,
                 "sandbox": results.sandbox,
