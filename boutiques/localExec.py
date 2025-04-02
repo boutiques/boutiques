@@ -279,12 +279,10 @@ class LocalExecutor:
         if conIsPresent:
             # Figure out which container type to use
             (conTypeToUse, conBinName) = self._chooseContainerTypeToUse(
-                conType,
-                self.forceSingularity, self.forceApptainer, self.forceDocker
+                conType, self.forceSingularity, self.forceApptainer, self.forceDocker
             )
             # Pull the container
-            (conPath, container_location) = self.prepare(conTypeToUse,
-                                                         conBinName)
+            (conPath, container_location) = self.prepare(conTypeToUse, conBinName)
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = f"#!{self.shell}"
@@ -603,8 +601,12 @@ class LocalExecutor:
                         # Container still does not exist, so pull it
                         else:
                             conPath, container_location = self._pullSingImage(
-                                conName, conIndex, conImage, imageDir, lockDir,
-                                conBinName
+                                conName,
+                                conIndex,
+                                conImage,
+                                imageDir,
+                                lockDir,
+                                conBinName,
                             )
                         return conPath, container_location
                     finally:
@@ -621,8 +623,9 @@ class LocalExecutor:
         return conName in os.listdir(imageDir)
 
     # Private method that pulls a Singularity image
-    def _pullSingImage(self, conName, conIndex, conImage, imageDir, lockDir,
-                       conBinName):
+    def _pullSingImage(
+        self, conName, conIndex, conImage, imageDir, lockDir, conBinName
+    ):
         # Give the file a temporary name while it's building
         conNameTmp = conName + ".tmp"
         # Set the pull directory to the specified imagePath
@@ -667,17 +670,17 @@ class LocalExecutor:
     # Chooses whether to use Docker, Singularity or Apptainer based on the
     # descriptor, executor options and installed commands.
     # Returns image type and container runtime binary name.
-    def _chooseContainerTypeToUse(self, conType, forceSing=False,
-                                  forceApptainer=False, forceDocker=False):
+    def _chooseContainerTypeToUse(
+        self, conType, forceSing=False, forceApptainer=False, forceDocker=False
+    ):
         if (
-            conType == "docker" and not (forceSing or forceApptainer)
-            or forceDocker
+            conType == "docker" and not (forceSing or forceApptainer) or forceDocker
         ) and self._isCommandInstalled("docker"):
             return ("docker", "docker")
 
-        if (
-            not forceApptainer or forceSing
-        ) and self._isCommandInstalled("singularity"):
+        if (not forceApptainer or forceSing) and self._isCommandInstalled(
+            "singularity"
+        ):
             return ("singularity", "singularity")
 
         if self._isCommandInstalled("apptainer"):

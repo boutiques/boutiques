@@ -707,7 +707,6 @@ class TestExample1(BaseTest):
         self.assertIn("Local (boutiques-example1-test.simg)", ret.container_location)
         self.assertIn("apptainer exec", ret.container_command)
 
-
     @pytest.mark.skipif(
         subprocess.Popen("type docker", shell=True).wait(),
         reason="Docker not installed",
