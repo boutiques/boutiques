@@ -299,7 +299,9 @@ def add_subparser_example(subparsers):
 
 
 def add_subparser_execute(subparsers):
-    parser_exec = subparsers.add_parser("exec", description="Boutiques local executor")
+    parser_exec = subparsers.add_parser(
+        "exec", description="Boutiques local executor", aliases=["execute"]
+    )
     parser_exec.set_defaults(function="exec")
     exec_subparsers = parser_exec.add_subparsers(
         help="Mode of operation to use. Launch: takes a "
@@ -335,6 +337,12 @@ def add_subparser_execute(subparsers):
         "container. Format consistently the following:"
         " /a:/b will mount local directory /a to "
         "container directory /b.",
+    )
+    parser_exec_launch.add_argument(
+        "--container-opts",
+        action="append",
+        type=str,
+        help="Options to pass to the container runtime. Overrides the descriptor's container options.",
     )
     parser_exec_launch.add_argument(
         "-x",

@@ -276,6 +276,9 @@ class TestDataHandler(BaseTest):
             )
         self.assertIn("Cannot access Nexus endpoint", str(e.exception))
 
+    @pytest.mark.xfail(
+        reason="Nexus sandbox API is not available for testing currently"
+    )
     @mock.patch(
         "boutiques.dataHandler.getDataCacheDir",
         return_value=mock_get_data_cache(),

@@ -125,7 +125,7 @@ def execute(*params):
             },
         )
         # Execute it
-        return executor.execute(results.volumes)
+        return executor.execute(results.volumes, results.container_opts)
 
     elif results.mode == "simulate":
         descriptor = results.descriptor
@@ -536,7 +536,7 @@ def bosh(args=None):
         elif func == "validate":
             out = validate(*params)
             return bosh_return(out)
-        elif func == "exec":
+        elif func in ["exec", "execute"]:
             out = execute(*params)
             # If executed through CLI, print 'out' and return exit_code
             # Otherwise, return out

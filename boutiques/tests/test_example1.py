@@ -903,3 +903,36 @@ class TestExample1(BaseTest):
             os.remove(os.path.join(test_dir, "file2.txt"))
             os.remove(os.path.join(test_dir, "file3.txt"))
             os.remove(test_invoc)
+
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
+    def test_example1_container_opts(self):
+        container_opts = "-e TEST_CONTAINER_OPTS=TEST_CONTAINER_OPTS"
+        extra_container_opts = "-p 8888:8888 -e MORE_ENV=MORE_ENV"
+
+        invoc = os.path.join(
+            os.path.dirname(bfile),
+            "schema",
+            "examples",
+            "example1",
+            "invocation.json",
+        )
+        ret = bosh.execute(
+            "launch",
+            self.example1_descriptor,
+            invoc,
+            "--skip-data-collection",
+            "-v",
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
+            "-v",
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
+            "--container-opts",
+            container_opts,
+            "--container-opts",
+            extra_container_opts,
+        )
+
+        self.assertIn(container_opts, ret.container_command)
+        self.assertIn(extra_container_opts, ret.container_command)
