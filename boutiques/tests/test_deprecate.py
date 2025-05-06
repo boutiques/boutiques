@@ -47,7 +47,7 @@ def mock_get(*args, **kwargs):
         if kwargs.get("params") and kwargs.get("params").get("access_token"):
             return MockHttpResponse(200)
         else:
-            return MockHttpResponse(401)
+            return MockHttpResponse(403)
 
 
 def mock_post(*args, **kwargs):

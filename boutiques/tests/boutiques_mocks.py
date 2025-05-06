@@ -100,7 +100,7 @@ def mock_zenodo_delete_files(*args, **kwargs):
 
 
 def mock_zenodo_test_api_fail():
-    return MockHttpResponse(401)
+    return MockHttpResponse(403)
 
 
 def mock_zenodo_no_permission():
