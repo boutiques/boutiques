@@ -246,6 +246,9 @@ class LocalExecutor:
             (con.get("image") if not self.noContainer else None),
         )
         conIndex = con.get("index")
+        # conOpts can't be forced for docker, as long as there are cases
+        # where _chooseContainerTypeToUse() can fall back to singularity
+        conOptsForced = conOpts is not None and self.forceSingularity
         conOpts = conOpts or con.get("container-opts")
         conIsPresent = conImage is not None
         # Export environment variables,
@@ -308,7 +311,7 @@ class LocalExecutor:
             if conOpts:
                 # Ignore container options if container type is not the one
                 # specified in the descriptor.
-                if conType != conTypeToUse:
+                if conType != conTypeToUse and not conOptsForced:
                     print_warning("Ignoring incompatible container options.")
                 else:
                     for opt in conOpts:
