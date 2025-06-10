@@ -882,3 +882,28 @@ class TestExample1(BaseTest):
 
         self.assertIn(container_opts, ret.container_command)
         self.assertIn(extra_container_opts, ret.container_command)
+
+    @pytest.mark.skipif(
+        subprocess.Popen("type singularity", shell=True).wait(),
+        reason="Singularity not installed",
+    )
+    def test_example1_singularity_container_opts(self):
+        # check that container runtime options are not ignored when specified on
+        # command-line, and the container runtime differs from the descriptor
+        container_opts = "--cpus 1"
+
+        ret = bosh.execute(
+            "launch",
+            self.example1_descriptor,
+            self.get_file_path("invocation_no_opts.json"),
+            "--skip-data-collection",
+            "-v",
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
+            "-v",
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
+            "--force-singularity",
+            "--container-opts",
+            container_opts,
+        )
+
+        self.assertIn(container_opts, ret.container_command)
