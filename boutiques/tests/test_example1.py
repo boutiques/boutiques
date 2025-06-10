@@ -883,7 +883,6 @@ class TestExample1(BaseTest):
         self.assertIn(container_opts, ret.container_command)
         self.assertIn(extra_container_opts, ret.container_command)
 
-    @pytest.mark.xfail(reason="Travis to GH action transition")
     @pytest.mark.skipif(
         subprocess.Popen("type singularity", shell=True).wait(),
         reason="Singularity not installed",
