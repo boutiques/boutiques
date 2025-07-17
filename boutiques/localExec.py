@@ -281,11 +281,11 @@ class LocalExecutor:
         container_command = ""
         if conIsPresent:
             # Figure out which container type to use
-            conTypeToUse = self._chooseContainerTypeToUse(
-                conType, self.forceSingularity, self.forceDocker
+            (conTypeToUse, conBinName) = self._chooseContainerTypeToUse(
+                conType, self.forceSingularity, self.forceApptainer, self.forceDocker
             )
             # Pull the container
-            (conPath, container_location) = self.prepare(conTypeToUse)
+            (conPath, container_location) = self.prepare(conTypeToUse, conBinName)
             # Generate command script
             # Get the supported shell by the docker or singularity
             cmdString = f"#!{self.shell}"
@@ -440,7 +440,7 @@ class LocalExecutor:
                         envString += f"SINGULARITYENV_{key}='{val}' "
                 singularity_mounts = "-B " + " -B ".join(mount_strings)
                 container_command = (
-                    envString + "singularity exec "
+                    envString + conBinName + " exec "
                     "--cleanenv "
                     + singularity_mounts
                     + " -W "
@@ -518,7 +518,7 @@ class LocalExecutor:
     # Looks for the container image locally and pulls it if not found
     # Returns a tuple containing the container filename (for Singularity)
     # and the container location (local or pulled)
-    def prepare(self, conTypeToUse=None):
+    def prepare(self, conTypeToUse=None, conBinName=None):
         con = self.con
         if con is None:
             return ("", "Descriptor does not specify a container image.")
@@ -532,8 +532,8 @@ class LocalExecutor:
         # If container is present, alter the command template accordingly
         conName = ""
 
-        if conTypeToUse is None:
-            conTypeToUse = self._chooseContainerTypeToUse(conType)
+        if conTypeToUse is None or conBinName is None:
+            (conTypeToUse, conBinName) = self._chooseContainerTypeToUse(conType)
 
         if conTypeToUse == "docker":
             # Pull the docker image
@@ -605,7 +605,12 @@ class LocalExecutor:
                         # Container still does not exist, so pull it
                         else:
                             conPath, container_location = self._pullSingImage(
-                                conName, conIndex, conImage, imageDir, lockDir
+                                conName,
+                                conIndex,
+                                conImage,
+                                imageDir,
+                                lockDir,
+                                conBinName,
                             )
                         return conPath, container_location
                     finally:
@@ -622,7 +627,9 @@ class LocalExecutor:
         return conName in os.listdir(imageDir)
 
     # Private method that pulls a Singularity image
-    def _pullSingImage(self, conName, conIndex, conImage, imageDir, lockDir):
+    def _pullSingImage(
+        self, conName, conIndex, conImage, imageDir, lockDir, conBinName
+    ):
         # Give the file a temporary name while it's building
         conNameTmp = conName + ".tmp"
         # Set the pull directory to the specified imagePath
@@ -636,7 +643,7 @@ class LocalExecutor:
             "image path)"
         ).format(conName, conIndex, conImage)
         # Pull the singularity image
-        sing_command = "singularity pull --name " + pull_loc
+        sing_command = conBinName + " pull --name " + pull_loc
         (stdout, stderr), return_code = self._localExecute(sing_command)
         if return_code:
             message = (
@@ -664,22 +671,30 @@ class LocalExecutor:
     def _isCommandInstalled(self, command):
         return not subprocess.Popen(f"{command} --version", shell=True).wait()
 
-    # Chooses whether to use Docker or Singularity based on the
-    # descriptor, executor options and if Docker is installed.
-    def _chooseContainerTypeToUse(self, conType, forceSing=False, forceDocker=False):
+    # Chooses whether to use Docker, Singularity or Apptainer based on the
+    # descriptor, executor options and installed commands.
+    # Returns image type and container runtime binary name.
+    def _chooseContainerTypeToUse(
+        self, conType, forceSing=False, forceApptainer=False, forceDocker=False
+    ):
         if (
-            conType == "docker" and not forceSing or forceDocker
+            conType == "docker" and not (forceSing or forceApptainer) or forceDocker
         ) and self._isCommandInstalled("docker"):
-            return "docker"
+            return ("docker", "docker")
 
-        if self._isCommandInstalled("singularity"):
-            return "singularity"
+        if (not forceApptainer or forceSing) and self._isCommandInstalled(
+            "singularity"
+        ):
+            return ("singularity", "singularity")
+
+        if self._isCommandInstalled("apptainer"):
+            return ("singularity", "apptainer")
 
         raise_error(
             ExecutorError,
             (
                 "Could not find any container engine. "
-                + "Make sure that Docker or Singularity "
+                + "Make sure that Docker or Singularity/Apptainer "
                 + "is installed."
             ),
         )

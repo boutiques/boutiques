@@ -10,7 +10,7 @@ This guide will help you set up your local environment for coding and testing Bo
 -   **pip**. Most versions of Python will come with it, but in case you don't have it, instructions to install it are [here](https://pip.pypa.io/en/stable/installing/).
 -   **Docker or Singularity**. Depending on the tools you plan to work with and where they are installed, you'll want to have either Docker or Singularity installed (ideally both).
   -   To install Docker, follow the  [instructions](https://docs.docker.com/install/overview/) to install Docker CE.
-  -   To install Singularity, follow the [instructions](https://singularity.lbl.gov/install-linux) to download the latest stable release of Singularity.
+  -   To install Singularity, follow the [instructions](https://apptainer.org/docs/admin/latest/installation.html#installation-on-linux) to download the latest stable release of Singularity.
 -   **Root (sudo) access**. If your system doesn't already have all of the above installed, you'll need root permission to install new programs.
 
 ## 1.   Clone the boutiques repository
