@@ -68,6 +68,13 @@ line-length = 88
 ignore-words-list = "nd,fo,minum,manum,assertIn"
 skip = ".git,*.pdf,*.svg,*.json"
 
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/test_*.py"
+]
+source = ["boutiques"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["boutiques"]
 
