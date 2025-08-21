@@ -765,6 +765,24 @@ class TestExample1(BaseTest):
         self.assertIn("Local (boutiques-example1-test.simg)", ret.container_location)
         self.assertIn("singularity exec", ret.container_command)
 
+    @mock.patch(
+        "boutiques.localExec.LocalExecutor._isCommandInstalled",
+        side_effect=docker_not_installed,
+    )
+    def test_example1_exec_forced_not_found(self, mock_docker_not_installed):
+        with pytest.raises(ExecutorError):
+            bosh.execute(
+                "launch",
+                self.example1_descriptor,
+                self.get_file_path("invocation_no_opts.json"),
+                "--skip-data-collection",
+                "--force-docker",
+                "-v",
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
+                "-v",
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
+            )
+
     @pytest.mark.skipif(
         subprocess.Popen("type docker", shell=True).wait(),
         reason="Docker not installed",
