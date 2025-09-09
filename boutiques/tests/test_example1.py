@@ -1017,15 +1017,8 @@ class TestExample1(BaseTest):
         reason="Singularity not installed",
     )
     def test_example1_singularity_no_pull(self, mock_singularity_no_image):
-        invoc = os.path.join(
-            os.path.dirname(bfile),
-            "schema",
-            "examples",
-            "example1",
-            "invocation.json",
-        )
         with pytest.raises(ExecutorError) as e:
-            ret = bosh.execute(
+            bosh.execute(
                 "launch",
                 self.get_file_path("example1_sing.json"),
                 self.get_file_path("invocation_sing.json"),
