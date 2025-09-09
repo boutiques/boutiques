@@ -415,10 +415,16 @@ class LocalExecutor:
                 userchange = ""
                 if self.changeUser:
                     userchange = " -u $(id -u):$(id -g)"
+                # docker run defaults to --pull=missing, i.e. pull if no local
+                # image is found. Enforce --pull=never when noPull flag is set.
+                pullmode = ""
+                if self.noPull:
+                    pullmode = " --pull=never"
 
                 container_command = (
                     "docker run"
                     + userchange
+                    + pullmode
                     + " --entrypoint="
                     + self.shell
                     + " --rm"
@@ -536,8 +542,8 @@ class LocalExecutor:
             (conTypeToUse, conBinName) = self._chooseContainerTypeToUse(conType)
 
         if conTypeToUse == "docker":
-            # Pull the docker image
-            if self._localExecute("docker pull " + str(conImage))[1]:
+            # Pull the docker image, if we can
+            if self.noPull or self._localExecute("docker pull " + str(conImage))[1]:
                 container_location = "Local copy"
             else:
                 container_location = "Pulled from Docker"
@@ -577,7 +583,10 @@ class LocalExecutor:
                 conPath = op.abspath(op.join(imageDir, conName))
                 return conPath, f"Local ({conName})"
 
-            # Container does not exist, try to pull it
+            # Container image does not exist and we can't pull it: just fail
+            if self.noPull:
+                raise_error(ExecutorError, "Unable to retrieve Singularity " "image.")
+            # Try to pull the container image
             if self.imagePath:
                 lockDir = self.imagePath + "-lock"
             else:

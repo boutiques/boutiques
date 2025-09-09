@@ -121,6 +121,7 @@ def execute(*params):
                 "provenance": results.provenance,
                 "noContainer": results.no_container,
                 "sandbox": results.sandbox,
+                "noPull": results.no_pull,
                 "noAutomounts": results.no_automounts,
             },
         )
@@ -211,6 +212,7 @@ def execute(*params):
                 "imagePath": results.imagepath,
                 "skipDataCollect": True,
                 "sandbox": results.sandbox,
+                "noPull": results.no_pull,
             },
         )
         container_location = executor.prepare()[1]
