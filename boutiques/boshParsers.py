@@ -394,6 +394,11 @@ def add_subparser_execute(subparsers):
         help="Get descriptor from Zenodo's sandbox instead of " "production server.",
     )
     parser_exec_launch.add_argument(
+        "--no-pull",
+        action="store_true",
+        help="Do not automatically pull the container image.",
+    )
+    parser_exec_launch.add_argument(
         "--no-automounts",
         action="store_true",
         help="Disable automatic mount of all input files " "present in the invocation",
@@ -452,6 +457,11 @@ def add_subparser_execute(subparsers):
         "--sandbox",
         action="store_true",
         help="Get descriptor from Zenodo's sandbox instead of " "production server.",
+    )
+    parser_exec_prepare.add_argument(
+        "--no-pull",
+        action="store_true",
+        help="Do not automatically pull the container image.",
     )
 
     parser_exec_simulate = exec_subparsers.add_parser(

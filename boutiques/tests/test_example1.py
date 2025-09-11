@@ -979,3 +979,56 @@ class TestExample1(BaseTest):
         )
 
         self.assertIn(container_opts, ret.container_command)
+
+    @pytest.mark.skipif(
+        subprocess.Popen("type docker", shell=True).wait(),
+        reason="Docker not installed",
+    )
+    def test_example1_docker_no_pull(self):
+        invoc = os.path.join(
+            os.path.dirname(bfile),
+            "schema",
+            "examples",
+            "example1",
+            "invocation.json",
+        )
+        ret = bosh.execute(
+            "launch",
+            self.example1_descriptor,
+            invoc,
+            "--skip-data-collection",
+            "--no-pull",
+            "-v",
+            f"{self.get_file_path('example1_mount1')}:/test_mount1",
+            "-v",
+            f"{self.get_file_path('example1_mount2')}:/test_mount2",
+        )
+        self.assertIn("--pull=never", ret.container_command)
+
+    def singularity_no_image(conName, imageDir):
+        return False
+
+    @mock.patch(
+        "boutiques.localExec.LocalExecutor._singConExists",
+        side_effect=singularity_no_image,
+    )
+    @pytest.mark.skipif(
+        subprocess.Popen("type singularity", shell=True).wait(),
+        reason="Singularity not installed",
+    )
+    def test_example1_singularity_no_pull(self, mock_singularity_no_image):
+        with pytest.raises(ExecutorError) as e:
+            bosh.execute(
+                "launch",
+                self.get_file_path("example1_sing.json"),
+                self.get_file_path("invocation_sing.json"),
+                "--skip-data-collection",
+                "--no-pull",
+                "-v",
+                f"{self.get_file_path('example1_mount1')}:/test_mount1",
+                "-v",
+                f"{self.get_file_path('example1_mount2')}:/test_mount2",
+            )
+        self.assertIn(
+            "Unable to retrieve Singularity image", str(e.getrepr(style="long"))
+        )
