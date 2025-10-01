@@ -46,7 +46,7 @@ jobs:
             run: make boutiques-example1-test.simg
 
         -   name: Setup python
-            uses: actions/setup-python@v5
+            uses: actions/setup-python@v6
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: false
