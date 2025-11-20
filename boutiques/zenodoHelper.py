@@ -7,6 +7,9 @@ import simplejson as json
 from boutiques.logger import print_info, raise_error
 from boutiques.util.utils import importCatcher
 
+# Zenodo limits search results to 100
+MAX_ZENODO_RESULTS = 100
+
 
 class ZenodoError(Exception):
     pass
@@ -270,9 +273,9 @@ class ZenodoHelper:
             "/api/records/?q="
             "keywords:(/Boutiques/) AND "
             "keywords:(/schema.*/) AND keywords:(/version.*/)"
-            "%s"
+            f"{query_line}"
             "&file_type=json&type=software&"
-            "page=1&size=%s" % (query_line, 9999)
+            f"page=1&size={MAX_ZENODO_RESULTS}"
         )
         r = requests.get(get_request)
         if r.status_code != 200:
