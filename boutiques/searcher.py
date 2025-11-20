@@ -12,7 +12,6 @@ from boutiques.zenodoHelper import ZenodoHelper
 
 
 class Searcher:
-
     def __init__(
         self,
         query,
@@ -161,7 +160,7 @@ class Searcher:
     def parse_basic_info(self, hit):
         id = "zenodo." + str(hit["id"])
         title = hit["metadata"]["title"]
-        description = hit["metadata"]["description"]
+        description = hit["metadata"].get("description", "No description available")
         downloads = 0
         if "version_downloads" in hit["stats"]:
             downloads = hit["stats"]["version_downloads"]
