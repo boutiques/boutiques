@@ -53,8 +53,8 @@ class Searcher:
             self.max_results = 10
 
         # Zenodo will error if asked for more than 9999 results
-        if self.max_results > 9999:
-            self.max_results = 9999
+        if self.max_results > 25:
+            self.max_results = 25
 
         # Set Zenodo endpoint
         self.zenodo_endpoint = (
