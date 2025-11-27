@@ -7,8 +7,9 @@ import simplejson as json
 from boutiques.logger import print_info, raise_error
 from boutiques.util.utils import importCatcher
 
-# Zenodo limits search results to 100
-MAX_ZENODO_RESULTS = 100
+# Zenodo limits search results to 25 for non-authenticated requests
+# and 100 for authenticated requests
+MAX_ZENODO_RESULTS = 25
 
 
 class ZenodoError(Exception):
@@ -16,7 +17,6 @@ class ZenodoError(Exception):
 
 
 class ZenodoHelper:
-
     # Constructor
     def __init__(self, sandbox=False, no_int=False, verbose=False):
         self.sandbox = sandbox
@@ -279,7 +279,7 @@ class ZenodoHelper:
         )
         r = requests.get(get_request)
         if r.status_code != 200:
-            raise_error(ZenodoError, "Error searching Zenodo", r)
+            raise_error(ZenodoError, f"Error searching Zenodo: {r.json()}", r)
         if self.verbose:
             print_info(f'Search successful for query "{query}"', r)
             print_info(f"GET request: {get_request}")
