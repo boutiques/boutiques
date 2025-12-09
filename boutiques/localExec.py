@@ -771,7 +771,7 @@ class LocalExecutor:
         while True:
             if process.poll() is not None:
                 break
-            outLine = process.stdout.readline().decode()
+            outLine = process.stdout.readline().decode(errors='replace')
             if outLine != "":
                 sys.stdout.write(outLine)
         # Return (stdout, stderr) as (None, None) since it was already
@@ -1255,7 +1255,8 @@ class LocalExecutor:
                     for x in val:
                         escaped_val.append(escape_string(str(x)) if escape else str(x))
                     val = list_sep.join(escaped_val)
-                elif escape:
+                elif escape and not isinstance(val, bool):
+                    # Skip escaping for boolean values (Flag types) - they're handled below
                     val = escape_string(val)
                 # Add flags and separator if necessary
                 flag = self.safeGet(param_id, "command-line-flag")
@@ -1265,7 +1266,10 @@ class LocalExecutor:
                         sep = " "
                     # special case for flag-type inputs
                     if self.safeGet(param_id, "type") == "Flag":
-                        val = "" if val is False else flag
+                        # Use input dict value for flags (not merged dict) to handle
+                        # duplicate IDs between inputs and outputs
+                        flag_val = self.in_dict.get(param_id, val)
+                        val = "" if flag_val is False else flag
                     else:
                         val = flag + sep + str(val)
                 # Remove file extensions from input value
