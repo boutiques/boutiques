@@ -145,7 +145,7 @@
             "id": "http://github.com/boutiques/boutiques-schema/schema-version",
             "type": "string",
             "description": "Version of the schema used.",
-            "enum": ["0.5"]
+            "enum": ["0.5", "0.5+styx"]
         },
         "environment-variables": {
             "id": "http://github.com/boutiques/boutiques-schema/environment-variables",
@@ -266,9 +266,42 @@
                     },
                     "type": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/type",
-                        "type": "string",
-                        "description": "Input type.",
-                        "enum": ["String", "File", "Flag", "Number"]
+                        "description": "Input type. Can be a primitive type string or a nested type object (Styx extension).",
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "enum": ["String", "File", "Flag", "Number"]
+                            },
+                            {
+                                "type": "object",
+                                "description": "A nested input type that defines a sub-command structure (Styx extension).",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "pattern": "^[0-9,_,a-z,A-Z]*$",
+                                        "minLength": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "command-line": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "inputs": {
+                                        "type": "array"
+                                    },
+                                    "output-files": {
+                                        "type": "array"
+                                    }
+                                },
+                                "required": ["id", "name", "command-line", "inputs", "output-files"]
+                            }
+                        ]
                     },
                     "description": {
                         "id": "http://github.com/boutiques/boutiques-schema/input/description",
@@ -389,6 +422,11 @@
                         "id": "http://github.com/boutiques/boutiques-schema/input/uses-absolute-path",
                         "description": "Specifies that this input must be given as an absolute path. Only specifiable for File type inputs.",
                         "type": "boolean"
+                    },
+                    "resolve-parent": {
+                        "id": "http://github.com/boutiques/boutiques-schema/input/resolve-parent",
+                        "description": "Whether to resolve parent input references (Styx extension).",
+                        "type": "boolean"
                     }
                 },
                 "required": [
@@ -404,6 +442,10 @@
                 }, {
                     "properties": {
                         "type": { "enum": ["String", "File", "Number"] }
+                    }
+                }, {
+                    "properties": {
+                        "type": { "type": "object" }
                     }
                 }],
                 "dependencies": {
@@ -737,6 +779,29 @@
         "minItems": 1,
         "uniqueItems": true
     },
+        "stdout-output": {
+            "id": "http://github.com/boutiques/boutiques-schema/stdout-output",
+            "type": "object",
+            "description": "Structured output captured from command stdout (Styx extension).",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[0-9,_,a-z,A-Z]*$",
+                    "minLength": 1,
+                    "description": "Unique identifier for the stdout output."
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Human-readable name for the stdout output."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the stdout output."
+                }
+            },
+            "required": ["id"]
+        },
         "custom": {
             "id": "http://github.com/boutiques/boutiques-schema/custom",
             "type": "object"

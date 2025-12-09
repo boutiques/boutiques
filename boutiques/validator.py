@@ -35,7 +35,16 @@ def validate_descriptor(descriptor, **kwargs):
         schema = json.load(fhandle)
 
     # Load input types according to the schema
-    schema_types = schema["properties"]["inputs"]["items"]["properties"]["type"]["enum"]
+    # Handle both standard enum and Styx oneOf structure
+    type_schema = schema["properties"]["inputs"]["items"]["properties"]["type"]
+    if "enum" in type_schema:
+        schema_types = type_schema["enum"]
+    elif "oneOf" in type_schema:
+        # Styx extension: type can be string enum or nested object
+        # Extract the enum from the first oneOf option (string types)
+        schema_types = type_schema["oneOf"][0].get("enum", ["String", "File", "Flag", "Number"])
+    else:
+        schema_types = ["String", "File", "Flag", "Number"]
     allowed_keywords = ["and", "or", "false", "true"]
     allowed_comparators = ["==", "!=", "<", ">", "<=", ">="]
 
@@ -67,6 +76,16 @@ def validate_descriptor(descriptor, **kwargs):
         if i in inputGet("id"):
             return descriptor["inputs"][inputGet("id").index(i)]
         return {}
+
+    def getInputTypeName(inp):
+        """Get the type name from an input, handling nested types (Styx extension)."""
+        inp_type = inp.get("type")
+        if isinstance(inp_type, str):
+            return inp_type
+        elif isinstance(inp_type, dict):
+            # Nested type (Styx extension) - treat as a complex/composite type
+            return "String"  # For validation purposes, treat nested as String-like
+        return "String"
 
     def isValidConditionalExp(exp):
         # Return the type of a conditional expression's substring
@@ -264,7 +283,7 @@ def validate_descriptor(descriptor, **kwargs):
                 if not keyword.iskeyword(s[1]) and s[1].isalnum() and not s[1].isdigit()
             ]:
                 if s[1] in [i["id"] for i in descriptor["inputs"]]:
-                    splitExp[s[0]] = inById(s[1])["type"]
+                    splitExp[s[0]] = getInputTypeName(inById(s[1]))
             # Check if the conditional expression is valid
             if not isValidConditionalExp(" ".join(splitExp)):
                 errors += [msg_template.format(templateKey)]

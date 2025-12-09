@@ -1,0 +1,94 @@
+{
+    "name": "Styx Example Tool",
+    "tool-version": "1.0.0",
+    "description": "An example tool demonstrating Styx schema extensions",
+    "author": "Boutiques Developers",
+    "schema-version": "0.5+styx",
+    "command-line": "styx_tool [INPUT_FILE] [OUTPUT_NAME] [CONFIG] [VERBOSE] [TOPUP_RESULT]",
+    "container-image": {
+        "type": "docker",
+        "image": "example/styx-tool:1.0"
+    },
+    "inputs": [
+        {
+            "id": "input_file",
+            "name": "Input File",
+            "description": "The input file to process",
+            "type": "File",
+            "value-key": "[INPUT_FILE]",
+            "optional": false
+        },
+        {
+            "id": "output_name",
+            "name": "Output Name",
+            "description": "Base name for output files",
+            "type": "String",
+            "value-key": "[OUTPUT_NAME]",
+            "optional": false
+        },
+        {
+            "id": "config",
+            "name": "Configuration Option",
+            "description": "Configuration key-value pair (Styx nested type example)",
+            "value-key": "[CONFIG]",
+            "type": {
+                "id": "config",
+                "name": "config",
+                "description": "A configuration key-value pair",
+                "command-line": "-config [KEY] [VALUE]",
+                "inputs": [
+                    {
+                        "id": "key",
+                        "name": "Key",
+                        "description": "Configuration key name",
+                        "type": "String",
+                        "value-key": "[KEY]",
+                        "optional": false
+                    },
+                    {
+                        "id": "value",
+                        "name": "Value",
+                        "description": "Configuration value",
+                        "type": "String",
+                        "value-key": "[VALUE]",
+                        "optional": false
+                    }
+                ],
+                "output-files": []
+            },
+            "optional": true,
+            "list": true
+        },
+        {
+            "id": "verbose",
+            "name": "Verbose",
+            "description": "Enable verbose output",
+            "type": "Flag",
+            "command-line-flag": "-v",
+            "value-key": "[VERBOSE]",
+            "optional": true
+        },
+        {
+            "id": "topup_result",
+            "name": "Topup Result",
+            "description": "Result from topup command (Styx resolve-parent example)",
+            "type": "File",
+            "value-key": "[TOPUP_RESULT]",
+            "optional": true,
+            "resolve-parent": true
+        }
+    ],
+    "output-files": [
+        {
+            "id": "output_result",
+            "name": "Output Result",
+            "description": "The main output file",
+            "path-template": "[OUTPUT_NAME]_result.nii.gz"
+        }
+    ],
+    "stdout-output": {
+        "id": "stdout_info",
+        "name": "Standard Output Info",
+        "description": "Structured information returned via stdout"
+    }
+}
