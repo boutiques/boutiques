@@ -696,7 +696,6 @@
                 },
                 "additionalProperties": false
             },
-        "minItems": 1,
         "uniqueItems": true
         },
         "invocation-schema": {
@@ -812,8 +811,7 @@
         "description",
         "command-line",
         "schema-version",
-        "inputs",
-        "tool-version"
+        "inputs"
     ],
     "additionalProperties": false
 }

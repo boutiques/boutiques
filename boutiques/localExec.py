@@ -200,6 +200,11 @@ class LocalExecutor:
     def byId(self, n):
         return [v for v in self.inputs + self.outputs if v["id"] == n][0]
 
+    # Retrieves the output corresponding to the given id (for duplicate ID support)
+    def byOutputId(self, n):
+        matches = [v for v in self.outputs if v["id"] == n]
+        return matches[0] if matches else None
+
     # Retrieves the group corresponding to the given id
     def byGid(self, g):
         return [v for v in self.groups if v["id"] == g][0]
@@ -210,6 +215,13 @@ class LocalExecutor:
         if k not in list(self.byId(i).keys()):
             return None
         return self.byId(i)[k]
+
+    # Retrieves the value of a field of an output (handles duplicate IDs)
+    def safeGetOutput(self, i, k):
+        out = self.byOutputId(i)
+        if out is None or k not in list(out.keys()):
+            return None
+        return out[k]
 
     # Retrieves the value of a field of a group from
     # the descriptor. Returns None if not present.
@@ -1300,13 +1312,13 @@ class LocalExecutor:
                 if outputId in list(self.out_dict.keys()):
                     outputFileName = self.out_dict[outputId]
                 else:
-                    outputFileName = self.safeGet(outputId, "path-template")
+                    outputFileName = self.safeGetOutput(outputId, "path-template")
 
             # if 'conditional-path-template' in outputItem
             # (key=conditions, value=path)
             # Initialize file name with path template or existing value
             elif not isPathTemplate:
-                for templateObj in self.safeGet(outputId, "conditional-path-template"):
+                for templateObj in self.safeGetOutput(outputId, "conditional-path-template"):
                     templateKey = list(templateObj.keys())[0]
                     condition = self._getCondPathTemplateExp(templateKey)
                     # If condition is true, set fileName
@@ -1318,7 +1330,7 @@ class LocalExecutor:
                         outputFileName = templateObj[templateKey]
                         break
 
-            stripped_extensions = self.safeGet(
+            stripped_extensions = self.safeGetOutput(
                 outputId, "path-template-stripped-extensions"
             )
             if stripped_extensions is None:
@@ -1336,7 +1348,7 @@ class LocalExecutor:
                 escape_special_chars=False,
             )
 
-            if self.safeGet(outputId, "uses-absolute-path"):
+            if self.safeGetOutput(outputId, "uses-absolute-path"):
                 outputFileName = os.path.abspath(outputFileName)
             self.out_dict[outputId] = outputFileName
 
@@ -1368,10 +1380,10 @@ class LocalExecutor:
     # Configuration files are output files that have a file-template
     def _writeConfigurationFiles(self):
         for outputId in [x["id"] for x in self.outputs]:
-            fileTemplate = self.safeGet(outputId, "file-template")
+            fileTemplate = self.safeGetOutput(outputId, "file-template")
             if fileTemplate is None:
                 continue  # this is not a configuration file
-            stripped_extensions = self.safeGet(
+            stripped_extensions = self.safeGetOutput(
                 outputId, "path-template-stripped-extensions"
             )
             if stripped_extensions is None:

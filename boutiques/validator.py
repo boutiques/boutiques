@@ -180,17 +180,21 @@ def validate_descriptor(descriptor, **kwargs):
         if clkeys[jdx] in key and key != clkeys[jdx]
     ]
 
-    # Verify that all Ids are unique
+    # Verify that Ids are unique within each category
+    # Note: Styx extension allows same ID in inputs and outputs
     inIds, outIds = inputGet("id"), outputGet("id")
     grpIds = groupGet("id") if "groups" in descriptor.keys() else []
-    allIds = inIds + outIds + grpIds
     msg_template = '    IdError: "{0}" is non-unique'
-    for idx, s1 in enumerate(allIds):
-        for jdx, s2 in enumerate(allIds):
-            if s1 == s2 and idx < jdx:
-                errors += [msg_template.format(s1)]
-            else:
-                errors += []
+
+    def check_duplicates(id_list):
+        for idx, s1 in enumerate(id_list):
+            for jdx, s2 in enumerate(id_list):
+                if s1 == s2 and idx < jdx:
+                    errors.append(msg_template.format(s1))
+
+    check_duplicates(inIds)
+    check_duplicates(outIds)
+    check_duplicates(grpIds)
 
     # Verify that identical keys only exist if they are both in mutex groups
     msg_template = ' MutExError: "{0}" belongs to 2+ non exclusive IDs'
@@ -304,13 +308,7 @@ def validate_descriptor(descriptor, **kwargs):
             else:
                 errors += []
 
-            msg_template = (
-                ' InputError: "{0}" is of type Flag,' " it has to be optional"
-            )
-            if inp["optional"] is False:
-                errors += [msg_template.format(inp["id"])]
-            else:
-                errors += []
+            # Note: Styx extension allows Flag inputs without optional: true
 
         # Verify number-type inputs min/max are sensible
         elif inp["type"] == "Number":
