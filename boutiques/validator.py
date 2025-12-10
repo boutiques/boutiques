@@ -34,17 +34,9 @@ def validate_descriptor(descriptor, **kwargs):
     with open(schema_file) as fhandle:
         schema = json.load(fhandle)
 
-    # Load input types according to the schema
-    # Handle both standard enum and Styx oneOf structure
+    # Load input types according to the schema (oneOf structure with Styx extension)
     type_schema = schema["properties"]["inputs"]["items"]["properties"]["type"]
-    if "enum" in type_schema:
-        schema_types = type_schema["enum"]
-    elif "oneOf" in type_schema:
-        # Styx extension: type can be string enum or nested object
-        # Extract the enum from the first oneOf option (string types)
-        schema_types = type_schema["oneOf"][0].get("enum", ["String", "File", "Flag", "Number"])
-    else:
-        schema_types = ["String", "File", "Flag", "Number"]
+    schema_types = type_schema["oneOf"][0]["enum"]
     allowed_keywords = ["and", "or", "false", "true"]
     allowed_comparators = ["==", "!=", "<", ">", "<=", ">="]
 
@@ -80,12 +72,10 @@ def validate_descriptor(descriptor, **kwargs):
     def getInputTypeName(inp):
         """Get the type name from an input, handling nested types (Styx extension)."""
         inp_type = inp.get("type")
-        if isinstance(inp_type, str):
-            return inp_type
-        elif isinstance(inp_type, dict):
-            # Nested type (Styx extension) - treat as a complex/composite type
-            return "String"  # For validation purposes, treat nested as String-like
-        return "String"
+        if isinstance(inp_type, dict):
+            # Nested type (Styx extension) - treat as String for validation
+            return "String"
+        return inp_type
 
     def isValidConditionalExp(exp):
         # Return the type of a conditional expression's substring

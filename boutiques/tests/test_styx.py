@@ -6,7 +6,6 @@ import pytest
 
 from boutiques.bosh import bosh
 from boutiques.tests.BaseTest import BaseTest
-from boutiques.validator import DescriptorValidationError
 
 
 class TestStyx(BaseTest):
@@ -41,4 +40,14 @@ class TestStyx(BaseTest):
         """Test that resolve-parent field on inputs is accepted."""
         # The example_styx.json has resolve-parent: true on topup_result input
         fil = self.get_file_path("example_styx.json")
+        self.assertIsNone(bosh(["validate", fil]))
+
+    def test_styx_nested_type_conditional_path_template(self):
+        """Test validation of conditional path templates with nested input types.
+
+        This tests the getInputTypeName helper function's handling of nested
+        types (dict) in conditional path template validation.
+        """
+        fil = self.get_file_path("styx_conditional_nested_type.json")
+        # Should validate without error - nested types are treated as String
         self.assertIsNone(bosh(["validate", fil]))
