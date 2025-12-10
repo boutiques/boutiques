@@ -51,3 +51,12 @@ class TestStyx(BaseTest):
         fil = self.get_file_path("styx_conditional_nested_type.json")
         # Should validate without error - nested types are treated as String
         self.assertIsNone(bosh(["validate", fil]))
+
+    def test_styx_union_type(self):
+        """Test that union types (array of nested types) are accepted.
+
+        This tests the SubCommandUnion pattern where type is an array of
+        possible sub-command types.
+        """
+        fil = self.get_file_path("styx_union_type.json")
+        self.assertIsNone(bosh(["validate", fil]))

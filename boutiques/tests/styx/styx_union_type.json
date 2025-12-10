@@ -1,0 +1,56 @@
+{
+    "name": "Styx Union Type Test",
+    "tool-version": "1.0.0",
+    "description": "Test descriptor with union type input",
+    "author": "Boutiques Developers",
+    "schema-version": "0.5+styx",
+    "command-line": "test_tool [INPUT]",
+    "container-image": {
+        "type": "docker",
+        "image": "example/test:1.0"
+    },
+    "inputs": [
+        {
+            "id": "input",
+            "name": "Input",
+            "description": "Input that can be either a string or file",
+            "value-key": "[INPUT]",
+            "type": [
+                {
+                    "id": "StringInput",
+                    "command-line": "[OBJ]",
+                    "inputs": [
+                        {
+                            "id": "obj",
+                            "name": "Object",
+                            "value-key": "[OBJ]",
+                            "type": "String",
+                            "optional": false
+                        }
+                    ]
+                },
+                {
+                    "id": "FileInput",
+                    "command-line": "[OBJ]",
+                    "inputs": [
+                        {
+                            "id": "obj",
+                            "name": "Object",
+                            "value-key": "[OBJ]",
+                            "type": "File",
+                            "optional": false
+                        }
+                    ]
+                }
+            ],
+            "optional": false
+        }
+    ],
+    "output-files": [
+        {
+            "id": "output",
+            "name": "Output",
+            "path-template": "output.txt"
+        }
+    ]
+}
