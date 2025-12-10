@@ -75,6 +75,9 @@ def validate_descriptor(descriptor, **kwargs):
         if isinstance(inp_type, dict):
             # Nested type (Styx extension) - treat as String for validation
             return "String"
+        if isinstance(inp_type, list):
+            # Union of nested types (Styx extension) - treat as String for validation
+            return "String"
         return inp_type
 
     def isValidConditionalExp(exp):
@@ -170,21 +173,9 @@ def validate_descriptor(descriptor, **kwargs):
         if clkeys[jdx] in key and key != clkeys[jdx]
     ]
 
-    # Verify that Ids are unique within each category
-    # Note: Styx extension allows same ID in inputs and outputs
+    # Note: Styx extension allows duplicate IDs, so ID uniqueness is not validated
     inIds, outIds = inputGet("id"), outputGet("id")
     grpIds = groupGet("id") if "groups" in descriptor.keys() else []
-    msg_template = '    IdError: "{0}" is non-unique'
-
-    def check_duplicates(id_list):
-        for idx, s1 in enumerate(id_list):
-            for jdx, s2 in enumerate(id_list):
-                if s1 == s2 and idx < jdx:
-                    errors.append(msg_template.format(s1))
-
-    check_duplicates(inIds)
-    check_duplicates(outIds)
-    check_duplicates(grpIds)
 
     # Verify that identical keys only exist if they are both in mutex groups
     msg_template = ' MutExError: "{0}" belongs to 2+ non exclusive IDs'
