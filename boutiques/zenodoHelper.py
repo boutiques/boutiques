@@ -277,7 +277,7 @@ class ZenodoHelper:
             "&file_type=json&type=software&"
             f"page=1&size={MAX_ZENODO_RESULTS}"
         )
-        r = requests.get(get_request)
+        r = requests.get(get_request, headers={"User-Agent": "bosh"})
         if r.status_code != 200:
             raise_error(ZenodoError, f"Error searching Zenodo: {r.json()}", r)
         if self.verbose:
