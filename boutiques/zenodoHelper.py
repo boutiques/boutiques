@@ -4,6 +4,7 @@ import re
 
 import simplejson as json
 
+from boutiques.__version__ import VERSION as BOSH_VERSION
 from boutiques.logger import print_info, raise_error
 from boutiques.util.utils import importCatcher
 
@@ -277,7 +278,7 @@ class ZenodoHelper:
             "&file_type=json&type=software&"
             f"page=1&size={MAX_ZENODO_RESULTS}"
         )
-        r = requests.get(get_request, headers={"User-Agent": "bosh"})
+        r = requests.get(get_request, headers={"User-Agent": f"bosh-{BOSH_VERSION}"})
         if r.status_code != 200:
             raise_error(ZenodoError, f"Error searching Zenodo: {r.json()}", r)
         if self.verbose:
