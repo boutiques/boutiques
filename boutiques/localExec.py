@@ -465,7 +465,7 @@ class LocalExecutor:
 
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
-        if conIsPresent and not self.debug:
+        if ("pytest" in sys.modules) or (conIsPresent and not self.debug):
             if os.path.isfile(dsname):
                 os.remove(dsname)
 
