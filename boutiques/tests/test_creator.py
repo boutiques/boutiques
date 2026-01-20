@@ -9,7 +9,7 @@ import pytest
 import simplejson as json
 
 import boutiques.creator as bc
-from boutiques import __file__ as bfile, bosh
+from boutiques.bosh import bosh
 from boutiques.creator import CreatorError
 from boutiques.tests.BaseTest import BaseTest
 from boutiques.util.utils import loadJson

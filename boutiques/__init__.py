@@ -1,3 +1,5 @@
+# flake8: noqa: F401
+
 from .bids import validate_bids
 from .bosh import *
 from .creator import CreateDescriptor
