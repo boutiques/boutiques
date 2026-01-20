@@ -25,6 +25,14 @@ from boutiques.logger import print_info, print_warning, raise_error
 from boutiques.util.utils import conditionalExpFormat, extractFileName, loadJson
 
 
+def cleanup_temp_file(filename: str, *, debug: bool, conIsPresent: bool):
+    # Destroy temporary docker script, if desired.
+    # By default, keep the script so the dev can look at it.
+    if ("pytest" in sys.modules) or (conIsPresent and not debug):
+        if os.path.isfile(filename):
+            os.remove(filename)
+
+
 class ExecutorOutput:
     def __init__(
         self,
@@ -377,6 +385,9 @@ class LocalExecutor:
                     if not Path(abs_path).exists():
                         missing_mounts.append(abs_path)
                 if missing_mounts:
+                    cleanup_temp_file(
+                        dsname, debug=self.debug, conIsPresent=conIsPresent
+                    )
                     raise_error(
                         ExecutorError,
                         f"Missing local mount location: {missing_mounts}",
@@ -463,11 +474,7 @@ class LocalExecutor:
             (stdout, stderr), exit_code = self._localExecute(command)
         time.sleep(0.5)  # Give the OS a (half) second to finish writing
 
-        # Destroy temporary docker script, if desired.
-        # By default, keep the script so the dev can look at it.
-        if conIsPresent and not self.debug:
-            if os.path.isfile(dsname):
-                os.remove(dsname)
+        cleanup_temp_file(dsname, debug=self.debug, conIsPresent=conIsPresent)
 
         # Check for output files
         missing_files = []
@@ -585,7 +592,7 @@ class LocalExecutor:
 
             # Container image does not exist and we can't pull it: just fail
             if self.noPull:
-                raise_error(ExecutorError, "Unable to retrieve Singularity " "image.")
+                raise_error(ExecutorError, "Unable to retrieve Singularity image.")
             # Try to pull the container image
             if self.imagePath:
                 lockDir = self.imagePath + "-lock"
@@ -629,7 +636,7 @@ class LocalExecutor:
             if self._singConExists(conName, imageDir):
                 conPath = op.abspath(op.join(imageDir, conName))
                 return conPath, f"Local ({conName})"
-            raise_error(ExecutorError, "Unable to retrieve Singularity " "image.")
+            raise_error(ExecutorError, "Unable to retrieve Singularity image.")
 
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName, imageDir):
@@ -1135,7 +1142,7 @@ class LocalExecutor:
         # encountered before blowing up
         except Exception as e:  # Avoid BaseExceptions like SystemExit
             sys.stderr.write(
-                "An error occurred in validation\n" "Previously saved issues\n"
+                "An error occurred in validation\nPreviously saved issues\n"
             )
             for err in self.errs:
                 sys.stderr.write("\t" + str(err) + "\n")
@@ -1180,7 +1187,7 @@ class LocalExecutor:
             boutiques.invocation(*args)
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write(
-                "An error occurred in validation\n" "Previously saved issues\n"
+                "An error occurred in validation\nPreviously saved issues\n"
             )
             for err in self.errs:
                 # Write any errors we found
