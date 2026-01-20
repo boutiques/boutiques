@@ -3,7 +3,6 @@
 import textwrap
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-import simplejson as json
 from tabulate import tabulate
 
 

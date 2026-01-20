@@ -4,9 +4,9 @@ import os
 
 import simplejson as json
 
-from boutiques.logger import print_info, raise_error
-from boutiques.util.utils import customSortDescriptorByKey, loadJson
-from boutiques.validator import ValidationError, validate_descriptor
+from boutiques.logger import raise_error
+from boutiques.util.utils import loadJson
+from boutiques.validator import validate_descriptor
 from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 
 

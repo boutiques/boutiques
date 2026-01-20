@@ -6,8 +6,7 @@ from collections import OrderedDict
 from operator import itemgetter
 from urllib.parse import quote
 
-from boutiques.logger import print_info, raise_error
-from boutiques.publisher import ZenodoError
+from boutiques.logger import print_info
 from boutiques.zenodoHelper import ZenodoHelper
 
 

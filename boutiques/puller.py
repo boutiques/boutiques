@@ -1,7 +1,4 @@
 import os
-import urllib
-
-import requests
 
 from boutiques.logger import print_info, raise_error
 from boutiques.searcher import Searcher
@@ -9,16 +6,13 @@ from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
 
 try:
     # Python 3
-    from urllib.request import urlopen, urlretrieve
+    from urllib.request import urlretrieve
 except ImportError:
     # Python 2
     from urllib import urlretrieve
 
-    from urllib2 import urlopen
-
 
 class Puller:
-
     def __init__(self, zids, verbose=False, sandbox=False):
         # remove zenodo prefix
         self.zenodo_entries = []
@@ -46,7 +40,7 @@ class Puller:
             except IndexError:
                 raise_error(
                     ZenodoError,
-                    "Zenodo ID must be prefixed by " "'zenodo', e.g. zenodo.123456",
+                    "Zenodo ID must be prefixed by 'zenodo', e.g. zenodo.123456",
                 )
         self.verbose = verbose
         self.sandbox = sandbox
@@ -72,7 +66,7 @@ class Puller:
             if not len(r.json()["hits"]["hits"]):
                 raise_error(
                     ZenodoError,
-                    f"Descriptor \"{entry['zid']}\" not found",
+                    f'Descriptor "{entry["zid"]}" not found',
                 )
             for hit in r.json()["hits"]["hits"]:
                 file_path = hit["files"][0]["links"]["self"]

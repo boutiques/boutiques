@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import os.path as op
 import re
-
-import simplejson
 
 from boutiques.logger import print_info, raise_error
 from boutiques.validator import DescriptorValidationError
@@ -11,7 +8,6 @@ from boutiques.validator import DescriptorValidationError
 
 # BIDS validation module
 def validate_bids(descriptor, valid=False):
-
     if not valid:
         msg = "Please provide a Boutiques descriptor that has been validated."
         raise_error(DescriptorValidationError, msg)
@@ -70,5 +66,5 @@ def validate_bids(descriptor, valid=False):
     else:
         raise_error(
             DescriptorValidationError,
-            "Invalid BIDS app descriptor:" "\n" + "\n".join(errors),
+            "Invalid BIDS app descriptor:\n" + "\n".join(errors),
         )

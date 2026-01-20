@@ -5,7 +5,6 @@ import os
 import os.path as op
 import re
 import sys
-from argparse import ArgumentParser
 from importlib.machinery import SourceFileLoader
 
 import simplejson as json

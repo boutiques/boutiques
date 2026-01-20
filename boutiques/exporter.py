@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import uuid
 
 import simplejson as json
 
@@ -14,7 +12,6 @@ class ExportError(Exception):
 
 
 class Exporter:
-
     def __init__(self, descriptor, identifier, sandbox=False):
         self.descriptor = descriptor
         self.identifier = identifier
