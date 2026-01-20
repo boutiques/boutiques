@@ -58,7 +58,7 @@ jobs:
 
         -   name: Run tests
             run: |
-                python -m pytest --cov=boutiques --cov-report=xml
+                python -m pytest --cov=boutiques --cov-report=xml -s -vv
 
         -   name: Upload coverage reports to Codecov
             uses: codecov/codecov-action@v5
