@@ -1,6 +1,6 @@
-import os.path as op
 import subprocess
 import tempfile
+from pathlib import Path
 
 import pytest
 import simplejson as json
@@ -57,7 +57,7 @@ def pytest_generate_tests(metafunc):
     # An id is created by concatenaning the name of the descriptor
     # with the name of the test case.
     names = [
-        f"{op.basename(descriptor_filename)}_{params[1]['name'].replace(' ', '-')}"
+        f"{Path(descriptor_filename).name}_{params[1]['name'].replace(' ', '-')}"
         for params in tests
     ]
 
