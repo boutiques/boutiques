@@ -91,11 +91,8 @@ def conditionalExpFormat(s):
 # the keys' order in a template descriptor
 def customSortDescriptorByKey(
     descriptor,
-    template=os.path.join(
-        os.path.dirname(bfile), "templates", "ordered_keys_desc.json"
-    ),
+    template=Path(bfile).parent / "templates" / "ordered_keys_desc.json",
 ):
-
     def sortListedObjects(objList, template):
         sortedObjList = []
         for obj in objList:
@@ -109,11 +106,11 @@ def customSortDescriptorByKey(
             sortedObjList.append(sortedObj)
 
         if len(objList) != len(sortedObjList):
-            print_warning("Sorted list does not represent" " original list.")
+            print_warning("Sorted list does not represent original list.")
             return objList
         for obj, sobj in zip(objList, sortedObjList):
             if obj != dict(sobj):
-                print_warning("Sorted list does not represent" " original list.")
+                print_warning("Sorted list does not represent original list.")
                 return objList
         return sortedObjList
 
@@ -137,7 +134,7 @@ def customSortDescriptorByKey(
         if key not in sortedDesc:
             sortedDesc[key] = descriptor[key]
     if sortedDesc != descriptor:
-        print_warning("Sorted descriptor does not represent" " original descriptor.")
+        print_warning("Sorted descriptor does not represent original descriptor.")
         return descriptor
     return sortedDesc
 
@@ -159,7 +156,7 @@ def customSortInvocationByInput(invocation, descriptor):
         }
     )
     if sortedInvoc != invocation:
-        print_warning("Sorted invocation does not represent" " original invocation.")
+        print_warning("Sorted invocation does not represent original invocation.")
         return invocation
     return sortedInvoc
 
