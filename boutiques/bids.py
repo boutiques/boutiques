@@ -39,7 +39,9 @@ def validate_bids(descriptor, valid=False):
         if inp["value-key"] == "[OUTPUT_DIR]"
     }
     if outtypes != ftypes:
-        errors += [f"   OutError: {', '.join(outtypes)} types for outdir do not match {', '.join(ftypes)}"]
+        errors += [
+            f"   OutError: {', '.join(outtypes)} types for outdir do not match {', '.join(ftypes)}"
+        ]
     # Verify that analysis levels is an enumerable with some
     # subset of "participant", "session", and "group"
     choices = ["session", "participant", "group"]
@@ -48,7 +50,11 @@ def validate_bids(descriptor, valid=False):
         for inp in descriptor["inputs"]
         if inp["value-key"] == "[ANALYSIS_LEVEL]"
     ][0]
-    errors += [f' LevelError: "{lv}" is not a valid analysis level' for lv in alevels if lv not in choices]
+    errors += [
+        f' LevelError: "{lv}" is not a valid analysis level'
+        for lv in alevels
+        if lv not in choices
+    ]
     # Verify there is only a single output defined (the directory)
     msg_template = "OutputError: 0 or multiple outputs defined"
     if len(descriptor["output-files"]) != 1:

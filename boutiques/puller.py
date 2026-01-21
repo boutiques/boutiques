@@ -91,7 +91,7 @@ class Puller:
                         ZenodoError,
                         f'Searched-for descriptor "{entry["zid"]}" '
                         f'does not match descriptor "{hit["id"]}" returned '
-                        f'from Zenodo',
+                        f"from Zenodo",
                     )
 
         return json_files

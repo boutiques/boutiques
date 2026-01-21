@@ -179,13 +179,17 @@ def validate_descriptor(descriptor, **kwargs):
                 for idx, grp in enumerate(descriptor.get("groups")):
                     mutex = grp.get("mutually-exclusive")
                     if set(grp["members"]) == set(mids) and not mutex:
-                        errors += [f' MutExError: "{key}" belongs to 2+ non exclusive IDs']
+                        errors += [
+                            f' MutExError: "{key}" belongs to 2+ non exclusive IDs'
+                        ]
 
     # Verify that output files have unique path-templates
     for ix, o1 in zip(outputGet("id"), outputGet("path-template")):
         for jx, o2 in zip(outputGet("id"), outputGet("path-template")):
             if o1 == o2 and jx != ix:
-                errors += [f'OutputError: "{ix}" and "{jx}" have the same path-template']
+                errors += [
+                    f'OutputError: "{ix}" and "{jx}" have the same path-template'
+                ]
             else:
                 errors += []
 
@@ -268,9 +272,7 @@ def validate_descriptor(descriptor, **kwargs):
         # Verify flag-type inputs (have flags, not required, cannot be lists)
         if inp["type"] == "Flag":
             if "command-line-flag" not in inp.keys():
-                errors += [
-                    f' InputError: "{inp["id"]}" must have a command-line flag'
-                ]
+                errors += [f' InputError: "{inp["id"]}" must have a command-line flag']
             else:
                 errors += []
 
@@ -333,7 +335,9 @@ def validate_descriptor(descriptor, **kwargs):
                 errors += []
 
             errors += (
-                [f' InputError: "{inp["id"]}" cannot have negative min entries ({minn})']
+                [
+                    f' InputError: "{inp["id"]}" cannot have negative min entries ({minn})'
+                ]
                 if minn < 0
                 else []
             )
@@ -463,7 +467,7 @@ def validate_descriptor(descriptor, **kwargs):
                 if "requires-inputs" in inById(member).keys():
                     errors += [
                         f' GroupError: "{grp["id"]}" is mutually-exclusive and '
-                        f'cannot have members require one another, such as '
+                        f"cannot have members require one another, such as "
                         f'"{member}" and "{req}"'
                         for req in inById(member)["requires-inputs"]
                         if req in set(grp["members"])
@@ -501,7 +505,7 @@ def validate_descriptor(descriptor, **kwargs):
                     ):
                         errors += [
                             f' GroupError: "{grp["id"]}" is one-is-required and '
-                            f'cannot be a subset of the all-or-none group '
+                            f"cannot be a subset of the all-or-none group "
                             f'"{grp2["id"]}"'
                         ]
 

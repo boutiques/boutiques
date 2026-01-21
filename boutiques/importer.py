@@ -1049,7 +1049,9 @@ class Docopt_Importer:
                     new_group["members"].extend(groups[member]["members"])
             for nested_g in nested_grps:
                 new_group["members"].remove(nested_g)
-            new_group["name"] = f"Mutex group with members: {', '.join(new_group['members'])}"
+            new_group["name"] = (
+                f"Mutex group with members: {', '.join(new_group['members'])}"
+            )
         self.descriptor["groups"].append(new_group)
         return new_group["id"]
 

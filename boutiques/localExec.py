@@ -79,7 +79,9 @@ class ExecutorOutput:
             f"{self.container_command}{os.linesep}"
             f"{title('Exit code')}"
             f"{self.exit_code}{os.linesep}"
-            f"{title('Std out')}{self.stdout}{os.linesep}" if self.stdout else ""
+            f"{title('Std out')}{self.stdout}{os.linesep}"
+            if self.stdout
+            else ""
         )
 
         out += (
