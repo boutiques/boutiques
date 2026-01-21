@@ -1,5 +1,6 @@
 import os
 from collections import OrderedDict
+from pathlib import Path
 
 import simplejson as json
 
@@ -30,10 +31,7 @@ def extractFileName(path):
     # Helps OS path handle case where "/" is at the end of path
     if path is None:
         return None
-    elif path[:-1] == "/":
-        return os.path.basename(path[:-1]) + "/"
-    else:
-        return os.path.basename(path)
+    return Path(path).name
 
 
 class LoadError(Exception):
