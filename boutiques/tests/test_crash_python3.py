@@ -14,9 +14,10 @@ class TestCrashPython3(BaseTest):
 
     @pytest.mark.usefixtures("skip_if_no_apptainer")
     def test_no_container(self):
-        command = "bosh exec launch --skip-data-collection " "{} {}".format(
-            self.get_file_path("crash3.json"),
-            self.get_file_path("crash3_invocation.json"),
+        command = (
+            f"bosh exec launch --skip-data-collection "
+            f"{self.get_file_path('crash3.json')} "
+            f"{self.get_file_path('crash3_invocation.json')}"
         )
         print(command)
         process = subprocess.Popen(

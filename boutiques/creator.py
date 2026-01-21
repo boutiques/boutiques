@@ -90,8 +90,8 @@ class CreateDescriptor:
         if returncode:
             raise_error(
                 CreatorError,
-                "Cannot pull Docker image {}: {} "
-                "{} {}".format(docker_image_name, stdout, os.linesep, stderr),
+                f"Cannot pull Docker image {docker_image_name}: {stdout}"
+                f"{os.linesep}{stderr}",
             )
         ((stdout, stderr), returncode) = self.executor(
             "docker inspect " + docker_image_name
@@ -99,8 +99,8 @@ class CreateDescriptor:
         if returncode:
             raise_error(
                 CreatorError,
-                "Cannot inspect Docker image {}: {} "
-                "{} {}".format(docker_image_name, stdout, os.linesep, stderr),
+                f"Cannot pull Docker image {docker_image_name}: {stdout}"
+                f"{os.linesep}{stderr}",
             )
         image_attrs = json.loads(stdout.decode("utf-8"))[0]
         if image_attrs.get("ContainerConfig"):

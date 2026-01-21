@@ -34,9 +34,9 @@ def deprecate(
             print_info(f"Tool {zenodo_id} is already deprecated by {deprecated} ")
         if by_zenodo_id is not None:
             prompt = (
-                "Tool {} will be deprecated by {}, "
+                f"Tool {zenodo_id} will be deprecated by {by_zenodo_id}, "
                 "this cannot be undone. Are you sure? (Y/n) "
-            ).format(zenodo_id, by_zenodo_id)
+            )
             ret = input(prompt)
             if ret.upper() != "Y":
                 return
@@ -56,8 +56,8 @@ def deprecate(
         ]
         raise_error(
             DeprecateError,
-            "Tool {} has a newer version "
-            "(zenodo.{}), it cannot be deprecated.".format(zenodo_id, new_version),
+            f"Tool {zenodo_id} has a newer version "
+            f"(zenodo.{new_version}), it cannot be deprecated.",
         )
         return
 

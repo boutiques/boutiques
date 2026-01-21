@@ -86,8 +86,13 @@ class PrettyPrinter:
         cline = f"Command-line:\n{cline}"
 
         # Initialize the tool description with the pieces we've collected so far
-        self.helptext = "{0}\n\n{1}\n{2}\n{3}\n\n{4}\n\n{0}" "".format(
-            self.sep, name, description, tags, cline
+        self.helptext = (
+            f"{self.sep}\n\n"
+            f"{name}\n"
+            f"{description}\n"
+            f"{tags}\n\n"
+            f"{cline}\n\n"
+            f"{self.sep}"
         )
 
     def descContainer(self):
@@ -124,8 +129,9 @@ class PrettyPrinter:
 
             # If a config file, add the template
             if output.get("file-template"):
-                temp_info += "\n\tTemplate:\n\t {}" "".format(
-                    "\n\t ".join(output["file-template"])
+                temp_info += (
+                    f"\n\tTemplate:\n\t "
+                    f"{'\n\t '.join(output['file-template'])}"
                 )
                 config_info += temp_info
             else:
@@ -168,8 +174,9 @@ class PrettyPrinter:
         ecod = self.desc["error-codes"]
         ecod_info = "Error Codes:"
         for ecod_obj in ecod:
-            ecod_info += "\n\tReturn Code: {}\n\tDescription: {}\n" "".format(
-                ecod_obj["code"], ecod_obj["description"]
+            ecod_info += (
+                f"\n\tReturn Code: {ecod_obj['code']}"
+                f"\n\tDescription: {ecod_obj['description']}\n"
             )
         ecod_info += "\n"
         self._addSegment(ecod_info)
@@ -231,21 +238,17 @@ class PrettyPrinter:
             # For every input with the clkey (usually just 1)...
             for i_inp, inp in enumerate(inps):
                 if bool(inp.get("optional")):
-                    opt_inp_descr += opt_inp_desc_header.format(i_inp + 1)
+                    opt_inp_descr += f"Option {i_inp + 1}:\n"
                 else:
-                    req_inp_descr += req_inp_desc_header.format(i_inp + 1)
+                    req_inp_descr += f"Option {i_inp + 1}:\n"
 
                 # Grab basic input fields first
                 tmp_inp_descr = (
-                    "ID: {}\nValue Key: {}\nType: {}\n"
-                    "List: {}\nOptional: {}\n"
-                    "".format(
-                        inp.get("id"),
-                        inp.get("value-key"),
-                        inp.get("type"),
-                        bool(inp.get("list")),
-                        bool(inp.get("optional")),
-                    )
+                    f"ID: {inp.get('id')}\n"
+                    f"Value Key: {inp.get('value-key')}\n"
+                    f"Type: {inp.get('type')}\n"
+                    f"List: {bool(inp.get('list'))}\n"
+                    f"Optional: {bool(inp.get('optional'))}\n"
                 )
 
                 # If it's a list, get min and max length and present it sensibly

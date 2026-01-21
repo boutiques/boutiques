@@ -266,16 +266,14 @@ class Importer:
                 if cwl_type["type"] != "array":
                     raise_error(
                         ImportError,
-                        "Only 1-level nested "
-                        "types of type"
-                        " 'array' are supported (CWL input: {})".format(cwl_input),
+                        f"Only 1-level nested types of type 'array' are supported "
+                        f"(CWL input: {cwl_input})",
                     )
                 if cwl_type.get("inputBinding") is not None:
                     raise_error(
                         ImportError,
-                        "Input bindings of "
-                        "array elements "
-                        "are not supported (CWL input: {})".format(cwl_input),
+                        f"Input bindings of array elements are not supported "
+                        f"(CWL input: {cwl_input})",
                     )
                 cwl_type = cwl_type["items"]
                 bout_input["list"] = True
@@ -553,8 +551,8 @@ class Importer:
             for id, value in input_config.items():
                 newInput = {"id": id, "name": _createNameFromID(id)}
                 newInput.update(_getPropertiesFromValue(value))
-                newInput["value-key"] = "[{}]".format(
-                    newInput["name"].replace(" ", "_").upper()
+                newInput["value-key"] = (
+                    f"[{newInput['name'].replace(' ', '_').upper()}]"
                 )
                 desc_inputs.append(newInput)
             return desc_inputs
@@ -1028,8 +1026,9 @@ class Docopt_Importer:
         unique_name = self._getUniqueId(pretty_name)
         new_group = {
             "id": pretty_name,
-            "name": "Mutex group with members: {}".format(
-                ", ".join([self._getStrippedName(name) for name in arg_names])
+            "name": (
+                f"Mutex group with members: "
+                f"{', '.join(self._getStrippedName(name) for name in arg_names)}"
             ),
             "members": [self._getParamName(name) for name in arg_names],
             "mutually-exclusive": True,
@@ -1050,9 +1049,7 @@ class Docopt_Importer:
                     new_group["members"].extend(groups[member]["members"])
             for nested_g in nested_grps:
                 new_group["members"].remove(nested_g)
-            new_group["name"] = "Mutex group with members: {}".format(
-                ", ".join(new_group["members"])
-            )
+            new_group["name"] = f"Mutex group with members: {', '.join(new_group['members'])}"
         self.descriptor["groups"].append(new_group)
         return new_group["id"]
 

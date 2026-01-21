@@ -53,8 +53,8 @@ class NexusHelper:
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus credentials.")
         prompt = (
-            "Please enter your Nexus access token (it will be "
-            "saved in {} for future use): ".format(self.config_file)
+            f"Please enter your Nexus access token (it will be "
+            f"saved in {self.config_file} for future use): "
         )
         return self.prompt(prompt)
 
@@ -65,8 +65,8 @@ class NexusHelper:
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus organization.")
         prompt = (
-            "Please enter the Nexus organization you want to publish to"
-            " (it will be saved in {} for future use): ".format(self.config_file)
+            f"Please enter the Nexus organization you want to publish to"
+            f" (it will be saved in {self.config_file} for future use): "
         )
         return self.prompt(prompt)
 
@@ -77,8 +77,8 @@ class NexusHelper:
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus project.")
         prompt = (
-            "Please enter the Nexus project you want to publish to"
-            " (it will be saved in {} for future use): ".format(self.config_file)
+            f"Please enter the Nexus project you want to publish to"
+            f" (it will be saved in {self.config_file} for future use): "
         )
         return self.prompt(prompt)
 
@@ -91,8 +91,8 @@ class NexusHelper:
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
         if self.verbose:
             print_info(
-                "Nexus access token, organization and project"
-                " saved in {}".format(self.config_file)
+                f"Nexus access token, organization and project"
+                f" saved in {self.config_file}"
             )
 
     def get_nexus_endpoint(self):
@@ -144,8 +144,8 @@ class NexusHelper:
             if 404 == e.response.status_code:
                 raise_error(
                     NexusError,
-                    "No project '{}' in organization '{}' "
-                    "in Nexus repository".format(project, org),
+                    f"No project '{project}' in organization '{org}' "
+                    f"in Nexus repository",
                     e.response,
                 )
             elif 401 == e.response.status_code:

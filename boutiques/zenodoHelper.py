@@ -41,8 +41,8 @@ class ZenodoHelper:
         if self.no_int:
             raise_error(ZenodoError, "Cannot find Zenodo credentials.")
         prompt = (
-            "Please enter your Zenodo access token (it will be "
-            "saved in {} for future use): ".format(self.config_file)
+            f"Please enter your Zenodo access token (it will be "
+            f"saved in {self.config_file} for future use): "
         )
         try:
             return raw_input(prompt)  # Python 2
@@ -93,8 +93,8 @@ class ZenodoHelper:
         if not re.match(r"zenodo\.[0-9]", zenodo_id):
             raise_error(
                 ZenodoError,
-                "This does not look like a valid Zenodo ID: {}."
-                "Zenodo ids must be in the form zenodo.1234567".format(zenodo_id),
+                f"This does not look like a valid Zenodo ID: {zenodo_id}."
+                "Zenodo ids must be in the form zenodo.1234567",
             )
         parts = zenodo_id.split(".")
         return parts[1]
