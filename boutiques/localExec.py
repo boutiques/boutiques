@@ -4,7 +4,6 @@ import datetime
 import hashlib
 import math
 import os
-import os.path as op
 import random
 import random as rnd
 import re
@@ -275,7 +274,7 @@ class LocalExecutor:
             + str(millitime)
             + ".localExec.boshjob.sh"
         )
-        dsname = op.realpath(dsname)
+        dsname = Path(dsname).resolve()
         # If container is present, alter the command template accordingly
         container_location = ""
         container_command = ""
@@ -295,7 +294,7 @@ class LocalExecutor:
             with open(dsname, "w") as scrFile:
                 scrFile.write(cmdString)
             # Ensure the script is executable
-            self._localExecute("chmod 755 " + dsname)
+            self._localExecute("chmod 755 " + str(dsname))
             # Prepare extra environment variables
             envString = ""
             if envVars:
@@ -304,8 +303,8 @@ class LocalExecutor:
             # Change launch (working) directory if desired
             launchDir = self.launchDir
             if launchDir is None:
-                launchDir = op.realpath("./")
-            launchDir = op.realpath(launchDir)
+                launchDir = Path().resolve()
+            launchDir = Path(launchDir).resolve()
             # Get the container options
             conOptsString = ""
             if conOpts:
@@ -330,7 +329,7 @@ class LocalExecutor:
             #  - lowercase the drive letter
             #  - remove the ':'
             def normalizePath(path):
-                regexResult = re.match(r"^([A-Z]):", path)
+                regexResult = re.match(r"^([A-Z]):", str(path))
                 if regexResult:
                     path = path.replace("\\", "/")
                     path = "/" + path[0].lower() + path[2:]
@@ -340,17 +339,18 @@ class LocalExecutor:
             # The resulting path must follow
             # this docker compatible format: /c/a/windows/or/linux/path
             def makePathAbsolute(path):
+                # Note: Not sure if this conditional check is necessary with pathlib.Path
                 # If path is already absolute: do nothing
                 # (Note that on Windows, op.realpath(/c/path/to/file)
                 #  returns C:\\c\\path\\to\\file, so we should
                 #  avoid applying op.realpath() if already absolute)
                 # (On both Windows and Linux,
                 #  paths beginning with '/' are considered absolute)
-                if op.isabs(path):
+                if Path(path).is_absolute():
                     # If path is absolute, it must be normalized
                     return normalizePath(path)
                 # Make path absolute
-                path = op.realpath(path)
+                path = Path(path).resolve()
                 # Normalize it
                 return normalizePath(path)
 
@@ -384,7 +384,7 @@ class LocalExecutor:
 
                 # normalize paths and add file under same absolute path
                 mount_inputs = [
-                    makePathAbsolute(m) + ":" + Path(launchDir, m).resolve().as_posix()
+                    str(makePathAbsolute(m)) + ":" + str(Path(launchDir, m).resolve())
                     for m in mount_inputs
                 ]
                 mount_strings.extend(mount_inputs)
@@ -397,7 +397,7 @@ class LocalExecutor:
                 makePathAbsolute(m.split(":")[0]) + ":" + m.split(":")[1]
                 for m in mount_strings
             ]
-            mount_strings.append(makePathAbsolute("./") + ":" + launchDir)
+            mount_strings.append(str(makePathAbsolute("./")) + ":" + str(launchDir))
 
             if not self.noAutomounts:
                 mount_strings = addAutomounts(mount_strings, launchDir)
@@ -432,12 +432,12 @@ class LocalExecutor:
                     + " -v "
                     + docker_mounts
                     + " -w "
-                    + launchDir
+                    + str(launchDir)
                     + " "
                     + conOptsString
                     + str(conImage)
                     + " "
-                    + dsname
+                    + str(dsname)
                 )
             elif conTypeToUse == "singularity":
                 envString = ""
@@ -466,8 +466,8 @@ class LocalExecutor:
         # Destroy temporary docker script, if desired.
         # By default, keep the script so the dev can look at it.
         if conIsPresent and not self.debug:
-            if os.path.isfile(dsname):
-                os.remove(dsname)
+            if Path(dsname).is_file():
+                Path(dsname).unlink()
 
         # Check for output files
         missing_files = []
@@ -572,20 +572,20 @@ class LocalExecutor:
                 conIndex = conIndex + "/"
 
             if self.imagePath:
-                conName = op.basename(self.imagePath)
-                imageDir = op.normpath(op.dirname(self.imagePath))
+                conName = Path(self.imagePath).name
+                imageDir = Path(self.imagePath).parent.resolve()
             else:
                 conName = conImage.replace("/", "-").replace(":", "-") + ".simg"
-                imageDir = op.normpath("")
+                imageDir = Path().resolve()
 
             # Check if container already exists
             if self._singConExists(conName, imageDir):
-                conPath = op.abspath(op.join(imageDir, conName))
+                conPath = Path(imageDir, conName).absolute()
                 return conPath, f"Local ({conName})"
 
             # Container image does not exist and we can't pull it: just fail
             if self.noPull:
-                raise_error(ExecutorError, "Unable to retrieve Singularity " "image.")
+                raise_error(ExecutorError, "Unable to retrieve Singularity image.")
             # Try to pull the container image
             if self.imagePath:
                 lockDir = self.imagePath + "-lock"
@@ -609,7 +609,7 @@ class LocalExecutor:
                     try:
                         # Check if container was created while waiting
                         if self._singConExists(conName, imageDir):
-                            conPath = op.abspath(op.join(imageDir, conName))
+                            conPath = Path(imageDir, conName).absolute()
                             container_location = f"Local ({conName})"
                         # Container still does not exist, so pull it
                         else:
@@ -627,9 +627,9 @@ class LocalExecutor:
             # If loop times out, check again for existence, otherwise
             # raise an error
             if self._singConExists(conName, imageDir):
-                conPath = op.abspath(op.join(imageDir, conName))
+                conPath = Path(imageDir, conName).absolute()
                 return conPath, f"Local ({conName})"
-            raise_error(ExecutorError, "Unable to retrieve Singularity " "image.")
+            raise_error(ExecutorError, "Unable to retrieve Singularity image.")
 
     # Private method that checks if a Singularity image exists locally
     def _singConExists(self, conName, imageDir):
@@ -666,8 +666,8 @@ class LocalExecutor:
                 + stderr.decode("utf-8")
             )
             raise_error(ExecutorError, message)
-        os.rename(op.join(imageDir, conNameTmp), op.join(imageDir, conName))
-        conPath = op.abspath(op.join(imageDir, conName))
+        Path(imageDir, conNameTmp).rename(Path(imageDir, conName))
+        conPath = Path(imageDir, conName).absolute()
         return conPath, container_location
 
     # Removes the lock directory and environment variable
@@ -1135,7 +1135,7 @@ class LocalExecutor:
         # encountered before blowing up
         except Exception as e:  # Avoid BaseExceptions like SystemExit
             sys.stderr.write(
-                "An error occurred in validation\n" "Previously saved issues\n"
+                "An error occurred in validation\nPreviously saved issues\n"
             )
             for err in self.errs:
                 sys.stderr.write("\t" + str(err) + "\n")
@@ -1180,7 +1180,7 @@ class LocalExecutor:
             boutiques.invocation(*args)
         except Exception:  # Avoid catching BaseExceptions like SystemExit
             sys.stderr.write(
-                "An error occurred in validation\n" "Previously saved issues\n"
+                "An error occurred in validation\nPreviously saved issues\n"
             )
             for err in self.errs:
                 # Write any errors we found
@@ -1270,7 +1270,7 @@ class LocalExecutor:
                         and template.find(clk) > 0
                         and is_output
                     ):
-                        val = op.basename(val)
+                        val = Path(val).name
                 # Here val can be a number so we need to cast it
                 if val is not None and val != "":
                     template = template.replace(clk, str(val))
@@ -1337,7 +1337,7 @@ class LocalExecutor:
             )
 
             if self.safeGet(outputId, "uses-absolute-path"):
-                outputFileName = os.path.abspath(outputFileName)
+                outputFileName = Path(outputFileName).absolute()
             self.out_dict[outputId] = outputFileName
 
     def _getCondPathTemplateExp(self, templateKey):
@@ -1395,9 +1395,9 @@ class LocalExecutor:
             template = os.linesep.join(newTemplate)
             # Write the configuration file
             fileName = self.out_dict[outputId]
-            dirs = os.path.dirname(fileName)
-            if dirs and not os.path.exists(dirs):
-                os.makedirs(dirs)
+            dirs = Path(fileName).parent
+            if dirs and not dirs.exists():
+                dirs.mkdir(parents=True)
             with open(fileName, "w+") as fil:
                 fil.write(template)
 
@@ -1451,7 +1451,7 @@ class LocalExecutor:
         elif userIn.split(".")[0].lower() == "zenodo":
             return doi_prefix + userIn
         # File cases
-        if os.path.isfile(userIn):
+        if Path(userIn).is_file():
             # Most recent DOI in file if user is publisher
             # Include check to ensure descriptor is unmodified
             if self.desc_dict.get("doi") is not None:
@@ -1463,8 +1463,8 @@ class LocalExecutor:
                     return doi
             # DOI in filename if descriptor pulled from Zenodo
             # Include check to ensure descriptor is as published
-            elif os.path.basename(userIn).split("-")[0].lower() == "zenodo":
-                doi = os.path.basename(userIn).split(".")[0].replace("-", ".")
+            elif Path(userIn).name.split("-")[0].lower() == "zenodo":
+                doi = Path(userIn).name.split(".")[0].replace("-", ".")
                 if loadJson(doi) == self.desc_dict:
                     return doi_prefix + doi
         # No DOI found, save descriptor to cache and return filename
@@ -1514,13 +1514,13 @@ class LocalExecutor:
     def _buildPublicFile(self, path):
         filename = extractFileName(path)
         # If path is not found, report it
-        if not os.path.exists(path):
+        if not Path(path).exists():
             return {"file-name": filename, "not_found": True}
         # Directories are expanded recursively
-        if os.path.isdir(path):
-            contents = os.listdir(path)
+        if Path(path).is_dir():
+            contents = [f.name for f in Path(path).iterdir()]
             # Recursive call to expand directory
-            files = [self._buildPublicFile(os.path.join(path, x)) for x in contents]
+            files = [self._buildPublicFile(Path(path) / x) for x in contents]
             return {"file-name": filename, "files": files}
         # Files are hashed
         else:
@@ -1544,9 +1544,9 @@ class LocalExecutor:
         # Convert dictionary to Json string
         content = json.dumps(data_dict, indent=4)
         # Write collected data to file
-        data_cache_dir = getDataCacheDir()
+        data_cache_dir = Path(getDataCacheDir())
         filename = f"{tool_name}_{date_time}.json"
-        file_path = os.path.join(data_cache_dir, filename)
+        file_path = data_cache_dir / filename
         file = open(file_path, "w+")
         file.write(content)
         file.close()
@@ -1558,8 +1558,8 @@ class LocalExecutor:
     # copy for future publication
     def _saveDescriptorToCache(self):
         tool_name = self.desc_dict.get("name").replace(" ", "-")
-        data_cache_dir = getDataCacheDir()
-        data_cache_files = os.listdir(data_cache_dir)
+        data_cache_dir = Path(getDataCacheDir())
+        data_cache_files = [f.name for f in data_cache_dir.iterdir()]
         # Filter for descriptors in cache with the same tool name to check
         # if descriptor already in cache
         matching_files = [
@@ -1569,7 +1569,7 @@ class LocalExecutor:
         ]
         match = None
         for fl in matching_files:
-            path = os.path.join(data_cache_dir, fl)
+            path = data_cache_dir / fl
             file_dict = loadJson(path)
             if file_dict == self.desc_dict:
                 match = fl
@@ -1584,7 +1584,7 @@ class LocalExecutor:
         content = json.dumps(self.desc_dict, indent=4)
         date_time = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss%fms")
         filename = f"descriptor_{tool_name}_{date_time}.json"
-        path = os.path.join(data_cache_dir, filename)
+        path = data_cache_dir / filename
         file = open(path, "w+")
         file.write(content)
         file.close()

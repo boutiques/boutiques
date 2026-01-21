@@ -2,11 +2,11 @@
 
 import collections
 import os
-import os.path as op
 import re
 import sys
 from argparse import ArgumentParser
 from importlib.machinery import SourceFileLoader
+from pathlib import Path
 
 import simplejson as json
 from jsonschema import ValidationError
@@ -102,13 +102,13 @@ class Importer:
             }
             del descriptor["walltime-estimate"]
 
-        with open(self.output_descriptor, "w") as fhandle:
+        with Path(self.output_descriptor).open("w") as fhandle:
             fhandle.write(json.dumps(customSortDescriptorByKey(descriptor), indent=4))
         validate_descriptor(loadJson(self.output_descriptor))
 
     def get_entry_point(self, input_descriptor):
         entrypoint = None
-        with open(os.path.join(self.input_descriptor, "Dockerfile")) as f:
+        with (Path(self.input_descriptor) / "Dockerfile").open() as f:
             content = f.readlines()
         for line in content:
             if line.startswith("ENTRYPOINT"):
@@ -148,18 +148,17 @@ class Importer:
             output.write(json.dumps(docoptImporter.descriptor, indent=4))
 
     def import_bids(self):
-        path, fil = os.path.split(__file__)
-        template_file = os.path.join(path, "templates", "bids-app.json")
+        template_file = Path(__file__).parent / "templates" / "bids-app.json"
 
-        with open(template_file) as f:
+        with template_file.open() as f:
             template_string = f.read()
 
         errors = []
-        app_name = os.path.basename(os.path.abspath(self.input_descriptor))
+        app_name = Path(self.input_descriptor).name
         version = "unknown"
-        version_file = os.path.join(self.input_descriptor, "version")
-        if os.path.exists(version_file):
-            with open(version_file) as f:
+        version_file = Path(self.input_descriptor) / "version"
+        if version_file.exists():
+            with version_file.open() as f:
                 version = f.read().strip()
         git_repo = "https://github.com/BIDS-Apps/" + app_name
         entrypoint = self.get_entry_point(self.input_descriptor)
@@ -377,7 +376,7 @@ class Importer:
             bout_desc["description"] = "Tool imported from CWL."
         bout_desc["inputs"] = boutiques_inputs
         # This may not be a great idea but not sure if CWL tools have names
-        bout_desc["name"] = op.splitext(op.basename(self.input_descriptor))[0]
+        bout_desc["name"] = Path(self.input_descriptor).stem
         bout_desc["output-files"] = boutiques_outputs
         bout_desc["schema-version"] = "0.5"
         bout_desc["tool-version"] = "unknown"  # perhaphs there's one in cwl
@@ -424,7 +423,7 @@ class Importer:
                             )
                     template = template.split(os.linesep)
                     assert template is not None
-                    name = op.splitext(file_name)[0]
+                    name = Path(file_name).stem
                     boutiques_outputs.append(
                         {
                             "id": name,

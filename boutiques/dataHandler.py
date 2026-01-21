@@ -2,6 +2,7 @@
 import hashlib
 import os
 import time
+from pathlib import Path
 
 from boutiques.logger import print_info, raise_error
 from boutiques.nexusHelper import NexusHelper
@@ -9,11 +10,10 @@ from boutiques.util.utils import extractFileName, importCatcher, loadJson
 
 
 class DataHandler:
-
     # Constructor
     def __init__(self):
-        self.cache_dir = getDataCacheDir()
-        self.cache_files = os.listdir(self.cache_dir)
+        self.cache_dir = Path(getDataCacheDir())
+        self.cache_files = [f.name for f in self.cache_dir.iterdir()]
         self.descriptor_files = [
             fl for fl in self.cache_files if fl.split("_")[0] == "descriptor"
         ]
@@ -33,18 +33,18 @@ class DataHandler:
             # Display the first file in cache
             if len(self.record_files) > 0:
                 filename = self.record_files[0]
-                file_path = os.path.join(self.cache_dir, filename)
+                file_path = self.cache_dir / filename
                 self._display_file(file_path)
             else:
                 print("No records in the cache at the moment.")
         elif self.latest:
             if len(self.record_files) > 0:
                 self.record_files.sort(
-                    key=lambda x: os.path.getmtime(os.path.join(self.cache_dir, x)),
+                    key=lambda x: (self.cache_dir / x).stat().st_mtime,
                     reverse=True,
                 )
                 filename = self.record_files[0]
-                file_path = os.path.join(self.cache_dir, filename)
+                file_path = self.cache_dir / filename
                 self._display_file(file_path)
             else:
                 print("No records in the cache at the moment.")
@@ -152,7 +152,7 @@ class DataHandler:
                 self.nexus_helper.publish(
                     self.nexus_org,
                     self.nexus_project,
-                    os.path.join(self.cache_dir, file),
+                    self.cache_dir / file,
                 )
 
         # Publish to Zenodo
@@ -164,7 +164,7 @@ class DataHandler:
 
             # Upload all files in files_list to deposition
             for fil in records_dict.keys():
-                file_path = os.path.join(self.cache_dir, fil)
+                file_path = self.cache_dir / fil
                 self.zenodo_helper.zenodo_upload_file(
                     deposition_id,
                     file_path,
@@ -189,12 +189,12 @@ class DataHandler:
         desc_to_publish = set()
         publishable_dict = {}
         for fl in files_list:
-            fl_path = os.path.join(self.cache_dir, fl)
+            fl_path = self.cache_dir / fl
             fl_dict = loadJson(fl_path)
             doi = fl_dict.get("summary").get("descriptor-doi")
             # Descriptor is not publish, record contains link to file
             if doi.split("_")[0] == "descriptor":
-                desc_path = os.path.join(self.cache_dir, doi)
+                desc_path = self.cache_dir / doi
                 desc_dict = loadJson(desc_path)
                 # Descriptor is published, record needs to be updated
                 if desc_dict.get("doi") is not None:
@@ -286,9 +286,7 @@ class DataHandler:
             fl for fl in os.listdir(self.cache_dir) if fl not in self.descriptor_files
         ]
         doi_list = [
-            loadJson(os.path.join(self.cache_dir, fl))
-            .get("summary")
-            .get("descriptor-doi")
+            loadJson(self.cache_dir / fl).get("summary").get("descriptor-doi")
             for fl in self.record_files
         ]
 
@@ -322,18 +320,18 @@ class DataHandler:
             # Check file exists in cache
             self._file_exists_in_cache(file)
             # Remove file from cache
-            file_path = os.path.join(self.cache_dir, file)
+            file_path = self.cache_dir / file
             os.remove(file_path)
             print_info(f"File {file} has been removed from the data cache")
         # Remove all files in the data cache
         else:
-            [os.remove(os.path.join(self.cache_dir, f)) for f in self.cache_files]
+            [(self.cache_dir / f).unlink() for f in self.cache_files]
             print_info("All files have been removed from the data cache")
 
     def _file_exists_in_cache(self, filename):
-        file_path = os.path.join(self.cache_dir, filename)
+        file_path = self.cache_dir / filename
         # Incorrect filename input
-        if not os.path.isfile(file_path):
+        if not file_path.is_file():
             msg = f"File {filename} does not exist in the data cache"
             raise_error(ValueError, msg)
 
@@ -350,12 +348,12 @@ class DataHandler:
 
 
 def getDataCacheDir():
-    cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "boutiques")
-    data_cache_dir = os.path.join(cache_dir, "data")
-    if not os.path.exists(cache_dir):
-        os.makedirs(cache_dir, exist_ok=True)
-    if not os.path.exists(data_cache_dir):
-        os.makedirs(data_cache_dir, exist_ok=True)
+    cache_dir = Path.home() / ".cache" / "boutiques"
+    data_cache_dir = cache_dir / "data"
+    if not cache_dir.exists():
+        cache_dir.mkdir(parents=True, exist_ok=True)
+    if not data_cache_dir.exists():
+        data_cache_dir.mkdir(parents=True, exist_ok=True)
     return data_cache_dir
 
 

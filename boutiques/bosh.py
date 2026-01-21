@@ -2,8 +2,8 @@
 
 import argparse
 import os
-import os.path as op
 import sys
+from pathlib import Path
 
 import simplejson as json
 from jsonschema import ValidationError
@@ -379,7 +379,7 @@ def test(*params):
         invocation(*testArgs)
 
     # Invocations have been properly validated. We can launch the actual tests.
-    test_path = op.join(op.dirname(op.realpath(__file__)), "test.py")
+    test_path = Path(__file__).parent / "test.py"
     test_args = [test_path, "--descriptor", results.descriptor]
     if results.imagepath:
         test_args.extend(["--imagepath", results.imagepath])
@@ -512,7 +512,7 @@ def deprecate(*params):
 def bosh(args=None):
     # Returns True if bosh was called from the CLI
     def runs_as_cli():
-        return os.path.basename(sys.argv[0]) == "bosh"
+        return Path(sys.argv[0]).name == "bosh"
 
     def bosh_return(val, code=0, hide=False, formatted=None):
         if runs_as_cli():

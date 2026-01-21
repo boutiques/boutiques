@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+from pathlib import Path
 
 import simplejson as json
 
@@ -90,7 +90,7 @@ class Publisher:
                 "updated version. A new DOI will be generated.",
             )
 
-        self.config_file = os.path.join(os.path.expanduser("~"), ".boutiques")
+        self.config_file = str(Path.home() / ".boutiques")
 
         # Fix Zenodo access token
         self.zenodo_access_token = self.zenodo_helper.verify_zenodo_access_token(
@@ -179,7 +179,7 @@ class Publisher:
         with open(self.descriptor_file_name, "w") as fhandle:
             fhandle.write(json.dumps(self.descriptor, indent=4))
 
-        if os.path.isfile(self.descriptor_file_name):
+        if Path(self.descriptor_file_name).is_file():
             return "OK"
         return False
 

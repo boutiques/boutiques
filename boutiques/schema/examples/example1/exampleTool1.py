@@ -3,10 +3,11 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 
 
 def file_exists(parser, file_name):
-    if not os.path.exists(file_name):
+    if not Path(file_name).exists():
         parser.error(f"File not found: {file_name}")
     return file_name
 
