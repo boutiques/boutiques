@@ -34,8 +34,9 @@ def validate_descriptor(descriptor, **kwargs):
     with open(schema_file) as fhandle:
         schema = json.load(fhandle)
 
-    # Load input types according to the schema
-    schema_types = schema["properties"]["inputs"]["items"]["properties"]["type"]["enum"]
+    # Load input types according to the schema (oneOf structure with Styx extension)
+    type_schema = schema["properties"]["inputs"]["items"]["properties"]["type"]
+    schema_types = type_schema["oneOf"][0]["enum"]
     allowed_keywords = ["and", "or", "false", "true"]
     allowed_comparators = ["==", "!=", "<", ">", "<=", ">="]
 
@@ -67,6 +68,17 @@ def validate_descriptor(descriptor, **kwargs):
         if i in inputGet("id"):
             return descriptor["inputs"][inputGet("id").index(i)]
         return {}
+
+    def getInputTypeName(inp):
+        """Get the type name from an input, handling nested types (Styx extension)."""
+        inp_type = inp.get("type")
+        if isinstance(inp_type, dict):
+            # Nested type (Styx extension) - treat as String for validation
+            return "String"
+        if isinstance(inp_type, list):
+            # Union of nested types (Styx extension) - treat as String for validation
+            return "String"
+        return inp_type
 
     def isValidConditionalExp(exp):
         # Return the type of a conditional expression's substring
@@ -161,17 +173,9 @@ def validate_descriptor(descriptor, **kwargs):
         if clkeys[jdx] in key and key != clkeys[jdx]
     ]
 
-    # Verify that all Ids are unique
+    # Note: Styx extension allows duplicate IDs, so ID uniqueness is not validated
     inIds, outIds = inputGet("id"), outputGet("id")
     grpIds = groupGet("id") if "groups" in descriptor.keys() else []
-    allIds = inIds + outIds + grpIds
-    msg_template = '    IdError: "{0}" is non-unique'
-    for idx, s1 in enumerate(allIds):
-        for jdx, s2 in enumerate(allIds):
-            if s1 == s2 and idx < jdx:
-                errors += [msg_template.format(s1)]
-            else:
-                errors += []
 
     # Verify that identical keys only exist if they are both in mutex groups
     msg_template = ' MutExError: "{0}" belongs to 2+ non exclusive IDs'
@@ -264,7 +268,7 @@ def validate_descriptor(descriptor, **kwargs):
                 if not keyword.iskeyword(s[1]) and s[1].isalnum() and not s[1].isdigit()
             ]:
                 if s[1] in [i["id"] for i in descriptor["inputs"]]:
-                    splitExp[s[0]] = inById(s[1])["type"]
+                    splitExp[s[0]] = getInputTypeName(inById(s[1]))
             # Check if the conditional expression is valid
             if not isValidConditionalExp(" ".join(splitExp)):
                 errors += [msg_template.format(templateKey)]
@@ -285,13 +289,7 @@ def validate_descriptor(descriptor, **kwargs):
             else:
                 errors += []
 
-            msg_template = (
-                ' InputError: "{0}" is of type Flag,' " it has to be optional"
-            )
-            if inp["optional"] is False:
-                errors += [msg_template.format(inp["id"])]
-            else:
-                errors += []
+            # Note: Styx extension allows Flag inputs without optional: true
 
         # Verify number-type inputs min/max are sensible
         elif inp["type"] == "Number":

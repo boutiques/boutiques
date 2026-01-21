@@ -1,0 +1,72 @@
+{
+    "name": "Styx Conditional Nested Type Test",
+    "tool-version": "1.0.0",
+    "description": "Test descriptor for conditional path templates with nested types",
+    "author": "Boutiques Developers",
+    "schema-version": "0.5+styx",
+    "command-line": "test_tool [INPUT_FILE] [CONFIG] [OUTPUT_NAME]",
+    "container-image": {
+        "type": "docker",
+        "image": "example/test:1.0"
+    },
+    "inputs": [
+        {
+            "id": "input_file",
+            "name": "Input File",
+            "description": "The input file to process",
+            "type": "File",
+            "value-key": "[INPUT_FILE]",
+            "optional": false
+        },
+        {
+            "id": "config",
+            "name": "Configuration Option",
+            "description": "Configuration with nested type",
+            "value-key": "[CONFIG]",
+            "type": {
+                "id": "config",
+                "name": "config",
+                "description": "A configuration key-value pair",
+                "command-line": "-config [KEY] [VALUE]",
+                "inputs": [
+                    {
+                        "id": "key",
+                        "name": "Key",
+                        "type": "String",
+                        "value-key": "[KEY]",
+                        "optional": false
+                    },
+                    {
+                        "id": "value",
+                        "name": "Value",
+                        "type": "String",
+                        "value-key": "[VALUE]",
+                        "optional": false
+                    }
+                ],
+                "output-files": []
+            },
+            "optional": true
+        },
+        {
+            "id": "output_name",
+            "name": "Output Name",
+            "description": "Output name",
+            "type": "String",
+            "value-key": "[OUTPUT_NAME]",
+            "optional": false
+        }
+    ],
+    "output-files": [
+        {
+            "id": "output_result",
+            "name": "Output Result",
+            "description": "The main output file",
+            "optional": false,
+            "conditional-path-template": [
+                {"config == \"test\"": "[OUTPUT_NAME]_config.txt"},
+                {"default": "[OUTPUT_NAME]_default.txt"}
+            ]
+        }
+    ]
+}
