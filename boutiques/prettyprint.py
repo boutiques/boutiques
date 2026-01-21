@@ -129,9 +129,8 @@ class PrettyPrinter:
 
             # If a config file, add the template
             if output.get("file-template"):
-                temp_info += (
-                    f"\n\tTemplate:\n\t "
-                    f"{'\n\t '.join(output['file-template'])}"
+                temp_info += "\n\tTemplate:\n\t " + "\n\t ".join(
+                    output["file-template"]
                 )
                 config_info += temp_info
             else:
