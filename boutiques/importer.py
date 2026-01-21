@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-
 import collections
 import os
 import os.path as op
 import re
 import sys
 from argparse import ArgumentParser
-from importlib.machinery import SourceFileLoader
 
 import simplejson as json
 from jsonschema import ValidationError
@@ -16,6 +14,7 @@ from boutiques.logger import raise_error
 from boutiques.util.utils import (
     customSortDescriptorByKey,
     customSortInvocationByInput,
+    import_from_path,
     importCatcher,
     loadJson,
 )
@@ -136,11 +135,9 @@ class Importer:
 
     def import_docopt(self):
         # input_descriptor is the .py containing docopt script
-        docstring = (
-            SourceFileLoader("docopt_script", self.input_descriptor)
-            .load_module()
-            .__doc__
-        )
+        module = import_from_path("docopt_script", self.input_descriptor)
+        docstring = module.__doc__
+
         # Init docopt importer and start import
         docoptImporter = Docopt_Importer(docstring, self.output_descriptor)
 
