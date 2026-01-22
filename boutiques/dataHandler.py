@@ -242,8 +242,9 @@ class DataHandler:
         data["metadata"]["keywords"] = [v for v in unique_names]
         data["metadata"]["keywords"].insert(0, "Boutiques")
         # Add descriptor link(s) to related identifiers
+        url_prefix = "https://zenodo.org/record/"
         data["metadata"]["related_identifiers"] = [
-            {"identifier": f"{url.format(v.split('.')[2])}", "relation": "hasPart"}
+            {"identifier": f"{url_prefix}{v.split('.')[2]}", "relation": "hasPart"}
             for v in unique_descriptors
         ]
         return data

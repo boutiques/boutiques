@@ -394,7 +394,7 @@ def validate_descriptor(descriptor, **kwargs):
             "value-disables" in inp.keys() or "value-requires" in inp.keys()
         ) and "value-choices" not in inp.keys():
             errors += [
-                f' InputError: "{inp["id"]}" cannot have have value-opts '
+                f' InputError: "{inp["id"]}" cannot have value-opts '
                 "without value-choices defined."
             ]
 
@@ -467,7 +467,7 @@ def validate_descriptor(descriptor, **kwargs):
                 if "requires-inputs" in inById(member).keys():
                     errors += [
                         f' GroupError: "{grp["id"]}" is mutually-exclusive and '
-                        f"cannot have members require one another, such as "
+                        "cannot have members require one another, such as "
                         f'"{member}" and "{req}"'
                         for req in inById(member)["requires-inputs"]
                         if req in set(grp["members"])
@@ -505,7 +505,7 @@ def validate_descriptor(descriptor, **kwargs):
                     ):
                         errors += [
                             f' GroupError: "{grp["id"]}" is one-is-required and '
-                            f"cannot be a subset of the all-or-none group "
+                            "cannot be a subset of the all-or-none group "
                             f'"{grp2["id"]}"'
                         ]
 

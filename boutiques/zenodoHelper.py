@@ -41,7 +41,7 @@ class ZenodoHelper:
         if self.no_int:
             raise_error(ZenodoError, "Cannot find Zenodo credentials.")
         prompt = (
-            f"Please enter your Zenodo access token (it will be "
+            "Please enter your Zenodo access token (it will be "
             f"saved in {self.config_file} for future use): "
         )
         try:

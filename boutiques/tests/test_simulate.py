@@ -211,8 +211,7 @@ class TestSimulate(BaseTest):
         invoc = "tmpInvoc.json"
         config = "tmpConfig.toml"
         wInvocCommand = (
-            f"bosh example {descriptor}"
-            f" > {invoc} "
+            f"bosh example {descriptor} > {invoc} "
             f" && bosh exec simulate {descriptor} -i {invoc}"
         )
         noInvocCommand = f"bosh exec simulate {descriptor}"

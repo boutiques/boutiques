@@ -266,7 +266,7 @@ class Importer:
                 if cwl_type["type"] != "array":
                     raise_error(
                         ImportError,
-                        f"Only 1-level nested types of type 'array' are supported "
+                        "Only 1-level nested types of type 'array' are supported "
                         f"(CWL input: {cwl_input})",
                     )
                 if cwl_type.get("inputBinding") is not None:

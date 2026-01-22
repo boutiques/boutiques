@@ -533,7 +533,7 @@ def add_subparser_import(subparsers):
     parser_import.add_argument(
         "type",
         help=(
-            f"Type of import we are performing. Allowed values: "
+            "Type of import we are performing. Allowed values: "
             f"{', '.join(['bids', '0.4', 'cwl', 'docopt', 'config'])}"
         ),
         choices=["bids", "0.4", "cwl", "docopt", "config"],
