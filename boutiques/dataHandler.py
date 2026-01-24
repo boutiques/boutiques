@@ -219,7 +219,6 @@ class DataHandler:
         return publishable_dict
 
     def _create_metadata(self, records_dict):
-        url = "https://zenodo.org/record/{}"
         hash = hashlib.md5()
         hash.update(str(time.time()).encode("utf-8"))
         identifier = hash.hexdigest()

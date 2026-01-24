@@ -590,7 +590,7 @@ class LocalExecutor:
                     os.mkdir(lockDir)
                 except OSError:
                     print_info(
-                        f"Another process seems to be pulling the "
+                        "Another process seems to be pulling the "
                         f"image ({lockDir} exists), sleeping 5 seconds"
                     )
                     time.sleep(5)
@@ -636,9 +636,9 @@ class LocalExecutor:
         pull_loc = f'"{conNameTmp}" {conIndex}{conImage}'
         container_location = (
             f"Pulled from {conIndex}{conImage} ({conName} not found "
-            f"in current working "
-            f"directory or specified "
-            f"image path)"
+            "in current working "
+            "directory or specified "
+            "image path)"
         )
         # Pull the singularity image
         sing_command = conBinName + " pull --name " + pull_loc
@@ -1579,7 +1579,7 @@ class LocalExecutor:
         file.close()
         if self.debug:
             print_info(
-                f"Descriptor from execution saved to cache for future "
+                "Descriptor from execution saved to cache for future "
                 f"publishing as {filename}"
             )
         return filename

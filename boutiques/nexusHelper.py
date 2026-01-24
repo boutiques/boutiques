@@ -53,7 +53,7 @@ class NexusHelper:
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus credentials.")
         prompt = (
-            f"Please enter your Nexus access token (it will be "
+            "Please enter your Nexus access token (it will be "
             f"saved in {self.config_file} for future use): "
         )
         return self.prompt(prompt)
@@ -65,7 +65,7 @@ class NexusHelper:
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus organization.")
         prompt = (
-            f"Please enter the Nexus organization you want to publish to"
+            "Please enter the Nexus organization you want to publish to"
             f" (it will be saved in {self.config_file} for future use): "
         )
         return self.prompt(prompt)
@@ -77,7 +77,7 @@ class NexusHelper:
         if self.no_int:
             raise_error(NexusError, "Cannot find Nexus project.")
         prompt = (
-            f"Please enter the Nexus project you want to publish to"
+            "Please enter the Nexus project you want to publish to"
             f" (it will be saved in {self.config_file} for future use): "
         )
         return self.prompt(prompt)
@@ -91,7 +91,7 @@ class NexusHelper:
             f.write(json.dumps(json_creds, indent=4, sort_keys=True))
         if self.verbose:
             print_info(
-                f"Nexus access token, organization and project"
+                "Nexus access token, organization and project"
                 f" saved in {self.config_file}"
             )
 
@@ -145,7 +145,7 @@ class NexusHelper:
                 raise_error(
                     NexusError,
                     f"No project '{project}' in organization '{org}' "
-                    f"in Nexus repository",
+                    "in Nexus repository",
                     e.response,
                 )
             elif 401 == e.response.status_code:

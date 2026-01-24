@@ -272,7 +272,7 @@ class Importer:
                 if cwl_type.get("inputBinding") is not None:
                     raise_error(
                         ImportError,
-                        f"Input bindings of array elements are not supported "
+                        "Input bindings of array elements are not supported "
                         f"(CWL input: {cwl_input})",
                     )
                 cwl_type = cwl_type["items"]
@@ -1027,7 +1027,7 @@ class Docopt_Importer:
         new_group = {
             "id": pretty_name,
             "name": (
-                f"Mutex group with members: "
+                "Mutex group with members: "
                 f"{', '.join(self._getStrippedName(name) for name in arg_names)}"
             ),
             "members": [self._getParamName(name) for name in arg_names],
