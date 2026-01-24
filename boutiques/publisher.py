@@ -138,7 +138,7 @@ class Publisher:
                         "Found an existing record with the same name, "
                         "would you like to update it? "
                         "(Y:Update existing / n:Publish new entry with "
-                        "name {}) ".format(self.descriptor.get("name"))
+                        f"name {self.descriptor.get('name')}) "
                     )
                     ret = input(prompt)
                     if ret.upper() == "Y":

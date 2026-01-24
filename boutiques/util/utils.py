@@ -57,9 +57,9 @@ def loadJson(userInput, verbose=False, sandbox=False):
             return OrderedDict(json.loads(f.read(), object_pairs_hook=OrderedDict))
     # JSON file not found, so try to parse JSON object
     e = (
-        "Cannot parse input {}: file not found, "
+        f"Cannot parse input {userInput}: file not found, "
         "invalid Zenodo ID, or invalid JSON object"
-    ).format(userInput)
+    )
     if userInput.isdigit():
         raise_error(LoadError, e)
     try:

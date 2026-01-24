@@ -211,8 +211,9 @@ class TestSimulate(BaseTest):
         invoc = "tmpInvoc.json"
         config = "tmpConfig.toml"
         wInvocCommand = (
-            "bosh example {0}" + " > {1} " + " && bosh exec simulate {0} -i {1}"
-        ).format(descriptor, invoc)
+            f"bosh example {descriptor} > {invoc} "
+            f" && bosh exec simulate {descriptor} -i {invoc}"
+        )
         noInvocCommand = f"bosh exec simulate {descriptor}"
 
         subprocess.call(wInvocCommand, shell=True)

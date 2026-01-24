@@ -54,9 +54,7 @@ class DataHandler:
                 f"There are {len(self.record_files)} unpublished records in the cache"
             )
             print(
-                "There are {} unpublished descriptors in the cache".format(
-                    len(self.descriptor_files)
-                )
+                f"There are {len(self.descriptor_files)} unpublished descriptors in the cache"
             )
             for i in range(len(self.cache_files)):
                 print(self.cache_files[i])
@@ -203,8 +201,8 @@ class DataHandler:
                 # Descriptor isn't published, inform user with full prompt
                 else:
                     print(
-                        "Record {} cannot be published as its descriptor "
-                        "is not yet published. ".format(fl)
+                        f"Record {fl} cannot be published as its descriptor "
+                        "is not yet published. "
                     )
                     desc_to_publish.add(f"bosh publish {desc_path}")
             # Descriptor doi is stored correctly in record
@@ -221,7 +219,6 @@ class DataHandler:
         return publishable_dict
 
     def _create_metadata(self, records_dict):
-        url = "https://zenodo.org/record/{}"
         hash = hashlib.md5()
         hash.update(str(time.time()).encode("utf-8"))
         identifier = hash.hexdigest()
@@ -244,36 +241,33 @@ class DataHandler:
         data["metadata"]["keywords"] = [v for v in unique_names]
         data["metadata"]["keywords"].insert(0, "Boutiques")
         # Add descriptor link(s) to related identifiers
+        url_prefix = "https://zenodo.org/record/"
         data["metadata"]["related_identifiers"] = [
-            {"identifier": url.format(v.split(".")[2]), "relation": "hasPart"}
+            {"identifier": f"{url_prefix}{v.split('.')[2]}", "relation": "hasPart"}
             for v in unique_descriptors
         ]
         return data
 
     def _get_publishing_prompt(self):
         _destination = (
-            "Nexus in organization '{}' and project '{}'".format(
-                self.nexus_org, self.nexus_project
-            )
+            f"Nexus in organization '{self.nexus_org}' and project '{self.nexus_project}'"
             if self.to_nexus
             else "Zenodo"
         )
         if self.filename is not None:
             return (
-                "The dataset {} will be published to {}, "
-                "this cannot be undone. Are you sure? (Y/n) ".format(
-                    self.filename, _destination
-                )
+                f"The dataset {self.filename} will be published to {_destination}, "
+                "this cannot be undone. Are you sure? (Y/n) "
             )
         if self.individual:
             return (
-                "The records will be published to {} each as "
+                f"The records will be published to {_destination} each as "
                 "separate data-sets. This cannot be undone. Are you "
-                "sure? (Y/n ".format(_destination)
+                "sure? (Y/n) "
             )
         return (
-            "The records will be published to {} as a data-set. This "
-            "cannot be undone. Are you sure? (Y/n) ".format(_destination)
+            f"The records will be published to {_destination} as a data-set. This "
+            "cannot be undone. Are you sure? (Y/n) "
         )
 
     # Private function to remove published files and descriptors which no
@@ -340,8 +334,8 @@ class DataHandler:
     def _get_delete_prompt(self):
         if self.filename is not None:
             return (
-                "The dataset {} will be deleted from the cache, "
-                "this cannot be undone. Are you sure? (Y/n) ".format(self.filename)
+                f"The dataset {self.filename} will be deleted from the cache, "
+                "this cannot be undone. Are you sure? (Y/n) "
             )
         return (
             "All records will be removed from the cache. This "

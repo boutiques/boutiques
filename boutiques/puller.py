@@ -89,9 +89,9 @@ class Puller:
                 else:
                     raise_error(
                         ZenodoError,
-                        'Searched-for descriptor "{}" '
-                        'does not match descriptor "{}" returned '
-                        "from Zenodo".format(entry["zid"], hit["id"]),
+                        f'Searched-for descriptor "{entry["zid"]}" '
+                        f'does not match descriptor "{hit["id"]}" returned '
+                        "from Zenodo",
                     )
 
         return json_files

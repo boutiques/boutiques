@@ -71,43 +71,32 @@ class ExecutorOutput:
             return colored(s + os.linesep, "green")
 
         out = (
-            title("Shell command")
-            + "{0}"
-            + os.linesep
-            + title("Container location")
-            + "{1}"
-            + os.linesep
-            + title("Container command")
-            + "{2}"
-            + os.linesep
-            + title("Exit code")
-            + "{3}"
-            + os.linesep
-            + (title("Std out") + "{4}" + os.linesep if self.stdout else "")
-            + (
-                title("Std err") + colored("{5}", "red") + os.linesep
-                if self.stderr
-                else ""
-            )
-            + title("Error message")
-            + colored("{6}", "red")
-            + os.linesep
-            + title("Output files")
-            + "{7}"
-            + os.linesep
-            + title("Missing files")
-            + colored("{8}", "red")
-            + os.linesep
-        ).format(
-            self.shell_command,
-            self.container_location,
-            self.container_command,
-            self.exit_code,
-            self.stdout,
-            self.stderr,
-            self.error_message,
-            formatted_output_files,
-            formatted_missing_files,
+            f"{title('Shell command')}"
+            f"{self.shell_command}{os.linesep}"
+            f"{title('Container location')}"
+            f"{self.container_location}{os.linesep}"
+            f"{title('Container command')}"
+            f"{self.container_command}{os.linesep}"
+            f"{title('Exit code')}"
+            f"{self.exit_code}{os.linesep}"
+            f"{title('Std out')}{self.stdout}{os.linesep}"
+            if self.stdout
+            else ""
+        )
+
+        out += (
+            f"{title('Std err')}{colored(self.stderr, 'red')}{os.linesep}"
+            if self.stderr
+            else ""
+        )
+
+        out += (
+            f"{title('Error message')}"
+            f"{colored(self.error_message, 'red')}{os.linesep}"
+            f"{title('Output files')}"
+            f"{formatted_output_files}{os.linesep}"
+            f"{title('Missing files')}"
+            f"{colored(formatted_missing_files, 'red')}{os.linesep}"
         )
         return out
 
@@ -602,7 +591,7 @@ class LocalExecutor:
                 except OSError:
                     print_info(
                         "Another process seems to be pulling the "
-                        "image ({} exists), sleeping 5 seconds".format(lockDir)
+                        f"image ({lockDir} exists), sleeping 5 seconds"
                     )
                     time.sleep(5)
                 else:
@@ -646,11 +635,11 @@ class LocalExecutor:
             os.environ["SINGULARITY_PULLFOLDER"] = imageDir
         pull_loc = f'"{conNameTmp}" {conIndex}{conImage}'
         container_location = (
-            "Pulled from {1}{2} ({0} not found "
+            f"Pulled from {conIndex}{conImage} ({conName} not found "
             "in current working "
             "directory or specified "
             "image path)"
-        ).format(conName, conIndex, conImage)
+        )
         # Pull the singularity image
         sing_command = conBinName + " pull --name " + pull_loc
         (stdout, stderr), return_code = self._localExecute(sing_command)
@@ -1591,7 +1580,7 @@ class LocalExecutor:
         if self.debug:
             print_info(
                 "Descriptor from execution saved to cache for future "
-                "publishing as {}".format(filename)
+                f"publishing as {filename}"
             )
         return filename
 
