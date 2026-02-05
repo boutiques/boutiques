@@ -1,10 +1,20 @@
+from __future__ import annotations
+
 import os
+import sys
 from collections import OrderedDict
+from importlib.machinery import SourceFileLoader
+from importlib.util import module_from_spec, spec_from_loader
+from typing import TYPE_CHECKING
 
 import simplejson as json
 
 from boutiques import __file__ as bfile
 from boutiques.logger import print_warning, raise_error
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    from types import ModuleType
 
 
 # Utility function to wrap modules that use non-essential libs
@@ -203,3 +213,12 @@ def formatSphinxUsage(func, usage_str):
     args = [f'"{arg.strip()}"' for arg in args]
     args = ", ".join(args)
     return f"[{args}]"
+
+
+def import_from_path(module_name: str, file_path: str | Path) -> ModuleType:
+    loader = SourceFileLoader(module_name, file_path)
+    spec = spec_from_loader(module_name, loader)
+    module = module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
