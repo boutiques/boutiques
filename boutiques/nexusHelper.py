@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import os
 from codecs import open
+from pathlib import Path
 
 import simplejson as json
 
@@ -158,7 +158,7 @@ class NexusHelper:
                 raise_error(NexusError, "Something went wrong", e.response)
 
     def get_config_file(self):
-        return os.path.join(os.path.expanduser("~"), ".nexus")
+        return str(Path.home() / ".nexus")
 
     def prompt(self, prompt):
         try:

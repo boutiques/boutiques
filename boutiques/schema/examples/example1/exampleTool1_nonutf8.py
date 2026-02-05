@@ -4,10 +4,11 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 
 
 def file_exists(parser, file_name):
-    if not os.path.exists(file_name):
+    if not Path(file_name).exists():
         parser.error("File not found: %s" % file_name)
     return file_name
 
@@ -100,8 +101,8 @@ def main(args=None):
             )
             sys.exit(1)
 
-    sys.stdout.write("Ça c'est stdout")
-    sys.stderr.write("This is stdérr")
+    sys.stdout.write("ï¿½a c'est stdout")
+    sys.stderr.write("This is stdï¿½rr")
     with open(results.output_file, "w") as f:
         f.write("File content")
 

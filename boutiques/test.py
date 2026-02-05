@@ -1,5 +1,5 @@
 import hashlib
-import os.path as op
+from pathlib import Path
 
 import boutiques as bosh
 from boutiques import __file__ as bfile
@@ -37,7 +37,7 @@ def test(descriptor, test, invocation, paramsDict):
         for output_file in assertions["output-files"]:
 
             file_path = outputted[output_file["id"]]
-            assert op.exists(file_path)
+            assert Path(file_path).exists()
 
             # Optionally, an md5 reference may have been specified
             if "md5-reference" in output_file:

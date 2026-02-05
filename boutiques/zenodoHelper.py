@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import os
 import re
+from pathlib import Path
 
 import simplejson as json
 
@@ -23,7 +23,7 @@ class ZenodoHelper:
         self.sandbox = sandbox
         self.no_int = no_int
         self.verbose = verbose
-        self.config_file = os.path.join(os.path.expanduser("~"), ".boutiques")
+        self.config_file = Path.home() / ".boutiques"
         self.zenodo_endpoint = self.get_zenodo_endpoint()
 
     def verify_zenodo_access_token(self, user_input):
@@ -102,7 +102,7 @@ class ZenodoHelper:
     def get_zid_from_filename(self, filename):
         # Filename must be in the form /a/b/c/zenodo-1234.json
         # where zenodo.1234 is the record id.
-        basename = os.path.basename(filename)
+        basename = Path(filename).name
         if not re.match(r"zenodo-[0-9]*\.json", basename):
             raise_error(
                 ZenodoError,
@@ -305,8 +305,8 @@ class ZenodoHelper:
         r = requests.post(
             self.zenodo_endpoint + f"/api/deposit/depositions/{deposition_id}/files",
             headers={"Authorization": f"Bearer {zenodo_access_token}"},
-            data={"filename": os.path.basename(file_path)},
-            files={"file": open(file_path, "rb")},
+            data={"filename": Path(file_path).name},
+            files={"file": Path(file_path).open("rb")},
         )
 
         if r.status_code != 201:

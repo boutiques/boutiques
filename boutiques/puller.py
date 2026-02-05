@@ -1,5 +1,6 @@
 import os
 import urllib
+from pathlib import Path
 
 import requests
 
@@ -22,11 +23,11 @@ class Puller:
     def __init__(self, zids, verbose=False, sandbox=False):
         # remove zenodo prefix
         self.zenodo_entries = []
-        self.cache_dir = os.path.join(
-            os.path.expanduser("~"),
-            ".cache",
-            "boutiques",
-            "sandbox" if sandbox else "production",
+        self.cache_dir = (
+            Path.home()
+            / ".cache"
+            / "boutiques"
+            / ("sandbox" if sandbox else "production")
         )
         discarded_zids = zids
         # This removes duplicates, should maintain order
@@ -41,7 +42,7 @@ class Puller:
                 # the last thing after the split.
                 zid = zid.split("/")[-1]
                 newzid = zid.split(".", 1)[1]
-                newfname = os.path.join(self.cache_dir, f"zenodo-{newzid}.json")
+                newfname = Path(self.cache_dir) / f"zenodo-{newzid}.json"
                 self.zenodo_entries.append({"zid": newzid, "fname": newfname})
             except IndexError:
                 raise_error(
@@ -59,7 +60,7 @@ class Puller:
         # return cached file if it exists
         json_files = []
         for entry in self.zenodo_entries:
-            if os.path.isfile(entry["fname"]):
+            if Path(entry["fname"]).is_file():
                 if self.verbose:
                     print_info(f"Found cached file at {entry['fname']}")
                 json_files.append(entry["fname"])
@@ -78,8 +79,8 @@ class Puller:
                 file_path = hit["files"][0]["links"]["self"]
                 file_name = file_path.split(os.sep)[-1]
                 if hit["id"] == int(entry["zid"]):
-                    if not os.path.exists(self.cache_dir):
-                        os.makedirs(self.cache_dir)
+                    if not self.cache_dir.exists():
+                        self.cache_dir.mkdir(parents=True)
                     if self.verbose:
                         print_info(f"Downloading descriptor {file_name}")
                     downloaded = urlretrieve(file_path, entry["fname"])

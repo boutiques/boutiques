@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import keyword
-import os.path as op
 import re
 from argparse import ArgumentParser
+from pathlib import Path
 
 import simplejson as json
 from jsonschema import ValidationError, validate
@@ -27,8 +27,7 @@ def validate_descriptor(descriptor, **kwargs):
     """
     Validates the Boutiques descriptor against the schema.
     """
-    path, fil = op.split(bfile)
-    schema_file = op.join(path, "schema", "descriptor.schema.json")
+    schema_file = Path(bfile).parent / "schema" / "descriptor.schema.json"
 
     # Load schema
     with open(schema_file) as fhandle:

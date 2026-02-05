@@ -2,12 +2,12 @@
 
 import argparse
 import os
-import os.path as op
 import re
 import subprocess
 import sys
 import tempfile
 from argparse import ArgumentParser
+from pathlib import Path
 
 import simplejson as json
 from jsonschema import ValidationError, validate
@@ -24,7 +24,7 @@ class CreatorError(ValidationError):
 
 class CreateDescriptor:
     def __init__(self, parser=None, **kwargs):
-        template = op.join(op.split(bfile)[0], "templates", "basic.json")
+        template = Path(bfile).parent / "templates" / "basic.json"
         with open(template) as f:
             self.descriptor = json.load(f)
 
@@ -303,7 +303,7 @@ class CreateDescriptor:
             # Join char list into string and concatenate white spaces
             return " ".join("".join(name).split()).title()
 
-        if os.path.isfile(cl_template):
+        if Path(cl_template).is_file():
             template_descriptor = loadJson(cl_template)
             cl_template = template_descriptor["command-line"]
 
