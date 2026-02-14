@@ -44,6 +44,21 @@ all = [
     "requests",
     "mock"
 ]
+dev = [
+    "boutiques[test]",
+    "pre-commit",
+    "black",
+    "isort",
+    "flake8",
+    "flake8-bugbear",
+    "flake8-docstrings",
+    "flake8-functions",
+    "flake8-use-fstring",
+    "codespell",
+    "pyupgrade",
+    "coverage",
+    "tox"
+]
 doc = [
     "sphinx-rtd-theme",
     "sphinx-argparse"
