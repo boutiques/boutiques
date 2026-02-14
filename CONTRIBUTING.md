@@ -5,17 +5,109 @@ email, or any other method with the owners of this repository before making a ch
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
+## Setting Up Your Development Environment
+
+Follow these steps to get a local development environment ready for contributing.
+
+### Prerequisites
+
+- **Python >= 3.10**
+- **Git** — [install instructions](https://git-scm.com/downloads)
+- **pip** — ships with most Python distributions
+
+### 1. Fork & Clone
+
+```bash
+git clone https://github.com/<YOUR-USERNAME>/boutiques.git
+cd boutiques
+```
+
+### 2. Create a Virtual Environment
+
+```bash
+python -m venv .venv
+
+# Linux / macOS
+source .venv/bin/activate
+
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+```
+
+### 3. Install the Package with Dev Dependencies
+
+The project defines a `dev` dependency group that includes testing tools (`pytest`, `pytest-cov`),
+linting & formatting tools (`black`, `isort`, `flake8`, `codespell`, `pyupgrade`), `pre-commit`,
+`coverage`, and `tox`.
+
+```bash
+pip install -e ".[dev]"
+```
+
+> **Note:** Runtime dependencies are installed automatically alongside the dev extras.
+> If you also need the full optional runtime stack (e.g. `docopt`, `nexus-sdk`), install the `all` group instead:
+> `pip install -e ".[dev,all]"`
+
+### 4. Install Pre-commit Hooks
+
+Pre-commit hooks run automatically on every commit to enforce consistent code style and catch
+common issues **before** code reaches a pull request.
+
+```bash
+pre-commit install
+```
+
+You can also run all hooks against the entire codebase at any time:
+
+```bash
+pre-commit run --all-files
+```
+
+### 5. Run the Tests
+
+```bash
+pytest
+```
+
+To run a specific test file:
+
+```bash
+pytest boutiques/tests/test_<something>.py
+```
+
+To run tests with a coverage report:
+
+```bash
+coverage run --source boutiques -m pytest
+coverage report -m
+```
+
+### 6. Linting & Formatting
+
+The pre-commit hooks handle formatting and linting automatically on each commit. If you want to
+run the individual tools manually:
+
+| Tool | Command | Purpose |
+|------|---------|---------|
+| **black** | `black .` | Code formatting |
+| **isort** | `isort .` | Import sorting |
+| **flake8** | `flake8 boutiques docs` | PEP 8 compliance |
+| **codespell** | `codespell` | Spelling checks |
+
+> **Tip:** Running `pre-commit run --all-files` is the easiest way to apply all checks at once.
+
 ## Pull Request Process
 
 1. Make tests for your code in `pytest`
-2. Create a pull request against the `develop` branch.
+2. Ensure pre-commit hooks pass — run `pre-commit run --all-files` before pushing.
+3. Create a pull request against the `develop` branch.
   - Include evidence in your pull request of the functionality you added (i.e. show behaviour before and after changes were made, and demonstrate all unrelated content that has code touched by changes remains unchanged)
   - Try not to include too many features in one pull request. If multiple features were worked on, create a separate branch for each.
   - Mention the relevant issue number(s), if any.
-3. Update relevant documentation with details of the changes
-4. Get feedback from maintainers
-5. Address suggested changes
-6. Rinse & repeat until you and the maintainers agree
+4. Update relevant documentation with details of the changes
+5. Get feedback from maintainers
+6. Address suggested changes
+7. Rinse & repeat until you and the maintainers agree
 
 ## Code of Conduct
 > *"Just, don't be a jerk!"* :smile:
