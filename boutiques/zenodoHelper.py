@@ -220,7 +220,7 @@ class ZenodoHelper:
             "Authorization": f"Bearer {access_token}",
         }
         r = requests.put(
-            self.zenodo_endpoint + "/api/deposit/depositions/%s" % new_deposition_id,
+            self.zenodo_endpoint + f"/api/deposit/depositions/{new_deposition_id}",
             data=json.dumps(data),
             headers=headers,
         )
