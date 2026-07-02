@@ -5,7 +5,6 @@ import os
 import pytest
 
 import boutiques as bosh
-from boutiques import __file__ as bfile
 from boutiques.localExec import ExecutorError
 from boutiques.tests.BaseTest import BaseTest
 

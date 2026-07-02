@@ -1,12 +1,12 @@
 import json
 import tempfile
-from urllib.request import urlopen, urlretrieve
+from urllib.request import urlretrieve
 
 from boutiques.logger import print_info, print_warning, raise_error
 from boutiques.publisher import Publisher
 from boutiques.puller import Puller
 from boutiques.util.utils import loadJson
-from boutiques.zenodoHelper import ZenodoError, ZenodoHelper
+from boutiques.zenodoHelper import ZenodoHelper
 
 
 class DeprecateError(Exception):
