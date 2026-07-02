@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-import os
 import subprocess
 
 import pytest
 
-from boutiques import __file__ as bfile
 from boutiques.bosh import bosh
 from boutiques.tests.BaseTest import BaseTest
 

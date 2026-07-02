@@ -8,14 +8,11 @@ from unittest import mock
 import pytest
 import simplejson as json
 from boutiques_mocks import (
-    MockZenodoRecord,
     example_boutiques_tool,
     mock_get,
-    mock_zenodo_search,
 )
 
 import boutiques as bosh
-from boutiques import __file__ as bfile
 from boutiques.localExec import ExecutorError
 from boutiques.tests.BaseTest import BaseTest
 
