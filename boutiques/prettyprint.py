@@ -3,7 +3,6 @@
 import textwrap
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-import simplejson as json
 from tabulate import tabulate
 
 
@@ -196,9 +195,7 @@ class PrettyPrinter:
             inp_kwargs = {}
             opt_inp_descr = ""
             req_inp_descr = ""
-            opt_inp_desc_header = ""
             opt_inp_desc_footer = ""
-            req_inp_desc_header = ""
             req_inp_desc_footer = ""
 
             # Get all inputs with the command-line key
@@ -227,11 +224,9 @@ class PrettyPrinter:
 
             if multi_opt:
                 opt_inp_descr += "Multiple Options...\n"
-                opt_inp_desc_header = "Option {0}:\n"
                 opt_inp_desc_footer = "\n"
             if multi_req:
                 req_inp_descr += "Multiple Options...\n"
-                req_inp_desc_header = "Option {0}:\n"
                 req_inp_desc_footer = "\n"
 
             # For every input with the clkey (usually just 1)...

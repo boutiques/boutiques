@@ -1,9 +1,5 @@
 import subprocess
 
-import simplejson as json
-
-import boutiques
-
 
 def CreateBoshDocs():
     # Get file as plain text

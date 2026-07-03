@@ -79,9 +79,6 @@ def mock_download_deprecated(url, file_path):
     )
     example_1_json = loadJson(example_1_path)
     example_1_json["deprecated-by-doi"] = "a_doi"
-    cache_dir = os.path.join(
-        os.path.expanduser("~"), ".cache", "boutiques", "production"
-    )
     with open(file_path, "w") as f:
         f.write(json.dumps(example_1_json))
     return [f.name]
@@ -120,7 +117,7 @@ class TestDeprecate(BaseTest):
 
     def test_deprecate_by_inexistent(self, *args):
         with self.assertRaises(DeprecateError) as e:
-            new_doi = bosh(
+            bosh(
                 [
                     "deprecate",
                     "--verbose",
@@ -145,7 +142,7 @@ class TestDeprecate(BaseTest):
 
     def test_deprecate_previous_version(self, *args):
         with self.assertRaises(DeprecateError) as e:
-            new_doi = bosh(
+            bosh(
                 [
                     "deprecate",
                     "--verbose",

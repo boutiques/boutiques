@@ -9,7 +9,7 @@ import pytest
 import simplejson as json
 
 import boutiques.creator as bc
-from boutiques import __file__ as bfile, bosh
+from boutiques import bosh
 from boutiques.creator import CreatorError
 from boutiques.tests.BaseTest import BaseTest
 from boutiques.util.utils import loadJson
@@ -22,17 +22,17 @@ class TestCreator(BaseTest):
 
     def test_success_template(self):
         fil = "./test_temp/creator_output.json"
-        descriptor = bosh(["create", fil])
+        bosh(["create", fil])
         self.assertIsNone(bosh(["validate", fil]))
 
     def test_success_docker(self):
         fil = "./test_temp/creator_output.json"
-        descriptor = bosh(["create", "-d", "mysql:latest", fil])
+        bosh(["create", "-d", "mysql:latest", fil])
         self.assertIsNone(bosh(["validate", fil]))
 
     def test_success_docker_sing_import(self):
         fil = "./test_temp/creator_output.json"
-        descriptor = bosh(["create", "-d", "mysql:latest", "-u", fil])
+        bosh(["create", "-d", "mysql:latest", "-u", fil])
         self.assertIsNone(bosh(["validate", fil]))
 
     @pytest.mark.skipif(
