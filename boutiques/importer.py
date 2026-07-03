@@ -5,7 +5,6 @@ import os
 import os.path as op
 import re
 import sys
-from argparse import ArgumentParser
 from importlib.machinery import SourceFileLoader
 
 import simplejson as json
@@ -911,7 +910,6 @@ class Docopt_Importer:
         # Add mutex choice group arg to dependency tree
         # group_arg contains members as dependency arguments
         options = arg.children[0].children
-        p_node = self._getDependencyParentNode(ancestors)
         members = [self._generateDependencyArgument(option) for option in options]
 
         pretty_names = [member["name"] for member in members]
@@ -983,7 +981,6 @@ class Docopt_Importer:
         if "inputs" not in self.descriptor:
             self.descriptor["inputs"] = []
 
-        param_key = arg["id"]
         param_name = arg["name"]
         new_inp = {
             "id": param_name.replace("-", "_"),
@@ -1023,7 +1020,7 @@ class Docopt_Importer:
     def _addMutexGroup(self, arg_names):
         # Add mutex group to descriptor
         pretty_name = "_".join([self._getParamName(name) for name in arg_names])
-        unique_name = self._getUniqueId(pretty_name)
+        self._getUniqueId(pretty_name)
         new_group = {
             "id": pretty_name,
             "name": (
@@ -1074,7 +1071,7 @@ class Docopt_Importer:
         for root_inp in self.dependencies:
             OIR_ids.append(self.dependencies[root_inp]["name"].replace("-", "_"))
         pretty_name = "_".join(OIR_ids)
-        unique_name = self._getUniqueId(pretty_name)
+        self._getUniqueId(pretty_name)
         new_group = {
             "id": pretty_name,
             "name": f"One is required group with members: {', '.join(OIR_ids)}",

@@ -6,8 +6,7 @@ from collections import OrderedDict
 from operator import itemgetter
 from urllib.parse import quote
 
-from boutiques.logger import print_info, raise_error
-from boutiques.publisher import ZenodoError
+from boutiques.logger import print_info
 from boutiques.zenodoHelper import ZenodoHelper
 
 
@@ -81,17 +80,10 @@ class Searcher:
             else self.create_results_list(results.json())
         )
         num_results = len(results_list)
+        suffix = "." if self.verbose else f", excluding {total_deprecated} deprecated result(s)."
         print_info(
-            "Showing %d of %d result(s)%s"
-            % (
-                (num_results if num_results < self.max_results else self.max_results),
-                (total_results if self.verbose else total_results - total_deprecated),
-                (
-                    "."
-                    if self.verbose
-                    else ", excluding %d deprecated result(s)." % total_deprecated
-                ),
-            )
+            f"Showing {num_results if num_results < self.max_results else self.max_results} "
+            f"of {total_results if self.verbose else total_results - total_deprecated} result(s){suffix}"
         )
         return results_list
 

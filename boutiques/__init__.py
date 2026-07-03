@@ -9,14 +9,12 @@ from .publisher import Publisher
 from .validator import validate_descriptor
 
 __all__ = [
-    "localExec",
-    "invocationSchemaHandler",
-    "creator",
-    "validator",
-    "bids",
-    "publisher",
-    "evaluate",
-    "example",
-    "prettyprint",
-    "bosh",
+    "validate_bids",
+    "CreateDescriptor",
+    "evaluateEngine",
+    "generateInvocationSchema",
+    "LocalExecutor",
+    "PrettyPrinter",
+    "Publisher",
+    "validate_descriptor",
 ]

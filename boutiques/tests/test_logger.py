@@ -66,7 +66,7 @@ class TestLogger(BaseTest):
             help="my help",
             dest="==SUPPRESS==",
         )
-        creatorObj = bc.CreateDescriptor(
+        bc.CreateDescriptor(
             parser,
             execname="/path/to/myscript.py",
             verbose=True,
@@ -76,7 +76,7 @@ class TestLogger(BaseTest):
         self.assertIn("[ WARNING ]", out)
 
     def test_evaloutput(self):
-        query = bosh.evaluate(
+        bosh.evaluate(
             self.example1_descriptor,
             self.get_file_path("invocation.json"),
             "invalid-query",

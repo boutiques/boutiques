@@ -6,11 +6,9 @@ import os.path as op
 import re
 import subprocess
 import sys
-import tempfile
-from argparse import ArgumentParser
 
 import simplejson as json
-from jsonschema import ValidationError, validate
+from jsonschema import ValidationError
 
 from boutiques import __file__ as bfile
 from boutiques.logger import print_info, print_warning, raise_error
@@ -195,7 +193,6 @@ class CreateDescriptor:
                 actstring = str(type(action))
                 actstring = actstring.split("'")[1].split(".")[-1]
                 print_info(f"{actstring}: Adding")
-            actdict = vars(action)
             if action.dest == "==SUPPRESS==":
                 adest = f"subparser_{self.sp_count}"
                 if kwargs.get("verbose"):
@@ -253,7 +250,7 @@ class CreateDescriptor:
                 try:
                     # Subparsers have choices in the form of OrderedDicts...
                     newinput["value-choices"] = list(action.choices.keys())
-                except AttributeError as e:
+                except AttributeError:
                     # ... but "choice" inputs have them in the form a list.
                     newinput["value-choices"] = action.choices
 
